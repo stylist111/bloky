@@ -20,6 +20,7 @@ import browser from "webextension-polyfill";
 import { start as exampleFragmentStart } from "@eyeo-fragments/example";
 import { startEwe } from "./modules/ewe-init.js";
 import { startYtWallFragment } from "./modules/yt-wall-init.js";
+import { startReverseTrialFragment } from "./modules/reverse-trial-init.js";
 import apiHandlersFactory from "./api/index.js";
 
 (async () => {
@@ -29,6 +30,7 @@ import apiHandlersFactory from "./api/index.js";
   // Initialize Fragments
   exampleFragmentStart();
   const { port } = startYtWallFragment();
+  await startReverseTrialFragment();
 
   // Initialize API handlers
   const apiHandlers = {
@@ -39,6 +41,11 @@ import apiHandlersFactory from "./api/index.js";
 
   // Set up message listener
   browser.runtime.onMessage.addListener(async (message, sender) => {
+    // Route type-based messages to port registry
+    if (message.type && port.__registry[message.type]) {
+      return await port.__registry[message.type](message, sender);
+    }
+
     const { method, args = [] } = message;
     const parts = method.split(".");
     let handler = apiHandlers;

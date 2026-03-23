@@ -116,6 +116,7 @@
     "@eyeo-fragments/in-product-messaging": "*",
     "@eyeo-fragments/ipm-legacy": "*",
     "@eyeo-fragments/public-api": "*",
+    "@eyeo-fragments/reverse-trial": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/ext-ui-components": "*",
     "@eyeo/rules-utils": "*",

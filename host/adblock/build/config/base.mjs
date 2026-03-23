@@ -85,6 +85,11 @@ export default {
         src: "/content",
       },
       {
+        dest: "reverse-trial.preload.js",
+        package: "@eyeo-fragments/reverse-trial",
+        src: "/content",
+      },
+      {
         dest: "public-api.preload.js",
         package: "@eyeo-fragments/public-api",
         src: "/content",

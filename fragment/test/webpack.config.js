@@ -27,10 +27,10 @@ const baseManifest = {
   name: "Fragments Test Extension",
   version: "1.0.0",
   description: "Extension for testing fragments",
+  default_locale: "en_US",
   permissions: [
     "alarms",
     "contextMenus",
-    "declarativeNetRequestWithHostAccess",
     "idle",
     "notifications",
     "scripting",
@@ -49,7 +49,7 @@ const baseManifest = {
     },
     {
       matches: ["*://*.youtube.com/*"],
-      js: ["ytWallDetectionPreload.js"],
+      js: ["ytWallDetectionPreload.js", "reverseTrialPreload.js"],
       run_at: "document_start",
     },
   ],
@@ -70,9 +70,12 @@ export default (env = {}) => {
       : { scripts: ["background.js"] },
     host_permissions: isManifestV3 ? ["<all_urls>"] : undefined,
     permissions: isManifestV3
-      ? baseManifest.permissions
+      ? [...baseManifest.permissions, "declarativeNetRequestWithHostAccess"]
       : [...baseManifest.permissions, "<all_urls>"],
     optional_permissions: isManifestV3 ? ["management"] : undefined,
+    web_accessible_resources: isManifestV3
+      ? [{ resources: ["icons/*"], matches: ["<all_urls>"] }]
+      : ["icons/*"],
     ...(isManifestV3
       ? {
           action: {
@@ -92,6 +95,7 @@ export default (env = {}) => {
       background: "./test-extension/src/background.js",
       examplePreload: "@eyeo-fragments/example/content",
       ytWallDetectionPreload: "@eyeo-fragments/yt-wall-detection/content",
+      reverseTrialPreload: "@eyeo-fragments/reverse-trial/content",
       options: "./test-extension/src/options.js",
     },
     output: {
@@ -113,6 +117,14 @@ export default (env = {}) => {
           { from: "test-extension/src/options.html", to: "options.html" },
           { from: "test-extension/src/options.js", to: "options.js" },
           { from: "test-extension/src/popup.html", to: "popup.html" },
+          {
+            from: "../reverse-trial/locales",
+            to: "_locales",
+          },
+          {
+            from: "../../host/adblock/icons/adblock-20.svg",
+            to: "icons/adblock-20.svg",
+          },
         ],
       }),
     ],

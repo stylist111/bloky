@@ -1,0 +1,48 @@
+{
+  "reverse_trial_start_title": {
+    "description": "Title for the reverse trial start dialog",
+    "message": "AdBlock Premium 現已啟用 🎉"
+  },
+  "reverse_trial_start_body_1": {
+    "description": "First paragraph of the start dialog body",
+    "message": "我們剛剛為您開啟了 <strong>14 天</strong>免費 AdBlock Premium。"
+  },
+  "reverse_trial_start_body_2": {
+    "description": "Second paragraph of the start dialog body",
+    "message": "感受不同之處 – 借助我們的 Premium 篩選器，影片現在廣告更少、延遲更短！"
+  },
+  "reverse_trial_start_button": {
+    "description": "CTA button text for the start dialog",
+    "message": "謝謝！"
+  },
+  "reverse_trial_midpoint_title": {
+    "description": "Title for the reverse trial midpoint dialog",
+    "message": "您的試用期將在 $days_left$ 天後結束",
+    "placeholders": {
+      "days_left": {
+        "content": "$1",
+        "example": "7"
+      }
+    }
+  },
+  "reverse_trial_midpoint_body": {
+    "description": "Body text for the reverse trial midpoint dialog",
+    "message": "立即訂閱，繼續封鎖影片廣告，不間斷享受所有進階功能。"
+  },
+  "reverse_trial_premium_button": {
+    "description": "CTA button text for the midpoint and ended dialogs",
+    "message": "取得 AdBlock Premium"
+  },
+  "reverse_trial_ended_title": {
+    "description": "Title for the reverse trial ended dialog",
+    "message": "您的免費試用期已結束"
+  },
+  "reverse_trial_ended_body": {
+    "description": "Body text for the reverse trial ended dialog",
+    "message": "訂閱 AdBlock Premium，繼續封鎖影片廣告並享受所有進階功能。"
+  },
+  "reverse_trial_learn_more": {
+    "description": "Text for the 'learn more' link that appear under the CTA button",
+    "message": "了解更多"
+  }
+}

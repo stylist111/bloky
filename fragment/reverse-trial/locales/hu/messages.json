@@ -1,0 +1,48 @@
+{
+  "reverse_trial_start_title": {
+    "description": "Title for the reverse trial start dialog",
+    "message": "Az AdBlock Premium most aktív 🎉"
+  },
+  "reverse_trial_start_body_1": {
+    "description": "First paragraph of the start dialog body",
+    "message": "Épp most engedélyeztük Önnek az ingyenes AdBlock Premium <strong>14 napját</strong>."
+  },
+  "reverse_trial_start_body_2": {
+    "description": "Second paragraph of the start dialog body",
+    "message": "Érezze a különbséget – a videók mostantól kevesebb hirdetéssel és késéssel futnak, köszönhetően Premium szűrőinknek!"
+  },
+  "reverse_trial_start_button": {
+    "description": "CTA button text for the start dialog",
+    "message": "Köszönöm!"
+  },
+  "reverse_trial_midpoint_title": {
+    "description": "Title for the reverse trial midpoint dialog",
+    "message": "A próbaidőszak $days_left$ nap múlva lejár",
+    "placeholders": {
+      "days_left": {
+        "content": "$1",
+        "example": "7"
+      }
+    }
+  },
+  "reverse_trial_midpoint_body": {
+    "description": "Body text for the reverse trial midpoint dialog",
+    "message": "Fizessen elő most, hogy tovább blokkolhassa a videóhirdetéseket, és megszakítás nélkül élvezhesse az összes prémium funkciót."
+  },
+  "reverse_trial_premium_button": {
+    "description": "CTA button text for the midpoint and ended dialogs",
+    "message": "AdBlock Premium megszerzése"
+  },
+  "reverse_trial_ended_title": {
+    "description": "Title for the reverse trial ended dialog",
+    "message": "Az ingyenes próbaidőszak lejárt"
+  },
+  "reverse_trial_ended_body": {
+    "description": "Body text for the reverse trial ended dialog",
+    "message": "Fizessen elő az AdBlock Premiumra, hogy tovább blokkolhassa a videóhirdetéseket, és élvezhesse az összes prémium funkciót."
+  },
+  "reverse_trial_learn_more": {
+    "description": "Text for the 'learn more' link that appear under the CTA button",
+    "message": "Tudjon meg többet"
+  }
+}

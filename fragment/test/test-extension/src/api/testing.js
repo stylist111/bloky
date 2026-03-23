@@ -16,6 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import {
+  reverseTrialPrefs,
+  setIsPremium,
+} from "../modules/reverse-trial-init.js";
+
 export async function triggerHandler(port, [eventName, eventData, senderData]) {
   try {
     if (!port || !port.__registry) {
@@ -47,4 +53,23 @@ export async function getRegisteredHandlers(port) {
 
 export async function ping() {
   return true;
+}
+
+export async function setReverseTrialPref([key, value]) {
+  reverseTrialPrefs.set(key, value);
+  return { ok: true };
+}
+
+export async function getReverseTrialPref([key]) {
+  return reverseTrialPrefs.get(key);
+}
+
+export async function enableReverseTrialExperiment() {
+  await ewe.experiments.overrideFlag("show-reverse-trial-opd", true);
+  return { ok: true };
+}
+
+export async function setReverseTrialIsPremium([value]) {
+  setIsPremium(value);
+  return { ok: true };
 }

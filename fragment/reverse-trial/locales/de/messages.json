@@ -1,0 +1,48 @@
+{
+  "reverse_trial_start_title": {
+    "description": "Title for the reverse trial start dialog",
+    "message": "AdBlock Premium ist jetzt aktiv 🎉"
+  },
+  "reverse_trial_start_body_1": {
+    "description": "First paragraph of the start dialog body",
+    "message": "Wir haben soeben <strong>14 Tage</strong> kostenloses AdBlock Premium für Sie aktiviert."
+  },
+  "reverse_trial_start_body_2": {
+    "description": "Second paragraph of the start dialog body",
+    "message": "Spüren Sie den Unterschied – Videos haben jetzt dank unserer Premium-Filter weniger Werbung und Verzögerungen!"
+  },
+  "reverse_trial_start_button": {
+    "description": "CTA button text for the start dialog",
+    "message": "Danke!"
+  },
+  "reverse_trial_midpoint_title": {
+    "description": "Title for the reverse trial midpoint dialog",
+    "message": "Ihr Test endet in $days_left$ Tag(en)",
+    "placeholders": {
+      "days_left": {
+        "content": "$1",
+        "example": "7"
+      }
+    }
+  },
+  "reverse_trial_midpoint_body": {
+    "description": "Body text for the reverse trial midpoint dialog",
+    "message": "Abonnieren Sie jetzt, um Videowerbung weiterhin zu blockieren und alle Premium-Funktionen ohne Unterbrechung zu nutzen."
+  },
+  "reverse_trial_premium_button": {
+    "description": "CTA button text for the midpoint and ended dialogs",
+    "message": "AdBlock Premium holen"
+  },
+  "reverse_trial_ended_title": {
+    "description": "Title for the reverse trial ended dialog",
+    "message": "Ihr kostenloser Test ist beendet"
+  },
+  "reverse_trial_ended_body": {
+    "description": "Body text for the reverse trial ended dialog",
+    "message": "Abonnieren Sie AdBlock Premium, um Videowerbung weiterhin zu blockieren und alle Premium-Funktionen zu nutzen."
+  },
+  "reverse_trial_learn_more": {
+    "description": "Text for the 'learn more' link that appear under the CTA button",
+    "message": "Mehr erfahren"
+  }
+}

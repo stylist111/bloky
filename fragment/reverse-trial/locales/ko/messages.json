@@ -1,0 +1,48 @@
+{
+  "reverse_trial_start_title": {
+    "description": "Title for the reverse trial start dialog",
+    "message": "AdBlock Premium이 이제 활성화되었습니다 🎉"
+  },
+  "reverse_trial_start_body_1": {
+    "description": "First paragraph of the start dialog body",
+    "message": "방금 <strong>14일</strong> 무료 AdBlock Premium을 활성화했습니다."
+  },
+  "reverse_trial_start_body_2": {
+    "description": "Second paragraph of the start dialog body",
+    "message": "차이를 느껴보세요 – Premium 필터 덕분에 동영상의 광고와 지연이 줄었습니다!"
+  },
+  "reverse_trial_start_button": {
+    "description": "CTA button text for the start dialog",
+    "message": "감사합니다!"
+  },
+  "reverse_trial_midpoint_title": {
+    "description": "Title for the reverse trial midpoint dialog",
+    "message": "체험판이 $days_left$일 후에 종료됩니다",
+    "placeholders": {
+      "days_left": {
+        "content": "$1",
+        "example": "7"
+      }
+    }
+  },
+  "reverse_trial_midpoint_body": {
+    "description": "Body text for the reverse trial midpoint dialog",
+    "message": "지금 구독하여 동영상 광고를 계속 차단하고 모든 프리미엄 기능을 중단 없이 즐기세요."
+  },
+  "reverse_trial_premium_button": {
+    "description": "CTA button text for the midpoint and ended dialogs",
+    "message": "AdBlock Premium 구매"
+  },
+  "reverse_trial_ended_title": {
+    "description": "Title for the reverse trial ended dialog",
+    "message": "무료 체험판이 종료되었습니다"
+  },
+  "reverse_trial_ended_body": {
+    "description": "Body text for the reverse trial ended dialog",
+    "message": "AdBlock Premium을 구독하여 동영상 광고를 계속 차단하고 모든 프리미엄 기능을 즐기세요."
+  },
+  "reverse_trial_learn_more": {
+    "description": "Text for the 'learn more' link that appear under the CTA button",
+    "message": "자세히 알아보기"
+  }
+}

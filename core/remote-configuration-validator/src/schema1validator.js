@@ -68,6 +68,16 @@ const validOperatorsByFact = {
     "greaterThan",
     "greaterThanInclusive",
   ],
+  reverseTrialStartDate: [
+    "equal",
+    "notEqual",
+    "lessThan",
+    "lessThanInclusive",
+    "greaterThan",
+    "greaterThanInclusive",
+    "withinLast",
+    "olderThan",
+  ],
   marketingConsent: ["equal", "notEqual"],
 };
 

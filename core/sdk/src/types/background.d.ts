@@ -504,6 +504,10 @@ export interface Facts {
    * Whether the user has consented to marketing emails.
    */
   marketingConsent?: boolean;
+  /**
+   * The timestamp where the user started the reverse trial for zero delay snippets.
+   */
+  reverseTrialStartDate?: number;
 }
 
 /**
@@ -1175,6 +1179,14 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * @returns {Promise} Promise that resolves when the setting is set.
      */
     export function setConsoleLogLevel(level: string, module: string): Promise<any>;
+
+    /**
+     * Returns the rotating client ID used for privacy-preserving telemetry.
+     * The ID rotates every 7 days by default.
+     * @returns {Promise<string>} Promise that resolves with the rotating
+     * client ID.
+     */
+    export function getRotatingClientId(): Promise<string>;
 
     /**
      * Represents a server logger. This is used to send data to a our telemetry

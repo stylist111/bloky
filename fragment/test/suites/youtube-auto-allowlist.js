@@ -22,11 +22,6 @@ import { getOptionsHandle, ytAllowlistUrl } from "@eyeo/test-utils/extension";
 
 export default () => {
   it("auto-allowlists YouTube", async function () {
-    // Test currently skipped on Edge due to DNR limitations - will be fixed later
-    if (browserDetails.browserName === "edge") {
-      this.skip();
-    }
-
     const eventName = "yt-site.ad-wall-detected";
 
     await driver.wait(
@@ -47,18 +42,16 @@ export default () => {
 
     await driver.switchTo().window(ytHandle);
     await driver.executeScript(() => {
-      const el = document.createElement("ytd-enforcement-message-view-model");
-      document.body.appendChild(el);
+      function appendElement() {
+        const el = document.createElement("ytd-enforcement-message-view-model");
+        document.body.appendChild(el);
+      }
+      if (document.body) {
+        appendElement();
+      } else {
+        document.addEventListener("DOMContentLoaded", appendElement);
+      }
     });
-
-    await driver.wait(
-      async () =>
-        await driver.executeScript(() =>
-          Boolean(document.querySelector("ytd-enforcement-message-view-model")),
-        ),
-      2000,
-      "Ad wall element not detected in page",
-    );
 
     await driver.switchTo().window(getOptionsHandle());
 
@@ -103,5 +96,9 @@ export default () => {
         }),
       ]),
     );
+
+    await driver.switchTo().window(ytHandle);
+    await driver.close();
+    await driver.switchTo().window(getOptionsHandle());
   });
 };

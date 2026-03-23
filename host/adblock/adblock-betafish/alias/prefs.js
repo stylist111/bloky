@@ -504,6 +504,20 @@ defaults.installDate = 0;
 defaults.cookie_banner_experiment_run = false;
 
 /**
+ * The last shown reverse trial touch point number (0 = none, 1 = start, 2 = midpoint, 3 = ended)
+ *
+ * @type {number}
+ */
+defaults.reverse_trial_step = 0;
+
+/**
+ * The trial start date (epoch ms), set on the first YouTube visit when the reverse trial is active.
+ *
+ * @type {number}
+ */
+defaults.reverse_trial_start_date = 0;
+
+/**
  * @namespace
  * @static
  */

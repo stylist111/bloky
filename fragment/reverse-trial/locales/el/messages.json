@@ -1,0 +1,48 @@
+{
+  "reverse_trial_start_title": {
+    "description": "Title for the reverse trial start dialog",
+    "message": "Το AdBlock Premium είναι τώρα ενεργό 🎉"
+  },
+  "reverse_trial_start_body_1": {
+    "description": "First paragraph of the start dialog body",
+    "message": "Μόλις ενεργοποιήσαμε για εσάς <strong>14 ημέρες</strong> δωρεάν AdBlock Premium."
+  },
+  "reverse_trial_start_body_2": {
+    "description": "Second paragraph of the start dialog body",
+    "message": "Νιώστε τη διαφορά – τα βίντεο έχουν τώρα λιγότερες διαφημίσεις και καθυστερήσεις χάρη στα Premium φίλτρα μας!"
+  },
+  "reverse_trial_start_button": {
+    "description": "CTA button text for the start dialog",
+    "message": "Ευχαριστώ!"
+  },
+  "reverse_trial_midpoint_title": {
+    "description": "Title for the reverse trial midpoint dialog",
+    "message": "Η δοκιμαστική περίοδος λήγει σε $days_left$ ημέρα/ες",
+    "placeholders": {
+      "days_left": {
+        "content": "$1",
+        "example": "7"
+      }
+    }
+  },
+  "reverse_trial_midpoint_body": {
+    "description": "Body text for the reverse trial midpoint dialog",
+    "message": "Εγγραφείτε τώρα για να συνεχίσετε να αποκλείετε διαφημίσεις βίντεο και να απολαμβάνετε όλες τις premium λειτουργίες χωρίς διακοπές."
+  },
+  "reverse_trial_premium_button": {
+    "description": "CTA button text for the midpoint and ended dialogs",
+    "message": "Αποκτήστε AdBlock Premium"
+  },
+  "reverse_trial_ended_title": {
+    "description": "Title for the reverse trial ended dialog",
+    "message": "Η δωρεάν δοκιμαστική σας περίοδος έληξε"
+  },
+  "reverse_trial_ended_body": {
+    "description": "Body text for the reverse trial ended dialog",
+    "message": "Εγγραφείτε στο AdBlock Premium για να συνεχίσετε να αποκλείετε διαφημίσεις βίντεο και να απολαμβάνετε όλες τις premium λειτουργίες."
+  },
+  "reverse_trial_learn_more": {
+    "description": "Text for the 'learn more' link that appear under the CTA button",
+    "message": "Μάθετε περισσότερα"
+  }
+}

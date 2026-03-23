@@ -24,6 +24,7 @@ import { getPerformanceTimings } from "@eyeo/webext-ad-filtering-solution/all/pr
 import * as info from "info";
 import { start as startConflictDetection } from "@eyeo-fragments/conflict-detection/background";
 import { start as startYtWallDetection } from "@eyeo-fragments/yt-wall-detection/background";
+import { start as startReverseTrial } from "@eyeo-fragments/reverse-trial/background";
 import { start as startPublicAPI } from "@eyeo-fragments/public-api";
 import { start as startFacts } from "../src/remote-config/background";
 import { Prefs } from "./alias/prefs";
@@ -732,6 +733,18 @@ initialize
         }
       },
       isPremiumActive: License.isActiveLicense,
+    });
+    startReverseTrial({
+      addTrustedMessageTypes: ext.addTrustedMessageTypes,
+      prefs: Prefs,
+      port,
+      logoUrl: browser.runtime.getURL("icons/adblock-20.svg"),
+      premiumUrl: "https://getadblock.com/reverse-trial/",
+      hasPremium: License.isActiveLicense,
+      async isOptedOut() {
+        return Prefs.get("data_collection_opt_out") === true;
+      },
+      addonVersion: info.addonVersion,
     });
     startFacts();
     startPublicAPI({

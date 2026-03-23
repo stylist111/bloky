@@ -1169,5 +1169,53 @@ export default {
     test_event_no_data: {
       description: "TEST: A logging test event that has no associated data"
     }
+  },
+  reverse_trial: {
+    dialog_shown: {
+      description: "The reverse trial dialog was shown to the user",
+      data: {
+        description: "Details about the dialog shown",
+        type: "object",
+        properties: {
+          touchPointStep: {
+            description: "The touch point step number of the dialog shown",
+            type: "number"
+          },
+          installDate: {
+            description: "The timestamp when the extension was installed",
+            type: "number"
+          },
+          reverseTrialStartDate: {
+            description: "The timestamp when the reverse trial started",
+            type: "number"
+          }
+        }
+      }
+    },
+    dialog_action: {
+      description: "The user interacted with the reverse trial dialog",
+      data: {
+        description: "Details about the interaction",
+        type: "object",
+        properties: {
+          action: {
+            description: "The action taken: 'close' for the x button, 'cta' for the call-to-action button",
+            type: "string"
+          },
+          touchPointStep: {
+            description: "The touch point step number of the dialog that was interacted with",
+            type: "number"
+          },
+          installDate: {
+            description: "The timestamp when the extension was installed",
+            type: "number"
+          },
+          reverseTrialStartDate: {
+            description: "The timestamp when the reverse trial started",
+            type: "number"
+          }
+        }
+      }
+    }
   }
 };

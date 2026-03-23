@@ -17,7 +17,9 @@
  */
 
 import youtubeAutoAllowlist from "./youtube-auto-allowlist.js";
+import reverseTrial from "./reverse-trial.js";
 
 export default () => {
   describe("YouTube auto-allowlist", youtubeAutoAllowlist);
+  describe("Reverse trial", reverseTrial);
 };

@@ -32,6 +32,7 @@ export async function getFacts(): Promise<Facts> {
     hasPremium: await License.isActiveLicense(),
     installDate: Prefs.get("installDate"),
     blockedCount: Prefs.get("blocked_total"),
+    reverseTrialStartDate: Prefs.get("reverse_trial_start_date"),
   };
 }
 
@@ -42,4 +43,5 @@ export async function getFacts(): Promise<Facts> {
 export function start(): void {
   License.licenseNotifier.on("license.status.changed", ewe.remoteConfig.updateFacts);
   Prefs.on("installDate", ewe.remoteConfig.updateFacts);
+  Prefs.on("reverse_trial_start_date", ewe.remoteConfig.updateFacts);
 }
