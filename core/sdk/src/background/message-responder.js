@@ -35,6 +35,7 @@ import {onHistoryStateUpdatedSafari} from "./safari-polyfill.js";
 import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
 import {default as experiments} from "./experiments.js";
+import {default as account} from "./account/index.js";
 
 async function handleMessage(message, sender) {
   trace({
@@ -102,8 +103,11 @@ async function handleMessage(message, sender) {
     case "ewe:get-filters-config": {
       const frame = getFrameInfo(sender.tab.id, sender.frameId);
       const hostname = frame.hostname;
-      const experimentHosts =
-            await experiments.getFlag("zero-delay-snippet-domains");
+      const [experimentHosts, isPremium, zeroDelayTrial] = await Promise.all([
+        experiments.getFlag("zero-delay-snippet-domains"),
+        account.hasPremium(),
+        experiments.getFlag("zero-delay-reverse-trial")
+      ]);
       const request = {
         tabId: sender.tab.id,
         frameId: sender.frameId,
@@ -116,7 +120,8 @@ async function handleMessage(message, sender) {
         // If true, content scripts will apply the filters from the local cache
         // first, and if there are changes will update the cache and refresh
         // the page.
-        useCache: Boolean(experimentHosts && experimentHosts.includes(hostname))
+        useCache: isPremium || zeroDelayTrial ||
+          Boolean(experimentHosts && experimentHosts.includes(hostname))
       };
 
       // If the document is allowlisted, no filters should be applied.

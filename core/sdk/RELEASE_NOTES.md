@@ -13,6 +13,7 @@
   (e.g. ad walls) through the existing logging pipeline. No
   user-facing impact until a snippet calls the bridge and an
   experiment is enabled.
+- Enabled zero delay snippets for Premium and trial users.
 
 ## Fixes
 
