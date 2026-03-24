@@ -2,6 +2,7 @@
 
 - Excluded all parameters from install URL and uninstall URL when the user is opted out of
   data collection.
+- Disabled new tab campaigns for users in reverse trial experiment (no-issue)
 
 # 4.36.1 - 2026-03-17
 

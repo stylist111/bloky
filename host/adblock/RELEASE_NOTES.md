@@ -4,6 +4,7 @@
   data collection.
 - Add a reverse trial campaign to give some users a free preview of our improved
   premium snippet offering.
+- Disabled new tab campaigns for users in reverse trial experiment (no-issue)
 
 # 6.37.1 - 2026-03-17
 

@@ -464,6 +464,18 @@ export async function handleCommand(ipmId: string): Promise<void> {
     return;
   }
 
+  // Don't open new tabs for users in the zero delay reverse trial experiment
+  const [reverseTrialFlag, zeroDelayFlag] = await Promise.all([
+    ewe.experiments.getFlag("show-reverse-trial-opd"),
+    ewe.experiments.getFlag("zero-delay-reverse-trial")
+  ]);
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+  if (reverseTrialFlag || zeroDelayFlag) {
+    logger.debug("[new-tab]: User is in zero delay reverse trial experiment");
+    dismissCommand(ipmId);
+    return;
+  }
+
   const behavior = getBehavior(ipmId);
 
   // Don't open new tabs if something's wrong with the data we got
