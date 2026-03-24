@@ -121,7 +121,14 @@ async function handleMessage(message, sender) {
         // first, and if there are changes will update the cache and refresh
         // the page.
         useCache: isPremium || zeroDelayTrial ||
-          Boolean(experimentHosts && experimentHosts.includes(hostname))
+          Boolean(
+            experimentHosts && experimentHosts.includes(hostname)
+          ),
+        // If true, isolated snippets will fire
+        // snippet_detection_event telemetry
+        detectionEventEnabled: Boolean(
+          await experiments.getFlag("snippet-detection-event")
+        )
       };
 
       // If the document is allowlisted, no filters should be applied.

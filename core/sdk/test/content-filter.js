@@ -1342,4 +1342,59 @@ describe("Snippets", function() {
       await checkElementsHidden(tabId, "#json-prune-object-tampering");
     });
   });
+
+  describe("filtersConfig experiment flags", function() {
+    it("includes detectionEventEnabled when flag is set",
+      async function() {
+        await EWE.experiments.overrideFlag(
+          "zero-delay-snippet-domains", ["localhost"]
+        );
+        await EWE.experiments.overrideFlag(
+          "snippet-detection-event", true
+        );
+        await addFilter(
+          `${TEST_PAGES_DOMAIN}#$#json-prune` +
+          " 'data-expectedresult jsonprune aria-label'"
+        );
+
+        const tabId = await new Page(
+          "snippet-json-prune.html", forceBg
+        ).loaded;
+        await sleep(100);
+
+        const config = await executeScript(tabId, key => {
+          const raw = sessionStorage.getItem(key);
+          return raw ? JSON.parse(raw) : null;
+        }, [CACHED_FILTERS_CONFIG_KEY]);
+
+        expect(config).not.toBeNull();
+        expect(config.detectionEventEnabled).toBe(true);
+      }
+    );
+
+    it("detectionEventEnabled is false when flag is not set",
+      async function() {
+        await EWE.experiments.overrideFlag(
+          "zero-delay-snippet-domains", ["localhost"]
+        );
+        await addFilter(
+          `${TEST_PAGES_DOMAIN}#$#json-prune` +
+          " 'data-expectedresult jsonprune aria-label'"
+        );
+
+        const tabId = await new Page(
+          "snippet-json-prune.html", forceBg
+        ).loaded;
+        await sleep(100);
+
+        const config = await executeScript(tabId, key => {
+          const raw = sessionStorage.getItem(key);
+          return raw ? JSON.parse(raw) : null;
+        }, [CACHED_FILTERS_CONFIG_KEY]);
+
+        expect(config).not.toBeNull();
+        expect(config.detectionEventEnabled).toBe(false);
+      }
+    );
+  });
 });

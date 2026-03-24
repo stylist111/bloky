@@ -32,7 +32,10 @@ import {claimCommsChannel} from "../../shared/helpers.js";
 import {default as sentry} from "./sentry.js";
 import {default as telemetry} from "../../../front/telemetry.js";
 import experiments from "../../../front/experiments.js";
-import {createSnippetDetectionEventSender} from "./snippet-events.js";
+import {
+  createSnippetDetectionEventSender,
+  gateSnippetDetectionEvent
+} from "./snippet-events.js";
 
 const commsChannelName = claimCommsChannel(uuidv4());
 let mainWorldReadyPromise;
@@ -96,7 +99,7 @@ function executeSnippets(filtersConfig) {
     return;
   }
 
-  const {debug} = filtersConfig;
+  const {debug, detectionEventEnabled} = filtersConfig;
   const filters = filtersConfig.filters.map(parseScript);
 
   let eventDetails = {
@@ -161,7 +164,9 @@ function executeSnippets(filtersConfig) {
     // API access not available in the main world. See snippet-events.js.
     const env = {
       debugCSSProperties: debug ? DEBUG_CSS_PROPERTIES : null,
-      sendDetectionEvent
+      sendDetectionEvent: gateSnippetDetectionEvent(
+        detectionEventEnabled, sendDetectionEvent
+      )
     };
     snippetsCallback(env, ...isolatedSnippets);
   }

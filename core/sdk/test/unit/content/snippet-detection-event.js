@@ -17,7 +17,10 @@
 
 import sinon from "sinon/pkg/sinon.js";
 import expect from "expect";
-import {createSnippetDetectionEventSender} from "../../../src/content/isolated/core/snippet-events.js";
+import {
+  createSnippetDetectionEventSender,
+  gateSnippetDetectionEvent
+} from "../../../src/content/isolated/core/snippet-events.js";
 import {AbstractLogger} from "../../../src/all/telemetry.js";
 import {default as events} from "../../../events.js";
 
@@ -305,5 +308,49 @@ describe("snippet_detection_event schema validation", function() {
 
     expect(spy.called).toBe(false);
     expect(console.error.calledOnce).toBe(true);
+  });
+});
+
+describe("gateSnippetDetectionEvent", function() {
+  let fakeSender;
+
+  beforeEach(function() {
+    fakeSender = sinon.stub();
+  });
+
+  it("returns the real sender when enabled is true", function() {
+    const gated = gateSnippetDetectionEvent(true, fakeSender);
+    expect(gated).toBe(fakeSender);
+  });
+
+  it("returns a no-op when enabled is false", function() {
+    const gated = gateSnippetDetectionEvent(false, fakeSender);
+    expect(gated).not.toBe(fakeSender);
+
+    gated("wall_detected", "example.com");
+    expect(fakeSender.called).toBe(false);
+  });
+
+  it("returns a no-op when enabled is undefined", function() {
+    const gated = gateSnippetDetectionEvent(void 0, fakeSender);
+    expect(gated).not.toBe(fakeSender);
+
+    gated("wall_detected", "example.com");
+    expect(fakeSender.called).toBe(false);
+  });
+
+  it("returns a no-op when enabled is null", function() {
+    const gated = gateSnippetDetectionEvent(null, fakeSender);
+    expect(gated).not.toBe(fakeSender);
+
+    gated("wall_detected", "example.com");
+    expect(fakeSender.called).toBe(false);
+  });
+
+  it("no-op is callable without error", function() {
+    const gated = gateSnippetDetectionEvent(false, fakeSender);
+    expect(() => {
+      gated("wall_detected", "example.com", ".wall");
+    }).not.toThrow();
   });
 });

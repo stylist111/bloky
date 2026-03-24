@@ -65,3 +65,10 @@ export function createSnippetDetectionEventSender(
     }
   };
 }
+
+const NOOP = () => {};
+
+// Gates sendDetectionEvent behind an experiment flag
+export function gateSnippetDetectionEvent(enabled, sender) {
+  return enabled ? sender : NOOP;
+}
