@@ -19,6 +19,7 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { isDataCorrupted } from "../../../adblockpluschrome/lib/subscriptionInit";
+import { getUUID } from "~/id/shared";
 import { info } from "~/info/background";
 import { getPremiumState } from "~/premium/background";
 
@@ -110,7 +111,11 @@ export async function setUninstallURL(): Promise<void> {
   const isOptedOut = Prefs.get("data_collection_opt_out");
 
   if (isOptedOut) {
-    void browser.runtime.setUninstallURL(Prefs.getDocLink("uninstalled"));
+    // Random UUID for dedup only — can't be linked to telemetry data
+    const rcid = encodeURIComponent(getUUID());
+    void browser.runtime.setUninstallURL(
+      Prefs.getDocLink("uninstalled") + "&rcid=" + rcid
+    );
     return;
   }
 
@@ -148,7 +153,10 @@ export async function setUninstallURL(): Promise<void> {
   params.premiumStatus = premiumState.isActive ? 1 : 0;
   params.webAllowlistingFilterCount = await getWebAllowlistingFilterCount();
 
+  const rcid = await ewe.telemetry.getRotatingClientId();
+
   const search = [];
+  search.push("rcid=" + encodeURIComponent(rcid));
   for (const [abbreviation, key] of abbreviations) {
     const value = params[key];
     if (
@@ -174,6 +182,7 @@ export function start(): void {
   ewe.remoteConfig.onChanged.addListener(setUninstallURL);
   ewe.experiments.onChanged.addListener(setUninstallURL);
   ewe.cohorts.onChanged.addListener(setUninstallURL);
+  ewe.telemetry.onRotatingClientIdChanged.addListener(setUninstallURL);
 
   ewe.notifications.on("downloaded", setUninstallURL);
 

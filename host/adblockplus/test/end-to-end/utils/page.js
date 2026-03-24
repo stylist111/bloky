@@ -60,8 +60,14 @@ export async function checkInstallUninstallUrl({ url, appVersion, uninstall }) {
     const params = new URLSearchParams(new URL(url).search);
     const actualParams = Object.fromEntries(params);
     if (uninstall) {
-      // Uninstall URL only contains the doc link params
-      expect(actualParams).toEqual({ link: "uninstalled", lang: "en-US" });
+      // Uninstall URL contains the doc link params plus a random rcid for dedup
+      expect(actualParams).toEqual({
+        link: "uninstalled",
+        lang: "en-US",
+        rcid: expect.stringMatching(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+        )
+      });
     } else {
       // Install URL has null values for non-language params when opted out
       expect(actualParams).toEqual({
@@ -88,6 +94,9 @@ export async function checkInstallUninstallUrl({ url, appVersion, uninstall }) {
       wafc: "0", // always 0 as we don't do that anymore
       ndc: "0",
       ps: expect.stringMatching(/(0|1)/), // premium subscription
+      rcid: expect.stringMatching(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+      ), // rotating client ID (v4 UUID)
       er: expect.stringMatching(/^([a-zA-Z0-9+/,_=]{8}|null)$/), // experiments revision ID. Example: ietbCO3H
       ev: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // experiments variants. Example: AQ%3D%3
       ca: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // cohort assignments. Example: AQ%3D%3

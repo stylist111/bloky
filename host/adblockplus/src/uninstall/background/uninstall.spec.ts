@@ -26,8 +26,11 @@ import {
 const mockEventDispatcher = {
   addListener: jest.fn()
 };
+const mockRotatingClientId = "mock-rotating-client-id";
+const mockUUID = "mock-random-uuid";
 const mockParams = new Map<string, string>([
   ["locale", "en"],
+  ["rcid", mockRotatingClientId],
   ["an", "adblockplusfirefox"],
   ["ap", "firefox"],
   ["apv", "100.0"],
@@ -44,7 +47,7 @@ const mockParams = new Map<string, string>([
   ["s", "0"],
   ["wafc", "0"]
 ]);
-const parametersIncludedIfOptedOut = ["locale"];
+const parametersIncludedIfOptedOut = ["locale", "rcid"];
 
 const mockUrl = "https://www.example.com/uninstall?locale=en";
 
@@ -59,7 +62,12 @@ function createExpectedUninstallUrl(
   for (const [name, defaultValue] of mockParams) {
     const include = !isOptedOut || parametersIncludedIfOptedOut.includes(name);
     if (include) {
-      params.set(name, overrides[name] ?? defaultValue);
+      let value = overrides[name] ?? defaultValue;
+      // When opted out, rcid is a random UUID instead of the rotating client ID
+      if (isOptedOut && name === "rcid") {
+        value = mockUUID;
+      }
+      params.set(name, value);
     }
   }
 
@@ -115,7 +123,16 @@ describe("uninstall", () => {
           onAdded: mockEventDispatcher,
           onChanged: mockEventDispatcher,
           onRemoved: mockEventDispatcher
+        },
+        telemetry: {
+          getRotatingClientId: async () => mockRotatingClientId,
+          onRotatingClientIdChanged: mockEventDispatcher
         }
+      };
+    });
+    jest.mock("../../id/shared", () => {
+      return {
+        getUUID: () => mockUUID
       };
     });
     jest.mock("../../../adblockpluschrome/lib/prefs.js", () => {

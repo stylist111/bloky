@@ -1189,6 +1189,13 @@ declare module "@eyeo/webext-ad-filtering-solution" {
     export function getRotatingClientId(): Promise<string>;
 
     /**
+     * Emitted when the rotating client ID has changed.
+     */
+    const onRotatingClientIdChanged: EventDispatcher<
+        (rotatingClientId: string) => unknown
+    >;
+
+    /**
      * Represents a server logger. This is used to send data to a our telemetry
      * server. The exact URL will be configured by the telemetry module in the
      * background script. Console logging is also provided for convenience.
