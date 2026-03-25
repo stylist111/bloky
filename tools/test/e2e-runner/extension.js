@@ -96,8 +96,10 @@ export async function getExtensionInfo() {
         manifestVersion === 3
           ? await browser.action.getPopup({})
           : await browser.browserAction.getPopup({});
+      // eslint-disable-next-line n/no-callback-literal
       callback({ name: shortName, version, origin, manifestVersion, popupUrl });
     } else {
+      // eslint-disable-next-line n/no-callback-literal
       callback({});
     }
   });

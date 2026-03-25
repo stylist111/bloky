@@ -1,7 +1,7 @@
 export function injectBlockthroughTag() {
   const urlParams = new URLSearchParams(window.location.search);
 
-  let detail = {
+  const detail = {
     ab: urlParams.get("bt-aapv-ab") !== "false",
     acceptable: urlParams.get("bt-aapv-acceptable") !== "false",
   };
@@ -13,14 +13,14 @@ export function injectBlockthroughTag() {
 
     const repeat = Number(urlParams.get("bt-aapv-repeat") || "1");
     for (let i = 0; i < repeat; i++) {
-      let event = new CustomEvent("BTAADetection", {
+      const event = new CustomEvent("BTAADetection", {
         detail,
       });
       window.dispatchEvent(event);
     }
   };
 
-  let delay = urlParams.get("bt-aapv-delay");
+  const delay = urlParams.get("bt-aapv-delay");
   if (delay) {
     setTimeout(dispatchEvent, parseInt(delay, 10));
   } else {

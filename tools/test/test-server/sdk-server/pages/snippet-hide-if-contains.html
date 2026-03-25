@@ -12,12 +12,12 @@
   "use strict";
 
   setTimeout(() => {
-    let dynamic = document.createElement("div");
+    const dynamic = document.createElement("div");
     dynamic.id = "hic-dynamic-id";
     dynamic.innerHTML = "<div>hic-basic-dynamic</div>";
     dynamic.setAttribute("data-expectedresult", "fail");
 
-    let search = document.createElement("div");
+    const search = document.createElement("div");
     search.id = Math.random().toString(36).substring(2);
     search.className = "hic-target";
     search.setAttribute("data-expectedresult", "fail");

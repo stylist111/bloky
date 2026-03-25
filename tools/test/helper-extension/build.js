@@ -22,8 +22,9 @@ import { fileURLToPath } from "url";
 const srcPath = path.dirname(fileURLToPath(import.meta.url));
 
 export async function buildHelperExtension(manifestVersion, destPath) {
-  if (manifestVersion !== "2" && manifestVersion !== "3")
+  if (manifestVersion !== "2" && manifestVersion !== "3") {
     throw new Error('manifestVersion must be "2" or "3". ' + `Current: "${manifestVersion}"`);
+  }
 
   await fs.promises.rm(destPath, { recursive: true, force: true });
   await fs.promises.mkdir(destPath, { recursive: true });

@@ -29,7 +29,7 @@
   <body>
     <div id="json-prune-object-tampering">JSON Prune Tampering</div>
     <script>
-      let testProperties = `{
+      const testProperties = `{
     "jsonprune": "true",
     "data-expectedresult": "fail",
     "aria-label": "json-prune-fail",
@@ -49,7 +49,7 @@
       const testObject = JSON.parse(testProperties);
 
       // Check for "target-data" in object
-      let noTargetDataInObject = Object.values(testObject.object).every(
+      const noTargetDataInObject = Object.values(testObject.object).every(
         (innerObj) => !Object.keys(innerObj).includes("target-data"),
       );
 

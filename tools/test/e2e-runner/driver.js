@@ -87,7 +87,9 @@ export async function findUrl(
   let handle;
 
   // When checking that the URL does not exist, we want to give it enough time in case it does open
-  if (!exists) await driver.sleep(timeout);
+  if (!exists) {
+    await driver.sleep(timeout);
+  }
 
   await wait(
     async () => {

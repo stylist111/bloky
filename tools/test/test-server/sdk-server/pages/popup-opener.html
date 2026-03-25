@@ -21,7 +21,7 @@
   });
 
   document.getElementById("script-deferred").addEventListener("click", () => {
-    let popup = window.open("about:blank");
+    const popup = window.open("about:blank");
     setTimeout(() => {
       popup.location = new URL("popup.html", document.baseURI);
     }, 200);

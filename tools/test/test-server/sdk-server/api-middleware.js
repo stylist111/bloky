@@ -23,7 +23,7 @@ import onHeaders from "on-headers";
 import path from "path";
 import url from "url";
 
-let dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 export function bypassCache(req, res, next) {
   // don't cache the images
@@ -37,11 +37,11 @@ export function bypassCache(req, res, next) {
     });
   }
 
-  let userAgent = req.get("User-Agent");
+  const userAgent = req.get("User-Agent");
   // We also want to avoid caching of the webbundle for the purpose of testing
   if (
-    (userAgent && userAgent.includes("Gecko/") && req.path == "/csp.html") ||
-    req.path == "/webext-sample.wbn"
+    (userAgent && userAgent.includes("Gecko/") && req.path === "/csp.html") ||
+    req.path === "/webext-sample.wbn"
   ) {
     onHeaders(res, () => {
       res.removeHeader("Etag");
@@ -56,13 +56,13 @@ export function bypassCache(req, res, next) {
 // parameter.
 export async function sitekeyHeader(req, res, next) {
   if (req.query.sitekey) {
-    let pem = await fs.promises.readFile(path.join(dirname, "sitekey.pem"));
-    let privateKey = crypto.createPrivateKey(pem);
-    let publicKey = crypto.createPublicKey(privateKey);
-    let spki = publicKey.export({ type: "spki", format: "der" });
-    let data = `${req.url}\0${req.get("Host")}\0${req.get("User-Agent")}`;
-    let signature = crypto.sign("rsa-sha1", Buffer.from(data), privateKey);
-    let value = `${spki.toString("base64")}_${signature.toString("base64")}`;
+    const pem = await fs.promises.readFile(path.join(dirname, "sitekey.pem"));
+    const privateKey = crypto.createPrivateKey(pem);
+    const publicKey = crypto.createPublicKey(privateKey);
+    const spki = publicKey.export({ type: "spki", format: "der" });
+    const data = `${req.url}\0${req.get("Host")}\0${req.get("User-Agent")}`;
+    const signature = crypto.sign("rsa-sha1", Buffer.from(data), privateKey);
+    const value = `${spki.toString("base64")}_${signature.toString("base64")}`;
     res.header("X-Adblock-Key", value);
   }
 
@@ -73,13 +73,13 @@ export async function sitekeyHeader(req, res, next) {
 // pass in ?invalid-sitekey=1 as a query parameter.
 export async function invalidSitekeyHeader(req, res, next) {
   if (req.query["invalid-sitekey"]) {
-    let pem = await fs.promises.readFile(path.join(dirname, "sitekey.pem"));
-    let privateKey = crypto.createPrivateKey(pem);
-    let publicKey = crypto.createPublicKey(privateKey);
-    let spki = publicKey.export({ type: "spki", format: "der" });
-    let data = "this data to sign isn't the right data to sign";
-    let signature = crypto.sign("rsa-sha1", Buffer.from(data), privateKey);
-    let value = `${spki.toString("base64")}_${signature.toString("base64")}`;
+    const pem = await fs.promises.readFile(path.join(dirname, "sitekey.pem"));
+    const privateKey = crypto.createPrivateKey(pem);
+    const publicKey = crypto.createPublicKey(privateKey);
+    const spki = publicKey.export({ type: "spki", format: "der" });
+    const data = "this data to sign isn't the right data to sign";
+    const signature = crypto.sign("rsa-sha1", Buffer.from(data), privateKey);
+    const value = `${spki.toString("base64")}_${signature.toString("base64")}`;
     res.header("X-Adblock-Key", value);
   }
 
@@ -99,7 +99,7 @@ export async function delay(req, res, next) {
 }
 
 export function testHeader(req, res, next) {
-  let header = req.query["header-name"];
+  const header = req.query["header-name"];
 
   if (header) {
     res.header(header, req.query["header-value"] || "");

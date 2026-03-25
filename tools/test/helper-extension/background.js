@@ -25,10 +25,10 @@ setTimeout(() => {
   chrome.management.getAll((extensions) => {
     for (const extension of extensions) {
       if (
-        extension.type == "extension" &&
-        extension.installType == "development" &&
-        extension.id != chrome.runtime.id &&
-        extension.name != "Chrome Automation Extension"
+        extension.type === "extension" &&
+        extension.installType === "development" &&
+        extension.id !== chrome.runtime.id &&
+        extension.name !== "Chrome Automation Extension"
       ) {
         chrome.tabs.create({ url: extension.optionsUrl });
       }

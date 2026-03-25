@@ -26,7 +26,7 @@ import requestLogger from "./request-logger.js";
 import { delay, apiErrorHandler } from "./api-middleware.js";
 import { TEST_ADMIN_PAGES_PORT } from "./test-server-urls.js";
 
-let dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 export const emptyDiffResponse = JSON.stringify({
   filters: {
@@ -131,7 +131,7 @@ const BUILD_TIME_ROUTES = [
   },
 ];
 
-let app = express();
+const app = express();
 
 app.use(express.json({ limit: "10MB" }));
 app.use(delay);
@@ -147,11 +147,11 @@ app.get("/requestLogs", (req, res) => {
   res.send(JSON.stringify(requestLogger.getRequests(), null, 2));
 });
 
-let responses = new Map();
+const responses = new Map();
 
 app.post("/clearUrlResponse", (req, res) => {
   responses.delete(req.body.url);
-  let buildTimeRoute = BUILD_TIME_ROUTES.find((r) => r.url == req.body.url);
+  const buildTimeRoute = BUILD_TIME_ROUTES.find((r) => r.url === req.body.url);
   if (buildTimeRoute) {
     createRouteHandler(buildTimeRoute);
   }
@@ -160,7 +160,7 @@ app.post("/clearUrlResponse", (req, res) => {
 });
 
 function createRouteHandler(route) {
-  let method = (route.method || "GET").toUpperCase();
+  const method = (route.method || "GET").toUpperCase();
   route.method = method;
 
   if (!["GET", "POST"].includes(method)) {
@@ -178,9 +178,9 @@ app.post("/setUrlResponse", (req, res) => {
 app.all("*", requestLogger.logRequests, (req, res, next) => {
   const isHeadRequest = req.method.toUpperCase() === "HEAD";
   const isOptionsRequest = req.method.toUpperCase() === "OPTIONS";
-  let route = responses.get(req.path);
+  const route = responses.get(req.path);
 
-  let routeMatches =
+  const routeMatches =
     route &&
     (req.method.toUpperCase() === route.method ||
       (isHeadRequest && route.method === "GET") ||
@@ -206,7 +206,7 @@ app.all("*", requestLogger.logRequests, (req, res, next) => {
 
   if (isHeadRequest || isOptionsRequest) {
     res.end();
-  } else if (typeof route.response == "function") {
+  } else if (typeof route.response === "function") {
     res.send(route.response());
   } else if (route.response) {
     res.send(route.response);
@@ -222,7 +222,7 @@ export function startSDKAdminServer(host, verbose) {
     console.log(`SDK admin commands server listening at http://${host}:${TEST_ADMIN_PAGES_PORT}`);
   });
 
-  for (let route of BUILD_TIME_ROUTES) {
+  for (const route of BUILD_TIME_ROUTES) {
     createRouteHandler(route);
   }
 }

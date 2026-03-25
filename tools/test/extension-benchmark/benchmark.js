@@ -87,7 +87,7 @@ function parseLighthouseMetrics(audits) {
       continue;
     }
 
-    if (metric == "network-requests") {
+    if (metric === "network-requests") {
       lighthouseResult[metric] = audits[metric].details?.items.length || null;
     } else {
       lighthouseResult[metric] = Math.trunc(audits[metric].numericValue);
@@ -136,7 +136,7 @@ async function getServiceWorkerMemory() {
     (t) => t.type === "service_worker" && t.url.startsWith("chrome-extension://"),
   );
 
-  if (swTargets.length == 0) {
+  if (swTargets.length === 0) {
     await client.close();
     return 0;
   }
@@ -176,7 +176,7 @@ async function getExtraMetrics(url) {
 
   if (urlLoaded) {
     // sleep to allow more content to be loaded
-    await new Promise((r) => setTimeout(r, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // tab memory
     const memory = await driver.executeScript("return window.performance.memory.usedJSHeapSize");
@@ -207,7 +207,7 @@ async function waitForBenchmarkExtension(extensionName, sleepPostInstall) {
 
   if (sleepPostInstall > 0) {
     console.log(`Sleeping ${sleepPostInstall}s after extension post install ...`);
-    await new Promise((r) => setTimeout(r, sleepPostInstall * 1000));
+    await new Promise((resolve) => setTimeout(resolve, sleepPostInstall * 1000));
   }
 }
 
@@ -243,7 +243,7 @@ export async function benchmarkRun(extensionName, urls, { browser, version, para
         audits = await runLighthouse(url);
       } catch (err) {
         console.warn(`Lighthouse coudn't run on the URL. ${err.name}: ${err.message}`);
-        if (err.name == "LighthouseError") {
+        if (err.name === "LighthouseError") {
           // When "LighthouseError: PROTOCOL_TIMEOUT" is thrown the driver session
           // may be not valid anymore. Restarting the driver as a workaround
           console.warn("Restarting the browser/driver...");

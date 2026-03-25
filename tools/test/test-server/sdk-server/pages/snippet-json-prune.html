@@ -8,7 +8,7 @@
 <script type="text/javascript">
   "use strict";
 
-  let propertiesToUse = `{
+  const propertiesToUse = `{
     "jsonprune": "true",
     "data-expectedresult": "fail",
     "aria-label": "json-prune-fail",
@@ -63,7 +63,7 @@
     callstack();
 
     // Check for json-prune
-    let noUnexpectedProperties = Object.keys(propertiesObject).every(
+    const noUnexpectedProperties = Object.keys(propertiesObject).every(
       (property) =>
         property !== "data-expectedresult" && property !== "jsonprune" && property !== "aria-label",
     );
@@ -72,7 +72,7 @@
     }
 
     // Check for "toBeDeletedIfStackNeedle"
-    let toBeDeletedIfStackNeedle = !Object.prototype.hasOwnProperty.call(
+    const toBeDeletedIfStackNeedle = !Object.prototype.hasOwnProperty.call(
       propertiesObject,
       "toBeDeletedIfStackNeedle",
     );
@@ -81,7 +81,7 @@
     }
 
     // Check for "target-data" in array
-    let noTargetDataInArray = propertiesObject.array.every(
+    const noTargetDataInArray = propertiesObject.array.every(
       (obj) => !Object.keys(obj).includes("target-data"),
     );
     if (noTargetDataInArray) {
@@ -89,7 +89,7 @@
     }
 
     // Check for "target-data" in object
-    let noTargetDataInObject = Object.values(propertiesObject.object).every(
+    const noTargetDataInObject = Object.values(propertiesObject.object).every(
       (innerObj) => !Object.keys(innerObj).includes("target-data"),
     );
     if (noTargetDataInObject) {
@@ -97,7 +97,7 @@
     }
 
     // Check for [-] array element removal
-    let arrayElementsRemoved =
+    const arrayElementsRemoved =
       propertiesObject.arrayWithRemoval.length === 2 &&
       propertiesObject.arrayWithRemoval.every(
         (obj) => !Object.keys(obj).includes("shouldRemove"),
@@ -108,7 +108,7 @@
     }
 
     // Check for {-} object property removal
-    let objectPropertiesRemoved =
+    const objectPropertiesRemoved =
       Object.keys(propertiesObject.objectWithRemoval).length === 2 &&
       Object.values(propertiesObject.objectWithRemoval).every(
         (innerObj) => !Object.keys(innerObj).includes("shouldRemove"),

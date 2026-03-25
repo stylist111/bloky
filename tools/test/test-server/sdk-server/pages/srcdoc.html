@@ -2,7 +2,7 @@
      for the frame, requiring a workaround to detect such frames. -->
 <iframe srcdoc=""></iframe>
 <script>
-  let { contentDocument } = document.querySelectorAll("iframe")[0];
+  const { contentDocument } = document.querySelectorAll("iframe")[0];
   contentDocument.write("<img src='image.png'>");
   contentDocument.close();
 </script>

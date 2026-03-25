@@ -48,7 +48,7 @@ export async function getNewDriver(browser, version, options) {
     throw err;
   }
 
-  let cap = await driver.getCapabilities();
+  const cap = await driver.getCapabilities();
   console.log(`Browser used for tests: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
 
   return driver;
@@ -59,9 +59,9 @@ export function getCurrentDriver() {
 }
 
 export async function setMinDriverTimeout(timeout) {
-  let driverTimeouts = await driver.manage().getTimeouts();
-  let paramsTimeout = parseInt(timeout, 10);
-  if (paramsTimeout == 0) {
+  const driverTimeouts = await driver.manage().getTimeouts();
+  const paramsTimeout = parseInt(timeout, 10);
+  if (paramsTimeout === 0) {
     // 0 is a mocha special case to disable timeouts
     await driver.manage().setTimeouts({
       script: null,
@@ -88,7 +88,7 @@ export async function getHandle(page, timeout = 8000) {
 
   let url;
   try {
-    let handle = await driver.wait(
+    const handle = await driver.wait(
       () =>
         switchToHandle((handleUrl) => {
           if (!handleUrl) {
@@ -96,7 +96,7 @@ export async function getHandle(page, timeout = 8000) {
           }
 
           url = new URL(handleUrl);
-          return url.pathname == page;
+          return url.pathname === page;
         }),
       timeout,
       `${page} did not open`,
@@ -109,7 +109,7 @@ export async function getHandle(page, timeout = 8000) {
 }
 
 export async function switchToHandle(testFn) {
-  for (let handle of await driver.getAllWindowHandles()) {
+  for (const handle of await driver.getAllWindowHandles()) {
     let url;
     try {
       await driver.switchTo().window(handle);

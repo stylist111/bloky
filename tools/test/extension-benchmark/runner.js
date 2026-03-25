@@ -33,7 +33,7 @@ import {
 
 export function parseArguments() {
   try {
-    let parser = yargs(process.argv.slice(2));
+    const parser = yargs(process.argv.slice(2));
     parser.version(false);
     parser.strict();
     parser.command("$0 <browser> [version]", "", (subparser) => {
@@ -57,17 +57,17 @@ export function parseArguments() {
       default: 0,
     });
 
-    let { browser, version } = parser.argv;
-    let params = {};
-    for (let param of [
+    const { browser, version } = parser.argv;
+    const params = {};
+    for (const param of [
       "help",
       "forceHeadful",
       "runsPerURL",
       "restartBrowser",
       "sleepPostInstall",
     ]) {
-      let value = parser.argv[param];
-      if (typeof value != "undefined") {
+      const value = parser.argv[param];
+      if (typeof value !== "undefined") {
         params[param] = value;
       }
     }

@@ -33,8 +33,8 @@ import {
 } from "./api-middleware.js";
 import { TEST_PAGES_PORT } from "./test-server-urls.js";
 
-let app = express();
-let dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const app = express();
+const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 app.use(bypassCache);
 app.use(sitekeyHeader);

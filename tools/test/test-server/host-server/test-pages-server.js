@@ -23,8 +23,8 @@ import express from "express";
 
 export const testPagesPort = 3005;
 
-let app = express();
-let dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const app = express();
+const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 app.use(express.static(path.join(dirname, "host-pages")));
 

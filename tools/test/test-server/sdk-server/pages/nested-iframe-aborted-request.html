@@ -5,7 +5,7 @@ depending on what was written into the iframe. See also
 https://bugs.chromium.org/p/chromium/issues/detail?id=725917 -->
 <iframe src="http://localhost:3000/iframe.html?delay=500"></iframe>
 <script>
-  let { contentDocument } = document.querySelectorAll("iframe")[0];
+  const { contentDocument } = document.querySelectorAll("iframe")[0];
   contentDocument.write("<iframe src='http://localhost:3000/image.html'></iframe>");
   contentDocument.write("<p>Body has been replaced</p>");
   contentDocument.close();

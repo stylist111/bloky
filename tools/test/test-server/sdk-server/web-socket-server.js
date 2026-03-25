@@ -18,7 +18,7 @@
 /* eslint-env node */
 /* eslint-disable no-console */
 
-import { default as WebSocket } from "ws";
+import WebSocket from "ws";
 
 const WS_PORT = 3001;
 

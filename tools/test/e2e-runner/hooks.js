@@ -106,7 +106,7 @@ async function startBrowser(extensionPath, retry = 0) {
   } catch (err) {
     if (retry < 5) {
       console.warn(`Failed to start the browser: ${err.message}, retrying (${retry})...`);
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       return startBrowser(extensionPath, retry + 1);
     }
 
@@ -246,7 +246,9 @@ export async function cleanupOpenTabs() {
         await driver.close();
       }
     } catch (err) {
-      if (err.name !== "NoSuchWindowError") throw err;
+      if (err.name !== "NoSuchWindowError") {
+        throw err;
+      }
 
       // If the tab no longer exists there's nothing to be closed
       continue;

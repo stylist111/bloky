@@ -36,7 +36,7 @@ class RequestLogger {
   }
 
   logRequests(req, res, next) {
-    let timestamp = new Date().toISOString();
+    const timestamp = new Date().toISOString();
 
     if (this.verbose) {
       console.log(timestamp, req.method, req.url);

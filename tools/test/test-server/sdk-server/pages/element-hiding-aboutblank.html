@@ -1,12 +1,12 @@
 <div id="frame-container"></div>
 <script>
-  let container = document.getElementById("frame-container");
+  const container = document.getElementById("frame-container");
 
-  let frame = document.createElement("iframe");
+  const frame = document.createElement("iframe");
   frame.id = "aboutblank-iframe";
 
   frame.addEventListener("load", () => {
-    let img = frame.contentDocument.createElement("img");
+    const img = frame.contentDocument.createElement("img");
     img.id = "aboutblank-img";
     img.src = "image.png";
     frame.contentDocument.body.appendChild(img);

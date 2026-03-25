@@ -8,7 +8,7 @@ https://bugs.chromium.org/p/chromium/issues/detail?id=725917 -->
   src="http://localhost:3000/iframe-elemhide.html?delay=500"
 ></iframe>
 <script>
-  let { contentDocument } = document.querySelectorAll("iframe")[0];
+  const { contentDocument } = document.querySelectorAll("iframe")[0];
   contentDocument.write(
     "<iframe id='elem-hide-frame' src='http://localhost:3000/element-hiding.html'>",
   );

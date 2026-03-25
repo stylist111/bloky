@@ -49,7 +49,7 @@ export async function killHostTestServer() {
   stopHostRemoteConfigServer();
 
   // Sleep to allow stop server messages to be logged
-  await new Promise((r) => setTimeout(r, 2000));
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 }
 
 export async function killSDKTestServer() {
@@ -58,5 +58,5 @@ export async function killSDKTestServer() {
   stopSDKWebSocketServer();
 
   // Sleep to allow stop server messages to be logged
-  await new Promise((r) => setTimeout(r, 2000));
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 }
