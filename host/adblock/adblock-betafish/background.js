@@ -739,7 +739,7 @@ initialize
       prefs: Prefs,
       port,
       logoUrl: browser.runtime.getURL("icons/adblock-20.svg"),
-      premiumUrl: "https://getadblock.com/reverse-trial/",
+      premiumUrl: "https://getadblock.com/video-trial/",
       hasPremium: License.isActiveLicense,
       async isOptedOut() {
         return Prefs.get("data_collection_opt_out") === true;
