@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.7.0
+
 ## General
 
 - Added `EWE.remoteConfig.updateFacts`, to trigger an immediate
