@@ -1,0 +1,28 @@
+<!doctype html>
+<head>
+  <title>Ad Wall Test Page</title>
+</head>
+
+<body>
+  <script>
+    // Elements are injected dynamically so that snippets always observe them
+    // via MutationObserver (async path) rather than the synchronous DOM check.
+    setTimeout(() => {
+      const wall = document.createElement("div");
+      wall.id = "ad-wall";
+      wall.style.cssText = "position: fixed; z-index: 999999";
+      wall.textContent = "Please disable your ad blocker to access this content.";
+      document.body.appendChild(wall);
+
+      const iframe = document.createElement("iframe");
+      iframe.src = "/ad-wall/stubs/error-report-iframe.html";
+      iframe.style.cssText =
+        "width: 100vw; height: 100vh; z-index: 2147483647; position: fixed; left: 0; top: 0";
+      document.body.appendChild(iframe);
+
+      const script = document.createElement("script");
+      script.src = "/ad-wall/stubs/ad-wall-loader.js";
+      document.head.appendChild(script);
+    }, 100);
+  </script>
+</body>

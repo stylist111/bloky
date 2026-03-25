@@ -549,6 +549,7 @@ export async function resetRemoteConfig(initOptionsFn) {
   await setRemoteConfigCohorts(initOptionsFn, []);
   await setRemoteConfigCountryCode(initOptionsFn, "");
   await setRemoteConfigIpmCommands(initOptionsFn, "test_none");
+  await setRemoteConfigExperiments(initOptionsFn, []);
   await syncRemoteConfig(initOptionsFn);
 }
 
@@ -578,6 +579,15 @@ export async function setRemoteConfigCohorts(initOptionsFn, cohorts) {
     cache: "no-cache",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(cohorts),
+  });
+}
+
+export async function setRemoteConfigExperiments(initOptionsFn, exps) {
+  await fetch("http://localhost:3008/setExperiments", {
+    method: "POST",
+    cache: "no-cache",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(exps),
   });
 }
 

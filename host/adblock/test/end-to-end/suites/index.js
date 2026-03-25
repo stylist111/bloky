@@ -36,6 +36,7 @@ import experiments from "./public-api/trusted-iframe-experiments.js";
 import getStatus from "./public-api/trusted-iframe-get-status.js";
 import eyeometry from "./data-collection/eyeometry.js";
 import youtubeAutoAllowlist from "./youtube-auto-allowlist.js";
+import snippetWallEventFlow from "./snippet-wall-event-flow.js";
 import ipmCampaigns from "./ipm/ipm-campaigns.js";
 import opdCampaigns from "./ipm/opd-campaigns.js";
 import newtabCampaigns from "./ipm/newtab-campaigns.js";
@@ -76,6 +77,8 @@ export default () => {
     });
 
     describe("YouTube auto-allowlist", youtubeAutoAllowlist);
+
+    describe("Snippet wall", snippetWallEventFlow);
 
     describe("Info Injector", infoInjector);
 

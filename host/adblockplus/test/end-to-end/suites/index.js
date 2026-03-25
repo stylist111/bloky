@@ -32,6 +32,7 @@ import freeUser from "./premium/free-user.js";
 import getPremiumWithAccount from "./premium/get-premium-with-account.js";
 import eyeometry from "./eyeometry.js";
 import youtubeAllowlist from "./youtube-auto-allowlist.js";
+import snippetWallEventFlow from "./snippet-wall-event-flow.js";
 import oneClickAllowlisting from "./public-api/one-click-allowlisting.js";
 import bypassAPI from "./public-api/bypass-api.js";
 import experiments from "./public-api/trusted-iframe-experiments.js";
@@ -72,6 +73,8 @@ export default () => {
     describe("Info Injector", infoInjector);
 
     describe("Youtube Allowlist", youtubeAllowlist);
+
+    describe("Snippet wall", snippetWallEventFlow);
 
     describe("Public API", function () {
       describe("One click allowlisting", oneClickAllowlisting);

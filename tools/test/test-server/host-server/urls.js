@@ -25,3 +25,4 @@ export const dcTestPageUrl = `http://testpages.eyeo.com:${testPagesPort}/dc-filt
 export const snippetTestPageUrl = `http://testpages.eyeo.com:${testPagesPort}/snippet-filters.html`;
 export const customFiltersTestPageUrl = `http://testpages.eyeo.com:${testPagesPort}/custom-filters.html`;
 export const localTestPageUrl = `http://localhost:${testPagesPort}/test.html`;
+export const adWallTestPageUrl = `http://localhost:${testPagesPort}/ad-wall/ad-wall-test.html`;

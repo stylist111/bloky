@@ -26,6 +26,7 @@ export const port = 3008;
 let cohorts = [];
 let countryCode = "";
 let ipmCommands = [];
+let experiments = [];
 
 const server = createServer((req, res) => {
   let data = "";
@@ -46,6 +47,9 @@ const server = createServer((req, res) => {
         } else if (req.url === "/setIpmScenario") {
           ipmCommands = ipmScenarios[data] || [];
           res.statusCode = 200;
+        } else if (req.url === "/setExperiments") {
+          experiments = JSON.parse(data);
+          res.statusCode = 200;
         } else {
           res.statusCode = 404;
           res.write("Not found");
@@ -64,7 +68,7 @@ const server = createServer((req, res) => {
           JSON.stringify({
             schemaId: "1",
             cohorts,
-            experiments: [],
+            experiments,
             ipmCommands,
           }),
         );
