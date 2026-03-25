@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.38.0 - 2026-03-25
+
 - Excluded all parameters from install URL and uninstall URL when the user is opted out of
   data collection.
 - Add a reverse trial campaign to give some users a free preview of our improved
