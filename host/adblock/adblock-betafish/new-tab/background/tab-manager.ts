@@ -554,14 +554,14 @@ async function handleCommand(ipmId: string): Promise<void> {
  * We run this check when we're done processing commands from an IPM server
  * ping.
  */
-function onCommandsProcessed(): void {
+async function onCommandsProcessed(): Promise<void> {
   // Do we have "force" commands? If so, try to open a tab right now.
   if (
     Array.from(Object.values(waitingTabs)).some(
       (candidate) => candidate.behavior.method === CreationMethod.force,
     )
   ) {
-    void openNewtab();
+    await openNewtab();
   }
 }
 

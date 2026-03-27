@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed: In-product messaging campaign tabs opened multiple times for some users.
+
 # 6.38.0 - 2026-03-25
 
 - Excluded all parameters from install URL and uninstall URL when the user is opted out of

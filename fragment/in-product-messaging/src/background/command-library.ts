@@ -38,6 +38,12 @@ import { type StartInfo } from "./start-info.types";
 import { recordEvent, recordGenericEvent } from "./event-recording";
 
 /**
+ * Promise chain ensuring that only one instance of executeIPMCommands()
+ * function is running at any given time to avoid undesirable side effects
+ */
+let executionQueue = Promise.resolve();
+
+/**
  * A list of known commands.
  */
 const knownCommandsList = Object.values(CommandName);
@@ -257,12 +263,15 @@ function retryExecuteCommands(commandName: CommandName): void {
     }
 
     unexecutableCommands.delete(command);
-    void executeIPMCommands([command], ...executionArguments);
+    queueCommandsExecution([command], ...executionArguments);
   }
 }
 
 /**
  * Executes a list of commands sent by the IPM server.
+ * This function should only be called via queueCommandsExecution() to avoid
+ * potential interference between calls that could lead to commands being
+ * executed multiple times.
  *
  * @param commands A list of commands from the IPM server
  * @param isInitialization Whether the commands are being restored when the
@@ -374,11 +383,36 @@ export async function executeIPMCommands(
     },
   );
 
-  await Promise.all(commandHandlingPromises).then(() => {
-    // let actors know that we're done process incoming commands
+  await Promise.all(commandHandlingPromises);
+
+  // Let actors know that we're done processing incoming commands
+  await Promise.all(
     knownCommandsList
       .map((name) => actorByCommandName.get(name))
-      .forEach((actor) => actor?.onCommandsProcessed());
+      .map(async (actor) => await actor?.onCommandsProcessed()),
+  );
+}
+
+/**
+ * Queue command execution to avoid commands being executed multiple times
+ */
+function queueCommandsExecution(
+  commands: unknown[],
+  isInitialization: boolean = false,
+  isConfigUpdate: boolean = false,
+): void {
+  executionQueue = executionQueue.then(async () => {
+    try {
+      await executeIPMCommands(commands, isInitialization, isConfigUpdate);
+    } catch (ex) {
+      if (!(ex instanceof Error)) {
+        console.error(ex);
+        return;
+      }
+
+      const { logger } = getStartInfo();
+      logger.reportAndLogError(ex);
+    }
   });
 }
 
@@ -514,7 +548,7 @@ async function synchronizeRemoteCommands(): Promise<void> {
   commandStorage.replaceAll(commandMap);
 
   // Execute commands
-  await executeIPMCommands(commands, true, isConfigUpdate);
+  queueCommandsExecution(commands, true, isConfigUpdate);
 }
 
 /**

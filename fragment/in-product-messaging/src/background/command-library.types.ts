@@ -166,7 +166,7 @@ export interface CommandActor {
    * Get's called by the IPM system after all commands of a ping have been
    * processed.
    */
-  onCommandsProcessed: () => void;
+  onCommandsProcessed: () => void | Promise<void>;
 }
 
 /**
