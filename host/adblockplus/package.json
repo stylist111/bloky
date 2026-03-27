@@ -97,7 +97,6 @@
     "@eyeo-fragments/cookie-banner-detection": "*",
     "@eyeo-fragments/debug-information": "*",
     "@eyeo-fragments/in-product-messaging": "*",
-    "@eyeo-fragments/ipm-legacy": "*",
     "@eyeo-fragments/public-api": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/ext-ui-components": "*",

@@ -61,7 +61,7 @@ graph LR;
   core/featureflags
   end
   subgraph fragment
-  fragment/ipm-legacy
+  fragment/in-product-messaging
   fragment/cdp
   end
   subgraph host
@@ -76,19 +76,19 @@ graph LR;
 
   core/ewe-sdk-->fragment/cdp
   core/infos-->fragment/cdp;
-  core/featureflags-->fragment/ipm-legacy;
+  core/featureflags-->fragment/in-product-messaging;
 
   core/ewe-sdk-->host/adblock;
   core/infos-->host/adblock;
   core/featureflags-->host/adblock;
-  fragment/ipm-legacy-->host/adblock;
+  fragment/in-product-messaging-->host/adblock;
   fragment/cdp-->host/adblock;
   host/adblock-->Adblock
 
   core/ewe-sdk-->host/adblockplus;
   core/infos-->host/adblockplus;
   core/featureflags-->host/adblockplus;
-  fragment/ipm-legacy-->host/adblockplus;
+  fragment/in-product-messaging-->host/adblockplus;
   fragment/cdp-->host/adblockplus;
   host/adblockplus-->AdblockPlus
 ```

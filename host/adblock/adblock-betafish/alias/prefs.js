@@ -206,51 +206,6 @@ defaults.premium_manage_page_url =
 defaults.premium_user_id = "";
 
 /**
- * Map of commands
- *
- * @type {Object}
- */
-defaults.ipm_commands = {};
-
-/**
- * TODO: Remove this after new IPM initialization is enabled and reaches the
- * majority of users. See: https://eyeo.atlassian.net/browse/IM-244
- * Whether the IPM commands have been reset.
- *
- * @type {boolean}
- */
-defaults.ipm_commands_second_reset_completed = false;
-
-/**
- * Map of command stats
- *
- * TODO: This is never written to. Remove?
- *
- * @type {Object}
- */
-defaults.ipm_commands_stats = {};
-
-/**
- * Default trusted origin for URLs used in IPMs. This is the base URL used when
- * a relative URL is passed.
- *
- * @type {string}
- */
-defaults.ipm_default_origin = "https://getadblock.com";
-
-/**
- * Trusted origins for URLs used in IPMs
- *
- * @type {string[]}
- */
-defaults.ipm_safe_origins = [
-  defaults.ipm_default_origin,
-  "https://blog.getadblock.com",
-  "https://helpcenter.getadblock.com",
-  "https://vpn.getadblock.com",
-];
-
-/**
  * Default trusted origin for URLs used in IPMs. This is the base URL used when
  * a relative URL is passed.
  *
@@ -370,41 +325,6 @@ defaults.onpage_dialog_timing_configurations = {
     maxDisplayCount: 1,
   },
 };
-
-/**
- * List of IPM user events
- *
- * @type {Object[]}
- */
-defaults.ipm_events = [];
-
-/**
- * The timestamp of the last attempt to reach the IPM ping server.
- *
- * @type {number}
- */
-defaults.ipm_last_ping = 0;
-
-/**
- * The total number of pings.
- *
- * @type {number}
- */
-defaults.ipm_ping_count = 0;
-
-/**
- * The interval in which to ping the IPM server, in ms. Defaults to 24 hours.
- *
- * @type {number}
- */
-defaults.ipm_ping_interval = 24 * 60 * 60 * 1000;
-
-/**
- * The URL of the IPM server.
- *
- * @type {string}
- */
-defaults.ipm_server_url = "https://ipm.adblock.dev/api/stats";
 
 /**
  * The URL of the Ping server.

@@ -28,7 +28,7 @@ export type {
   ParamDefinitionList
 } from "@eyeo-fragments/in-product-messaging/background";
 // re-export legacy types
-export type { LicenseStateBehavior } from "@eyeo-fragments/ipm-legacy/background";
+export type { LicenseStateBehavior } from "./legacy.types";
 
 // re-export enums
 export {

@@ -16,10 +16,10 @@
  */
 
 import * as FutureFragment from "@eyeo-fragments/in-product-messaging/background";
-import * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
 
 import { type FutureFragmentOverrides } from "./fragment-overrides.types";
 import { type CommandActor, type CommandName } from "./fragment-provider.types";
+import { LicenseState } from "./legacy.types";
 
 /**
  * Sets actor for handling command with given name
@@ -41,7 +41,7 @@ function setCommandActor(commandName: CommandName, actor: CommandActor): void {
 export function getFutureFragmentOverrides(): FutureFragmentOverrides {
   return {
     checkLanguage: async () => {},
-    defaultLicenseState: LegacyFragment.LicenseState.inactive,
+    defaultLicenseState: LicenseState.inactive,
     doesLicenseStateMatch: async () => true,
     isValidLicenseStateList: () => true,
     setCommandActor

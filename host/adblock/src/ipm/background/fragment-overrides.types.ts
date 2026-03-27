@@ -15,12 +15,8 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  type LicenseState,
-  type LicenseStateBehavior,
-} from "@eyeo-fragments/ipm-legacy/background";
-
 import { type CommandActor, type CommandName } from "./fragment-provider.types";
+import { type LicenseState, type LicenseStateBehavior } from "./legacy.types";
 
 /**
  * Abstract overrides for compatibility between legacy and future fragment

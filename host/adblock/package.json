@@ -114,7 +114,6 @@
     "@eyeo-fragments/cookie-banner-detection": "*",
     "@eyeo-fragments/debug-information": "*",
     "@eyeo-fragments/in-product-messaging": "*",
-    "@eyeo-fragments/ipm-legacy": "*",
     "@eyeo-fragments/public-api": "*",
     "@eyeo-fragments/reverse-trial": "*",
     "@eyeo-fragments/yt-wall-detection": "*",

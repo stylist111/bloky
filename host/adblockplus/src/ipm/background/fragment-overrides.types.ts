@@ -15,12 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  type LicenseState,
-  type LicenseStateBehavior
-} from "@eyeo-fragments/ipm-legacy/background";
-
 import { type CommandActor, type CommandName } from "./fragment-provider.types";
+import { type LicenseState, type LicenseStateBehavior } from "./legacy.types";
 
 /**
  * Abstract overrides for compatibility between legacy and future fragment
@@ -38,8 +34,3 @@ export interface FutureFragmentOverrides extends AbstractOverrides {
   doesLicenseStateMatch: (behavior: LicenseStateBehavior) => Promise<boolean>;
   isValidLicenseStateList: (candidate: unknown) => boolean;
 }
-
-/**
- * Overrides for legacy fragment for compatibility with future fragment
- */
-export interface LegacyFragmentOverrides extends AbstractOverrides {}
