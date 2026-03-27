@@ -266,7 +266,10 @@ function mainWorldErrorListener({detail}) {
       logger.behavior("context_tampering");
     }
 
-    sentry.reportError(error);
+    // To be re-enabled if we want to track errors coming from the main world,
+    // but for now we want to avoid consuming from the quota until we
+    // actually get value from these errors.
+    // sentry.reportError(error);
   }
 }
 

@@ -1306,7 +1306,6 @@ describe("Snippets", function() {
       // Start Sentry
       await EWE.testing.setSentrySampleRate(1); // 100% sample rate
       await EWE.sentry.start("test-snippets", "test-env", "1.0");
-      const oldEvent = await EWE.testing.getLastSentryEvent();
 
       const tabId = await new Page("snippet-context-tampering.html", forceBg).loaded;
       // Check that it fails to hide elements
@@ -1319,16 +1318,6 @@ describe("Snippets", function() {
       expect(behaviourState).toEqual({
         "snippets:context_tampering": 1
       });
-
-      let newEvent;
-      // check that the error is logged to Sentry
-      await wait(async() => {
-        newEvent = await EWE.testing.getLastSentryEvent();
-        return (newEvent && newEvent.event_id) !==
-          (oldEvent && oldEvent.event_id);
-      }, 6000, "Sentry error not received");
-
-      expect(newEvent.exception.values[0].type).toBe("TypeError");
     });
 
     it("is not possible on lightning snippets", async function() {
