@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.38.1 - 2026-03-30
+
 - Fixed: In-product messaging campaign tabs opened multiple times for some users.
 
 # 6.38.0 - 2026-03-25
