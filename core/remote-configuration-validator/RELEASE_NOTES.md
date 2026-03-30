@@ -1,5 +1,10 @@
 # Unreleased
 
+# 0.11.0
+
+- Implement `reverseTrialStartDate` fact.
+- Fix that `extVersion` fact should use semver operations instead of numeric operations.
+
 # 0.10.0
 
 - Added support for conditional experiments, allowing a `conditions` field on experiments similar to cohorts syntax [noissue]
