@@ -31,7 +31,6 @@ import {
 import {claimCommsChannel} from "../../shared/helpers.js";
 import {default as sentry} from "./sentry.js";
 import {default as telemetry} from "../../../front/telemetry.js";
-import experiments from "../../../front/experiments.js";
 import {
   createSnippetDetectionEventSender,
   gateSnippetDetectionEvent
@@ -281,32 +280,6 @@ function startErrorListener() {
   document.addEventListener(commsChannelName, mainWorldErrorListener);
 }
 
-/**
- * Cleans up any changes made to the localStorage for the experiment.
- * @deprecated
- * @returns {Promise<void>}
- */
-async function cleanupExperiment() {
-  const oldStorageKey = await experiments.getFlag("zero-delay-cleanup");
-  if (storageAvailable && oldStorageKey) {
-    try {
-      const config = JSON.parse(localStorage.getItem(oldStorageKey));
-      if (config && typeof config.filters !== "undefined") {
-        if (typeof config.websiteValue !== "undefined") {
-          localStorage.setItem(oldStorageKey, config.websiteValue);
-        }
-        else {
-          localStorage.removeItem(oldStorageKey);
-        }
-        logger.debug("zero_delay_cleanup", {key: oldStorageKey});
-      }
-    }
-    catch (e) {
-      // noop
-    }
-  }
-}
-
 export function start() {
   startErrorListener();
   filtersConfigPromise = getFiltersConfig();
@@ -328,10 +301,6 @@ export function start() {
   catch (e) {
     storageAvailable = false;
   }
-
-  // eslint-disable-next-line no-warning-comments
-  // TODO: Remove this temporary cleanup of cached config from previous versions
-  void cleanupExperiment();
 
   if (cachedFiltersConfigSerialized) {
     try {
