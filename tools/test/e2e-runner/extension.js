@@ -264,9 +264,9 @@ export async function verifyInjectedExtensionData(testUrl, dataAttribute, getAct
   return parsedHtmlData;
 }
 
-export function setTimeoutForExtensionReload(mochaContext) {
+export function setTimeoutForExtensionReload(mochaContext, timeout = 60000) {
   // Reloads are slow—ensure longer test timeout
-  mochaContext.timeout(60000);
+  mochaContext.timeout(timeout);
 }
 /**
  * Reload the extension and wait for the options page to be displayed

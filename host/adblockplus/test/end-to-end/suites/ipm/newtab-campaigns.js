@@ -116,8 +116,7 @@ export default () => {
   });
 
   it("triggers a new tab campaigns by priority", async function () {
-    setTimeoutForExtensionReload(this);
-    this.timeout(90000);
+    setTimeoutForExtensionReload(this, 90000);
     await setRemoteConfigIpmCommands(
       initOptionsGeneralTab,
       "test_adblockplus_priority"
