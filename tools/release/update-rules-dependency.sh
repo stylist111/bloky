@@ -54,7 +54,7 @@ update_sdk_test_diff_url "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F"
 update_sdk_test_diff_url "D4028CDD-3D39-4624-ACC7-8140F4EC3238"
 
 if [ "$(git status --porcelain)" ]; then
-    echo -e "build: Updated filterlists dependency to update rules data [noissue]\n" > "$COMMIT_MSG"
+    echo -e "build: Updated filterlists dependency to update rules data\n" > "$COMMIT_MSG"
 
     echo -e "## Index changes:\n\`\`\`" >> "$COMMIT_MSG"
     if git diff --no-index -- "$OLD_MODULE/filterlists/index.json" "$NEW_MODULE/filterlists/index.json" >> "$COMMIT_MSG"; then

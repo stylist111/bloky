@@ -326,8 +326,6 @@ async function run() {
   commitMessage += hostArgs
     .map((hostArg) => `${hostArg.hostName} ${hostArg.version} `)
     .join("and ");
-  commitMessage += "[noissue]";
-
   await executeMaybe(`git commit --all -m '${commitMessage}'`, args.skipGit);
 
   // We want all relevant release branches to point at the commit that we've

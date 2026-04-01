@@ -4,20 +4,16 @@
 
 For merge requests (and the resulting commits) we are following the
 [Conventional Commits][convcomms] specification with the format
-`type: Message [EXT-123]`:
+`type: Message`:
 
 - `type`: Any of the predefined types from [Angular convention][convcomms-angular]
 - `Message`: Commit message
-- `EXT-123`: Internal Jira ticket number
-  - Use `noissue` for commits without a ticket
-  - Ticket number can be prefixed with `Refs` (e.g. `Refs EXT-123`) for changes
-    that only partially address a ticket
 
 Examples:
 
-- `build: Standardized npm scripts for building, linting and unit testing [EXT-222]`
-- `ci: use a compliance script to run testpages tests [noissue]`
-- `test: Add extension tests [Refs EXT-241]`
+- `build: Standardized npm scripts for building, linting and unit testing`
+- `ci: use a compliance script to run testpages tests`
+- `test: Add extension tests`
 
 ## Testing
 
@@ -35,12 +31,10 @@ Assuming your changes have an impact on the extensions in a visible/feature way,
 ```
 # Unreleased
 
-- Updated the thing to be different. (EXT-77)
-- Fixed the way we do that other thing to be much faster. (EXT-324)
-- Changes tracked on a non-EXT board. (IM-123)
+- Updated the thing to be different.
+- Fixed the way we do that other thing to be much faster.
+- Changes tracked on a non-EXT board.
 ```
-
-Please add the ID of any item (on whichever tracking software you're using) as a suffix. This allows us to accurately update the status of that item when a release occurs.
 
 ### What does this mean for me as a reviewer of a merge request?
 
