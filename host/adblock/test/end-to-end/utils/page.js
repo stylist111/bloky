@@ -121,13 +121,22 @@ export async function initOptionsImageSwapTab(optionsHandle) {
 }
 
 export async function initOptionsPremiumFlTab(optionsHandle) {
-  await loadOptionsTab(optionsHandle, "premium-filters");
-  await getDisplayedElement("#premium-filter-lists > div:nth-child(2)", {
-    timeout: 7000,
-    // Right after initialisation not all premium filterlists may show up
-    // Refreshing as a workaround
-    forceRefresh: true,
-  });
+  await wait(
+    async () => {
+      await loadOptionsTab(optionsHandle, "premium-filters");
+      try {
+        await getDisplayedElement("#premium-filter-lists > div:nth-child(2)", {
+          timeout: 3500,
+          forceRefresh: false,
+        });
+        return true;
+      } catch (e) {
+        return false;
+      }
+    },
+    10000,
+    "Premium filter lists did not load after navigating to premium-filters tab",
+  );
 }
 
 export async function getCustomFilters() {
