@@ -630,6 +630,10 @@ ewe.account.onChanged.addListener(async ({ user, oldUser }) => {
 
   // activate
   if (hasPremium && !oldUserHadPremium) {
+    if (await ewe.account.isTrial()) {
+      SubscriptionAdapter.subscribe({ adblockId: "distraction-control" });
+      SubscriptionAdapter.subscribe({ adblockId: "cookies-premium" });
+    }
     reloadOptionsPageTabs();
   }
 
