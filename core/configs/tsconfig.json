@@ -13,6 +13,9 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2018",
-    "typeRoots": ["node_modules/@types", "../../node_modules/@types"]
+    "typeRoots": [
+      "${configDir}/node_modules/@types",
+      "../../node_modules/@types"
+    ]
   }
 }

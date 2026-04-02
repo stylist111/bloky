@@ -32,7 +32,7 @@ function isDarkMode(): boolean {
   const docAttr = document.documentElement.getAttribute("dark");
   const ytdApp = document.querySelector("ytd-app");
 
-  return docAttr !== null || (ytdApp !== null && ytdApp.hasAttribute("dark"));
+  return docAttr !== null || ytdApp?.hasAttribute("dark") === true;
 }
 
 /**

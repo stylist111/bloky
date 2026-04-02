@@ -80,13 +80,9 @@ test:
     - npm test -- $SINCE
 
 check_package_lock:
-  stage: root
-  cache: []
+  extends: .base
   script:
-    - ./tools/release/check-package-lock.sh package-lock.json
-  rules:
-    - !reference [.never-run-on-update-rules-trigger, rules]
-    - when: on_success
+    - npm run -w @eyeo/release-utils check-package-lock
 
 update_rules:
   stage: root

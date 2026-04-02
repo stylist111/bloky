@@ -29,11 +29,10 @@
   },
   "peerDependencies": {
     "@eyeo/webext-ad-filtering-solution": "*",
+    "typescript": "5.5.4",
     "webextension-polyfill": "*"
   },
-  "dependencies": {
-    "typescript": "5.6.3"
-  },
+  "dependencies": {},
   "devDependencies": {
     "vitest": "3.0.9",
     "vitest-chrome": "0.1.0",

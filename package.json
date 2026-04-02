@@ -31,13 +31,13 @@
     "do-release": "npm run -w @eyeo/release-utils do-release --"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "6.11.0",
-    "@typescript-eslint/parser": "6.11.0",
+    "@typescript-eslint/eslint-plugin": "7.18.0",
+    "@typescript-eslint/parser": "7.18.0",
     "babel-loader": "8.4.1",
-    "eslint": "8.34.0",
+    "eslint": "8.57.1",
     "eslint-config-airbnb-base": "13.1.0",
     "eslint-config-eyeo": "3.2.0",
-    "eslint-config-love": "43.1.0",
+    "eslint-config-love": "44.0.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-html": "6.2.0",
     "eslint-plugin-import": "2.27.5",
@@ -49,6 +49,6 @@
     "prettier": "3.3.3",
     "rollup": "4.32.0",
     "selenium-webdriver": "4.23.0",
-    "typescript": "4.7.3"
+    "typescript": "5.5.4"
   }
 }

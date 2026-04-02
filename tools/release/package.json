@@ -4,6 +4,7 @@
   "scripts": {
     "do-release": "node do-release.js",
     "get-release-notes": "node get-release-notes.js",
+    "check-package-lock": "node check-package-lock.js ../../package-lock.json",
     "test": "vitest run --exclude test/end-to-end --reporter=verbose",
     "test:end-to-end": "vitest run --root test/end-to-end --reporter=verbose"
   },
