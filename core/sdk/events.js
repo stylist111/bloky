@@ -332,6 +332,23 @@ export default {
           }
         }
       }
+    },
+    snippet_hit_event: {
+      description: "Recorded when a snippet successfully executes on a page.",
+      data: {
+        description: "Metadata about the snippet execution",
+        type: "object",
+        properties: {
+          snippet: {
+            description: "Snippet function name, e.g. 'hide-if-contains-and-matches-style'",
+            type: "string"
+          },
+          domain: {
+            description: "Domain where the snippet fired, e.g. 'example.com'",
+            type: "string"
+          }
+        }
+      }
     }
   },
   youtube: {

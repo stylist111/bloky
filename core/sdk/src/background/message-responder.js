@@ -128,6 +128,9 @@ async function handleMessage(message, sender) {
         // snippet_detection_event telemetry
         detectionEventEnabled: Boolean(
           await experiments.getFlag("snippet-detection-event")
+        ),
+        hitEventEnabled: Boolean(
+          await experiments.getFlag("snippet-hit-event")
         )
       };
 

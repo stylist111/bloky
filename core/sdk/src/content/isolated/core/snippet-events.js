@@ -60,7 +60,40 @@ export function createSnippetDetectionEventSender(
       snippetLogger.behavior("snippet_detection_event", data);
     }
     catch (e) {
-      // Never let telemetry break snippet execution
+      // Workaround: the logger doesn't guarantee it won't throw.
+      // Ideally error handling would live inside the logger itself.
+      sentryReporter.reportError(e);
+    }
+  };
+}
+
+/**
+ * Creates a function that sends snippet hit events via the logger.
+ * Passed to snippets via env.sendSnippetHitEvent.
+ *
+ * @param {Object} snippetLogger - ServerLogger instance
+ * @param {Object} sentryReporter - Sentry module with reportError method
+ * @returns {Function} sendSnippetHitEvent(snippet, domain)
+ */
+export function createSnippetHitEventSender(
+  snippetLogger, sentryReporter
+) {
+  return function sendSnippetHitEvent(snippet, domain) {
+    if (typeof snippet !== "string" || typeof domain !== "string") {
+      console.error(
+        `sendSnippetHitEvent: snippet and domain are required strings. Received snippet=${typeof snippet}, domain=${typeof domain}.`
+      );
+      return;
+    }
+
+    const data = {snippet, domain};
+
+    try {
+      snippetLogger.behavior("snippet_hit_event", data);
+    }
+    catch (e) {
+      // Workaround: the logger doesn't guarantee it won't throw.
+      // Ideally error handling would live inside the logger itself.
       sentryReporter.reportError(e);
     }
   };
@@ -68,7 +101,7 @@ export function createSnippetDetectionEventSender(
 
 const NOOP = () => {};
 
-// Gates sendDetectionEvent behind an experiment flag
-export function gateSnippetDetectionEvent(enabled, sender) {
+// Gates a snippet event sender behind an experiment flag
+export function gateSnippetEvent(enabled, sender) {
   return enabled ? sender : NOOP;
 }

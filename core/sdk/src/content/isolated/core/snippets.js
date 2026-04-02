@@ -33,7 +33,8 @@ import {default as sentry} from "./sentry.js";
 import {default as telemetry} from "../../../front/telemetry.js";
 import {
   createSnippetDetectionEventSender,
-  gateSnippetDetectionEvent
+  createSnippetHitEventSender,
+  gateSnippetEvent
 } from "./snippet-events.js";
 
 const commsChannelName = claimCommsChannel(uuidv4());
@@ -47,6 +48,7 @@ let cachedFiltersConfigSerialized = null;
 let storageAvailable = true;
 const logger = new telemetry.ServerLogger("snippets");
 const sendDetectionEvent = createSnippetDetectionEventSender(logger, sentry);
+const sendSnippetHitEvent = createSnippetHitEventSender(logger, sentry);
 
 /**
  * Checks if the current context is a cross-origin iframe
@@ -98,7 +100,7 @@ function executeSnippets(filtersConfig) {
     return;
   }
 
-  const {debug, detectionEventEnabled} = filtersConfig;
+  const {debug, detectionEventEnabled, hitEventEnabled} = filtersConfig;
   const filters = filtersConfig.filters.map(parseScript);
 
   let eventDetails = {
@@ -163,8 +165,11 @@ function executeSnippets(filtersConfig) {
     // API access not available in the main world. See snippet-events.js.
     const env = {
       debugCSSProperties: debug ? DEBUG_CSS_PROPERTIES : null,
-      sendDetectionEvent: gateSnippetDetectionEvent(
+      sendDetectionEvent: gateSnippetEvent(
         detectionEventEnabled, sendDetectionEvent
+      ),
+      sendSnippetHitEvent: gateSnippetEvent(
+        hitEventEnabled, sendSnippetHitEvent
       )
     };
     snippetsCallback(env, ...isolatedSnippets);
