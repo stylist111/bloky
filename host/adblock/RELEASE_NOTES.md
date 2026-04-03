@@ -7,6 +7,9 @@
 # 6.38.1 - 2026-03-30
 
 - Fixed: In-product messaging campaign tabs opened multiple times for some users.
+- Added close-tab feature that allows getadblock.com pages to request the
+  extension to close the current tab via a background message handler and
+  content script.
 
 # 6.38.0 - 2026-03-25
 

@@ -96,6 +96,7 @@
     "typescript": "5.5.4"
   },
   "dependencies": {
+    "@eyeo-fragments/close-tab": "*",
     "@eyeo-fragments/conflict-detection": "*",
     "@eyeo-fragments/cookie-banner-detection": "*",
     "@eyeo-fragments/debug-information": "*",

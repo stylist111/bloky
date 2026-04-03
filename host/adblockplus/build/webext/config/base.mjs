@@ -105,7 +105,8 @@ export default {
       },
       {
         dest: "close-tab.preload.js",
-        src: ["src/close-tab/content/index.ts"]
+        package: "@eyeo-fragments/close-tab",
+        src: ["/content"]
       },
       {
         dest: "options.preload.js",

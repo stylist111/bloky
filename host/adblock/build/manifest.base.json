@@ -95,6 +95,15 @@
       "js": ["polyfill.js", "growth-experiments.preload.js"],
       "matches": ["https://stackoverflow.com/*"],
       "run_at": "document_start"
+    },
+    {
+      "js": ["polyfill.js", "close-tab.preload.js"],
+      "matches": [
+        "https://getadblock.com/*",
+        "https://*.dev.getadblock.com/*",
+        "https://*.myaccount.getadblock.com/*"
+      ],
+      "run_at": "document_idle"
     }
   ],
   "content_security_policy": "default-src 'self'; img-src 'self' data: blob: https://cdn.adblockcdn.com; style-src 'self' 'unsafe-inline'; connect-src *; frame-src 'self' https://getadblock.com",

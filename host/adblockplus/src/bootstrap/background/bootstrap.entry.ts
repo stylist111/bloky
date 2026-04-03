@@ -46,7 +46,7 @@ import { start as startConflictDetection } from "@eyeo-fragments/conflict-detect
 import { start as startCookieBannerDetection } from "@eyeo-fragments/cookie-banner-detection/background";
 import { start as startInfoInjector } from "../../info-injector/background";
 import { start as startUpdateCampaign } from "../../update-campaign/background";
-import { start as startCloseTab } from "../../close-tab/background";
+import { start as startCloseTab } from "@eyeo-fragments/close-tab";
 import { start as startPages } from "../../core/pages/background";
 import { start as startGlobals } from "../../globals/background";
 import { start as startPublicAPI } from "@eyeo-fragments/public-api";
@@ -142,7 +142,17 @@ async function bootstrap(): Promise<void> {
     isPremiumActive: hasActiveLicense
   });
   startInfoInjector();
-  startCloseTab();
+  startCloseTab({
+    port,
+    addTrustedMessageTypes,
+    trustedOrigins: [
+      "https://adblockplus.org",
+      "https://new.adblockplus.org",
+      "https://welcome.adblockplus.org",
+      "https://accounts.adblockplus.org",
+      "https://myaccount.adblockplus.org"
+    ]
+  });
   startGlobals();
   startPublicAPI({
     port,

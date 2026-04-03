@@ -26,6 +26,7 @@ import { start as startConflictDetection } from "@eyeo-fragments/conflict-detect
 import { start as startYtWallDetection } from "@eyeo-fragments/yt-wall-detection/background";
 import { start as startReverseTrial } from "@eyeo-fragments/reverse-trial/background";
 import { start as startPublicAPI } from "@eyeo-fragments/public-api";
+import { start as startCloseTab } from "@eyeo-fragments/close-tab";
 import { start as startFacts } from "../src/remote-config/background";
 import { Prefs } from "./alias/prefs";
 import { getUserFilters } from "./filter-utils";
@@ -747,6 +748,15 @@ initialize
       addonVersion: info.addonVersion,
     });
     startFacts();
+    startCloseTab({
+      port,
+      addTrustedMessageTypes: ext.addTrustedMessageTypes,
+      trustedOrigins: [
+        "https://getadblock.com",
+        "https://*.dev.getadblock.com",
+        "https://*.myaccount.getadblock.com",
+      ],
+    });
     startPublicAPI({
       port,
       addTrustedMessageTypes: ext.addTrustedMessageTypes,

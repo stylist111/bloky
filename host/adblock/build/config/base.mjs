@@ -117,6 +117,11 @@ export default {
         dest: "growth-experiments.preload.js",
         src: ["src/growth-experiments/content/index.ts"],
       },
+      {
+        dest: "close-tab.preload.js",
+        package: "@eyeo-fragments/close-tab",
+        src: ["/content"],
+      },
     ],
   },
   mapping: {

@@ -1,0 +1,26 @@
+{
+  "name": "@eyeo-fragments/close-tab",
+  "type": "module",
+  "license": "GPL-3.0",
+  "private": true,
+  "types": "./dist/background/index.d.ts",
+  "exports": {
+    ".": "./src/background/index.js",
+    "./content": "./src/content/index.js"
+  },
+  "scripts": {
+    "build:types": "tsc --emitDeclarationOnly",
+    "build": "npm run build:types",
+    "build:release": "npm run build:types",
+    "test": "vitest run --reporter=verbose"
+  },
+  "peerDependencies": {
+    "webextension-polyfill": "*"
+  },
+  "devDependencies": {
+    "vite": "5.4.11",
+    "vitest": "3.0.9",
+    "vitest-chrome": "0.1.0",
+    "vitest-mock-extended": "2.0.2"
+  }
+}

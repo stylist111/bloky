@@ -1,5 +1,7 @@
 # Unreleased
 
+- Moved close-tab feature to a shared fragment for use by both ABP and AdBlock.
+
 # 4.36.3 - 2026-03-30
 
 - Fixed: In-product messaging campaign tabs opened multiple times for some users.
