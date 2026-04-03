@@ -156,7 +156,7 @@ describe("reverse-trial content script", () => {
     windowOpen.mockRestore();
   });
 
-  it("does not call window.open when target is empty", async () => {
+  it("does not call window.open and sends close action when target is empty", async () => {
     patchShadowDom();
     vi.mocked(browser.runtime).sendMessage.mockResolvedValue(mockPayload);
 
@@ -170,6 +170,11 @@ describe("reverse-trial content script", () => {
     ctaBtn.click();
 
     expect(windowOpen).not.toHaveBeenCalled();
+    expect(vi.mocked(browser.runtime).sendMessage).toHaveBeenCalledWith({
+      type: DIALOG_ACTION_MESSAGE_TYPE,
+      touchPointStep: 1,
+      action: "close",
+    });
 
     windowOpen.mockRestore();
   });
@@ -194,6 +199,32 @@ describe("reverse-trial content script", () => {
     expect(link?.textContent).toBe("Learn more");
     expect(link?.getAttribute("href")).toBe("https://example.com/learn");
     expect(link?.getAttribute("target")).toBe("_blank");
+  });
+
+  it("sends cta action without closing dialog when learn more is clicked", async () => {
+    patchShadowDom();
+    const payloadWithLearnMore: DialogPayload = {
+      ...mockPayload,
+      learnMore: { text: "Learn more", url: "https://example.com/learn" },
+    };
+
+    vi.mocked(browser.runtime).sendMessage.mockResolvedValue(
+      payloadWithLearnMore,
+    );
+
+    await start();
+
+    const container = document.body.lastElementChild as HTMLElement;
+    const link = container.shadowRoot!.querySelector("a") as HTMLElement;
+
+    link.click();
+
+    expect(vi.mocked(browser.runtime).sendMessage).toHaveBeenCalledWith({
+      type: DIALOG_ACTION_MESSAGE_TYPE,
+      touchPointStep: 1,
+      action: "cta",
+    });
+    expect(document.body.contains(container)).toBe(true);
   });
 
   it("does not render learn more link when payload has no learnMore", async () => {

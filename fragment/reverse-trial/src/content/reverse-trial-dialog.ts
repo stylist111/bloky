@@ -379,7 +379,7 @@ function buildDialog(payload: DialogPayload): HTMLElement {
     void browser.runtime.sendMessage({
       type: DIALOG_ACTION_MESSAGE_TYPE,
       touchPointStep: payload.touchPointStep,
-      action: "cta",
+      action: payload.target ? "cta" : "close",
     });
     removeDialog();
   });
@@ -391,6 +391,13 @@ function buildDialog(payload: DialogPayload): HTMLElement {
     learnMore.href = payload.learnMore.url;
     learnMore.target = "_blank";
     learnMore.textContent = payload.learnMore.text;
+    learnMore.addEventListener("click", () => {
+      void browser.runtime.sendMessage({
+        type: DIALOG_ACTION_MESSAGE_TYPE,
+        touchPointStep: payload.touchPointStep,
+        action: "cta",
+      });
+    });
     dialog.appendChild(learnMore);
   }
 
