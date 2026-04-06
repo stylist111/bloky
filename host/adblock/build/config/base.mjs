@@ -94,15 +94,6 @@ export default {
         package: "@eyeo-fragments/public-api",
         src: "/content",
       },
-      // TODO (ui-components): Uncomment this when you want to integrate ui-components
-      // {
-      //   dest: "button/react-popup.js",
-      //   src: ["adblock-betafish/button/react-components/main.jsx"],
-      // },
-      {
-        dest: "options/react-options.js",
-        src: ["adblock-betafish/options/react-components/main.jsx"],
-      },
       {
         dest: "conflict-detection.preload.js",
         package: "@eyeo-fragments/conflict-detection",

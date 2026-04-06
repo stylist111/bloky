@@ -48,10 +48,6 @@ export default {
         src: ["src/desktop-options/ui/bootstrap.entry.ts"]
       },
       {
-        dest: "react-desktop-options.js",
-        src: ["src/desktop-options/ui/react-components/index.jsx"]
-      },
-      {
         dest: "devtools.js",
         src: ["src/devtools/ui/index.ts"]
       },

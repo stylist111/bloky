@@ -294,16 +294,10 @@ const handlePremiumEnrollmentCTAs = async () => {
 $(async () => {
   await initializeProxies(); // still needed for MAB callouts, regardless of list UI
 
-  const url = new URL(window.top.location.href);
-  const showNewUI = url.searchParams.has("newUi");
-
-  // TODO(newUi): Delete calls and listeners when transition complete
-  if (!showNewUI) {
-    initialize();
-    showSeparators();
-    addUIChangeListeners();
-    addDataListeners();
-  }
+  initialize();
+  showSeparators();
+  addUIChangeListeners();
+  addDataListeners();
 
   await handlePremiumEnrollmentCTAs();
 });

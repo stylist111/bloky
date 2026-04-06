@@ -49,7 +49,7 @@ export default function webpack({ webpackInfo, addonName, addonVersion, sourceMa
             filename: "[name]",
           },
           resolve: {
-            extensions: [".ts", ".js", ".json", ".wasm", ".jsx"],
+            extensions: [".ts", ".js", ".json", ".wasm"],
             alias: webpackInfo.alias,
             symlinks: false,
           },
@@ -77,23 +77,6 @@ export default function webpack({ webpackInfo, addonName, addonVersion, sourceMa
                     },
                   },
                 ],
-              },
-              {
-                test: /\.(js|jsx)$/,
-                include: [
-                  /button\/react-components/,
-                  /options\/react-components/,
-                  /node_modules\/@eyeo\/ext-ui-components/,
-                ],
-                use: {
-                  loader: "babel-loader",
-                  options: {
-                    presets: [
-                      "@babel/preset-env",
-                      ["@babel/preset-react", { runtime: "automatic" }],
-                    ],
-                  },
-                },
               },
             ],
           },

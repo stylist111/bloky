@@ -54,7 +54,7 @@ export default function webpack({
             filename: "[name]"
           },
           resolve: {
-            extensions: [".ts", ".js", ".json", ".wasm", ".jsx", ".tsx"],
+            extensions: [".ts", ".js", ".json", ".wasm"],
             alias: webpackInfo.alias,
             symlinks: false
           },
@@ -82,18 +82,6 @@ export default function webpack({
                     }
                   }
                 ]
-              },
-              {
-                test: /\.(tsx|jsx)$/,
-                use: {
-                  loader: "babel-loader",
-                  options: {
-                    presets: [
-                      "@babel/preset-env",
-                      ["@babel/preset-react", { runtime: "automatic" }]
-                    ]
-                  }
-                }
               }
             ]
           },

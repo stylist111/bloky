@@ -1,7 +1,6 @@
 {
   "extends": "../../core/configs/tsconfig",
   "compilerOptions": {
-    "jsx": "react",
     "paths": {
       "~/*": ["./src/*"]
     }
