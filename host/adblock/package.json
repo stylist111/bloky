@@ -95,6 +95,7 @@
     "gulp-tar": "3.1.0",
     "handlebars": "4.7.7",
     "htmlhint": "1.1.4",
+    "jsdom": "25.0.0",
     "mkdirp": "1.0.4",
     "mocha": "10.7.3",
     "ncp": "2.0.0",
