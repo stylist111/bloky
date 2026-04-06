@@ -45,7 +45,7 @@
     "eslint-plugin-n": "16.2.0",
     "eslint-plugin-no-unsanitized": "4.0.2",
     "eslint-plugin-promise": "6.1.1",
-    "lerna": "8.1.8",
+    "lerna": "9.0.7",
     "prettier": "3.3.3",
     "rollup": "4.32.0",
     "selenium-webdriver": "4.23.0",

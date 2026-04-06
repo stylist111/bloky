@@ -682,6 +682,13 @@ async function runTests({manifest, browser, version, params, testKinds}) {
     insecure = true;
   }
 
+  // geckodriver 6.x downloads the latest geckodriver binary by default,
+  // which requires Firefox 115+. Older Firefox versions need an older binary.
+  // This is the previous driver version used https://unpkg.com/geckodriver@3.1.0/index.js
+  if (isFirefox && majorVersion < 78) {
+    process.env.GECKODRIVER_VERSION = process.env.GECKODRIVER_VERSION || "0.30.0";
+  }
+
   let results = {};
   const options = {headless, extensionPaths, incognito, insecure, extraArgs,
                    customBrowserBinary};

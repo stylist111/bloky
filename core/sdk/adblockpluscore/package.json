@@ -4,11 +4,11 @@
   "repository": "https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore.git",
   "license": "GPL-3.0-only",
   "dependencies": {
-    "tar": "^6.1.10",
+    "tar": "7.5.13",
     "yargs": "^17.5.1"
   },
   "devDependencies": {
-    "@eyeo/get-browser-binary": "0.23.2",
+    "@eyeo/get-browser-binary": "0.24.0",
     "c8": "^7.1.2",
     "chai": "^4.2.0",
     "got": "^11.1.3",
