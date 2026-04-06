@@ -43,7 +43,6 @@ export const expectedIPMCommands = {
           button_label: "CTA cookie"
         }
       },
-      license_state_list: "free",
       button_target: "/update",
       display_duration: 1,
       priority: 100
@@ -72,7 +71,6 @@ export const expectedIPMCommands = {
           button_label: "CTA exclusion"
         }
       },
-      license_state_list: "free",
       button_target: "/update",
       display_duration: 1
     }
@@ -101,7 +99,6 @@ export const expectedIPMCommands = {
           button_label: "CTA navigation"
         }
       },
-      license_state_list: "free",
       button_target: "/update?ipmId=test_adblockplus_navigation",
       display_duration: 1
     }
@@ -137,7 +134,6 @@ export const expectedIPMCommands = {
       ipm_id: "test_adblockplus_priority_high",
       command_name: "create_tab",
       method: "default",
-      license_state_list: "free",
       url: "/update?ipmId=test_adblockplus_priority_high",
       priority: 3,
       version: 6
@@ -170,7 +166,6 @@ export const expectedIPMCommands = {
           button_label: "[en] CTA translations"
         }
       },
-      license_state_list: "free",
       button_target: "/update?ipmId=test_adblockplus_translations",
       display_duration: 1
     }

@@ -36,7 +36,6 @@ import {
   type NewTabCommand,
   type NewTabParams
 } from "./new-tab.types";
-import { defaultLicenseState, isValidLicenseStateList } from "~/ipm/background";
 
 /**
  * List of new tab parameter definitions
@@ -46,10 +45,6 @@ function getParamDefinitionList(): ParamDefinitionList<NewTabParams> {
     {
       name: "url",
       validate: isSafeUrl
-    },
-    {
-      name: "license_state_list",
-      validate: isValidLicenseStateList
     },
     {
       name: "method",
@@ -123,7 +118,6 @@ function getBehavior(command: Command): NewTabBehavior | null {
 
   return {
     target: command.url,
-    licenseStateList: command.license_state_list ?? defaultLicenseState,
     method,
     priority:
       typeof command.priority === "number" ? command.priority : defaultPriority

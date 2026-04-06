@@ -146,8 +146,7 @@ export const dialogs: Dialog[] = [
       displayDuration: 1,
       target: "",
       timing: Timing.cookieBanner,
-      priority: 1,
-      licenseStateList: "premium"
+      priority: 1
     },
     content,
     id: "8"

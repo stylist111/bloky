@@ -30,7 +30,6 @@ import {
   validateParams
 } from "@eyeo-fragments/in-product-messaging/background";
 
-import { defaultLicenseState, isValidLicenseStateList } from "~/ipm/background";
 import * as logger from "~/logger/background";
 
 import { type DialogContent } from "../../shared";
@@ -111,10 +110,6 @@ function getParamDefinitionList(): ParamDefinitionList<DialogParams> {
       validate: isValidDomainList
     },
     {
-      name: "license_state_list",
-      validate: isValidLicenseStateList
-    },
-    {
       name: "priority",
       validate: isEmptyOrPositiveNumber
     },
@@ -191,7 +186,6 @@ function getBehavior(command: Command): DialogBehavior | null {
     target: command.button_target,
     timing: command.timing,
     domainList: command.domain_list,
-    licenseStateList: command.license_state_list ?? defaultLicenseState,
     priority:
       typeof command.priority === "number" ? command.priority : defaultPriority
   };

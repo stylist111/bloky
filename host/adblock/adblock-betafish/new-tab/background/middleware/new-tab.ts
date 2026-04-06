@@ -28,7 +28,6 @@ import {
 } from "@eyeo-fragments/in-product-messaging/background";
 
 import * as logger from "~/utilities/background";
-import { defaultLicenseState, isValidLicenseStateList } from "../../../../src/ipm/background";
 import {
   CreationMethod,
   type NewTabBehavior,
@@ -46,10 +45,6 @@ function getParamDefinitionList(): ParamDefinitionList<NewTabParams> {
     {
       name: "url",
       validate: isSafeUrl,
-    },
-    {
-      name: "license_state_list",
-      validate: isValidLicenseStateList,
     },
     {
       name: "method",
@@ -116,7 +111,6 @@ function getBehavior(command: Command): NewTabBehavior | null {
 
   return {
     target: command.url,
-    licenseStateList: command.license_state_list || defaultLicenseState,
     method,
     priority: typeof command.priority === "number" ? command.priority : defaultPriority,
   };

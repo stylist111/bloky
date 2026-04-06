@@ -27,7 +27,6 @@ import {
   isCommandExpired,
 } from "@eyeo-fragments/in-product-messaging/background";
 
-import { checkLanguage, doesLicenseStateMatch } from "../../../src/ipm/background";
 import { Prefs } from "../../alias/prefs";
 import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
 import { TabSessionStorage } from "../../../adblockplusui/adblockpluschrome/lib/storage/tab-session";
@@ -417,11 +416,6 @@ export async function showOnpageDialog(
   tab: Tabs.Tab,
   dialog: Dialog,
 ): Promise<ShowOnpageDialogResult> {
-  // If we're here because of an IPM command, run the mandatory language skew check
-  if (typeof dialog.ipmId === "string") {
-    void checkLanguage(dialog.ipmId);
-  }
-
   // Ignore and dismiss dialog if user opted-out of notifications
   if (await shouldBeIgnored()) {
     logger.debug("[onpage-dialog]: User ignores notifications");
@@ -523,15 +517,6 @@ export async function showDialogFromList(
   }
 
   for (const dialog of dialogs) {
-    // Ignore and dismiss command if license state doesn't match those in the
-    // command
-    // eslint-disable-next-line no-await-in-loop
-    if (!(await doesLicenseStateMatch(dialog.behavior))) {
-      logger.debug("[onpage-dialog]: License has mismatch");
-      dismissDialogFn(dialog);
-      continue;
-    }
-
     // Ignore and dismiss command if it has expired
     if (typeof dialog.ipmId === "string") {
       const command = getCommand(dialog.ipmId);

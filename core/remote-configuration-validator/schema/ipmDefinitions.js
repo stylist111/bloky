@@ -51,7 +51,6 @@ export const CreateOnpageDialogCommand = {
       maximum: 20,
     },
     domain_list: { type: "string" },
-    license_state_list: { type: "string" },
     priority: {
       type: "integer",
       minimum: 1,
@@ -70,7 +69,6 @@ export const CreateTabCommand = {
   type: "object",
   properties: {
     ...requiredBaseProperties,
-    license_state_list: { type: "string" },
     method: { type: "string" },
     priority: {
       type: "integer",

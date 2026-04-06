@@ -40,7 +40,6 @@ export interface DialogParams {
   button_label: string;
   button_target: string;
   domain_list?: string;
-  license_state_list?: string;
   priority?: number;
   // Only required by future IPM command
   content?: Record<string, DialogCommandContent>;

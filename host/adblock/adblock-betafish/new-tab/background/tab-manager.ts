@@ -29,7 +29,6 @@ import {
 
 import { ExtendedInstallType } from "~/management";
 
-import { checkLanguage, doesLicenseStateMatch } from "../../../src/ipm/background";
 import * as logger from "../../utilities/background";
 import { getSettings, settings } from "../../prefs/background/settings";
 import { CreationMethod, isNewTabBehavior, NewTab, setNewTabCommandHandler } from "./middleware";
@@ -218,9 +217,6 @@ async function openNewtab(): Promise<void> {
     logger.debug("[new-tab]:openNewtab");
     const { ipmId } = candidate;
 
-    // Run mandatory language skew check
-    void checkLanguage(ipmId);
-
     removeListeners(ipmId);
 
     // Check if the global new tab cool down period is still ongoing.
@@ -237,14 +233,6 @@ async function openNewtab(): Promise<void> {
     const behavior = getBehavior(ipmId);
     if (!isNewTabBehavior(behavior)) {
       logger.debug("[new-tab]: No command behavior");
-      dismissNewtabCommand(ipmId);
-      continue;
-    }
-
-    // Ignore and dismiss command if License states doesn't match the license state of the command
-    // eslint-disable-next-line no-await-in-loop
-    if (!(await doesLicenseStateMatch(behavior))) {
-      logger.debug("[new-tab]: License state mis-match");
       dismissNewtabCommand(ipmId);
       continue;
     }

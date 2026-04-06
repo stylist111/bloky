@@ -157,12 +157,6 @@ describe("In-product messaging commands validation", function () {
       expectErrors([command], []);
     });
 
-    it("allows optional license state list", function () {
-      const command = getCreateOnpageDialogCommand();
-      command.license_state_list = "free,premium";
-      expectErrors([command], []);
-    });
-
     it("allows optional lower body", function () {
       const command = getCreateOnpageDialogCommand();
       command.content.en.lower_body = "Lower body";
@@ -203,12 +197,6 @@ describe("In-product messaging commands validation", function () {
   describe("create_tab command", function () {
     it("marks a valid create_tab command as valid", function () {
       const command = getCreateTabCommand();
-      expectErrors([command], []);
-    });
-
-    it("allows optional license state list", function () {
-      const command = getCreateTabCommand();
-      command.license_state_list = "example.com,adblockplus.org";
       expectErrors([command], []);
     });
 

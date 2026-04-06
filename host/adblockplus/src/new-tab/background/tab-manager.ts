@@ -27,7 +27,6 @@ import {
   isCommandExpired
 } from "@eyeo-fragments/in-product-messaging/background";
 
-import { checkLanguage, doesLicenseStateMatch } from "~/ipm/background";
 import * as logger from "~/logger/background";
 
 import {
@@ -220,9 +219,6 @@ async function openNewTab(): Promise<void> {
     listenerMap.delete(ipmId);
     tabIds.clear();
 
-    // Run mandatory language skew check
-    void checkLanguage(ipmId);
-
     // Check if the global new tab cool down period is still ongoing.
     if (await isCoolDownPeriodOngoing()) {
       logger.debug("[new-tab]: Cool down period still ongoing");
@@ -236,13 +232,6 @@ async function openNewTab(): Promise<void> {
     const behavior = getBehavior(ipmId);
     if (!isNewTabBehavior(behavior)) {
       logger.debug("[new-tab]: Invalid command behavior.");
-      dismissNewtabCommand(ipmId);
-      continue;
-    }
-
-    // Ignore and dismiss command if license states mismatch.
-    if (!(await doesLicenseStateMatch(behavior))) {
-      logger.debug("[new-tab]: License state mismatch.");
       dismissNewtabCommand(ipmId);
       continue;
     }

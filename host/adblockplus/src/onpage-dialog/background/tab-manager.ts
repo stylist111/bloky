@@ -64,7 +64,6 @@ import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { Timing } from "./timing.types";
 import { getPremiumSubscriptionsState } from "~/premium-subscriptions/background";
 import { COOKIES_PREMIUM_SUBSCRIPTION_TYPE } from "~/premium-subscriptions/shared";
-import { checkLanguage, doesLicenseStateMatch } from "~/ipm/background";
 
 /**
  * Tab-specific session storage for dialogs
@@ -391,14 +390,6 @@ export async function showDialogFromList(
   }
 
   for (const dialog of dialogs) {
-    // Ignore and dismiss command if license state doesn't match those in the
-    // command
-    if (!(await doesLicenseStateMatch(dialog.behavior))) {
-      logger.debug("[onpage-dialog]: License has mismatch");
-      dismissDialogFn(dialog);
-      continue;
-    }
-
     // Ignore and dismiss command if it has expired
     if (typeof dialog.ipmId === "string") {
       const command = getCommand(dialog.ipmId);
@@ -528,11 +519,6 @@ export async function showOnpageDialog(
   tab: Tabs.Tab,
   dialog: Dialog
 ): Promise<ShowOnpageDialogResult> {
-  // If we're here because of an IPM command, run the mandatory language skew check
-  if (typeof dialog.ipmId === "string") {
-    void checkLanguage(dialog.ipmId);
-  }
-
   // Ignore and dismiss dialog if user opted-out of notifications
   if (await shouldBeIgnored()) {
     logger.debug("[onpage-dialog]: User ignores notifications");

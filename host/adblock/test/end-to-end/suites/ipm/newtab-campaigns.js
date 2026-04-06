@@ -226,10 +226,6 @@ export default () => {
   });
 
   it("force triggers a new tab campaign", async function () {
-    const isPremium = await isPremiumActivated();
-    if (!isPremium) {
-      await enablePremiumProgrammatically();
-    }
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_force");
     await syncRemoteConfig(initOptionsGeneralTab);
     await findUrl(updateUrlForce, { mustLoad: true });

@@ -103,7 +103,6 @@ module.exports = {
           "blocked_total",
           "domain_list",
           "license_status",
-          "license_state_list",
           "experiment_id",
           "variant_id",
           "extension_id",

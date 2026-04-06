@@ -16,5 +16,3 @@
  */
 
 export * from "./ipm";
-export * from "./legacy";
-export * from "./legacy.types";

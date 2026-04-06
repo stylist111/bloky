@@ -17,8 +17,6 @@
 
 import { type Command } from "@eyeo-fragments/in-product-messaging/background";
 
-import { type LicenseStateBehavior } from "../../../../src/ipm/background";
-
 /**
  * The method to use for creating the new tab.
  */
@@ -48,7 +46,7 @@ export const defaultPriority = 1;
 /**
  * New tab behavior
  */
-export interface NewTabBehavior extends LicenseStateBehavior {
+export interface NewTabBehavior {
   /**
    * Target page to open
    */
@@ -82,7 +80,6 @@ export interface NewTab {
  */
 export interface NewTabParams {
   url: string;
-  license_state_list?: string;
   method?: `${CreationMethod}`;
   priority?: number;
 }
