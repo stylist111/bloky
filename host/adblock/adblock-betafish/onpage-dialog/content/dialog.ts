@@ -197,12 +197,10 @@ function sendMessage(message: unknown) {
 const showDialog = async function (message: StartInfo) {
   const mainBody = document.body;
   if (!mainBody) {
-    await sendMessage({ type: "onpage-dialog.error", error: "no_main" });
     return;
   }
   // if the DIV already exists, don't add another one, just return
   if (document.getElementById(divID)) {
-    await sendMessage({ type: "onpage-dialog.error", error: "div_exists" });
     return;
   }
   const { content } = message;
@@ -212,7 +210,6 @@ const showDialog = async function (message: StartInfo) {
   dialogParentElement.id = divID;
   const dialogElement = DOMPurify.sanitize(dialogHtml, { RETURN_DOM_FRAGMENT: true });
   if (DOMPurify.removed && DOMPurify.removed.length > 0) {
-    await sendMessage({ type: "onpage-dialog.error", error: "purify_error" });
     return;
   }
   const closeIcon = dialogElement.querySelector("#closeIcon");

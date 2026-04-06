@@ -22,7 +22,6 @@ import {
   type Behavior,
   type Command,
   type CommandActor,
-  CommandEventType,
   type CommandMap,
   CommandName,
   CommandVersion,
@@ -35,7 +34,6 @@ import {
 import * as commandStorage from "./command-storage";
 import { getStartInfo, setStartInfo } from "./start-info";
 import { type StartInfo } from "./start-info.types";
-import { recordEvent, recordGenericEvent } from "./event-recording";
 
 /**
  * Promise chain ensuring that only one instance of executeIPMCommands()
@@ -274,14 +272,11 @@ function retryExecuteCommands(commandName: CommandName): void {
  * executed multiple times.
  *
  * @param commands A list of commands from the IPM server
- * @param isInitialization Whether the commands are being restored when the
- *   module initializes
  * @param isConfigUpdate Whether the commands are executed the first time after
  *   the underlying configuration got updated
  */
 export async function executeIPMCommands(
   commands: unknown[],
-  isInitialization: boolean = false,
   isConfigUpdate: boolean = false,
 ): Promise<void> {
   if (!isActive) {
@@ -293,7 +288,6 @@ export async function executeIPMCommands(
 
   if (commands.length > maximumProcessableCommands) {
     logger.reportAndLogError(new Error("[ipm]: Too many commands received."));
-    recordGenericEvent("too_many_commands");
     return;
   }
 
@@ -333,11 +327,6 @@ export async function executeIPMCommands(
 
     if (isCommandExpired(command)) {
       logger.reportAndLogError(new Error("[ipm]: Command has expired."));
-      recordEvent(
-        command.ipm_id,
-        command.command_name,
-        CommandEventType.expired,
-      );
 
       // Ignore and dismiss command if it has expired
       dismissCommand(command.ipm_id);
@@ -347,7 +336,7 @@ export async function executeIPMCommands(
     const actor = actorByCommandName.get(command.command_name);
     if (!actor) {
       logger.debug("[ipm]: No actor found:", command.command_name);
-      unexecutableCommands.set(command, [isInitialization, isConfigUpdate]);
+      unexecutableCommands.set(command, [isConfigUpdate]);
       continue;
     }
 
@@ -379,7 +368,7 @@ export async function executeIPMCommands(
         return;
       }
 
-      await actor.handleCommand(executableCommand.ipm_id, isInitialization);
+      await actor.handleCommand(executableCommand.ipm_id);
     },
   );
 
@@ -398,12 +387,11 @@ export async function executeIPMCommands(
  */
 function queueCommandsExecution(
   commands: unknown[],
-  isInitialization: boolean = false,
   isConfigUpdate: boolean = false,
 ): void {
   executionQueue = executionQueue.then(async () => {
     try {
-      await executeIPMCommands(commands, isInitialization, isConfigUpdate);
+      await executeIPMCommands(commands, isConfigUpdate);
     } catch (ex) {
       if (!(ex instanceof Error)) {
         console.error(ex);
@@ -548,7 +536,7 @@ async function synchronizeRemoteCommands(): Promise<void> {
   commandStorage.replaceAll(commandMap);
 
   // Execute commands
-  queueCommandsExecution(commands, true, isConfigUpdate);
+  queueCommandsExecution(commands, isConfigUpdate);
 }
 
 /**

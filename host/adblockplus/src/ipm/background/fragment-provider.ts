@@ -31,15 +31,6 @@ export function getFragment(): Fragment {
 }
 
 /**
- * Whether the currently selected fragment is the future fragment
- *
- * @returns whether the currently selected fragment is the future fragment
- */
-export function isFutureFragment(): boolean {
-  return true;
-}
-
-/**
  * Starts the currently selected fragment and passes on the matching
  * StartInfo argument
  */

@@ -27,9 +27,7 @@ import { getFragment } from "~/ipm/background";
 
 jest.mock("~/ipm/background", () => ({
   getFragment: jest.fn(),
-  isFutureFragment: jest.fn(),
-  CommandName: { createTab: "createTab" },
-  CommandEventType: { expired: "expired" }
+  CommandName: { createTab: "createTab" }
 }));
 
 describe("TabManager", () => {

@@ -32,37 +32,3 @@ export const lastShownKey = "new_tab_last_shown";
  * tabs being opened.
  */
 export const coolDownPeriodKey = "new_tab_cool_down";
-
-/**
- * New tab event names
- *
- * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
- */
-export enum NewTabEventType {
-  created = "tab_created",
-  loaded = "tab_loaded",
-  received = "received",
-  has_content = "has_content",
-}
-
-/**
- * New tab error event names
- *
- * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
- */
-export enum NewTabErrorEventType {
-  noBehaviorFound = "error_no_behavior",
-  licenseStateNoMatch = "license_state_no_match",
-  noUrlFound = "error_no_url",
-  tabCreationError = "tab_creation_error",
-}
-
-/**
- * New tab exit event names
- *
- * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
- */
-export enum NewTabExitEventType {
-  admin = "newtab_admin",
-  disabled = "newtab_disabled",
-}

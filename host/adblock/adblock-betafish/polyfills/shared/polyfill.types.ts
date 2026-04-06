@@ -23,14 +23,6 @@ export interface Message {
 }
 
 /**
- * Temporary interface for error message object,
- * as passed from the content script to background page
- */
-export interface ErrorMessage extends Message {
-  error: string;
-}
-
-/**
  * Temporary interface for the ad wall message object,
  * as passed from the content script to background page
  */

@@ -30,21 +30,6 @@ export const lastShownKey = "onpage_dialog_last_shown";
 export const coolDownPeriodKey = "onpage_dialog_cool_down";
 
 /**
- * On-page dialog event names
- *
- * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
- */
-export enum DialogEventType {
-  buttonClicked = "dialog_button_clicked",
-  closed = "dialog_closed",
-  ignored = "dialog_ignored",
-  injected = "dialog_injected",
-  injected_error = "dialog_injected_error",
-  initial_ping = "ping.initial",
-  received = "received",
-}
-
-/**
  * Results when attempting to show on-page dialog
  */
 export enum ShowOnpageDialogResult {
@@ -64,17 +49,6 @@ export enum ShowOnpageDialogResult {
    * Error during processing
    */
   error,
-}
-
-/**
- * On-page dialog error event names
- *
- * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
- */
-export enum DialogErrorEventType {
-  error_no_dialog_found = "error.no_ipm",
-  get_no_dialog_found = "get.no_dialog",
-  ping_no_dialog_found = "ping.no_dialog",
 }
 
 /**

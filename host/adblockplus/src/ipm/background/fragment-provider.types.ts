@@ -31,10 +31,7 @@ export type {
 export type { LicenseStateBehavior } from "./legacy.types";
 
 // re-export enums
-export {
-  CommandEventType,
-  CommandName
-} from "@eyeo-fragments/in-product-messaging/background";
+export { CommandName } from "@eyeo-fragments/in-product-messaging/background";
 
 // export differing types
 export { type FutureFragment };

@@ -43,7 +43,6 @@ import { setDialogCommandHandler } from "./middleware";
 import { clearStats, getStats, setStats } from "./stats";
 import {
   coolDownPeriodKey,
-  DialogEventType,
   lastShownKey,
   ShowOnpageDialogResult
 } from "./tab-manager.types";
@@ -57,12 +56,7 @@ import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { Timing } from "./timing.types";
 import { getPremiumSubscriptionsState } from "~/premium-subscriptions/background";
 import { COOKIES_PREMIUM_SUBSCRIPTION_TYPE } from "~/premium-subscriptions/shared";
-import {
-  CommandEventType,
-  CommandName,
-  getFragment,
-  isFutureFragment
-} from "~/ipm/background";
+import { getFragment } from "~/ipm/background";
 
 /**
  * Tab-specific session storage for dialogs
@@ -234,10 +228,7 @@ async function handleCloseMessage(
   }
 
   void removeDialog(sender.tab.id);
-  if (isFutureFragment()) {
-    serverLogger.behavior("dialog_closed", dialog.ipmId ?? "", dialog.ipmId);
-  }
-  recordLegacyEvent(dialog, DialogEventType.closed);
+  serverLogger.behavior("dialog_closed", dialog.ipmId ?? "", dialog.ipmId);
 }
 
 /**
@@ -269,14 +260,11 @@ async function handleContinueMessage(
   void browser.tabs.create({ url: safeTargetUrl });
 
   void removeDialog(sender.tab.id);
-  if (isFutureFragment()) {
-    serverLogger.behavior(
-      "dialog_button_clicked",
-      dialog.ipmId ?? "",
-      dialog.ipmId
-    );
-  }
-  recordLegacyEvent(dialog, DialogEventType.buttonClicked);
+  serverLogger.behavior(
+    "dialog_button_clicked",
+    dialog.ipmId ?? "",
+    dialog.ipmId
+  );
 }
 
 /**
@@ -304,9 +292,7 @@ async function handleDialogCommand(ipmId: string): Promise<void> {
   const dialog: Dialog = { behavior, content, id: ipmId, ipmId };
   unassignedDialogs.set(dialog.id, dialog);
 
-  if (isFutureFragment()) {
-    serverLogger.behavior("command_ready", ipmId, ipmId);
-  }
+  serverLogger.behavior("command_ready", ipmId, ipmId);
 }
 
 /**
@@ -364,10 +350,7 @@ async function handlePingMessage(
   }
 
   void removeDialog(sender.tab.id);
-  if (isFutureFragment()) {
-    serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
-  }
-  recordLegacyEvent(dialog, DialogEventType.ignored);
+  serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
 }
 
 /**
@@ -383,10 +366,7 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
   }
 
   void removeDialog(tabId);
-  if (isFutureFragment()) {
-    serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
-  }
-  recordLegacyEvent(dialog, DialogEventType.ignored);
+  serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
 }
 
 /**
@@ -424,7 +404,6 @@ export async function showDialogFromList(
       // happen, but we can't continue anyways.
       if (command && isCommandExpired(command)) {
         logger.error("[onpage-dialog]: Command has expired.");
-        recordLegacyEvent(dialog, CommandEventType.expired);
         dismissDialogFn(dialog);
         continue;
       }
@@ -508,28 +487,6 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
   );
 
   void showDialogFromList(dialogs, tab);
-}
-
-/**
- * Records dialog event
- *
- * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
- * @param dialog - Dialog information
- * @param eventType - Dialog event type
- */
-function recordLegacyEvent(
-  dialog: Dialog,
-  eventType: CommandEventType | DialogEventType
-): void {
-  eventEmitter.emit(eventType, dialog);
-
-  if (typeof dialog.ipmId === "string") {
-    getFragment().recordEvent(
-      dialog.ipmId,
-      CommandName.createOnPageDialog,
-      eventType
-    );
-  }
 }
 
 /**
@@ -644,11 +601,7 @@ export async function showOnpageDialog(
     return ShowOnpageDialogResult.error;
   }
 
-  if (isFutureFragment()) {
-    serverLogger.behavior("dialog_injected", dialog.ipmId ?? "", dialog.ipmId);
-  }
-  recordLegacyEvent(dialog, DialogEventType.injected);
-
+  serverLogger.behavior("dialog_injected", dialog.ipmId ?? "", dialog.ipmId);
   return ShowOnpageDialogResult.shown;
 }
 

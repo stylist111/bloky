@@ -103,19 +103,9 @@ describe("command-library", () => {
 
     it("initializes properly", async () => {
       const commands = [{ ...commandBase }];
-      await executeIPMCommands(commands, true);
-      expect(createTabActor.handleCommand).toHaveBeenCalledWith(
-        commandBase.ipm_id,
-        true,
-      );
-    });
-
-    it("executes properly after ping", async () => {
-      const commands = [{ ...commandBase }];
       await executeIPMCommands(commands);
       expect(createTabActor.handleCommand).toHaveBeenCalledWith(
         commandBase.ipm_id,
-        false,
       );
     });
 
@@ -147,7 +137,7 @@ describe("command-library", () => {
         [newerCommand.ipm_id]: newerCommand,
       });
 
-      await executeIPMCommands([newerCommand], true);
+      await executeIPMCommands([newerCommand]);
 
       expect(commandStorage.remove).not.toHaveBeenCalled();
       expect(commandStorage.get(newerCommand.ipm_id)).toEqual(newerCommand);
@@ -160,10 +150,9 @@ describe("command-library", () => {
           cohort: assignedCohort,
         },
       ];
-      await executeIPMCommands(commands, true);
+      await executeIPMCommands(commands);
       expect(createTabActor.handleCommand).toHaveBeenCalledWith(
         commandBase.ipm_id,
-        true,
       );
     });
 
@@ -174,7 +163,7 @@ describe("command-library", () => {
           cohort: nonAssignedCohort,
         },
       ];
-      await executeIPMCommands(commands, true);
+      await executeIPMCommands(commands);
       expect(createTabActor.handleCommand).not.toHaveBeenCalled();
     });
   });

@@ -36,15 +36,8 @@ export interface Behavior {}
  * Handler that gets called when command gets executed
  *
  * @param ipmId The IPM ID
- * @param isFragmentInitialization Whether the command handler is called during
- *  the fragment initialization phase (i.e. when processing commands that
- *  are being restored from storage, as opposed to processing commands that
- *  come in via a response from the IPM server during runtime).
  */
-export type CommandHandler = (
-  ipmId: string,
-  isFragmentInitialization: boolean,
-) => Promise<void>;
+export type CommandHandler = (ipmId: string) => Promise<void>;
 
 /**
  * An enum containing all known command names.
@@ -167,13 +160,6 @@ export interface CommandActor {
    * processed.
    */
   onCommandsProcessed: () => void | Promise<void>;
-}
-
-/**
- * General Command events
- */
-export enum CommandEventType {
-  expired = "command_expired",
 }
 
 export interface TestingOverrideLocaleMessage {

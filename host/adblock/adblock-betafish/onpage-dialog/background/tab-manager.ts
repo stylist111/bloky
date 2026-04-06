@@ -19,12 +19,7 @@ import { Tabs } from "webextension-polyfill";
 import * as browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
-import {
-  CommandEventType,
-  CommandName,
-  getFragment,
-  isFutureFragment,
-} from "../../../src/ipm/background";
+import { getFragment } from "../../../src/ipm/background";
 import { Prefs } from "../../alias/prefs";
 import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
 import { TabSessionStorage } from "../../../adblockplusui/adblockpluschrome/lib/storage/tab-session";
@@ -34,14 +29,12 @@ import * as logger from "../../utilities/background";
 import { MessageSender, TabRemovedEventData } from "../../polyfills/background";
 import { getSettings } from "../../prefs/background/settings";
 import { isCookieBannerDialog, isDialog, isDialogBehavior, isDialogContent } from "./dialog";
-import { Message, ErrorMessage } from "../../polyfills/shared";
+import { Message } from "../../polyfills/shared";
 import { type HideMessage, type StartInfo, isPingMessage } from "../shared";
 import { type Dialog } from "./dialog.types";
 import { setDialogCommandHandler } from "./middleware";
 import { clearStats, getStats, setStats } from "./stats";
 import {
-  DialogEventType,
-  DialogErrorEventType,
   ShowOnpageDialogResult,
   TabPage,
   coolDownPeriodKey,
@@ -126,32 +119,6 @@ function sendMessage(tabId: number, message: Message): Promise<any> {
 }
 
 /**
- * Records dialog event
- *
- * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
- * @param dialog - Dialog information
- * @param eventType - Dialog event type
- */
-function recordLegacyEvent(dialog: Dialog, eventType: CommandEventType | DialogEventType): void {
-  eventEmitter.emit(eventType, dialog);
-
-  if (typeof dialog.ipmId === "string") {
-    getFragment().recordEvent(dialog.ipmId, CommandName.createOnPageDialog, eventType);
-  }
-}
-
-/**
- * Records dialog error event
- *
- * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
- * @param dialog - Dialog information
- * @param eventType - Dialog event type
- */
-function recordLegacyErrorEvent(eventType: DialogErrorEventType): void {
-  getFragment().recordEvent(null, CommandName.createOnPageDialog, eventType);
-}
-
-/**
  * Dismisses on-page dialog
  *
  * @param dialog - Dialog information
@@ -221,10 +188,8 @@ async function removeDialog(
  * Handles IPM commands
  *
  * @param ipmId - IPM ID
- * @param isInitialization - Whether the command is being restored when the
- *   module initializes
  */
-async function handleDialogCommand(ipmId: string, isInitialization: boolean): Promise<void> {
+async function handleDialogCommand(ipmId: string): Promise<void> {
   if (typeof ipmId !== "string") {
     return;
   }
@@ -244,13 +209,7 @@ async function handleDialogCommand(ipmId: string, isInitialization: boolean): Pr
   const dialog: Dialog = { behavior, content, id: ipmId, ipmId };
   unassignedDialogs.set(dialog.id, dialog);
 
-  if (isFutureFragment()) {
-    serverLogger.behavior("command_ready", ipmId, ipmId);
-  }
-
-  if (!isInitialization) {
-    recordLegacyEvent(dialog, DialogEventType.received);
-  }
+  serverLogger.behavior("command_ready", ipmId, ipmId);
 }
 
 /**
@@ -270,10 +229,7 @@ async function handleCloseMessage(message: Message, sender: MessageSender): Prom
   }
 
   void removeDialog(sender.page.id, dialog);
-  if (isFutureFragment()) {
-    serverLogger.behavior("dialog_closed", dialog.ipmId ?? "", dialog.ipmId);
-  }
-  recordLegacyEvent(dialog, DialogEventType.closed);
+  serverLogger.behavior("dialog_closed", dialog.ipmId ?? "", dialog.ipmId);
 }
 
 /**
@@ -300,10 +256,7 @@ async function handleContinueMessage(message: Message, sender: MessageSender): P
   void browser.tabs.create({ url: safeTargetUrl });
 
   void removeDialog(sender.page.id, dialog);
-  if (isFutureFragment()) {
-    serverLogger.behavior("dialog_button_clicked", dialog.ipmId ?? "", dialog.ipmId);
-  }
-  recordLegacyEvent(dialog, DialogEventType.buttonClicked);
+  serverLogger.behavior("dialog_button_clicked", dialog.ipmId ?? "", dialog.ipmId);
 }
 
 /**
@@ -326,7 +279,6 @@ async function handleGetMessage(
   const dialog = await assignedDialogs.get(sender.page.id);
   if (!isDialog(dialog)) {
     logger.debug("[onpage-dialog]: get, no dialog");
-    recordLegacyErrorEvent(DialogErrorEventType.get_no_dialog_found);
     return null;
   }
 
@@ -350,7 +302,6 @@ async function handlePingMessage(message: Message, sender: MessageSender): Promi
   const dialog = await assignedDialogs.get(sender.page.id);
   if (!isDialog(dialog)) {
     logger.debug("[onpage-dialog]: ping message, no dialog");
-    recordLegacyErrorEvent(DialogErrorEventType.ping_no_dialog_found);
     return;
   }
 
@@ -364,38 +315,7 @@ async function handlePingMessage(message: Message, sender: MessageSender): Promi
   }
 
   void removeDialog(sender.page.id, dialog);
-  if (isFutureFragment()) {
-    serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
-  }
-  recordLegacyEvent(dialog, DialogEventType.ignored);
-}
-
-/**
- * Handles "onpage-dialog.error" messages
- *
- * @param message - ErrorMessage
- * @param sender - Message sender
- *
- * @returns on-page dialog initialization information
- */
-async function handleErrorMessage(message: ErrorMessage, sender: MessageSender): Promise<void> {
-  if (typeof sender.page?.id === "undefined") {
-    return;
-  }
-  const dialog = await assignedDialogs.get(sender.page.id);
-
-  if (!dialog) {
-    getFragment().recordEvent(
-      null,
-      CommandName.createOnPageDialog,
-      DialogErrorEventType.error_no_dialog_found,
-    );
-  }
-  getFragment().recordEvent(
-    dialog.ipmId,
-    CommandName.createOnPageDialog,
-    `${message.type}.${message.error}`,
-  );
+  serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
 }
 
 /**
@@ -412,10 +332,7 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
   }
 
   void removeDialog(tabId, dialog);
-  if (isFutureFragment()) {
-    serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
-  }
-  recordLegacyEvent(dialog, DialogEventType.ignored);
+  serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
 }
 
 /**
@@ -562,14 +479,10 @@ export async function showOnpageDialog(
     await injectDialog(tabId);
   } catch (ex) {
     logger.reportAndLogError(ex, "[onpage-dialog] Injection of dialog failed");
-    recordLegacyEvent(dialog, DialogEventType.injected_error);
     return ShowOnpageDialogResult.error;
   }
 
-  if (isFutureFragment()) {
-    serverLogger.behavior("dialog_injected", dialog.ipmId ?? "", dialog.ipmId);
-  }
-  recordLegacyEvent(dialog, DialogEventType.injected);
+  serverLogger.behavior("dialog_injected", dialog.ipmId ?? "", dialog.ipmId);
   return ShowOnpageDialogResult.shown;
 }
 
@@ -623,7 +536,6 @@ export async function showDialogFromList(
       // happen, but we can't continue anyways.
       if (command && isCommandExpired(command)) {
         logger.error("[onpage-dialog]: Command has expired.");
-        recordLegacyEvent(dialog, CommandEventType.expired);
         dismissDialogFn(dialog);
         continue;
       }
@@ -776,7 +688,6 @@ export async function start(): Promise<void> {
   port.on("onpage-dialog.continue", handleContinueMessage);
   port.on("onpage-dialog.get", handleGetMessage);
   port.on("onpage-dialog.ping", handlePingMessage);
-  port.on("onpage-dialog.error", handleErrorMessage);
   port.on("cookie-banner.detected", handleCookieBannerDetected);
 
   ext.addTrustedMessageTypes(null, [
@@ -784,7 +695,6 @@ export async function start(): Promise<void> {
     "onpage-dialog.close",
     "onpage-dialog.get",
     "onpage-dialog.ping",
-    "onpage-dialog.error",
     "cookie-banner.detected",
   ]);
 
