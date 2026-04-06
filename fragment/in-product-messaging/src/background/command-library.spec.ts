@@ -37,8 +37,8 @@ const assignedCohort = "assigned";
 const nonAssignedCohort = "not-assigned";
 
 describe("command-library", () => {
-  beforeAll(async () => {
-    await start(getStartInfo());
+  beforeAll(() => {
+    start(getStartInfo());
   });
 
   beforeEach(() => {

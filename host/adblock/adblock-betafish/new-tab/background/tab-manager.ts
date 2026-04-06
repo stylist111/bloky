@@ -260,7 +260,7 @@ async function openNewtab(): Promise<void> {
 
     const command = getCommand(ipmId);
     if (!command) {
-      // This means the command has expired when running the future fragment
+      // If the command disappears from storage, it means it's expired
       continue;
     }
 

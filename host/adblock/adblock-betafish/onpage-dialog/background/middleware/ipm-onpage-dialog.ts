@@ -23,7 +23,6 @@ import {
   type ParamDefinitionList,
   isEmpty,
   isEmptyOrPositiveNumber,
-  isNotEmpty,
   isSafeUrl,
   isValidDomainList,
   setCommandActor,
@@ -67,39 +66,6 @@ function getParamDefinitionList(): ParamDefinitionList<DialogParams> {
         typeof param === "undefined" || (typeof param === "number" && param >= 0 && param <= 20),
     },
     {
-      name: "sub_title",
-      validate: (param, commandVersion): boolean => {
-        // Support for this parameter was removed in command version 8
-        if (commandVersion >= 8) {
-          return true;
-        }
-
-        return isNotEmpty(param);
-      },
-    },
-    {
-      name: "upper_body",
-      validate: (param, commandVersion): boolean => {
-        // Support for this parameter was removed in command version 8
-        if (commandVersion >= 8) {
-          return true;
-        }
-
-        return isNotEmpty(param);
-      },
-    },
-    {
-      name: "button_label",
-      validate: (param, commandVersion): boolean => {
-        // Support for this parameter was removed in command version 8
-        if (commandVersion >= 8) {
-          return true;
-        }
-
-        return isNotEmpty(param);
-      },
-    },
-    {
       name: "button_target",
       validate: isSafeUrl,
     },
@@ -110,17 +76,6 @@ function getParamDefinitionList(): ParamDefinitionList<DialogParams> {
     {
       name: "priority",
       validate: isEmptyOrPositiveNumber,
-    },
-    {
-      name: "lower_body",
-      validate: (param, commandVersion): boolean => {
-        // Support for this parameter was removed in command version 8
-        if (commandVersion >= 8) {
-          return true;
-        }
-
-        return typeof param === "undefined" || isNotEmpty(param);
-      },
     },
     {
       name: "content",

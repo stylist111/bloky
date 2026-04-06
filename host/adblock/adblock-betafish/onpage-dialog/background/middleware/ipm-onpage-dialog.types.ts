@@ -30,19 +30,10 @@ export const defaultPriority = 1;
 export interface DialogParams {
   timing: Timing;
   display_duration?: number;
-  // Only required by legacy IPM command
-  sub_title?: string;
-  // Only required by legacy IPM command
-  upper_body?: string;
-  // Only required by legacy IPM command
-  lower_body?: string;
-  // Only required by legacy IPM command
-  button_label: string;
   button_target: string;
   domain_list?: string;
   priority?: number;
-  // Only required by future IPM command
-  content?: Record<string, DialogCommandContent>;
+  content: Record<string, DialogCommandContent>;
 }
 
 /**

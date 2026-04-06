@@ -45,10 +45,6 @@ export type CommandHandler = (ipmId: string) => Promise<void>;
 export enum CommandName {
   createOnPageDialog = "create_on_page_dialog",
   createTab = "create_tab",
-  /**
-   * @deprecated unused, but required for compatibility with legacy fragment
-   */
-  deleteCommands = "delete_commands",
 }
 
 /**
@@ -57,10 +53,6 @@ export enum CommandName {
 export const CommandVersion: Record<CommandName, number> = {
   [CommandName.createOnPageDialog]: 8,
   [CommandName.createTab]: 6,
-  /**
-   * @deprecated unused, but required for compatibility with legacy fragment
-   */
-  [CommandName.deleteCommands]: 100,
 };
 
 /**

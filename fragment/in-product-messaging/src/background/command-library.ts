@@ -510,9 +510,8 @@ async function synchronizeRemoteCommands(): Promise<void> {
     return;
   }
 
-  // In order to keep the behavior consistent with the legacy IPM fragment,
-  // and to not clash with the integrated update campaigns, we are explicitly
-  // ignoring IPMs for Firefox users while the legacy fragment is still around
+  // In order not clash with the integrated update campaigns, we are explicitly
+  // ignoring IPMs for Firefox users until removing those
   if (info.getBrowserName() === "firefox") {
     return;
   }
@@ -542,7 +541,7 @@ async function synchronizeRemoteCommands(): Promise<void> {
 /**
  * Initializes command library
  */
-export async function start(startInfo: StartInfo): Promise<void> {
+export function start(startInfo: StartInfo): void {
   setStartInfo(startInfo);
 
   isActive = true;

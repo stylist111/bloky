@@ -84,5 +84,5 @@ const startInfo: StartInfo = {
 export async function start(): Promise<void> {
   await Prefs.untilLoaded;
 
-  await startFragment(startInfo);
+  startFragment(startInfo);
 }
