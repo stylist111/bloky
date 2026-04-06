@@ -15,7 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { type Command, type LicenseStateBehavior } from "~/ipm/background";
+import { type Command } from "@eyeo-fragments/in-product-messaging/background";
+
+import { type LicenseStateBehavior } from "~/ipm/background";
 
 /**
  * The method to use for creating the new tab.

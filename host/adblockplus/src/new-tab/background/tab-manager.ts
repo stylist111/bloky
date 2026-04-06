@@ -17,8 +17,19 @@
 
 import * as browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import {
+  addCohortAssignmentsSearchParam,
+  addExperimentsSearchParams,
+  createSafeOriginUrl,
+  dismissCommand,
+  getBehavior,
+  getCommand,
+  isCommandExpired
+} from "@eyeo-fragments/in-product-messaging/background";
 
-import * as logger from "../../logger/background";
+import { checkLanguage, doesLicenseStateMatch } from "~/ipm/background";
+import * as logger from "~/logger/background";
+
 import {
   CreationMethod,
   isNewTabBehavior,
@@ -33,7 +44,6 @@ import {
   coolDownPeriodKey
 } from "./tab-manager.types";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
-import { getFragment } from "~/ipm/background";
 
 /**
  * List of tabs that we still need to open.
@@ -115,8 +125,8 @@ export function compareNewTabRequestsByPriority(
  *
  * @param ipmId - IPM ID
  */
-function dismissCommand(ipmId: string): void {
-  getFragment().dismissCommand(ipmId);
+function dismissNewtabCommand(ipmId: string): void {
+  dismissCommand(ipmId);
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete waitingTabs[ipmId];
 }
@@ -176,9 +186,6 @@ function onNewTabUpdated(
  * @returns The URL with params appended
  */
 export async function buildTargetUrl(targetUrl: string): Promise<string> {
-  const { addExperimentsSearchParams, addCohortAssignmentsSearchParam } =
-    getFragment();
-
   let url = await addExperimentsSearchParams(targetUrl);
   if (url === null) {
     url = targetUrl;
@@ -199,15 +206,6 @@ export async function buildTargetUrl(targetUrl: string): Promise<string> {
  */
 async function openNewTab(): Promise<void> {
   logger.debug("[new-tab]: openNewTab");
-
-  const {
-    checkLanguage,
-    createSafeOriginUrl,
-    doesLicenseStateMatch,
-    getBehavior,
-    getCommand,
-    isCommandExpired
-  } = getFragment();
 
   // Sort the waiting new tab candidates by priority.
   const candidates = Object.values(waitingTabs).sort(
@@ -238,14 +236,14 @@ async function openNewTab(): Promise<void> {
     const behavior = getBehavior(ipmId);
     if (!isNewTabBehavior(behavior)) {
       logger.debug("[new-tab]: Invalid command behavior.");
-      dismissCommand(ipmId);
+      dismissNewtabCommand(ipmId);
       continue;
     }
 
     // Ignore and dismiss command if license states mismatch.
     if (!(await doesLicenseStateMatch(behavior))) {
       logger.debug("[new-tab]: License state mismatch.");
-      dismissCommand(ipmId);
+      dismissNewtabCommand(ipmId);
       continue;
     }
 
@@ -254,7 +252,7 @@ async function openNewTab(): Promise<void> {
     const targetUrl = createSafeOriginUrl(behavior.target);
     if (targetUrl === null) {
       logger.debug("[new-tab]: Invalid target URL.");
-      dismissCommand(ipmId);
+      dismissNewtabCommand(ipmId);
       continue;
     }
 
@@ -270,7 +268,7 @@ async function openNewTab(): Promise<void> {
     }
     if (isCommandExpired(command)) {
       logger.error("[new-tab]: Command has expired.");
-      dismissCommand(ipmId);
+      dismissNewtabCommand(ipmId);
       continue;
     }
 
@@ -300,7 +298,7 @@ async function openNewTab(): Promise<void> {
 
     await Prefs.set(lastShownKey, Date.now());
     serverLogger.behavior("tab_created", ipmId, ipmId);
-    dismissCommand(ipmId);
+    dismissNewtabCommand(ipmId);
   }
 }
 
@@ -407,12 +405,11 @@ function removeListeners(ipmId: string): void {
  */
 export async function handleCommand(ipmId: string): Promise<void> {
   logger.debug("[new-tab]: tab manager handleCommand", ipmId);
-  const { getBehavior } = getFragment();
 
   // Don't open new tabs if we're on a managed installation
   const { installType } = await browser.management.getSelf();
   if ((installType as unknown) === "admin") {
-    dismissCommand(ipmId);
+    dismissNewtabCommand(ipmId);
     return;
   }
 
@@ -425,7 +422,7 @@ export async function handleCommand(ipmId: string): Promise<void> {
   // Don't open new tabs if user opted out of marketing messages
   const ignoredCategories = await ewe.notifications.getIgnoredCategories();
   if (ignoredCategories.includes("*")) {
-    dismissCommand(ipmId);
+    dismissNewtabCommand(ipmId);
     return;
   }
 
@@ -437,7 +434,7 @@ export async function handleCommand(ipmId: string): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   if (reverseTrialFlag || zeroDelayFlag) {
     logger.debug("[new-tab]: User is in zero delay reverse trial experiment");
-    dismissCommand(ipmId);
+    dismissNewtabCommand(ipmId);
     return;
   }
 
@@ -446,7 +443,7 @@ export async function handleCommand(ipmId: string): Promise<void> {
   // Don't open new tabs if something's wrong with the data we got
   if (!isNewTabBehavior(behavior)) {
     logger.debug("[new-tab]: Invalid command behavior.");
-    dismissCommand(ipmId);
+    dismissNewtabCommand(ipmId);
     return;
   }
 

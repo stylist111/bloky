@@ -15,5 +15,6 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./fragment-provider";
-export * from "./fragment-provider.types";
+export * from "./ipm";
+export * from "./legacy";
+export * from "./legacy.types";

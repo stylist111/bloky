@@ -17,10 +17,19 @@
 
 import * as browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import {
+  addCohortAssignmentsSearchParam,
+  addExperimentsSearchParams,
+  createSafeOriginUrl,
+  dismissCommand,
+  getBehavior,
+  getCommand,
+  isCommandExpired,
+} from "@eyeo-fragments/in-product-messaging/background";
 
 import { ExtendedInstallType } from "~/management";
 
-import { getFragment } from "../../../src/ipm/background";
+import { checkLanguage, doesLicenseStateMatch } from "../../../src/ipm/background";
 import * as logger from "../../utilities/background";
 import { getSettings, settings } from "../../prefs/background/settings";
 import { CreationMethod, isNewTabBehavior, NewTab, setNewTabCommandHandler } from "./middleware";
@@ -102,8 +111,8 @@ export function compareNewTabRequestsByPriority(newTabA: NewTab, newTabB: NewTab
  *
  * @param ipmId - IPM ID
  */
-function dismissCommand(ipmId: string): void {
-  getFragment().dismissCommand(ipmId);
+function dismissNewtabCommand(ipmId: string): void {
+  dismissCommand(ipmId);
   delete waitingTabs[ipmId];
 }
 
@@ -180,8 +189,6 @@ async function addBlockCountToURL(urlString: string): Promise<string | null> {
  * @returns The URL with params appended
  */
 export async function buildTargetUrl(targetUrl: string): Promise<string> {
-  const { addExperimentsSearchParams, addCohortAssignmentsSearchParam } = getFragment();
-
   let url = await addExperimentsSearchParams(targetUrl);
   if (url === null) {
     url = targetUrl;
@@ -211,15 +218,6 @@ async function openNewtab(): Promise<void> {
     logger.debug("[new-tab]:openNewtab");
     const { ipmId } = candidate;
 
-    const {
-      checkLanguage,
-      createSafeOriginUrl,
-      doesLicenseStateMatch,
-      getBehavior,
-      getCommand,
-      isCommandExpired,
-    } = getFragment();
-
     // Run mandatory language skew check
     void checkLanguage(ipmId);
 
@@ -239,7 +237,7 @@ async function openNewtab(): Promise<void> {
     const behavior = getBehavior(ipmId);
     if (!isNewTabBehavior(behavior)) {
       logger.debug("[new-tab]: No command behavior");
-      dismissCommand(ipmId);
+      dismissNewtabCommand(ipmId);
       continue;
     }
 
@@ -247,7 +245,7 @@ async function openNewtab(): Promise<void> {
     // eslint-disable-next-line no-await-in-loop
     if (!(await doesLicenseStateMatch(behavior))) {
       logger.debug("[new-tab]: License state mis-match");
-      dismissCommand(ipmId);
+      dismissNewtabCommand(ipmId);
       continue;
     }
 
@@ -256,7 +254,7 @@ async function openNewtab(): Promise<void> {
     const targetUrl = createSafeOriginUrl(behavior.target);
     if (!targetUrl) {
       logger.debug("[new-tab]: Invalid target URL.");
-      dismissCommand(ipmId);
+      dismissNewtabCommand(ipmId);
       continue;
     }
 
@@ -268,7 +266,7 @@ async function openNewtab(): Promise<void> {
     url = await addBlockCountToURL(url);
     if (url === null) {
       logger.debug("[new-tab]: Invalid target URL.");
-      dismissCommand(ipmId);
+      dismissNewtabCommand(ipmId);
       continue;
     }
 
@@ -281,7 +279,7 @@ async function openNewtab(): Promise<void> {
     // Ignore and dismiss command if it has expired
     if (isCommandExpired(command)) {
       logger.error("[new-tab]: Command has expired.");
-      dismissCommand(ipmId);
+      dismissNewtabCommand(ipmId);
       continue;
     }
 
@@ -310,7 +308,7 @@ async function openNewtab(): Promise<void> {
     // eslint-disable-next-line no-await-in-loop
     await Prefs.set(lastShownKey, Date.now());
     serverLogger.behavior("tab_created", ipmId, ipmId);
-    dismissCommand(ipmId);
+    dismissNewtabCommand(ipmId);
   }
 }
 
@@ -413,12 +411,10 @@ const onUpdated = (
 async function handleCommand(ipmId: string): Promise<void> {
   logger.debug("[new-tab]:tab manager handleCommand", ipmId);
 
-  const { getBehavior } = getFragment();
-
   // Don't open new tabs if we're on a managed installation
   const { installType } = await browser.management.getSelf();
   if ((installType as ExtendedInstallType) === "admin") {
-    dismissCommand(ipmId);
+    dismissNewtabCommand(ipmId);
     return;
   }
 
@@ -426,7 +422,7 @@ async function handleCommand(ipmId: string): Promise<void> {
   // Ignore and dismiss command if user opted-out of 'update-page'
   if (getSettings().suppress_update_page) {
     logger.debug("[new-tab]: suppress_update_page - true");
-    dismissCommand(ipmId);
+    dismissNewtabCommand(ipmId);
     return;
   }
 
@@ -434,7 +430,7 @@ async function handleCommand(ipmId: string): Promise<void> {
   await Prefs.untilLoaded;
   if (Prefs.get("marketing_opt_out")) {
     logger.debug("[new-tab]: marketing_opt_out - true");
-    dismissCommand(ipmId);
+    dismissNewtabCommand(ipmId);
     return;
   }
 
@@ -445,7 +441,7 @@ async function handleCommand(ipmId: string): Promise<void> {
   ]);
   if (reverseTrialFlag || zeroDelayFlag) {
     logger.debug("[new-tab]: User is in zero delay reverse trial experiment");
-    dismissCommand(ipmId);
+    dismissNewtabCommand(ipmId);
     return;
   }
 
@@ -454,7 +450,7 @@ async function handleCommand(ipmId: string): Promise<void> {
   const behavior = getBehavior(ipmId);
   if (!isNewTabBehavior(behavior)) {
     logger.debug("[new-tab]: Invalid command behavior");
-    dismissCommand(ipmId);
+    dismissNewtabCommand(ipmId);
     return;
   }
 

@@ -18,8 +18,16 @@
 import { Tabs } from "webextension-polyfill";
 import * as browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import {
+  createSafeOriginUrl,
+  dismissCommand,
+  getBehavior,
+  getCommand,
+  getContent,
+  isCommandExpired,
+} from "@eyeo-fragments/in-product-messaging/background";
 
-import { getFragment } from "../../../src/ipm/background";
+import { checkLanguage, doesLicenseStateMatch } from "../../../src/ipm/background";
 import { Prefs } from "../../alias/prefs";
 import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
 import { TabSessionStorage } from "../../../adblockplusui/adblockpluschrome/lib/storage/tab-session";
@@ -128,7 +136,7 @@ function dismissDialog(dialog: Dialog): void {
   unassignedDialogs.delete(dialog.id);
 
   if (typeof dialog.ipmId === "string") {
-    getFragment().dismissCommand(dialog.ipmId);
+    dismissCommand(dialog.ipmId);
   }
 }
 
@@ -194,8 +202,6 @@ async function handleDialogCommand(ipmId: string): Promise<void> {
     return;
   }
 
-  const { getBehavior, getContent } = getFragment();
-
   const behavior = getBehavior(ipmId);
   if (!isDialogBehavior(behavior)) {
     return;
@@ -248,7 +254,7 @@ async function handleContinueMessage(message: Message, sender: MessageSender): P
     return;
   }
 
-  const safeTargetUrl = getFragment().createSafeOriginUrl(dialog.behavior.target);
+  const safeTargetUrl = createSafeOriginUrl(dialog.behavior.target);
   if (safeTargetUrl === null) {
     return;
   }
@@ -413,7 +419,7 @@ export async function showOnpageDialog(
 ): Promise<ShowOnpageDialogResult> {
   // If we're here because of an IPM command, run the mandatory language skew check
   if (typeof dialog.ipmId === "string") {
-    void getFragment().checkLanguage(dialog.ipmId);
+    void checkLanguage(dialog.ipmId);
   }
 
   // Ignore and dismiss dialog if user opted-out of notifications
@@ -515,8 +521,6 @@ export async function showDialogFromList(
   if (!tab.id) {
     return;
   }
-
-  const { doesLicenseStateMatch, getCommand, isCommandExpired } = getFragment();
 
   for (const dialog of dialogs) {
     // Ignore and dismiss command if license state doesn't match those in the

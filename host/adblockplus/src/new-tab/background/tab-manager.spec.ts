@@ -15,6 +15,11 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {
+  addCohortAssignmentsSearchParam,
+  addExperimentsSearchParams
+} from "@eyeo-fragments/in-product-messaging/background";
+
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import {
   buildTargetUrl,
@@ -23,11 +28,10 @@ import {
 } from "./tab-manager";
 import { newTabRequests } from "./tab-manager.spec-data";
 import { coolDownPeriodKey, lastShownKey } from "./tab-manager.types";
-import { getFragment } from "~/ipm/background";
 
-jest.mock("~/ipm/background", () => ({
-  getFragment: jest.fn(),
-  CommandName: { createTab: "createTab" }
+jest.mock("@eyeo-fragments/in-product-messaging/background", () => ({
+  addCohortAssignmentsSearchParam: jest.fn(),
+  addExperimentsSearchParams: jest.fn()
 }));
 
 describe("TabManager", () => {
@@ -148,22 +152,16 @@ describe("TabManager", () => {
     const urlWithExperiments = "http://example.com?ev=__exp__&er=__rev__";
 
     it("should pass the experiment-modified URL to addCohortAssignmentsSearchParam", async () => {
-      const addExperimentsSearchParams = jest
-        .fn()
+      jest
+        .mocked(addExperimentsSearchParams)
         .mockResolvedValue(urlWithExperiments);
-      const addCohortAssignmentsSearchParam = jest
-        .fn()
+      const mockAddCohortAssignmentsSearchParam = jest
+        .mocked(addCohortAssignmentsSearchParam)
         .mockResolvedValue(`${urlWithExperiments}&ca=__ca__`);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (getFragment as any).mockReturnValue({
-        addExperimentsSearchParams,
-        addCohortAssignmentsSearchParam
-      });
 
       await buildTargetUrl(targetUrl);
 
-      expect(addCohortAssignmentsSearchParam).toHaveBeenCalledWith(
+      expect(mockAddCohortAssignmentsSearchParam).toHaveBeenCalledWith(
         urlWithExperiments
       );
     });

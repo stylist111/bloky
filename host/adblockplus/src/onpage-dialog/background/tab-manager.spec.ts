@@ -16,6 +16,7 @@
  */
 
 import { type Tabs } from "webextension-polyfill";
+
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import * as dialogModule from "./dialog";
 import { type Dialog } from "./dialog.types";
@@ -40,9 +41,6 @@ import {
   ShowOnpageDialogResult
 } from "./tab-manager.types";
 import * as timing from "./timing";
-import { getFragment } from "~/ipm/background";
-
-const ipmBackground = getFragment();
 
 jest.mock("../../premium-subscriptions/background");
 
@@ -173,9 +171,6 @@ describe("TabManager", () => {
       const tabId = 123;
       const cookieDialogPremiumUsers = dialogs[8];
 
-      jest
-        .spyOn(ipmBackground, "doesLicenseStateMatch")
-        .mockResolvedValue(true);
       jest
         .spyOn(premiumSubscriptions, "getPremiumSubscriptionsState")
         .mockResolvedValue({

@@ -15,6 +15,18 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {
+  type Command,
+  type CommandHandler,
+  CommandName,
+  type Content,
+  type ParamDefinitionList,
+  isEmptyOrPositiveNumber,
+  isSafeUrl,
+  setCommandActor,
+  validateParams
+} from "@eyeo-fragments/in-product-messaging/background";
+
 import * as logger from "../../../logger/background";
 import {
   CreationMethod,
@@ -24,21 +36,12 @@ import {
   type NewTabCommand,
   type NewTabParams
 } from "./new-tab.types";
-import {
-  getFragment,
-  type Command,
-  type CommandHandler,
-  CommandName,
-  type Content,
-  type ParamDefinitionList
-} from "~/ipm/background";
+import { defaultLicenseState, isValidLicenseStateList } from "~/ipm/background";
 
 /**
  * List of new tab parameter definitions
  */
 function getParamDefinitionList(): ParamDefinitionList<NewTabParams> {
-  const { isEmptyOrPositiveNumber, isSafeUrl, isValidLicenseStateList } =
-    getFragment();
   return [
     {
       name: "url",
@@ -72,10 +75,7 @@ function getParamDefinitionList(): ParamDefinitionList<NewTabParams> {
  * @returns Whether the command is a valid NewTabCommand and can be worked with
  */
 function isNewTabCommand(command: Command): command is NewTabCommand {
-  const validationErrors = getFragment().validateParams(
-    command,
-    getParamDefinitionList()
-  );
+  const validationErrors = validateParams(command, getParamDefinitionList());
   if (validationErrors.length === 0) {
     return true;
   }
@@ -123,8 +123,7 @@ function getBehavior(command: Command): NewTabBehavior | null {
 
   return {
     target: command.url,
-    licenseStateList:
-      command.license_state_list ?? getFragment().defaultLicenseState,
+    licenseStateList: command.license_state_list ?? defaultLicenseState,
     method,
     priority:
       typeof command.priority === "number" ? command.priority : defaultPriority
@@ -156,7 +155,7 @@ export function setNewTabCommandHandler(
   clearCommands: () => void,
   onCommandsProcessed: () => void
 ): void {
-  getFragment().setCommandActor(CommandName.createTab, {
+  setCommandActor(CommandName.createTab, {
     clearCommands,
     getBehavior,
     getContent,

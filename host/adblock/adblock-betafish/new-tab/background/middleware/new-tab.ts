@@ -21,9 +21,14 @@ import {
   CommandName,
   type Content,
   type ParamDefinitionList,
-  getFragment,
-} from "../../../../src/ipm/background";
+  isEmptyOrPositiveNumber,
+  isSafeUrl,
+  setCommandActor,
+  validateParams,
+} from "@eyeo-fragments/in-product-messaging/background";
+
 import * as logger from "~/utilities/background";
+import { defaultLicenseState, isValidLicenseStateList } from "../../../../src/ipm/background";
 import {
   CreationMethod,
   type NewTabBehavior,
@@ -37,7 +42,6 @@ import {
  * List of new tab parameter definitions
  */
 function getParamDefinitionList(): ParamDefinitionList<NewTabParams> {
-  const { isEmptyOrPositiveNumber, isSafeUrl, isValidLicenseStateList } = getFragment();
   return [
     {
       name: "url",
@@ -71,7 +75,7 @@ function getParamDefinitionList(): ParamDefinitionList<NewTabParams> {
  * @returns Whether the command is a valid NewTabCommand and can be worked with
  */
 function isNewTabCommand(command: Command): command is NewTabCommand {
-  const validationErrors = getFragment().validateParams(command, getParamDefinitionList());
+  const validationErrors = validateParams(command, getParamDefinitionList());
   if (validationErrors.length === 0) {
     return true;
   }
@@ -112,7 +116,7 @@ function getBehavior(command: Command): NewTabBehavior | null {
 
   return {
     target: command.url,
-    licenseStateList: command.license_state_list || getFragment().defaultLicenseState,
+    licenseStateList: command.license_state_list || defaultLicenseState,
     method,
     priority: typeof command.priority === "number" ? command.priority : defaultPriority,
   };
@@ -142,7 +146,7 @@ export function setNewTabCommandHandler(
   clearCommands: () => void,
   onCommandsProcessed: () => void,
 ): void {
-  getFragment().setCommandActor(CommandName.createTab, {
+  setCommandActor(CommandName.createTab, {
     clearCommands,
     getBehavior,
     getContent,

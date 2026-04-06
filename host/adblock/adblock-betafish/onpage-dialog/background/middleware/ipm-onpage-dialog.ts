@@ -21,9 +21,16 @@ import {
   CommandName,
   type Content,
   type ParamDefinitionList,
-  getFragment,
-} from "../../../../src/ipm/background";
+  isEmpty,
+  isEmptyOrPositiveNumber,
+  isNotEmpty,
+  isSafeUrl,
+  isValidDomainList,
+  setCommandActor,
+  validateParams,
+} from "@eyeo-fragments/in-product-messaging/background";
 
+import { defaultLicenseState, isValidLicenseStateList } from "../../../../src/ipm/background";
 import * as logger from "../../../utilities/background";
 import { type DialogContent } from "../../shared";
 import { type DialogBehavior } from "../dialog.types";
@@ -39,15 +46,6 @@ import {
  * List of on-page dialog parameter definitions
  */
 function getParamDefinitionList(): ParamDefinitionList<DialogParams> {
-  const {
-    isEmpty,
-    isEmptyOrPositiveNumber,
-    isNotEmpty,
-    isValidDomainList,
-    isSafeUrl,
-    isValidLicenseStateList,
-  } = getFragment();
-
   return [
     {
       name: "timing",
@@ -185,7 +183,7 @@ function getBehavior(command: Command): DialogBehavior | null {
     target: command.button_target,
     timing: command.timing,
     domainList: command.domain_list,
-    licenseStateList: command.license_state_list ?? getFragment().defaultLicenseState,
+    licenseStateList: command.license_state_list ?? defaultLicenseState,
     priority: typeof command.priority === "number" ? command.priority : defaultPriority,
   };
 }
@@ -220,7 +218,7 @@ function getContent(command: Command, content: Content): DialogContent | null {
  * @returns Whether the command is a valid DialogCommand and can be worked with
  */
 function isDialogCommand(command: Command): command is DialogCommand {
-  const validationErrors = getFragment().validateParams(command, getParamDefinitionList());
+  const validationErrors = validateParams(command, getParamDefinitionList());
 
   if (validationErrors.length === 0) {
     return true;
@@ -253,7 +251,7 @@ function isDialogCommandContent(candidate: unknown): candidate is DialogCommandC
  * @param clearCommands - Function to clear active commands
  */
 export function setDialogCommandHandler(handler: CommandHandler, clearCommands: () => void): void {
-  getFragment().setCommandActor(CommandName.createOnPageDialog, {
+  setCommandActor(CommandName.createOnPageDialog, {
     clearCommands,
     getBehavior,
     getContent,
