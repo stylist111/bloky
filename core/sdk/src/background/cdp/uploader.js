@@ -208,7 +208,7 @@ const EVENT_TYPE_TO_METRIC = {
   [EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW]: "b"
 };
 
-export async function buildStatsPayload(includeEventStats) {
+export async function buildStatsPayload() {
   let eventStats = await getBehaviourLoggingState();
 
   let domainStats = getDomainStats();
@@ -219,7 +219,7 @@ export async function buildStatsPayload(includeEventStats) {
     EVENT_TYPE_TO_METRIC[EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW]
   ];
   const dict = new MaxLengthMetricsDict(
-    STATS_UNCOMPRESSED_SIZE_LIMIT, domainStatMetrics, includeEventStats, null
+    STATS_UNCOMPRESSED_SIZE_LIMIT, domainStatMetrics, null
   );
 
   for (const [eventName, eventCount] of Object.entries(eventStats)) {
@@ -274,8 +274,7 @@ export async function upload() {
     else {
       // for the very first ping `lastPing` is null
       if (state.lastPing) {
-        let includeEventStats = await experiments.getFlag("cdp-include-event-stats-list");
-        stats = await buildStatsPayload(includeEventStats);
+        stats = await buildStatsPayload();
 
         // we don't need the data anymore:
         // it will be either successfully sent or saved for retry in

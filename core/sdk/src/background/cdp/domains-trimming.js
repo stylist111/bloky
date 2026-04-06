@@ -35,13 +35,11 @@ export class MaxLengthMetricsDict {
    *                           even if it exceeds this limit.
    * @param {Array<String>} metrics A list of names of metrics to collect
    *                                e.g. ["impression", "session"].
-   * @param {boolean} supportEventStats Whether or not we can add an "es"
-   * property to the output.
    * @param {?String|Number} space JSON formatting options (space).
    *                        (2 by default)
    * @throws {Error} "No metrics"
    */
-  constructor(maxLength, metrics, supportEventStats, space = 2) {
+  constructor(maxLength, metrics, space = 2) {
     if (!metrics || metrics.length == 0) {
       throw new Error("No metrics");
     }
@@ -51,7 +49,6 @@ export class MaxLengthMetricsDict {
     this.metricsDict = new Map();
     this.eventsDict = new Map();
     this.space = space;
-    this.supportEventStats = supportEventStats;
 
     // line indentation length
     this.indentationLength = this.space ? (typeof this.space === "number" ?
@@ -74,15 +71,13 @@ export class MaxLengthMetricsDict {
       this.newLineLength +
       1; // }
 
-    if (supportEventStats) {
-      // With eventStats, our empty object additionally has: ,"es":[]
-      this.length += 1 + // comma
-        this.newLineLength +
-        this.indentationLength +
-        4 + // "es"
-        this.colonLength +
-        2; // []
-    }
+    // With eventStats, our empty object additionally has: ,"es":[]
+    this.length += 1 + // comma
+      this.newLineLength +
+      this.indentationLength +
+      4 + // "es"
+      this.colonLength +
+      2; // []
 
     this._calcMetricsLength();
   }
@@ -186,10 +181,6 @@ export class MaxLengthMetricsDict {
    * @param {Number} increment Number of events seen
    */
   addEvent(event, increment) {
-    if (!this.supportEventStats) {
-      return;
-    }
-
     if (!this.eventsDict.has(event)) {
       this.length += this._calcAdditionalEventLength(event, increment);
       this.eventsDict.set(event, increment);
@@ -271,11 +262,9 @@ export class MaxLengthMetricsDict {
       });
     }
 
-    if (this.supportEventStats) {
-      result.es = [];
-      for (const [event, count] of this.eventsDict) {
-        result.es.push({e: event, c: count});
-      }
+    result.es = [];
+    for (const [event, count] of this.eventsDict) {
+      result.es.push({e: event, c: count});
     }
 
     return JSON.stringify(result, null, this.space);

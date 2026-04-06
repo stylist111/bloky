@@ -217,16 +217,18 @@ describe("CDP", function() {
 
   describe("Domains trimming", function() {
     it("generates \"domain_stats\" payload", async function() {
+      await EWE.testing.clearBehaviourLoggingState();
       await EWE.testing._setCdpData(
         EVENT_SESSION_START, SITE_ID, [1, 2, 3]
       );
       await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID, 4);
       const stats = await EWE.testing._buildCdpStatsPayload();
       expect(stats).toEqual(
-        `{"ds":[{"i":"${SITE_ID}","s":3,"p":4,"b":0}]}`);
+        `{"ds":[{"i":"${SITE_ID}","s":3,"p":4,"b":0}],"es":[]}`);
     });
 
     it("sorts \"domain_stats\" payload for sessions count", async function() {
+      await EWE.testing.clearBehaviourLoggingState();
       const SITE_ID1 = SITE_ID;
       const SITE_ID2 = SITE_ID + "2";
       const SITE_ID3 = SITE_ID + "3";
@@ -246,7 +248,7 @@ describe("CDP", function() {
         `{"i":"${SITE_ID2}","s":3,"p":1,"b":0},` +
         `{"i":"${SITE_ID3}","s":2,"p":5,"b":2},` +
         `{"i":"${SITE_ID1}","s":1,"p":2,"b":0}` +
-        "]}");
+        "],\"es\":[]}");
     });
   });
 
@@ -952,7 +954,6 @@ describe("CDP", function() {
     });
 
     it("sends requests that have event stats and no domain stats", async function() {
-      await EWE.experiments.overrideFlag("cdp-include-event-stats-list", true);
       await startMetricsUploaderWithTestArgs();
 
       // very first ping
@@ -1591,164 +1592,143 @@ describe("CDP", function() {
         expect(keyId).not.toBeNull();
       });
 
-      for (let eventStatsSupported of [false, true]) {
-        it(`is able to decrypt and decompress the payload - event stats ${eventStatsSupported ? "enabled" : "disabled"}`, async function() {
-          await EWE.experiments.overrideFlag("cdp-include-event-stats-list", eventStatsSupported);
+      it("is able to decrypt and decompress the payload", async function() {
+        setMinTimeout(this, 20 * 1000);
 
-          setMinTimeout(this, 20 * 1000);
+        await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
 
-          await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+        await startMetricsUploaderWithTestArgs();
 
-          await startMetricsUploaderWithTestArgs();
+        let payload;
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1);
+          payload = requestLogs[0].body.payload;
+        }, LOGS_WAIT_INTERVAL_MS);
+        expect(payload).not.toHaveProperty("encrypted_data"); // the very first ping
 
-          let payload;
-          await waitForAssertion(async() => {
-            let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-            expect(requestLogs).toHaveLength(1);
-            payload = requestLogs[0].body.payload;
-          }, LOGS_WAIT_INTERVAL_MS);
-          expect(payload).not.toHaveProperty("encrypted_data"); // the very first ping
+        // We need to navigate to another domain, as the session for
+        // "cross domain" is pending and will be not counted in domains_stats
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+        // increase page views counter
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+        // add a blockthrough aa pageview
+        await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html`).loaded;
+        await new Page("https://adblockplus.org").loaded;
+        // creates an event stat
+        await EWE.testing.serverLogger.behavior("test_event_no_data");
 
-          // We need to navigate to another domain, as the session for
-          // "cross domain" is pending and will be not counted in domains_stats
-          await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
-          // increase page views counter
-          await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
-          // add a blockthrough aa pageview
-          await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html`).loaded;
-          await new Page("https://adblockplus.org").loaded;
-          // creates an event stat
-          await EWE.testing.serverLogger.behavior("test_event_no_data");
+        await EWE.testing._uploadCdp();
 
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(2);
+          payload = requestLogs[1].body.payload;
+        }, LOGS_WAIT_INTERVAL_MS);
+
+        expect(payload).toHaveProperty("encrypted_data");
+        expect(payload).toHaveProperty("public_key_id");
+
+        const stats = await decryptStats(payload);
+        expect(stats.ds).toEqual(expect.arrayContaining([{
+          i: CROSS_DOMAIN,
+          s: 1,
+          p: 1,
+          b: 0
+        }, {
+          i: TEST_PAGES_DOMAIN,
+          s: 1,
+          p: 3,
+          b: 1
+        }, {
+          i: "adblockplus.org",
+          s: 1,
+          p: expect.any(Number),
+          b: 0
+        }]));
+
+        expect(stats.es).toEqual([{
+          e: "test_ewe_background:test_event_no_data",
+          c: 1
+        }]);
+      });
+
+      it("stops retry sending after reaching the limit - event stats", async function() {
+        await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+        await EWE.testing.serverLogger.behavior("test_event_no_data");
+        await EWE.testing.serverLogger.behavior("test_event_no_data");
+        await startMetricsUploaderWithTestArgs();
+
+        let payload;
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1);
+          payload = requestLogs[0].body.payload;
+        }, LOGS_WAIT_INTERVAL_MS);
+        expect(payload).not.toHaveProperty("encrypted_data"); // the very first ping
+
+        // simulate backend is down
+        await setEndpointResponse(PING_URL, {}, "POST", 500);
+
+        // retry to ping several times and make sure same utid is used
+        let attempt = 0;
+        let lastUtid;
+        const MAX_RETRIES = 3;
+        while (attempt++ < MAX_RETRIES) {
           await EWE.testing._uploadCdp();
 
           await waitForAssertion(async() => {
             let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-            expect(requestLogs).toHaveLength(2);
-            payload = requestLogs[1].body.payload;
-          }, LOGS_WAIT_INTERVAL_MS);
-
-          expect(payload).toHaveProperty("encrypted_data");
-          expect(payload).toHaveProperty("public_key_id");
-
-          const stats = await decryptStats(payload);
-          expect(stats.ds).toEqual(expect.arrayContaining([{
-            i: CROSS_DOMAIN,
-            s: 1,
-            p: 1,
-            b: 0
-          }, {
-            i: TEST_PAGES_DOMAIN,
-            s: 1,
-            p: 3,
-            b: 1
-          }, {
-            i: "adblockplus.org",
-            s: 1,
-            p: expect.any(Number),
-            b: 0
-          }]));
-
-          if (eventStatsSupported) {
-            expect(stats.es).toEqual([{
-              e: "test_ewe_background:test_event_no_data",
-              c: 1
-            }]);
-          }
-          else {
-            expect(stats.es).toBeUndefined();
-          }
-        });
-
-        it(`stops retry sending after reaching the limit - event stats ${eventStatsSupported ? "enabled" : "disabled"}`, async function() {
-          await EWE.experiments.overrideFlag("cdp-include-event-stats-list", eventStatsSupported);
-
-          await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
-          await EWE.testing.serverLogger.behavior("test_event_no_data");
-          await EWE.testing.serverLogger.behavior("test_event_no_data");
-          await startMetricsUploaderWithTestArgs();
-
-          let payload;
-          await waitForAssertion(async() => {
-            let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-            expect(requestLogs).toHaveLength(1);
-            payload = requestLogs[0].body.payload;
-          }, LOGS_WAIT_INTERVAL_MS);
-          expect(payload).not.toHaveProperty("encrypted_data"); // the very first ping
-
-          // simulate backend is down
-          await setEndpointResponse(PING_URL, {}, "POST", 500);
-
-          // retry to ping several times and make sure same utid is used
-          let attempt = 0;
-          let lastUtid;
-          const MAX_RETRIES = 3;
-          while (attempt++ < MAX_RETRIES) {
-            await EWE.testing._uploadCdp();
-
-            await waitForAssertion(async() => {
-              let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-              expect(requestLogs).toHaveLength(1 + attempt);
-              payload = requestLogs[requestLogs.length - 1].body.payload;
-            }, LOGS_WAIT_INTERVAL_MS);
-
-            // make sure we resend the last domains stats
-            const utid = payload.utid;
-            if (lastUtid) {
-              expect(utid).toEqual(lastUtid);
-            }
-            lastUtid = utid;
-          }
-          const failedStats = await decryptStats(payload);
-          expect(failedStats.ds).toHaveLength(1);
-          if (eventStatsSupported) {
-            expect(failedStats.es).toEqual([{
-              e: "test_ewe_background:test_event_no_data",
-              c: 2
-            }]);
-          }
-          else {
-            expect(failedStats.es).toBeUndefined();
-          }
-
-          // simulate backend is up again
-          await setEndpointResponse(PING_URL, {}, "POST", 200);
-
-          // We need to navigate to another domain, as the session for
-          // "cross domain" is pending and will be not counted in domains_stats
-          await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
-          await EWE.testing.serverLogger.behavior("test_event_no_data");
-
-          await EWE.testing._uploadCdp();
-
-          await waitForAssertion(async() => {
-            let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-            expect(requestLogs).toHaveLength(1 + MAX_RETRIES + 1);
+            expect(requestLogs).toHaveLength(1 + attempt);
             payload = requestLogs[requestLogs.length - 1].body.payload;
           }, LOGS_WAIT_INTERVAL_MS);
 
-          // new domains stats is sent
-          expect(payload.utid).not.toEqual(lastUtid);
-          const successfulStats = await decryptStats(payload);
-          expect(successfulStats.ds).toEqual([{
-            i: TEST_PAGES_DOMAIN,
-            s: 1,
-            p: 1,
-            b: 0
-          }]);
-          if (eventStatsSupported) {
-            expect(successfulStats.es).toEqual([
-              {
-                e: "test_ewe_background:test_event_no_data",
-                c: 1
-              }
-            ]);
+          // make sure we resend the last domains stats
+          const utid = payload.utid;
+          if (lastUtid) {
+            expect(utid).toEqual(lastUtid);
           }
-          else {
-            expect(successfulStats.es).toBeUndefined();
+          lastUtid = utid;
+        }
+        const failedStats = await decryptStats(payload);
+        expect(failedStats.ds).toHaveLength(1);
+        expect(failedStats.es).toEqual([{
+          e: "test_ewe_background:test_event_no_data",
+          c: 2
+        }]);
+
+        // simulate backend is up again
+        await setEndpointResponse(PING_URL, {}, "POST", 200);
+
+        // We need to navigate to another domain, as the session for
+        // "cross domain" is pending and will be not counted in domains_stats
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+        await EWE.testing.serverLogger.behavior("test_event_no_data");
+
+        await EWE.testing._uploadCdp();
+
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1 + MAX_RETRIES + 1);
+          payload = requestLogs[requestLogs.length - 1].body.payload;
+        }, LOGS_WAIT_INTERVAL_MS);
+
+        // new domains stats is sent
+        expect(payload.utid).not.toEqual(lastUtid);
+        const successfulStats = await decryptStats(payload);
+        expect(successfulStats.ds).toEqual([{
+          i: TEST_PAGES_DOMAIN,
+          s: 1,
+          p: 1,
+          b: 0
+        }]);
+        expect(successfulStats.es).toEqual([
+          {
+            e: "test_ewe_background:test_event_no_data",
+            c: 1
           }
-        });
-      }
+        ]);
+      });
 
       it("limits the payload to 50Kb", async function() {
         async function populateCdpData(length) {
