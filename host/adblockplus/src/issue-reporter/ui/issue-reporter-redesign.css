@@ -1,0 +1,965 @@
+/*
+ * This file is part of Adblock Plus <https://adblockplus.org/>,
+ * Copyright (C) 2006-present eyeo GmbH
+ *
+ * Adblock Plus is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * Adblock Plus is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@import "../../theme/ui/font.css";
+@import "../../theme/ui/common.css";
+@import "../../theme/ui/light.css";
+@import "../../components/ui/io-steps.css";
+@import "../../components/ui/io-highlighter.css";
+@import "../../components/ui/io-highlighter-fixes.css";
+
+html {
+  font-size: 16px;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  margin: 0rem;
+  color: #494949;
+  background-color: #f3f3f3;
+  font-size: 1.25rem;
+  align-items: center;
+}
+
+input,
+button {
+  font-family: inherit;
+}
+
+header,
+footer {
+  width: 46.3rem;
+}
+
+main {
+  width: 90vw;
+  max-width: 1400px;
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1.2rem;
+  margin-bottom: 2rem;
+  align-items: stretch;
+}
+
+header > .logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#logo {
+  height: 2.8rem;
+}
+
+.logo > p {
+  margin: 0;
+  margin-top: 1.2rem;
+  padding: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.8rem;
+  text-transform: uppercase;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 1.4rem;
+  flex-grow: 1;
+  min-height: 60vh;
+}
+
+main,
+#other-issues,
+.modalContent {
+  border: 1px solid #cdcdcd;
+  background-color: #fff;
+}
+
+.page:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.page > p {
+  font-size: 0.9rem;
+}
+
+main h1 {
+  margin: 0;
+  padding: 0;
+  font-size: 1.5rem;
+}
+
+/*
+ * Combined Report Issue Page Layout
+ */
+
+#reportIssueLayout {
+  display: flex;
+  gap: 1.5rem;
+  flex-grow: 1;
+  min-height: 500px;
+  overflow: hidden;
+  width: 100%;
+}
+
+#screenshotContainer {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/*
+ * Screenshot Info & Warning Banners
+ */
+
+.info-banner,
+.warning-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+}
+
+.info-banner {
+  background-color: #e8f4fc;
+  border: 1px solid #0797e1;
+}
+
+.info-banner p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #005d80;
+}
+
+.info-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background-color: #0797e1;
+  -webkit-mask-image: url(/skin/icons/info.svg);
+  mask-image: url(/skin/icons/info.svg);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.warning-banner {
+  background-color: #fff8e6;
+  border: 1px solid #f5a623;
+  margin-bottom: 1rem;
+}
+
+.warning-banner p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #6b4700;
+}
+
+/*
+ * Screenshot Consent Modal
+ */
+
+#screenshotConsentModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#screenshotConsentModal[hidden] {
+  display: none;
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  position: relative;
+  width: 90%;
+  max-width: 480px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background-color: #fff8e6;
+  border-bottom: 2px solid #f5a623;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #6b4700;
+}
+
+.warning-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  background-color: #f5a623;
+  -webkit-mask-image: url(/skin/icons/attention.svg);
+  mask-image: url(/skin/icons/attention.svg);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-body p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+.modal-body .consent-question {
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background-color: #f9f9f9;
+  border-top: 1px solid #e0e0e0;
+}
+
+#screenshotContainer io-highlighter {
+  flex-grow: 1;
+  min-height: 450px;
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+#screenshotContainer io-highlighter .split {
+  max-width: 100%;
+  height: 100%;
+}
+
+#screenshotContainer io-highlighter canvas {
+  max-width: 100%;
+  height: 100%;
+}
+
+#issueSidebar {
+  width: 280px;
+  min-width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow-y: auto;
+}
+
+#issueSidebar h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+}
+
+#typeSelectorGroup {
+  font-size: 0.95rem;
+}
+
+.issue-option {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background-color: #fff;
+  transition: border-color 0.15s ease;
+}
+
+.issue-option:hover {
+  border-color: #ccc;
+}
+
+.issue-option:has(input:checked) {
+  border-color: #0797e1;
+  background-color: #f0f8ff;
+}
+
+.issue-option input[type="radio"] {
+  vertical-align: top;
+  margin-top: 0.15rem;
+}
+
+.issue-option label {
+  display: inline-block;
+  cursor: pointer;
+  vertical-align: top;
+  width: calc(100% - 28px);
+}
+
+html:not([dir="rtl"]) .issue-option label {
+  margin-left: 0.5rem;
+}
+
+html[dir="rtl"] .issue-option label {
+  margin-right: 0.5rem;
+}
+
+.option-title {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.option-desc {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+#otherMessageContainer {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+#otherMessageContainer > label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+#otherMessage {
+  width: 100%;
+  min-height: 4em;
+  box-sizing: border-box;
+  font-size: 0.9rem;
+}
+
+#detailsPage .checkbox-option,
+#reviewPage .checkbox-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: #e8f4fc;
+  border: 2px solid #0797e1;
+  border-radius: 6px;
+}
+
+#detailsPage .checkbox-option input[type="checkbox"],
+#reviewPage .checkbox-option input[type="checkbox"] {
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+#detailsPage .checkbox-option label,
+#reviewPage .checkbox-option label {
+  font-size: 1rem;
+  line-height: 1.4;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+/*
+ * Details Page
+ */
+
+#detailsPage {
+  max-width: 46.3rem;
+  margin: 0 auto;
+}
+
+#detailsPage h1 {
+  margin-bottom: 1.5rem;
+}
+
+#detailsPage .form-section {
+  margin-bottom: 2rem;
+}
+
+#detailsPage .section-note {
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.5;
+  margin: 0 0 1rem 0;
+}
+
+#detailsPage .form-row {
+  margin-bottom: 0.5rem;
+}
+
+#detailsPage .form-row > label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.premium-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 0.5rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: var(--color-premium);
+  vertical-align: middle;
+}
+
+.premium-crown {
+  display: inline-block;
+  width: 15px;
+  height: 10px;
+  background-color: #fff;
+  -webkit-mask-image: url(/skin/icons/premium-crown.svg);
+  mask-image: url(/skin/icons/premium-crown.svg);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+.premium-text {
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.premium-email-header {
+  margin-bottom: 1rem;
+}
+
+.premium-email-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.premium-email-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.premium-email-option:hover {
+  border-color: #ccc;
+}
+
+.premium-email-option:has(input:checked) {
+  border-color: #0797e1;
+  background-color: #f0f8ff;
+}
+
+.premium-email-option input[type="radio"] {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.premium-email-option label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.premium-email-display {
+  font-weight: 600;
+  color: #0797e1;
+}
+
+#detailsPage .form-row input[type="email"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem;
+}
+
+#detailsPage .form-row textarea {
+  width: 100%;
+  min-height: 8em;
+  box-sizing: border-box;
+}
+
+/*
+ * Review Page
+ */
+
+#reviewPage {
+  max-width: 46.3rem;
+  margin: 0 auto;
+}
+
+#reportPreview {
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
+
+#sendingState {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+#error {
+  margin-top: 0.3em;
+  margin-bottom: 1em;
+  color: var(--color-error);
+}
+
+#comment {
+  min-height: 2em;
+  flex-grow: 1;
+}
+
+#sendingProgressContainer:not([hidden]) {
+  display: flex;
+  flex-direction: row;
+  margin-top: 2rem;
+  justify-content: center;
+}
+
+#result {
+  border-width: 0px;
+  flex-grow: 1;
+}
+
+#result .report-id {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+}
+
+#result .support-message {
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.support-email {
+  color: #0797e1;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.support-email:hover {
+  text-decoration: underline;
+}
+
+#error .support-email {
+  color: #0797e1;
+}
+
+footer,
+footer > div {
+  box-sizing: border-box;
+  padding-bottom: 16px;
+}
+
+footer > div:not(#other-issues) {
+  display: flex;
+  flex-direction: row;
+  margin-top: 2rem;
+}
+
+footer > div:not(#other-issues) > div {
+  flex-grow: 1;
+  align-self: flex-end;
+}
+
+#privacyPolicy,
+#other-issues {
+  font-size: 1rem;
+}
+
+#other-issues {
+  margin-top: 1rem;
+  padding-top: 16px;
+  background-image: url(/skin/icons/info-big.svg);
+  background-repeat: no-repeat;
+}
+
+html[dir="ltr"] #other-issues {
+  padding-left: 72px;
+  background-position: 24px center;
+}
+
+html[dir="rtl"] #other-issues {
+  padding-right: 72px;
+  background-position: calc(100% - 24px) center;
+}
+
+#other-issues a,
+#other-issues a:visited {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+#privacyPolicy,
+#privacyPolicy:visited,
+#other-issues a,
+#other-issues a:visited {
+  color: #0797e1;
+}
+
+/*
+ * Generic styles
+ */
+
+[data-invisible="true"] {
+  visibility: hidden;
+}
+
+button {
+  padding: 0.8rem 1.2rem;
+  background-color: transparent;
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+html:not([dir="rtl"]) button {
+  margin-left: 0.5rem;
+}
+
+html[dir="rtl"] button {
+  margin-right: 0.5rem;
+}
+
+button.primary:not(.icon) {
+  border: 0px;
+  color: #fff;
+  background-color: #0797e1;
+}
+
+button.primary:not([disabled]):not(.icon):hover {
+  box-shadow: inset 0 0 0 3px #005d80;
+}
+
+button.primary[disabled]:not(.icon) {
+  background-color: #5cbce1;
+}
+
+button.secondary {
+  border: 1px solid #0797e1;
+  color: #0797e1;
+}
+
+button.secondary:hover {
+  box-shadow: inset 0 0 0 2px #0797e1;
+}
+
+button.link {
+  padding: 0.2rem;
+  border: 0px;
+  color: #0797e1;
+  background-color: transparent;
+  font-weight: 400;
+  text-decoration: underline;
+  text-transform: none;
+}
+
+button.link:hover {
+  color: #5cbce1;
+}
+
+button.link:disabled,
+button.link:disabled:hover {
+  color: #ccc;
+  cursor: default;
+}
+
+input[type="text"],
+input[type="email"],
+textarea {
+  border: 2px solid #0797e1;
+  font-size: 1.25rem;
+}
+
+input[type="email"]:invalid {
+  border-color: var(--color-error);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin: 0px 3px;
+  padding: 0px;
+  border: 0px;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+input[type="checkbox"] {
+  background-image: url(/skin/icons/checkbox.svg?off#off);
+}
+
+input[type="checkbox"]:checked {
+  background-image: url(/skin/icons/checkbox.svg?on#on);
+}
+
+input[type="radio"] {
+  background-image: url(/skin/icons/radio.svg?normal#normal);
+}
+
+input[type="radio"]:hover {
+  background-image: url(/skin/icons/radio.svg?hover#hover);
+}
+
+input[type="radio"]:checked {
+  background-image: url(/skin/icons/radio.svg?selected#selected);
+}
+
+.modal:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 5rem;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modalContent {
+  display: flex;
+  overflow: auto;
+  flex-direction: column;
+  padding: 2rem;
+  flex-grow: 1;
+  align-items: flex-end;
+}
+
+[aria-hidden="true"] {
+  display: none !important;
+}
+
+#notification {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 2px;
+  opacity: 0.8;
+  color: #4a4a4a;
+  background-color: #d8d8d8;
+  font-size: 1rem;
+}
+
+#notification-text {
+  text-align: center;
+  flex: 1;
+}
+
+.icon {
+  padding: 0px;
+  border: 0px;
+  background-color: transparent;
+}
+
+.icon:hover {
+  box-shadow: none;
+}
+
+.icon::before {
+  display: block;
+  border: 0.2rem solid transparent;
+  background-repeat: no-repeat;
+  content: "";
+}
+
+.close.icon::before {
+  width: 1rem;
+  height: 1rem;
+}
+
+.icon.close.tertiary::before {
+  background-image: url(/skin/icons/close.svg?tertiary#tertiary);
+}
+
+.icon.close.tertiary:hover::before {
+  background-image: url(/skin/icons/close.svg?tertiary-hover#tertiary-hover);
+}
+
+/* Button visibility based on current page */
+body[data-page="reviewPage"] #continue {
+  display: none;
+}
+
+body[data-page="reviewPage"] #send {
+  display: inline-block;
+}
+
+body[data-page="detailsPage"] #back,
+body[data-page="reviewPage"] #back {
+  display: inline-block;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  vertical-align: top;
+}
+
+/*
+ * Report Preview Styles
+ */
+
+.preview-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.preview-section:last-child {
+  border-bottom: none;
+}
+
+.preview-section h3 {
+  margin: 0 0 0.5rem 0;
+  padding: 0;
+  color: #0797e1;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.preview-section p {
+  margin: 0;
+  word-break: break-word;
+}
+
+.preview-row {
+  margin-bottom: 0.3rem;
+}
+
+.preview-label {
+  font-weight: 600;
+  color: #666;
+}
+
+.preview-value {
+  margin-left: 0.5rem;
+  word-break: break-word;
+}
+
+.preview-list {
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+.preview-list-item {
+  padding: 0.25rem 0;
+  font-size: 0.85rem;
+  word-break: break-all;
+}
+
+.preview-list-item code {
+  background-color: #eee;
+  padding: 0.1rem 0.3rem;
+  border-radius: 2px;
+  font-family: monospace;
+}
+
+.preview-screenshot {
+  max-width: 100%;
+  max-height: 200px;
+  margin-top: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Report consent checkbox on review page */
+#reportConsentContainer {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Hide consent and all buttons when sending */
+body.sending #reportConsentContainer,
+body.sending #back,
+body.sending #send,
+body.sending #cancel {
+  display: none !important;
+}
+
+/* Hide consent, back, cancel after sent - but show close button */
+body.sent #reportConsentContainer,
+body.sent #back,
+body.sent #cancel {
+  display: none !important;
+}

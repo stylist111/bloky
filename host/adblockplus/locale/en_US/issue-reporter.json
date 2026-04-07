@@ -22,7 +22,7 @@
     "message": "Comment (optional):"
   },
   "issueReporter_config_label": {
-    "message": "Include information about my browser configuration, as well as a list of active extensions I'm using."
+    "message": "Include a list of browser extensions installed to help our team identify any conflicts."
   },
   "issueReporter_confirmationMessage": {
     "message": "Your report has been saved. You can access it at the following address:"
@@ -58,7 +58,7 @@
     "message": "The page displays incorrectly, fails to function or seems to be missing important content."
   },
   "issueReporter_falsePositive_label": {
-    "message": "The page I'm trying to view is broken"
+    "message": "Page is broken"
   },
   "issueReporter_highlighter_description": {
     "message": "Use the tools to highlight each ad or hide sensitive info on the screenshot. Highlighting ads will help us fix the issue faster."
@@ -114,5 +114,159 @@
   },
   "issueReporter_typeSelector_heading": {
     "message": "What type of issue are you experiencing?"
+  },
+  "cancel": {
+    "description": "Cancel button label",
+    "message": "Cancel"
+  },
+  "issueReporter_back_label": {
+    "description": "Back button label",
+    "message": "Back"
+  },
+  "issueReporter_reportIssueButton_label": {
+    "description": "Step 1 button label in the steps indicator",
+    "message": "Report issue"
+  },
+  "issueReporter_reviewButton_label": {
+    "description": "Step 3 button label in the steps indicator",
+    "message": "Review"
+  },
+  "issueReporter_reportIssue_heading": {
+    "description": "Heading for the combined report issue page",
+    "message": "Report an issue"
+  },
+  "issueReporter_reportIssue_description": {
+    "description": "Description for the combined report issue page",
+    "message": "Select the type of issue and use the tools to highlight or hide areas on the screenshot."
+  },
+  "issueReporter_issueType_heading": {
+    "description": "Heading for issue type selection in sidebar",
+    "message": "What's the issue?"
+  },
+  "issueReporter_other_label": {
+    "message": "Other issue"
+  },
+  "issueReporter_other_description": {
+    "message": "I have a different issue or feedback to report."
+  },
+  "issueReporter_highlighter_hint": {
+    "description": "Hint text for the highlighter tools",
+    "message": "Use Highlight to mark ads, or Hide to cover sensitive info on the screenshot."
+  },
+  "issueReporter_detailsPage_heading": {
+    "description": "Heading for the details page",
+    "message": "Add details"
+  },
+  "issueReporter_detailsPage_description": {
+    "description": "Description for the details page",
+    "message": "Please add any additional details that might help us understand the issue better."
+  },
+  "issueReporter_email_note": {
+    "message": "Sharing your email allows us to follow up with you if we need more details to resolve your issue. Your email will never be shared with third parties."
+  },
+  "issueReporter_email_optional_label": {
+    "message": "Email (optional):"
+  },
+  "issueReporter_usePremiumEmail_label": {
+    "message": "Use this email:"
+  },
+  "issueReporter_reportAnonymously_label": {
+    "message": "Report anonymously"
+  },
+  "issueReporter_otherMessage_label": {
+    "message": "Describe your issue:"
+  },
+  "issueReporter_comment_optional_label": {
+    "message": "Other comments (optional):"
+  },
+  "issueReporter_debug_label": {
+    "message": "Include debug data to help our team diagnose the issue faster."
+  },
+  "issueReporter_reviewPage_heading": {
+    "description": "Heading for the review page",
+    "message": "Review your report"
+  },
+  "issueReporter_reviewPage_description": {
+    "description": "Description for the review page",
+    "message": "Please review the information below before sending. You can go back to make changes."
+  },
+  "issueReporter_preview_issue": {
+    "message": "Issue"
+  },
+  "issueReporter_preview_issueType": {
+    "message": "Type"
+  },
+  "issueReporter_preview_pageUrl": {
+    "message": "Page URL"
+  },
+  "issueReporter_preview_email": {
+    "message": "Email"
+  },
+  "issueReporter_preview_comment": {
+    "message": "Comment"
+  },
+  "issueReporter_preview_issueDescription": {
+    "message": "Issue Description"
+  },
+  "issueReporter_preview_screenshot": {
+    "message": "Screenshot"
+  },
+  "issueReporter_preview_adblockplus": {
+    "message": "Adblock Plus"
+  },
+  "issueReporter_preview_browser": {
+    "message": "Browser"
+  },
+  "issueReporter_preview_platform": {
+    "message": "Platform"
+  },
+  "issueReporter_preview_subscriptions": {
+    "message": "Filter Lists"
+  },
+  "issueReporter_preview_requests": {
+    "message": "Requests"
+  },
+  "issueReporter_preview_filters": {
+    "message": "Matched Filters"
+  },
+  "issueReporter_preview_extensions": {
+    "message": "Extensions"
+  },
+  "issueReporter_preview_debugData": {
+    "message": "Debug Data"
+  },
+  "issueReporter_preview_screenshotIncluded": {
+    "message": "Screenshot included (edited: {0})"
+  },
+  "issueReporter_preview_notProvided": {
+    "message": "Not provided"
+  },
+  "issueReporter_screenshot_consent_title": {
+    "description": "Title for screenshot consent modal",
+    "message": "Screenshot consent"
+  },
+  "issueReporter_screenshot_highlight_hint": {
+    "description": "Info message about using Highlight tool",
+    "message": "Use Highlight to mark the problem area on the screenshot."
+  },
+  "issueReporter_screenshot_warning": {
+    "description": "Warning message about screenshots potentially containing personal information",
+    "message": "This screenshot may contain personal information. Use Hide to cover sensitive info."
+  },
+  "issueReporter_screenshot_consent_question": {
+    "description": "Statement asking user to confirm consent to include screenshot",
+    "message": "Continue to include this screenshot in your report."
+  },
+  "issueReporter_screenshot_consent_confirm": {
+    "description": "Confirm button for screenshot consent modal",
+    "message": "I understand, continue"
+  },
+  "issueReporter_screenshot_consent_return": {
+    "description": "Return button for screenshot consent modal",
+    "message": "Return"
+  },
+  "issueReporter_reportConsent_label": {
+    "description": "Label for report consent checkbox on review page",
+    "message": "I agree to share this report, including any information I provide and available technical data, with the Adblock Plus support team for troubleshooting."
   }
 }

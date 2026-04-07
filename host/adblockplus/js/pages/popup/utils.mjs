@@ -69,11 +69,23 @@ export function isTabAllowlisted(tab) {
   return browser.runtime.sendMessage({ type: "filters.isAllowlisted", tab });
 }
 
-export function reportIssue(tab) {
+export async function reportIssue(tab) {
+  const useRedesign =
+    (await browser.runtime.sendMessage({
+      type: "ewe:api-call",
+      apiName: "experiments",
+      methodName: "getFlag",
+      params: ["abp-issue-report-redesign-enabled"]
+    })) ?? false;
+
+  const htmlFile = useRedesign
+    ? "issue-reporter-redesign.html"
+    : "issue-reporter.html";
+
   browser.tabs
     .create({
       active: false,
-      url: browser.runtime.getURL("/issue-reporter.html?" + tab.id)
+      url: browser.runtime.getURL(`/${htmlFile}?${tab.id}`)
     })
     .then(
       // force closing popup which is not happening in Firefox

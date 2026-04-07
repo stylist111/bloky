@@ -64,6 +64,10 @@ export default {
         src: ["js/pages/issue-reporter/index.mjs"]
       },
       {
+        dest: "issue-reporter-redesign.js",
+        src: ["js/pages/issue-reporter/redesign/index.mjs"]
+      },
+      {
         dest: "onpage-dialog.preload.js",
         src: ["src/onpage-dialog/content/index.ts"]
       },
@@ -173,6 +177,7 @@ export default {
           "src/devtools/ui/devtools.html",
           "src/first-run/ui/first-run.html",
           "src/issue-reporter/ui/issue-reporter.html",
+          "src/issue-reporter/ui/issue-reporter-redesign.html",
           "src/issue-reporter/ui/proxy.html",
           "src/mobile-options/ui/mobile-options.html",
           "src/options/ui/options.html",
