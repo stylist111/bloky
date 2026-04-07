@@ -37,11 +37,6 @@ export default {
         use: ["source-map-loader"],
       },
       {
-        test: /\.(css|html)$/,
-        resourceQuery: /text/,
-        type: "asset/source",
-      },
-      {
         test: /\.css$/,
         resourceQuery: "",
         use: [
@@ -52,7 +47,13 @@ export default {
               url: false,
             },
           },
+          "postcss-loader",
         ],
+      },
+      {
+        test: /\.(css|html)$/,
+        resourceQuery: /text/,
+        type: "asset/source",
       },
       {
         test: /\.(svg|woff2|woff)$/,
@@ -66,6 +67,7 @@ export default {
   },
   resolve: {
     alias: {
+      "@": path.resolve(""),
       "~": path.resolve("", "./adblock-betafish/"),
       events$: "events.js",
       punycode$: "punycode.js",

@@ -557,11 +557,6 @@ export default {
           },
         ],
       },
-      {
-        dest: "ui-components-styles.css",
-        package: "@eyeo/ext-ui-components",
-        src: "dist/styles.css",
-      },
     ],
   },
   translations: {

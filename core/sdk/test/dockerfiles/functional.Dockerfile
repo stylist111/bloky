@@ -6,7 +6,6 @@ FROM registry.gitlab.com/eyeo/docker/get-browser-binary:node22
 COPY *.json .npmrc extensions/
 COPY host/adblock/*.json extensions/host/adblock/
 COPY host/adblockplus/*.json extensions/host/adblockplus/
-COPY ui-components/*.json extensions/ui-components/
 COPY tools/test/*.json extensions/tools/test/
 COPY core/sdk/*.json extensions/core/sdk/
 # scripts and adblockpluscore folders are used by the postinstall host scripts

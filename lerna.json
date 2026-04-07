@@ -9,7 +9,6 @@
     "host/*",
     "public/*",
     "tools/*",
-    "ui-components",
     "vendor/*"
   ]
 }

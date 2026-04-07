@@ -15,6 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import "@/assets/styles/globals.css";
 import * as ewe from "@eyeo/webext-ad-filtering-solution/ui";
 
 import { start as startUi } from "../../../js/pages/desktop-options/index.mjs";

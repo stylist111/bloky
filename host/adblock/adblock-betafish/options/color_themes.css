@@ -15,17 +15,6 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 #dark_theme {
-  /*
-    theme-primary: --gray2
-    theme-secondary: --gray1
-    theme-text-primary: --gray6
-    theme-text-secondary: --gray4
-    theme-link-color: --blue3
-    theme-accent-dark: --gray2
-    theme-accent-light: --gray3
-    theme-text-accent: --blue2
-  */
-
   /* --gray2 */
   --popup-accent-color: var(--gray2);
   --popup-card-background-color: var(--gray2);
@@ -141,17 +130,6 @@
 
 #solarized_theme,
 [data-theme-cta="solarized_theme"] {
-  /*
-    theme-primary: --solarized-teal2
-    theme-secondary: --solarized-teal1
-    theme-text-primary: --solarized-gray1
-    theme-text-secondary: --solarized-gray1
-    theme-link-color: --solarized-teal4
-    theme-accent-dark: --solarized-gray1
-    theme-accent-light: --solarized-teal3
-    theme-text-accent: --solarized-teal5
-  */
-
   /* --solarized-teal1 */
   --popup-background-color: var(--solarized-teal1);
   --premium-badge-bg-color: var(--popup-background-color);
@@ -261,17 +239,6 @@
 
 #solarized_light_theme,
 [data-theme-cta="solarized_light_theme"] {
-  /*
-    theme-primary: --solarized-yellow3
-    theme-secondary: --solarized-yellow2
-    theme-text-primary: --solarized-gray1l
-    theme-text-secondary: --solarized-gray2l
-    theme-link-color: --solarized-teal4
-    theme-accent-dark: --solarized-gray1l
-    theme-accent-light: --solarized-gray0l -- double check this one
-    theme-text-accent: --solarized-teal2
-  */
-
   /* --solarized-yellow3 */
   --popup-card-background-color: var(--solarized-yellow3);
   --background-color: var(--solarized-yellow3);
@@ -376,17 +343,6 @@
 }
 
 #rebecca_purple_theme {
-  /*
-    theme-primary: --purple2
-    theme-secondary: --purple1
-    theme-text-primary: --white
-    theme-text-secondary: --white
-    theme-link-color: --blue3
-    theme-accent-dark: --purple3
-    theme-accent-light: --white
-    theme-text-accent: --white
-  */
-
   /* --purple2 */
   --popup-card-background-color: var(--purple);
   --toggle-foreground: var(--purple);
@@ -436,17 +392,6 @@
 
 #watermelon_theme,
 [data-theme-cta="watermelon_theme"] {
-  /*
-    theme-primary: --red2
-    theme-secondary: --red1
-    theme-text-primary: --white
-    theme-text-secondary: --white
-    theme-link-color: --white
-    theme-accent-dark: --watermelon
-    theme-accent-light: --watermelon
-    theme-text-accent: --white
-  */
-
   /* --red2 */
   --popup-card-background-color: var(--red2);
   --popup-themes-cta-background: var(--red2);
@@ -498,17 +443,6 @@
 
 #ocean_theme,
 [data-theme-cta="ocean_theme"] {
-  /*
-    theme-primary: --blue2
-    theme-secondary: --blue1
-    theme-text-primary: --white
-    theme-text-secondary: --white
-    theme-link-color: --white
-    theme-accent-dark: --ocean
-    theme-accent-light: --white
-    theme-text-accent: --blue1
-  */
-
   /* --blue2 */
   --popup-card-background-color: var(--blue2);
   --toggle-foreground: var(--blue2);
@@ -561,17 +495,6 @@
 
 #sunshine_theme,
 [data-theme-cta="sunshine_theme"] {
-  /*
-    theme-primary:  --yellow2
-    theme-secondary: --yellow1
-    theme-text-primary: --white
-    theme-text-secondary: --white
-    theme-link-color: --white
-    theme-accent-dark: --sunshine
-    theme-accent-light: --sunshine
-    theme-text-accent: --white
-  */
-
   /* --yellow2 */
   --popup-card-background-color: var(--yellow2);
   --popup-themes-cta-background: var(--yellow2);

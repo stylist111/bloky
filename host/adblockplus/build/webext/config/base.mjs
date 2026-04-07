@@ -278,11 +278,6 @@ export default {
       {
         dest: "premium-onboarding.html",
         src: "src/premium-onboarding/ui/onboarding.html"
-      },
-      {
-        dest: "ui-components-styles.css",
-        package: "@eyeo/ext-ui-components",
-        src: "dist/styles.css"
       }
     ]
   },

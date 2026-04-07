@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /** Variables */
+  --extension-font-family: "Lato", Arial, sans-serif;
+
+  /** Font compatibility */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer base {
+  h1 {
+    @apply my-6 text-2xl font-bold;
+  }
+
+  h2 {
+    @apply text-lg;
+  }
+
+  h3 {
+    @apply text-base font-bold;
+  }
+
+  body {
+    @apply m-0 text-base;
+  }
+}
+
+@layer components {
+  /**
+  * Checkbox styling
+  */
+  input[type="checkbox"] {
+    @apply rounded-full;
+  }
+
+  /**
+  * Link styling
+  */
+  a {
+    /* @apply var(--link_decoration); */
+    @apply no-underline font-sans;
+  }
+}
