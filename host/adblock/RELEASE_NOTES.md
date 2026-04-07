@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.39.0 - 2026-04-07
+
 - Enabled all premium filter lists by default for free trial users.
 - Fixed reverse trial dialog events: dismiss button now correctly sends a close
   event, and the learn more link now sends a CTA event.

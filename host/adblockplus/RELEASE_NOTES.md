@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.36.4 - 2026-04-07
+
 - Moved close-tab feature to a shared fragment for use by both ABP and AdBlock.
 
 # 4.36.3 - 2026-03-30
