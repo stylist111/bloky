@@ -40,7 +40,12 @@ async function bootstrapAsync(): Promise<void> {
     startCookieBannerDetection();
     startTestingEwe();
 
-    await startTelemetry();
+    await Promise.all([
+      startInProductMessaging(),
+      startNewTab(),
+      startOnPageDialog(),
+      startTelemetry(),
+    ]);
   } catch (ex) {
     logger.reportAndLogError(ex);
   }
@@ -70,12 +75,6 @@ async function bootstrap(): Promise<void> {
 
   startSettings();
   void startGrowthExperiments();
-
-  // Features depending on IPM need to wait for fragment to be selected,
-  // even if they don't need to be await-ed themselves
-  await startInProductMessaging();
-  void startOnPageDialog();
-  void startNewTab();
 
   await bootstrapAsync();
 }
