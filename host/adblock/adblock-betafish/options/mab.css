@@ -223,15 +223,6 @@ div.mab-page-box > .option-page-content > footer h2 {
   margin-bottom: 40px;
 }
 
-[id^="locked-user-pay-section-"] > p {
-  font-weight: normal;
-  font-style: normal;
-  line-height: normal;
-  color: var(--options-page-accent-text);
-  overflow-wrap: break-word;
-  max-width: 776px;
-}
-
 /* End: MAB payment section */
 
 /* Image Swap */

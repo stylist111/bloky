@@ -1311,27 +1311,6 @@ section .theme-section-row {
 
 /* PREMIUM UPSELL CTA */
 
-.upsell-cta {
-  max-width: 984px;
-  min-height: 60px;
-  margin-bottom: 40px;
-  margin-left: auto;
-  margin-right: auto;
-  display: flex;
-  align-items: flex-end;
-}
-
-.upsell-cta p {
-  display: inline;
-  margin: 0;
-  font-weight: normal;
-  font-style: normal;
-  line-height: normal;
-  color: var(--options-page-accent-text);
-  overflow-wrap: break-word;
-  max-width: 776px;
-}
-
 .user-actions {
   display: flex;
   align-items: center;

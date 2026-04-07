@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed upsell banner text not visible on dark theme in options page.
+
 # 6.39.0 - 2026-04-07
 
 - Enabled all premium filter lists by default for free trial users.
