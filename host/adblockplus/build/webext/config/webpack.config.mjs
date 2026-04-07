@@ -34,7 +34,15 @@ export default {
   module: {
     rules: [
       {
-        test: /\.css$/,
+        test: /\.js$/,
+        resolve: {
+          fullySpecified: false
+        },
+        enforce: "pre",
+        use: ["source-map-loader"]
+      },
+      {
+        test: /\.(css|html)$/,
         resourceQuery: /text/,
         type: "asset/source"
       },
@@ -52,25 +60,7 @@ export default {
         ]
       },
       {
-        test: /\.html$/,
-        resourceQuery: /text/,
-        type: "asset/source"
-      },
-      {
-        test: /\.js$/,
-        resolve: {
-          fullySpecified: false
-        },
-        enforce: "pre",
-        use: ["source-map-loader"]
-      },
-      {
-        test: /\.svg$/,
-        resourceQuery: /uri/,
-        type: "asset/inline"
-      },
-      {
-        test: /\.woff2$/,
+        test: /\.(svg|woff2)$/,
         resourceQuery: /uri/,
         type: "asset/inline"
       }

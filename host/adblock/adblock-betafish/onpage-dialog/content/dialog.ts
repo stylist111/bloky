@@ -20,20 +20,20 @@
 
 import * as browser from "webextension-polyfill";
 import * as DOMPurify from "dompurify";
-import latoRegular from "../../fonts/lato.woff";
-import latoExtRegular from "../../fonts/lato-ext-regular.woff";
-import latoExtItalic from "../../fonts/lato-ext-italic.woff";
-import latoItalic from "../../fonts/lato-italic.woff";
-import latoExtBoldItalic from "../../fonts/lato-ext-bolditalic.woff";
-import latoBoldItalic from "../../fonts/lato-bolditalic.woff";
-import latoExtBold from "../../fonts/lato-ext-bold.woff";
-import latoBold from "../../fonts/lato-bold.woff";
-import materialIconsRegular from "../../../icons/MaterialIcons-Regular.woff2";
+import latoRegular from "../../fonts/lato.woff?uri";
+import latoExtRegular from "../../fonts/lato-ext-regular.woff?uri";
+import latoExtItalic from "../../fonts/lato-ext-italic.woff?uri";
+import latoItalic from "../../fonts/lato-italic.woff?uri";
+import latoExtBoldItalic from "../../fonts/lato-ext-bolditalic.woff?uri";
+import latoBoldItalic from "../../fonts/lato-bolditalic.woff?uri";
+import latoExtBold from "../../fonts/lato-ext-bold.woff?uri";
+import latoBold from "../../fonts/lato-bold.woff?uri";
+import materialIconsRegular from "../../../icons/MaterialIcons-Regular.woff2?uri";
 
-import dialogLogo from "../../../icons/adblock-20.svg";
+import dialogLogo from "../../../icons/adblock-20.svg?uri";
 
-import dialogCss from "./dialog.css";
-import dialogHtml from "./dialog.html";
+import dialogCss from "./dialog.css?text";
+import dialogHtml from "./dialog.html?text";
 
 import { isMessage } from "../../polyfills/shared/index";
 import { StartInfo } from "../shared/index";
