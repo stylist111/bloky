@@ -24,6 +24,7 @@ import {
   isCheckboxPropertyEnabled,
   waitForNotDisplayed,
   wait,
+  waitForAssertion,
 } from "@eyeo/test-utils/driver";
 import {
   blockHideUrl,
@@ -110,16 +111,18 @@ export default () => {
 
   it("uses custom filters to block ads", async function () {
     await openNewTab(customFiltersTestPageUrl);
-    const customIdELem = await getDisplayedElement("#test-element-id-custom");
-    const customClassElem = await getDisplayedElement(".test-element-class-custom");
-    const customScriptPathElem = await getDisplayedElement("#script-id-custom-full-path");
-    const customScriptRegexElem = await getDisplayedElement("#script-id-custom-regex");
-    expect(await customIdELem.getText()).toEqual("Custom id hiding filter not applied");
-    expect(await customClassElem.getText()).toEqual("Custom css hiding filter not applied");
-    expect(await customScriptPathElem.getText()).toEqual("Custom blocking filter not applied");
-    expect(await customScriptRegexElem.getText()).toEqual(
-      "Custom regex blocking filter not applied",
-    );
+    const expectedElements = [
+      ["#test-element-id-custom", "Custom id hiding filter not applied"],
+      [".test-element-class-custom", "Custom css hiding filter not applied"],
+      ["#script-id-custom-full-path", "Custom blocking filter not applied"],
+      ["#script-id-custom-regex", "Custom regex blocking filter not applied"],
+    ];
+    for (const [selector, expectedText] of expectedElements) {
+      await waitForAssertion(async () => {
+        const elem = await getDisplayedElement(selector);
+        expect(await elem.getText()).toEqual(expectedText);
+      }, 2000);
+    }
 
     const splitCustomFilters = customFilters.join("\n");
     await setCustomFilters([splitCustomFilters]);
