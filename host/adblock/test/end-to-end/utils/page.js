@@ -252,36 +252,31 @@ async function clickCheckboxAndCheck(checkboxSelector, { enable = true, name }) 
 export async function checkBlockHidePage(expectAllowlisted) {
   const timeout = 1000;
 
-  // we want to wait until the extension starts applying EasyList before continuing with the other checks
+  // we want to wait until the extension fully applies filters before continuing
   await wait(
     async () => {
       try {
+        await getDisplayedElement("#control-element", { timeout });
         if (expectAllowlisted) {
           await getDisplayedElement("#script-id-full-path", { timeout });
+          await getDisplayedElement("#test-element-class", { timeout });
+          await getDisplayedElement("#test-element-id", { timeout });
+          await getDisplayedElement("#script-id-regex", { timeout });
         } else {
           await waitForNotDisplayed("#script-id-full-path", { timeout });
+          await waitForNotDisplayed("#test-element-class", { timeout });
+          await waitForNotDisplayed("#test-element-id", { timeout });
+          await waitForNotDisplayed("#script-id-regex", { timeout });
         }
         return true;
       } catch (e) {
-        // the extension might not be applying EasyList yet, so we need to reload the page
+        // the extension might not be applying filters yet, so we need to reload the page
         await driver.navigate().refresh();
       }
     },
     9000,
     `filters were not applied on page when expectAllowlisted=${expectAllowlisted}`,
   );
-
-  await getDisplayedElement("#control-element", { timeout });
-
-  if (expectAllowlisted) {
-    await getDisplayedElement("#test-element-class", { timeout });
-    await getDisplayedElement("#test-element-id", { timeout });
-    await getDisplayedElement("#script-id-regex", { timeout });
-  } else {
-    await waitForNotDisplayed("#test-element-class", { timeout });
-    await waitForNotDisplayed("#test-element-id", { timeout });
-    await waitForNotDisplayed("#script-id-regex", { timeout });
-  }
 }
 
 export async function checkPremiumPageHeader(ctaTextSelector, ctaLinkSelector, premiumURL) {
