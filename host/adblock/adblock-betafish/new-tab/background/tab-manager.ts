@@ -422,13 +422,10 @@ async function handleCommand(ipmId: string): Promise<void> {
     return;
   }
 
-  // Don't open new tabs for users in the zero delay reverse trial experiments
-  const [reverseTrialFlag, zeroDelayFlag] = await Promise.all([
-    ewe.experiments.getFlag("show-reverse-trial-opd"),
-    ewe.experiments.getFlag("zero-delay-reverse-trial"),
-  ]);
-  if (reverseTrialFlag || zeroDelayFlag) {
-    logger.debug("[new-tab]: User is in zero delay reverse trial experiment");
+  // Don't open new tabs for users in the reverse trial OPD experiment
+  const reverseTrialFlag = await ewe.experiments.getFlag("show-reverse-trial-opd");
+  if (reverseTrialFlag) {
+    logger.debug("[new-tab]: User is in reverse trial OPD experiment");
     dismissNewtabCommand(ipmId);
     return;
   }
