@@ -26,3 +26,4 @@ export const snippetTestPageUrl = `http://testpages.eyeo.com:${testPagesPort}/sn
 export const customFiltersTestPageUrl = `http://testpages.eyeo.com:${testPagesPort}/custom-filters.html`;
 export const localTestPageUrl = `http://localhost:${testPagesPort}/test.html`;
 export const adWallTestPageUrl = `http://localhost:${testPagesPort}/ad-wall/ad-wall-test.html`;
+export const snippetHitEventTestPageUrl = `http://localhost:${testPagesPort}/snippet-hit-event.html`;

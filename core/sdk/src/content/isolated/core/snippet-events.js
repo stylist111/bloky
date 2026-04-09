@@ -73,20 +73,20 @@ export function createSnippetDetectionEventSender(
  *
  * @param {Object} snippetLogger - ServerLogger instance
  * @param {Object} sentryReporter - Sentry module with reportError method
- * @returns {Function} sendSnippetHitEvent(snippet, domain)
+ * @returns {Function} sendSnippetHitEvent(filter, domain)
  */
 export function createSnippetHitEventSender(
   snippetLogger, sentryReporter
 ) {
-  return function sendSnippetHitEvent(snippet, domain) {
-    if (typeof snippet !== "string" || typeof domain !== "string") {
+  return function sendSnippetHitEvent(filter, domain) {
+    if (typeof filter !== "string" || typeof domain !== "string") {
       console.error(
-        `sendSnippetHitEvent: snippet and domain are required strings. Received snippet=${typeof snippet}, domain=${typeof domain}.`
+        `sendSnippetHitEvent: filter and domain are required strings. Received filter=${typeof filter}, domain=${typeof domain}.`
       );
       return;
     }
 
-    const data = {snippet, domain};
+    const data = {filter, domain};
 
     try {
       snippetLogger.behavior("snippet_hit_event", data);
@@ -104,4 +104,23 @@ const NOOP = () => {};
 // Gates a snippet event sender behind an experiment flag
 export function gateSnippetEvent(enabled, sender) {
   return enabled ? sender : NOOP;
+}
+
+/**
+ * Handles an ewe:snippet-hit message detail received from the main world,
+ * forwarding it to the provided send function when enabled and valid.
+ *
+ * @param {object} detail The CustomEvent detail payload
+ * @param {boolean} enabled Whether snippet hit event logging is enabled
+ * @param {Function} sendFn The function to call to send the hit event
+ */
+export function handleSnippetHitMessage(detail, enabled, sendFn) {
+  if (!enabled) {
+    return;
+  }
+  const {filter, domain} = detail;
+  if (typeof filter !== "string" || typeof domain !== "string") {
+    return;
+  }
+  sendFn(filter, domain);
 }

@@ -36,8 +36,31 @@ const isMainWorld = !(
   (typeof browser === "object" && !!browser.storage)
 );
 
+const nativeDispatch = document.dispatchEvent.bind(document);
+
 // Get or create a unique channel name for communicating with the isolated world
 const commsChannelName = claimCommsChannel(uuidv4());
+
+// Creates a sendSnippetHitEvent function that dispatches hit events back to
+// the isolated world via the comms channel. The isolated-world listener
+// receives, validates, and forwards the event to the telemetry pipeline.
+const createMainWorldHitEventSender = (commsChannel, dispatch) => {
+  const dispatchFn = dispatch || document.dispatchEvent.bind(document);
+  return function sendSnippetHitEvent(filter, domain) {
+    try {
+      dispatchFn(new CustomEvent(commsChannel, {
+        detail: {
+          type: "ewe:snippet-hit",
+          filter,
+          domain
+        }
+      }));
+    }
+    catch (e) {
+      // telemetry must never break snippet execution
+    }
+  };
+};
 
 const runStorageShim = (shimFn, configKey) => {
   try {
@@ -52,7 +75,8 @@ const runStorageShim = (shimFn, configKey) => {
 };
 
 const runSnippets = snippetsConfig => {
-  const {callback, filters, env, commsChannel, serializeError} = snippetsConfig;
+  const {callback, filters, env, commsChannel, serializeError,
+    dispatchFn} = snippetsConfig;
 
   if (filters.length) {
     try {
@@ -67,7 +91,7 @@ const runSnippets = snippetsConfig => {
           error: serializeError(e)
         }
       });
-      document.dispatchEvent(errorEvent);
+      dispatchFn(errorEvent);
     }
   }
 };
@@ -124,12 +148,18 @@ const appendSnippets = snippetsConfig => {
     const callback = (${callback});
     const runSnippets = (${runSnippets});
     const serializeError = (${serializeError});
+    const createHitSender = (${createMainWorldHitEventSender});
+    const env = ${JSON.stringify(env)};
+    env.sendSnippetHitEvent = createHitSender(
+      "${commsChannel}", null
+    );
     const snippetsConfig = {
       callback,
-      env: ${JSON.stringify(env)},
+      env,
       filters: ${JSON.stringify(filters)},
       commsChannel: "${commsChannel}",
-      serializeError
+      serializeError,
+      dispatchFn: document.dispatchEvent.bind(document)
     };
     runSnippets(snippetsConfig);
   ` : "";
@@ -172,12 +202,18 @@ const onFiltersReceived = event => {
   // API access only available in the isolated world. See snippet-events.js.
   const snippetsConfig = {
     callback: snippetsCallback,
-    env: {debugCSSProperties: debug ? DEBUG_CSS_PROPERTIES : null},
+    env: {
+      debugCSSProperties: debug ? DEBUG_CSS_PROPERTIES : null,
+      sendSnippetHitEvent: createMainWorldHitEventSender(
+        commsChannelName, isMainWorld ? nativeDispatch : null
+      )
+    },
     filters: mainSnippets,
     shimFn: shimStorage,
     shimConfigKey: CACHED_FILTERS_CONFIG_KEY,
     commsChannel: commsChannelName,
-    serializeError: toSerializableError
+    serializeError: toSerializableError,
+    dispatchFn: nativeDispatch
   };
 
   // If this script is injected into the main world we can execute directly.

@@ -339,8 +339,8 @@ export default {
         description: "Metadata about the snippet execution",
         type: "object",
         properties: {
-          snippet: {
-            description: "Snippet function name, e.g. 'hide-if-contains-and-matches-style'",
+          filter: {
+            description: "Snippet filter body, e.g. 'json-prune ads userId'",
             type: "string"
           },
           domain: {

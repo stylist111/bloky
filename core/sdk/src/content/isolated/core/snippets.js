@@ -34,7 +34,8 @@ import {default as telemetry} from "../../../front/telemetry.js";
 import {
   createSnippetDetectionEventSender,
   createSnippetHitEventSender,
-  gateSnippetEvent
+  gateSnippetEvent,
+  handleSnippetHitMessage
 } from "./snippet-events.js";
 
 const commsChannelName = claimCommsChannel(uuidv4());
@@ -49,6 +50,8 @@ let storageAvailable = true;
 const logger = new telemetry.ServerLogger("snippets");
 const sendDetectionEvent = createSnippetDetectionEventSender(logger, sentry);
 const sendSnippetHitEvent = createSnippetHitEventSender(logger, sentry);
+
+let snippetHitEventEnabled = false;
 
 /**
  * Checks if the current context is a cross-origin iframe
@@ -100,7 +103,8 @@ function executeSnippets(filtersConfig) {
     return;
   }
 
-  const {debug, detectionEventEnabled, hitEventEnabled} = filtersConfig;
+  const {debug, detectionEventEnabled} = filtersConfig;
+  snippetHitEventEnabled = Boolean(filtersConfig.hitEventEnabled);
   const filters = filtersConfig.filters.map(parseScript);
 
   let eventDetails = {
@@ -169,7 +173,7 @@ function executeSnippets(filtersConfig) {
         detectionEventEnabled, sendDetectionEvent
       ),
       sendSnippetHitEvent: gateSnippetEvent(
-        hitEventEnabled, sendSnippetHitEvent
+        snippetHitEventEnabled, sendSnippetHitEvent
       )
     };
     snippetsCallback(env, ...isolatedSnippets);
@@ -252,28 +256,47 @@ function syncCacheAndReload(filtersConfig) {
 }
 
 /**
- * Listener for errors coming from the main world.
- * It listens to the secret channel for errors and forwards
- * them to Sentry
- * @param {CustomEvent} event The event containing the error
+ * Handles ewe:main-error messages from the main world.
+ * @param {object} detail The event detail payload
  */
-function mainWorldErrorListener({detail}) {
-  if (detail && detail.type === "ewe:main-error") {
-    const {error} = detail;
-    if (!error) {
-      return;
-    }
+function handleMainWorldError(detail) {
+  const {error} = detail;
+  if (!error) {
+    return;
+  }
 
-    // Usually a TypeError is thrown when the page tries
-    // to tamper with the snippets context
-    if (error.name && error.name === "TypeError") {
-      logger.behavior("context_tampering");
-    }
+  // Usually a TypeError is thrown when the page tries
+  // to tamper with the snippets context
+  if (error.name && error.name === "TypeError") {
+    logger.behavior("context_tampering");
+  }
 
-    // To be re-enabled if we want to track errors coming from the main world,
-    // but for now we want to avoid consuming from the quota until we
-    // actually get value from these errors.
-    // sentry.reportError(error);
+  // To be re-enabled if we want to track errors coming from the main world,
+  // but for now we want to avoid consuming from the quota until we
+  // actually get value from these errors.
+  // sentry.reportError(error);
+}
+
+const mainWorldMessageHandlers = {
+  "ewe:main-error": handleMainWorldError,
+  "ewe:snippet-hit": (detail) =>
+    handleSnippetHitMessage(detail, snippetHitEventEnabled, sendSnippetHitEvent)
+};
+
+/**
+ * Listener for messages coming from the main world on the comms channel.
+ * Routes each message to the appropriate handler by type.
+ * @param {CustomEvent} event
+ * @param {object} event.detail The event detail payload
+ */
+function mainWorldMessageListener({detail}) {
+  if (!detail) {
+    return;
+  }
+
+  const handler = mainWorldMessageHandlers[detail.type];
+  if (handler) {
+    handler(detail);
   }
 }
 
@@ -281,8 +304,8 @@ function mainWorldErrorListener({detail}) {
  * Starts the error listener for errors coming from the main world.
  */
 function startErrorListener() {
-  document.removeEventListener(commsChannelName, mainWorldErrorListener);
-  document.addEventListener(commsChannelName, mainWorldErrorListener);
+  document.removeEventListener(commsChannelName, mainWorldMessageListener);
+  document.addEventListener(commsChannelName, mainWorldMessageListener);
 }
 
 export function start() {

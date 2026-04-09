@@ -49,11 +49,11 @@ describe("createSnippetHitEventSender", function() {
   });
 
   it("calls logger.behavior with correct event name and data", function() {
-    sendSnippetHitEvent("hide-if-contains-and-matches-style", "example.com");
+    sendSnippetHitEvent("json-prune 'ads' 'userId'", "example.com");
 
     expect(mockLogger.behavior.calledOnce).toBe(true);
     expect(mockLogger.behavior.calledWith("snippet_hit_event", {
-      snippet: "hide-if-contains-and-matches-style",
+      filter: "json-prune 'ads' 'userId'",
       domain: "example.com"
     })).toBe(true);
     expect(console.error.called).toBe(false);
@@ -64,56 +64,56 @@ describe("createSnippetHitEventSender", function() {
 
     expect(mockLogger.behavior.called).toBe(false);
     expect(console.error.calledOnce).toBe(true);
-    expect(console.error.firstCall.args[0]).toMatch(/snippet and domain are required strings/);
+    expect(console.error.firstCall.args[0]).toMatch(/filter and domain are required strings/);
   });
 
-  it("does not call logger when snippet is missing", function() {
+  it("does not call logger when filter is missing", function() {
     sendSnippetHitEvent(void 0, "example.com");
 
     expect(mockLogger.behavior.called).toBe(false);
     expect(console.error.calledOnce).toBe(true);
-    expect(console.error.firstCall.args[0]).toMatch(/snippet and domain are required strings/);
+    expect(console.error.firstCall.args[0]).toMatch(/filter and domain are required strings/);
   });
 
   it("does not call logger when domain is missing", function() {
-    sendSnippetHitEvent("override-property-read");
+    sendSnippetHitEvent("override-property-read 'adConfig' 'undefined'");
 
     expect(mockLogger.behavior.called).toBe(false);
     expect(console.error.calledOnce).toBe(true);
-    expect(console.error.firstCall.args[0]).toMatch(/snippet and domain are required strings/);
+    expect(console.error.firstCall.args[0]).toMatch(/filter and domain are required strings/);
   });
 
-  it("does not call logger when snippet is not a string", function() {
+  it("does not call logger when filter is not a string", function() {
     sendSnippetHitEvent(123, "example.com");
 
     expect(mockLogger.behavior.called).toBe(false);
     expect(console.error.calledOnce).toBe(true);
-    expect(console.error.firstCall.args[0]).toMatch(/snippet and domain are required strings/);
+    expect(console.error.firstCall.args[0]).toMatch(/filter and domain are required strings/);
   });
 
   it("does not call logger when domain is not a string", function() {
-    sendSnippetHitEvent("override-property-read", 123);
+    sendSnippetHitEvent("override-property-read 'adConfig'", 123);
 
     expect(mockLogger.behavior.called).toBe(false);
     expect(console.error.calledOnce).toBe(true);
-    expect(console.error.firstCall.args[0]).toMatch(/snippet and domain are required strings/);
+    expect(console.error.firstCall.args[0]).toMatch(/filter and domain are required strings/);
   });
 
   it("handles multiple calls independently", function() {
-    sendSnippetHitEvent("override-property-read", "example.com");
-    sendSnippetHitEvent("hide-if-contains-and-matches-style", "other.com");
+    sendSnippetHitEvent("override-property-read 'adConfig'", "example.com");
+    sendSnippetHitEvent("json-prune 'ads'", "other.com");
 
     expect(mockLogger.behavior.callCount).toBe(2);
-    expect(mockLogger.behavior.firstCall.args[1].snippet).toBe("override-property-read");
-    expect(mockLogger.behavior.secondCall.args[1].snippet).toBe("hide-if-contains-and-matches-style");
+    expect(mockLogger.behavior.firstCall.args[1].filter).toBe("override-property-read 'adConfig'");
+    expect(mockLogger.behavior.secondCall.args[1].filter).toBe("json-prune 'ads'");
   });
 
   it("ignores extra arguments", function() {
-    sendSnippetHitEvent("override-property-read", "example.com", "extra", "args");
+    sendSnippetHitEvent("override-property-read 'adConfig'", "example.com", "extra");
 
     expect(mockLogger.behavior.calledOnce).toBe(true);
     expect(mockLogger.behavior.calledWith("snippet_hit_event", {
-      snippet: "override-property-read",
+      filter: "override-property-read 'adConfig'",
       domain: "example.com"
     })).toBe(true);
     expect(console.error.called).toBe(false);
@@ -153,9 +153,9 @@ describe("snippet_hit_event schema validation", function() {
     sinon.restore();
   });
 
-  it("passes validation with snippet and domain", function() {
+  it("passes validation with filter and domain", function() {
     logger.behavior("snippet_hit_event", {
-      snippet: "override-property-read",
+      filter: "override-property-read 'adConfig' 'undefined'",
       domain: "example.com"
     });
 
@@ -165,7 +165,7 @@ describe("snippet_hit_event schema validation", function() {
 
   it("fails validation without domain property", function() {
     logger.behavior("snippet_hit_event", {
-      snippet: "override-property-read"
+      filter: "override-property-read 'adConfig'"
     });
 
     expect(spy.called).toBe(false);
@@ -173,7 +173,7 @@ describe("snippet_hit_event schema validation", function() {
     expect(console.error.firstCall.args[0]).toMatch(/does not match the schema/);
   });
 
-  it("fails validation without snippet property", function() {
+  it("fails validation without filter property", function() {
     logger.behavior("snippet_hit_event", {
       domain: "example.com"
     });
@@ -185,7 +185,7 @@ describe("snippet_hit_event schema validation", function() {
 
   it("passes validation with extra unknown properties", function() {
     logger.behavior("snippet_hit_event", {
-      snippet: "override-property-read",
+      filter: "override-property-read 'adConfig'",
       domain: "example.com",
       extra: "ignored"
     });
@@ -194,9 +194,9 @@ describe("snippet_hit_event schema validation", function() {
     expect(console.error.called).toBe(false);
   });
 
-  it("fails validation with non-string snippet", function() {
+  it("fails validation with non-string filter", function() {
     logger.behavior("snippet_hit_event", {
-      snippet: 123,
+      filter: 123,
       domain: "example.com"
     });
 
@@ -206,7 +206,7 @@ describe("snippet_hit_event schema validation", function() {
 
   it("fails validation with non-string domain", function() {
     logger.behavior("snippet_hit_event", {
-      snippet: "override-property-read",
+      filter: "override-property-read 'adConfig'",
       domain: 123
     });
 
