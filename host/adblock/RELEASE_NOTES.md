@@ -1,6 +1,8 @@
 # Unreleased
 
 - Fixed upsell banner text not visible on dark theme in options page.
+- Source code release bundles no longer include the full monorepo, but instead
+  only include the code to build the current extension.
 
 # 6.39.0 - 2026-04-07
 

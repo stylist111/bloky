@@ -95,6 +95,7 @@
     "gulp-gzip": "1.4.2",
     "gulp-replace": "1.1.4",
     "gulp-tar": "3.1.0",
+    "through": "2.3.8",
     "handlebars": "4.7.7",
     "htmlhint": "1.1.4",
     "jsdom": "25.0.0",

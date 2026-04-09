@@ -19,6 +19,7 @@ import fs from "fs";
 import gulp from "gulp";
 import tar from "gulp-tar";
 import gzip from "gulp-gzip";
+import through from "through";
 import { lsFiles } from "../utils/git.mjs";
 
 // Manually add any files to the be included
@@ -31,10 +32,31 @@ function addEnvFileToList(sourceFiles) {
 
 export default async function sourceDistribution(filename) {
   const repoRootPath = "../..";
-  const sourceFiles = await lsFiles(repoRootPath);
+  let sourceFiles = await lsFiles(repoRootPath);
+
+  sourceFiles = sourceFiles.filter((file) => !file.startsWith("../adblock/"));
+
   addEnvFileToList(sourceFiles);
+
+  const addReadmeHeader = through(function (file) {
+    if (file.relative === "README.md") {
+      const header = [
+        "**NOTE:** This source code bundle contains the subset of our monorepo",
+        "required to build the Adblock Plus extension. Some of the",
+        "documentation may refer to other extensions that have been excluded.",
+        "The full monorepo is available on our",
+        "[GitLab](https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions).",
+        "",
+        ""
+      ].join("\n");
+      file.contents = Buffer.concat([Buffer.from(header), file.contents]);
+    }
+    this.queue(file);
+  });
+
   return gulp
     .src(sourceFiles, { base: repoRootPath })
+    .pipe(addReadmeHeader)
     .pipe(tar(`${filename}.tar`))
     .pipe(gzip())
     .pipe(gulp.dest(process.cwd()));

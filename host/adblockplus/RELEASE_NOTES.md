@@ -1,5 +1,8 @@
 # Unreleased
 
+- Source code release bundles no longer include the full monorepo, but instead
+  only include the code to build the current extension.
+
 # 4.36.4 - 2026-04-07
 
 - Moved close-tab feature to a shared fragment for use by both ABP and AdBlock.
