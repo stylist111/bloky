@@ -95,7 +95,7 @@ function parseArguments() {
       if (manifestIsMV3(argv.manifest)) {
         testKinds.push("fuzz");
       }
-      else if (argv.browser === "chromium" || argv.browser === "edge") {
+      else if (argv.browser === "chromium" || argv.browser === "chrome" || argv.browser === "edge") {
         let version = argv.version;
         // Chromium 124 is the minimum supported version for MV3.
         if (version === "latest" || version === "dev" || version === "beta" ||
@@ -652,7 +652,7 @@ async function runTests({manifest, browser, version, params, testKinds}) {
   // See https://bugs.chromium.org/p/chromium/issues/detail?id=1325792#c8
   // This was fixed in Chromium 116.
   if ((isMV3 || testKinds.includes("mv2-mv3-migrate")) &&
-      (browser == "chromium" || browser == "edge") && majorVersion < 116) {
+      (browser == "chromium" || browser == "chrome" || browser == "edge") && majorVersion < 116) {
     extraArgs.push("auto-open-devtools-for-tabs");
   }
 
@@ -660,14 +660,18 @@ async function runTests({manifest, browser, version, params, testKinds}) {
   // headless mode does not support loading extensions.
   let isFirefox = browser == "firefox";
   let isChromium = browser == "chromium";
+  let isChrome = browser == "chrome";
   let isChromiumWithNewHeadlessMode = isChromium && majorVersion >= 111;
+  // Chrome for Testing starts at v113, which already supports headless=new
+  let isChromeWithNewHeadlessMode = isChrome && majorVersion >= 113;
   let isEdge = browser == "edge";
   let isEdgeWithNewHeadlessMode = isEdge && majorVersion >= 114;
   let headless = !incognito && !forceHeadful &&
-    (isFirefox || isChromiumWithNewHeadlessMode || isEdgeWithNewHeadlessMode);
+    (isFirefox || isChromiumWithNewHeadlessMode ||
+     isChromeWithNewHeadlessMode || isEdgeWithNewHeadlessMode);
 
   let insecure = false;
-  if (isChromium || isEdge) {
+  if (isChromium || isChrome || isEdge) {
     // DNS mapping (supported by Chromium-based only browsers)
     extraArgs.push("host-resolver-rules=" + [
       "webext.com",

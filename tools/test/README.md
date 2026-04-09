@@ -76,10 +76,10 @@ selected lighthouse and other metrics over a set of URLs.
 ### Running the benchmark tool
 
 ```sh
-npm run -w @eyeo/test-utils extension-benchmark -- {chromium|edge} [version] [--forceHeadful] [--runsPerURL=5] [--restartBrowser] [--sleepPostInstall=10]
+npm run -w @eyeo/test-utils extension-benchmark -- {chromium|chrome|edge} [version] [--forceHeadful] [--runsPerURL=5] [--restartBrowser] [--sleepPostInstall=10]
 
 # Positionals:
-#   browser                                          [choices: "chromium", "edge"]
+#   browser                                 [choices: "chromium", "chrome", "edge"]
 #   version                                           [string] [default: "latest"]
 #
 # Options:

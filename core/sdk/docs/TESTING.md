@@ -116,7 +116,7 @@ rather than on the mechanisms behind these reactions.
 ### Run All Tests
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- {2|3} {chromium|firefox|edge}
+npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- {2|3} {chromium|chrome|firefox|edge}
 ```
 
 This script runs the test server and the test suite. You can also run each of
@@ -124,13 +124,13 @@ these independentally using:
 
 ```
 npm run -w @eyeo/webext-ad-filtering-solution build
-npm run -w @eyeo/webext-ad-filtering-solution test:functional -- {2|3} {chromium|firefox|edge}
+npm run -w @eyeo/webext-ad-filtering-solution test:functional -- {2|3} {chromium|chrome|firefox|edge}
 ```
 
 In order to pass additional arguments, use the following syntax:
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- {2|3} {chromium|firefox|edge} --argName="{ARGUMENT}"
+npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- {2|3} {chromium|chrome|firefox|edge} --argName="{ARGUMENT}"
 ```
 
 For example:
@@ -195,7 +195,7 @@ can use on UI.
 For local runs you can trigger test runner to run tests you desire:
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution test:functional -- {2|3} {chromium|firefox|edge} [version|channel] [options]
+npm run -w @eyeo/webext-ad-filtering-solution test:functional -- {2|3} {chromium|chrome|firefox|edge} [version|channel] [options]
 ```
 
 Runner options need to be preceded by two dashes (`--`), for example
@@ -446,7 +446,7 @@ The performance of the engine is measured using
 To run the performance tests:
 
 ```shell
-npm run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--forceHeadful] [--slow] [--saveBaseline]
+npm run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|chrome|edge} [--forceHeadful] [--slow] [--saveBaseline]
 ```
 
 The `slow` option (MV3 only) uses a slow performance extension, which contains
@@ -498,7 +498,7 @@ been built into `./core/sdk/dist`.
 ```
 npm run -w @eyeo/webext-ad-filtering-solution build
 docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
-docker run --shm-size=2g -it -e TEST_PARAMS="{2|3} {chromium|firefox|edge}" functional
+docker run --shm-size=2g -it -e TEST_PARAMS="{2|3} {chromium|chrome|firefox|edge}" functional
 ```
 
 Please notice that the TEST_PARAMS argument can also take the additional options
@@ -526,7 +526,7 @@ Optional environment variables for the script:
 #### Performance
 
 ```shell
-docker run --shm-size=2g -it -e NODE_OPTIONS="--max-old-space-size=4096" --entrypoint npm functional run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--slow] [--saveBaseline]
+docker run --shm-size=2g -it -e NODE_OPTIONS="--max-old-space-size=4096" --entrypoint npm functional run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|chrome|edge} [--slow] [--saveBaseline]
 ```
 
 In order to access the screenshots for failing tests run the following command,
@@ -569,7 +569,7 @@ flakiness) you can download it to the docker image and cache it. To do so please
 add the `BROWSER` argument to the build command as follow:
 
 ```
-docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile --build-arg BROWSER=<chromium> .
+docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile --build-arg BROWSERS="chromium chrome" .
 ```
 
 For linux machines only: If you have a slow internet connection or are running

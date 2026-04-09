@@ -34,7 +34,7 @@ function parseArguments() {
     parser.strict();
     parser.command("$0 <manifest> <browser> [version]", "", subparser => {
       subparser.positional("manifest", {choices: [2, 3]});
-      subparser.positional("browser", {choices: ["chromium", "edge"]});
+      subparser.positional("browser", {choices: ["chromium", "chrome", "edge"]});
       subparser.positional("version", {type: "string", default: "latest"});
     });
     parser.option("forceHeadful", {

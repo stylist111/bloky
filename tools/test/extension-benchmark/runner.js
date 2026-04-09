@@ -37,7 +37,7 @@ export function parseArguments() {
     parser.version(false);
     parser.strict();
     parser.command("$0 <browser> [version]", "", (subparser) => {
-      subparser.positional("browser", { choices: ["chromium", "edge"] });
+      subparser.positional("browser", { choices: ["chromium", "chrome", "edge"] });
       subparser.positional("version", { type: "string", default: "latest" });
     });
     parser.option("forceHeadful", {

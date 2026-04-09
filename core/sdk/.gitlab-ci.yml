@@ -140,7 +140,7 @@ build:functional-image:
   needs:
     - !reference [.needs-parent-build, needs]
   script:
-    - docker build -t $FUNCTIONAL_IMAGE -f core/sdk/test/dockerfiles/functional.Dockerfile --build-arg BROWSER=chromium .
+    - docker build -t $FUNCTIONAL_IMAGE -f core/sdk/test/dockerfiles/functional.Dockerfile --build-arg BROWSERS="chromium chrome" .
     - docker push $FUNCTIONAL_IMAGE
 
 .basic-image:
@@ -256,10 +256,22 @@ func:v3:chromium:latest:
     BROWSER: chromium latest
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
 
+func:v3:chrome:latest:
+  extends: .functional-n-times
+  variables:
+    BROWSER: chrome latest
+    TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
+
 func:v3:chromium:incognito:
   extends: .functional-n-times
   variables:
     BROWSER: chromium latest
+    TEST_PARAMS: 3 $BROWSER --testKinds functional reload update --incognito
+
+func:v3:chrome:incognito:
+  extends: .functional-n-times
+  variables:
+    BROWSER: chrome latest
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update --incognito
 
 func:v3:chromium:oldest:
@@ -330,6 +342,11 @@ fi:v3:chromium:latest:
   variables:
     TEST_PARAMS: 3 chromium latest
 
+fi:v3:chrome:latest:
+  extends: .functional-isolated-mv3
+  variables:
+    TEST_PARAMS: 3 chrome latest
+
 fi:v3:edge:latest:
   extends: .functional-isolated-mv3
   variables:
@@ -350,6 +367,12 @@ func:v3:chromium:beta:
   extends: .functional-nightly
   variables:
     BROWSER: chromium beta
+    TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
+
+func:v3:chrome:beta:
+  extends: .functional-nightly
+  variables:
+    BROWSER: chrome beta
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
 
 func:v2:firefox:incognito:update:
@@ -378,12 +401,27 @@ fuzz:v3:chromium:latest:
   variables:
     BROWSER: chromium latest
 
+fuzz:v3:chrome:latest:
+  extends:
+    - .functional-nightly
+    - .fuzz
+  variables:
+    BROWSER: chrome latest
+
 fuzz:v3:chromium:incognito:
   extends:
     - .functional-nightly
     - .fuzz
   variables:
     BROWSER: chromium latest
+    INCOGNITO: --incognito
+
+fuzz:v3:chrome:incognito:
+  extends:
+    - .functional-nightly
+    - .fuzz
+  variables:
+    BROWSER: chrome latest
     INCOGNITO: --incognito
 
 fuzz:v3:edge:latest:
@@ -432,6 +470,14 @@ comp:v3:chromium:
   variables:
     VERSION: latest
     BROWSER: chromium
+    MANIFEST: mv3
+    MV3_ONLY_TESTS: exceptions/sitekey_mv3
+
+comp:v3:chrome:
+  extends: .compliance
+  variables:
+    VERSION: latest
+    BROWSER: chrome
     MANIFEST: mv3
     MV3_ONLY_TESTS: exceptions/sitekey_mv3
 
@@ -496,6 +542,11 @@ perf:v3:chromium:
   variables:
     PARAMS: 3 chromium
 
+perf:v3:chrome:
+  extends: .performance
+  variables:
+    PARAMS: 3 chrome
+
 perf:save-baseline:v3:chromium:
   extends: .performance
   after_script:
@@ -507,5 +558,19 @@ perf:save-baseline:v3:chromium:
     expire_in: 1 day
   variables:
     PARAMS: 3 chromium --saveBaseline
+  rules:
+    - if: $SAVE_BASELINE == "true"
+
+perf:save-baseline:v3:chrome:
+  extends: .performance
+  after_script:
+    - docker cp $(docker ps -aqf ancestor=$FUNCTIONAL_IMAGE | head -n 1):/extensions/core/sdk/test/performance/baseline_docker.json ./core/sdk/test/performance/baseline_docker.json
+  artifacts:
+    paths:
+      - core/sdk/test/performance/baseline_docker.json
+    when: on_success
+    expire_in: 1 day
+  variables:
+    PARAMS: 3 chrome --saveBaseline
   rules:
     - if: $SAVE_BASELINE == "true"

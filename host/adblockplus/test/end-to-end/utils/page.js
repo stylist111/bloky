@@ -110,6 +110,11 @@ export async function checkInstallUninstallUrl({ url, appVersion, uninstall }) {
       ap: "chrome", // application
       p: "chromium" // platform
     },
+    chrome: {
+      an: "adblockpluschrome",
+      ap: "chrome",
+      p: "chromium"
+    },
     edge: {
       an: "adblockpluschrome",
       ap: "edge",

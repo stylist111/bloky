@@ -16,8 +16,8 @@ RUN cd extensions && npm ci
 COPY . extensions/
 WORKDIR extensions/
 
-ARG BROWSER=
-RUN if [ ! -z "$BROWSER" ]; then node core/sdk/test/dockerfiles/get-browser-binaries.js $BROWSER; fi
+ARG BROWSERS=
+RUN for BROWSER in $BROWSERS; do node core/sdk/test/dockerfiles/get-browser-binaries.js $BROWSER; done
 
 ENV IS_DOCKER_RUN="true"
 ENV TEST_PARAMS="3 chromium"

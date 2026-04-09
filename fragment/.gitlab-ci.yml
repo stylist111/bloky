@@ -60,6 +60,12 @@ fragments-tests:MV3:chromium:latest:
     BROWSER: chromium
     MANIFEST_VERSION: 3
 
+fragments-tests:MV3:chrome:latest:
+  extends: .fragments-tests-n-times
+  variables:
+    BROWSER: chrome
+    MANIFEST_VERSION: 3
+
 # Fragments tests - nightly run
 .fragments-tests-nightly:
   extends: .fragments-tests
@@ -84,4 +90,11 @@ fragments-tests:MV3:chromium:beta:
   variables:
     MANIFEST_VERSION: 3
     BROWSER: chromium
+    BROWSER_VERSION: beta
+
+fragments-tests:MV3:chrome:beta:
+  extends: .fragments-tests-nightly
+  variables:
+    MANIFEST_VERSION: 3
+    BROWSER: chrome
     BROWSER_VERSION: beta

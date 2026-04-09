@@ -27,13 +27,13 @@ npm run -w @eyeo/test-utils start-sdk-server
 ## Run tests with test-runner
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution test:functional -- {2|3} {chromium|firefox|edge} [version|channel] --timeout 10000 --incognito
+npm run -w @eyeo/webext-ad-filtering-solution test:functional -- {2|3} {chromium|chrome|firefox|edge} [version|channel] --timeout 10000 --incognito
 ```
 
 ## Performance
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--forceHeadful] [--slow] [--saveBaseline]
+npm run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|chrome|edge} [--forceHeadful] [--slow] [--saveBaseline]
 ```
 
 ## Docker runs
@@ -50,13 +50,13 @@ docker run --shm-size=2g -it --entrypoint npm basic run -w adblockpluscore test:
 ```
 npm run -w @eyeo/webext-ad-filtering-solution build
 docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
-docker run --shm-size=2g -it -e TEST_PARAMS="{2|3} {chromium|firefox|edge}" functional
+docker run --shm-size=2g -it -e TEST_PARAMS="{2|3} {chromium|chrome|firefox|edge}" functional
 ```
 
 ### Build container with browser cached in it
 
 ```
-docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile --build-arg BROWSER=<chromium> .
+docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile --build-arg BROWSERS="chromium chrome" .
 ```
 
 ### Compliance
@@ -68,7 +68,7 @@ MANIFEST="mv2" BROWSER="chromium" VERSION="latest" ./core/sdk/test/scripts/compl
 ### Performance
 
 ```
-docker run --shm-size=2g -it -e NODE_OPTIONS="--max-old-space-size=4096" --entrypoint npm functional run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--slow] [--saveBaseline]
+docker run --shm-size=2g -it -e NODE_OPTIONS="--max-old-space-size=4096" --entrypoint npm functional run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|chrome|edge} [--slow] [--saveBaseline]
 ```
 
 ### Run docker for tests with [flaky] tag
@@ -91,13 +91,13 @@ docker run --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="3 
 npm i
 npm run -w @eyeo/webext-ad-filtering-solution build
 npm run -w @eyeo/webext-ad-filtering-solution test
-npm run -w @eyeo/webext-ad-filtering-solution test:functional -- {2|3} {chromium|firefox|edge}
+npm run -w @eyeo/webext-ad-filtering-solution test:functional -- {2|3} {chromium|chrome|firefox|edge}
 ```
 
 ### Build and run tests
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- {2|3} {chromium|firefox|edge}
+npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- {2|3} {chromium|chrome|firefox|edge}
 ```
 
 ### Build and run a specific test

@@ -89,6 +89,12 @@ export default () => {
         ap: "chrome",
         p: "chromium",
       },
+      chrome: {
+        ...base,
+        an: "adblockchrome",
+        ap: "chrome",
+        p: "chromium",
+      },
       edge: {
         ...base,
         an: "adblockchrome",

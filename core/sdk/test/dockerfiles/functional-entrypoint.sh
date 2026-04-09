@@ -4,7 +4,7 @@ set -u
 
 # Browser config
 XVFB_CMD=""
-if [[ "$TEST_PARAMS" =~ (chromium|edge|incognito) ]]; then
+if [[ "$TEST_PARAMS" =~ (chromium|chrome|edge|incognito) ]]; then
   XVFB_CMD="xvfb-run -a"
 fi
 
