@@ -25,7 +25,6 @@ import {
   applyLinkTemplating,
   isTabAlreadyOpen
 } from "../../src/notifications/background";
-import { initDay1Notification } from "../../lib/notifications.js";
 import { showOptions } from "../../lib/pages/options.js";
 import { port } from "~/core/messaging/background";
 import { SessionStorage } from "./storage/session.js";
@@ -81,7 +80,6 @@ const defaultDisplayMethods = ["popup"];
 // We must hard code any "abp:" prefixed notification links here, otherwise
 // notifications linking to them will not be displayed at all.
 const localNotificationPages = new Map([
-  ["abp:day1", "/day1.html"],
   ["abp:problem", "/problem.html"],
   ["abp:updates", "/updates.html"]
 ]);
@@ -440,8 +438,6 @@ export async function initNotifications(firstRun) {
 
     openNotificationInNewTab(notification);
   });
-
-  if (firstRun) initDay1Notification();
 }
 
 /**

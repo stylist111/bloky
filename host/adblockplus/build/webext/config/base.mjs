@@ -40,10 +40,6 @@ export default {
         src: ["src/composer/content/index.ts"]
       },
       {
-        dest: "day1.js",
-        src: ["js/pages/day1.mjs"]
-      },
-      {
         dest: "desktop-options.js",
         src: ["src/desktop-options/ui/bootstrap.entry.ts"]
       },
@@ -86,10 +82,6 @@ export default {
       {
         dest: "popup.js",
         src: ["src/popup/ui/bootstrap.entry.ts", "js/pages/popup/index.mjs"]
-      },
-      {
-        dest: "popup-dummy.js",
-        src: ["js/pages/popup-dummy.mjs"]
       },
       {
         dest: "premium.preload.js",
@@ -171,7 +163,6 @@ export default {
         dest: "",
         src: [
           "src/composer/ui/composer.html",
-          "src/day1/ui/day1.html",
           "src/desktop-options/ui/desktop-options.html",
           "src/devtools-panel/ui/devtools-panel.html",
           "src/devtools/ui/devtools.html",
@@ -181,7 +172,6 @@ export default {
           "src/issue-reporter/ui/proxy.html",
           "src/mobile-options/ui/mobile-options.html",
           "src/options/ui/options.html",
-          "src/popup-dummy/ui/popup-dummy.html",
           "src/popup/ui/popup.html",
           "src/problem/ui/problem.html",
           "src/updates/ui/updates.html"

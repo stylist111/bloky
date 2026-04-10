@@ -99,7 +99,6 @@ UI pages.
 These are pages that cannot be accessed via UI pages. They are either directly
 or indirectly opened by the extension under certain conditions.
 
-- Day 1 (day1)
 - First run (first-run)
 - Problem (problem)
 - Updates (updates)
@@ -109,7 +108,6 @@ or indirectly opened by the extension under certain conditions.
 These are pages that are part of another page. They are not meant to be shown on
 their own.
 
-- Bubble UI dummy (popup-dummy)
 - Proxy (proxy)
 
 ### Additional extension functionality

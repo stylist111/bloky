@@ -14,10 +14,6 @@
 
 Not supported yet.
 
-### day1.html
-
-No parameters.
-
 ### desktop-options.html
 
 | Parameter                  | Value                               | Description                                                                                          |
@@ -91,10 +87,6 @@ No parameters.
 |                   | `chrome%3A%2F%2Fextensions`    | The UI will only display stats, as ABP is not active on built-in browser pages               |
 
 If the `locale` uses any Chinese that starts with `zh`, the _Share numbers with friends_ should either be invisible, or it should show social media icons different from Facebook and Twitter, as these platform are not available for Chinese users.
-
-### popup-dummy.html
-
-No parameters.
 
 ### problem.html
 
