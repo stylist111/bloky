@@ -114,6 +114,7 @@ pages:
   script:
     # Check that docs folder exists
     - "[ -d \"core/sdk/public\" ]"
+    - mkdir -p public/sdk/
     - cp -r core/sdk/public/ public/sdk/
   artifacts:
     paths:
