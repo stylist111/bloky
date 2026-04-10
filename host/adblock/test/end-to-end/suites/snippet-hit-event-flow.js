@@ -70,9 +70,7 @@ export default () => {
     await syncRemoteConfig(initOptionsGeneralTab);
   });
 
-  // Disabled: requires @eyeo/snippets with sendSnippetHitEvent support
-  // (abp-snippets main-world-snippet-hit-events branch, not yet published).
-  it.skip("main-world snippet fires snippet_hit_event through the bridge", async function () {
+  it("main-world snippet fires snippet_hit_event through the bridge", async function () {
     await addFiltersProgrammatically(getOptionsHandle, JSON_PRUNE_FILTER);
     try {
       await driver.switchTo().window(getOptionsHandle());

@@ -1,6 +1,6 @@
 # Unreleased
 
-- Updated snippets to 2.7.0
+- Updated snippets to 2.8.0
 
 ## General
 
