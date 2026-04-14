@@ -1,5 +1,9 @@
 # Unreleased
 
+# 6.39.1 - 2026-04-14
+
+This release contains bugfixes and under-the-hood changes.
+
 - Fixed upsell banner text not visible on dark theme in options page.
 - Source code release bundles no longer include the full monorepo, but instead
   only include the code to build the current extension.

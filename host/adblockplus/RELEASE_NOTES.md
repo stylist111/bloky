@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.37.0 - 2026-04-14
+
+This release contains only minor updates and under-the-hood changes.
+
 - Source code release bundles no longer include the full monorepo, but instead
   only include the code to build the current extension.
 - Removed notification and page to make new users aware of additional features.
