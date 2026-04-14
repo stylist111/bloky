@@ -101,13 +101,37 @@ export interface TouchPointConfig {
   step: number;
   titleKey: string;
   bodyKeys: BodyKeyEntry[];
-  buttonKey: string;
+  buttonKey?: string;
   /** Whether this touch point navigates to a target URL on CTA click */
   hasTarget: boolean;
   /** Minimum number of elapsed trial days before this touch point becomes eligible */
   minElapsedDays: number;
   /** i18n key for the "Learn More" link text, if present */
   learnMore?: string;
+  /** If true, show the dismiss link on this touch point's dialog */
+  showDismissLink?: boolean;
+  /** i18n key for the "Opt Out" link text, if present */
+  optOutKey?: string;
+  /** If true, advance step when dialog is shown rather than on user dismiss */
+  showOnce?: boolean;
+  /** Auto-dismiss the dialog after this many milliseconds */
+  autoDismissMs?: number;
+  /** If true, show the feedback link on this touch point's dialog */
+  showFeedback?: boolean;
+}
+
+/**
+ * Properties of a touch point config that can be overridden via experiment flags.
+ *
+ * The flag value must be an object keyed by step number (as a string), e.g.:
+ * `{ "1": { "autoDismissMs": 5000 } }`
+ *
+ * Null values means to unset the config value.
+ */
+export interface TouchPointConfigOverride {
+  autoDismissMs?: number | null;
+  showFeedback?: boolean | null;
+  showDismissLink?: boolean | null;
 }
 
 /**
@@ -125,7 +149,7 @@ export interface DialogPayload {
   body: BodyLine[];
 
   /** Text displayed on the call-to-action button */
-  button: string;
+  button?: string;
 
   /**
    * URL to open when the CTA button is clicked.
@@ -144,4 +168,19 @@ export interface DialogPayload {
    * Absent when the touch point has no learn more link.
    */
   learnMore?: { text: string; url: string };
+
+  /** Resolved "Dismiss" link text. Absent when the touch point has no dismiss link. */
+  dismiss?: { text: string };
+
+  /** Resolved "Opt Out" link text. Absent when the touch point has no opt-out link. */
+  optOut?: { text: string };
+
+  /** True when the step was already advanced at dialog show time (showOnce config) */
+  showOnce?: boolean;
+
+  /** Auto-dismiss timeout in milliseconds, echoed from config */
+  autoDismissMs?: number;
+
+  /** Resolved "Submit feedback" link shown below the CTA button. */
+  feedback?: { text: string; url: string };
 }

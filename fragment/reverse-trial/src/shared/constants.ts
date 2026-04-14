@@ -22,6 +22,9 @@ export const EXPERIMENT_FLAG = "show-reverse-trial-opd";
 /** Kill switch for showing the reverse trial OPDs */
 export const OPD_KILL_SWITCH = "reverse-trial-opd-kill-switch";
 
+/** Remote experiment flag that provides per-step touch point config overrides */
+export const TOUCH_POINT_CONFIG_FLAG = "reverse-trial-opd-config";
+
 /** Message type sent from content script to service worker */
 export const GET_DIALOG_MESSAGE_TYPE = "reverse-trial.get-dialog";
 
@@ -36,6 +39,20 @@ export const DIALOG_ACTION_MESSAGE_TYPE = "reverse-trial.dialog-action";
 
 /** Message type broadcast from service worker to all tabs to close the dialog */
 export const DISMISS_DIALOG_MESSAGE_TYPE = "reverse-trial.dismiss-dialog";
+
+/** Message type sent from content script to check if a visible dialog should still be shown */
+export const GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE =
+  "reverse-trial.get-dialog-should-still-show";
+
+/** Message type sent from content script when the user opts out of the reverse trial */
+export const OPT_OUT_MESSAGE_TYPE = "reverse-trial.opt-out";
+
+/** Message type sent from content script when the user clicks the feedback link */
+export const FEEDBACK_MESSAGE_TYPE = "reverse-trial.feedback";
+
+/** URL template for the feedback form */
+export const FEEDBACK_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSdMfL5RrrDbPr5Ud1oBm8oYDOFp_TeHLwxKHEGksUY2OMwDCQ/viewform?usp=pp_url";
 
 /** Total duration of the trial period in days */
 export const TRIAL_DURATION_DAYS = 14;

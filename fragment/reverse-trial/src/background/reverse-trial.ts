@@ -22,16 +22,23 @@ import browser from "webextension-polyfill";
 import {
   EXPERIMENT_FLAG,
   GET_DIALOG_MESSAGE_TYPE,
+  GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
   DIALOG_ACTION_MESSAGE_TYPE,
   DISMISS_DIALOG_MESSAGE_TYPE,
+  OPT_OUT_MESSAGE_TYPE,
+  FEEDBACK_MESSAGE_TYPE,
+  FEEDBACK_URL,
   STEP_PREF_KEY,
   TRIAL_START_DATE_PREF_KEY,
-  TRIAL_DURATION_DAYS,
   MS_PER_DAY,
   OPD_KILL_SWITCH,
 } from "../shared/constants.js";
 import type { StartInfo, DialogPayload } from "../shared/types.js";
-import { resolveNextTouchPoint, LAST_TOUCH_POINT_STEP } from "./touchpoints.js";
+import {
+  resolveNextTouchPoint,
+  getTouchPoint,
+  LAST_TOUCH_POINT_STEP,
+} from "./touchpoints.js";
 
 const serverLogger = new ewe.telemetry.ServerLogger("reverse_trial");
 
@@ -58,11 +65,24 @@ async function toDataUrl(url: string): Promise<string> {
  * their trial has ended.
  */
 async function ensureTrialIsNotInProgress(params: StartInfo): Promise<void> {
-  const currentStep: number = params.prefs.get(STEP_PREF_KEY) ?? 0;
   const trialStartDate: number =
     params.prefs.get(TRIAL_START_DATE_PREF_KEY) ?? 0;
-  if (trialStartDate && currentStep < LAST_TOUCH_POINT_STEP) {
-    await params.prefs.set(STEP_PREF_KEY, LAST_TOUCH_POINT_STEP);
+  if (trialStartDate) {
+    await advanceTrialStep(params, LAST_TOUCH_POINT_STEP);
+  }
+}
+
+/**
+ * Set the trial step to the new value. Enforces that the trial step can only
+ * ever increase.
+ */
+async function advanceTrialStep(
+  params: StartInfo,
+  newStep: number,
+): Promise<void> {
+  const currentStep: number = params.prefs.get(STEP_PREF_KEY) ?? 0;
+  if (currentStep < newStep) {
+    await params.prefs.set(STEP_PREF_KEY, newStep);
   }
 }
 
@@ -113,7 +133,7 @@ async function requestDialogHandler(
 
   const elapsedDays = Math.floor((Date.now() - trialStartDate) / MS_PER_DAY);
 
-  const config = resolveNextTouchPoint(lastShown, elapsedDays);
+  const config = await resolveNextTouchPoint(lastShown, elapsedDays);
   if (!config) {
     return null;
   }
@@ -135,8 +155,9 @@ async function requestDialogHandler(
     return null;
   }
 
-  const daysLeft = Math.max(0, TRIAL_DURATION_DAYS - elapsedDays);
-  const titleSubs = config.step === 2 ? [String(daysLeft)] : undefined;
+  if (config.showOnce) {
+    await advanceTrialStep(params, config.step);
+  }
 
   // We convert the logo to a data url so that fetching it happens in the
   // service worker. Otherwise the page would be able to detect our request.
@@ -178,17 +199,43 @@ async function requestDialogHandler(
     };
   }
 
+  const dismiss = config.showDismissLink
+    ? { text: browser.i18n.getMessage("reverse_trial_midpoint_decide_later") }
+    : undefined;
+
+  const optOut = config.optOutKey
+    ? { text: browser.i18n.getMessage(config.optOutKey) }
+    : undefined;
+
+  let feedback;
+  if (config.showFeedback) {
+    feedback = {
+      text: browser.i18n.getMessage("reverse_trial_submit_feedback"),
+      url: FEEDBACK_URL + `&entry.1742752836=${config.step}`,
+    };
+    if (!isOptedOut) {
+      feedback.url += `&entry.400370027=${params.addonVersion}`;
+    }
+  }
+
   return {
-    title: browser.i18n.getMessage(config.titleKey, titleSubs),
+    title: browser.i18n.getMessage(config.titleKey),
     body: config.bodyKeys.map((entry) => ({
       text: browser.i18n.getMessage(entry.key),
       style: entry.style,
     })),
-    button: browser.i18n.getMessage(config.buttonKey),
+    button: config.buttonKey
+      ? browser.i18n.getMessage(config.buttonKey)
+      : undefined,
     target,
     logoUrl,
     touchPointStep: config.step,
     learnMore,
+    dismiss,
+    optOut,
+    showOnce: config.showOnce,
+    autoDismissMs: config.autoDismissMs,
+    feedback,
   };
 }
 
@@ -209,13 +256,10 @@ async function requestDialogHandler(
  * @param params - Host-provided dependencies
  */
 async function dialogActionHandler(
-  message: { touchPointStep: number; action: string },
+  message: { touchPointStep: number; action: string; silent?: boolean },
   params: StartInfo,
 ): Promise<void> {
-  const currentStep: number = params.prefs.get(STEP_PREF_KEY) ?? 0;
-  if (currentStep < message.touchPointStep) {
-    await params.prefs.set(STEP_PREF_KEY, message.touchPointStep);
-  }
+  await advanceTrialStep(params, message.touchPointStep);
 
   serverLogger.info("dialog_action", {
     action: message.action,
@@ -224,7 +268,67 @@ async function dialogActionHandler(
     reverseTrialStartDate: params.prefs.get(TRIAL_START_DATE_PREF_KEY) ?? 0,
   });
 
+  if (!message.silent) {
+    await dismissOpenDialogs();
+  }
+}
+
+/**
+ * Handles a check from the content script asking whether a currently-visible
+ * dialog should still be shown.
+ *
+ * @param message - Contains the touch point step
+ * @param params - Host-provided dependencies
+ */
+async function dialogShouldStillShowHandler(
+  message: { touchPointStep: number },
+  params: StartInfo,
+): Promise<boolean> {
+  const touchpoint = await getTouchPoint(message.touchPointStep);
+  const currentStep: number = params.prefs.get(STEP_PREF_KEY) ?? 0;
+
+  // showOnce touchpoints increment the step immediately when they are shown, so if the step isn't still the current step then the user has moved on.
+  let shouldStillShow: boolean;
+  if (touchpoint?.showOnce) {
+    shouldStillShow = currentStep === message.touchPointStep;
+  } else {
+    shouldStillShow = currentStep < message.touchPointStep;
+  }
+
+  serverLogger.debug("dialog_should_still_show_checked", {
+    touchPointStep: message.touchPointStep,
+    shouldStillShow,
+    installDate: params.prefs.get("installDate") ?? 0,
+    reverseTrialStartDate: params.prefs.get(TRIAL_START_DATE_PREF_KEY) ?? 0,
+  });
+
+  return shouldStillShow;
+}
+
+async function optOutHandler(
+  message: { touchPointStep: number },
+  params: StartInfo,
+): Promise<void> {
+  await advanceTrialStep(params, LAST_TOUCH_POINT_STEP);
+
+  serverLogger.info("opt_out", {
+    touchPointStep: message.touchPointStep,
+    installDate: params.prefs.get("installDate") ?? 0,
+    reverseTrialStartDate: params.prefs.get(TRIAL_START_DATE_PREF_KEY) ?? 0,
+  });
+
   await dismissOpenDialogs();
+}
+
+async function feedbackHandler(
+  message: { touchPointStep: number },
+  params: StartInfo,
+): Promise<void> {
+  serverLogger.info("feedback_clicked", {
+    touchPointStep: message.touchPointStep,
+    installDate: params.prefs.get("installDate") ?? 0,
+    reverseTrialStartDate: params.prefs.get(TRIAL_START_DATE_PREF_KEY) ?? 0,
+  });
 }
 
 async function dismissOpenDialogs(): Promise<void> {
@@ -265,12 +369,39 @@ export function start(params: StartInfo): void {
   );
   params.port.on(
     DIALOG_ACTION_MESSAGE_TYPE,
-    async (message: { touchPointStep: number; action: string }) => {
+    async (message: {
+      touchPointStep: number;
+      action: string;
+      silent?: boolean;
+    }) => {
       await dialogActionHandler(message, params);
     },
   );
+  params.port.on(
+    GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
+    async (message: { touchPointStep: number }) =>
+      await dialogShouldStillShowHandler(message, params),
+  );
+  params.port.on(
+    OPT_OUT_MESSAGE_TYPE,
+    async (message: { touchPointStep: number }) => {
+      await optOutHandler(message, params);
+    },
+  );
+  params.port.on(
+    FEEDBACK_MESSAGE_TYPE,
+    async (message: { touchPointStep: number }) => {
+      await feedbackHandler(message, params);
+    },
+  );
 
-  const trustedTypes = [GET_DIALOG_MESSAGE_TYPE, DIALOG_ACTION_MESSAGE_TYPE];
+  const trustedTypes = [
+    GET_DIALOG_MESSAGE_TYPE,
+    GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
+    DIALOG_ACTION_MESSAGE_TYPE,
+    OPT_OUT_MESSAGE_TYPE,
+    FEEDBACK_MESSAGE_TYPE,
+  ];
   params.addTrustedMessageTypes("https://youtube.com", trustedTypes);
   params.addTrustedMessageTypes("https://www.youtube.com", trustedTypes);
 

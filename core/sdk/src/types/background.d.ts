@@ -1032,7 +1032,7 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      */
     const getFlag: (
       flag: string
-    ) => Promise<boolean | string | number | string[] | null>;
+    ) => Promise<boolean | string | number | string[] | Record<string, unknown> | null>;
     /**
      * Retrieves all feature flags, including overridden flags and their values
      */

@@ -1,48 +1,58 @@
 {
   "reverse_trial_start_title": {
     "description": "Title for the reverse trial start dialog",
-    "message": "AdBlock Premium 现已激活 🎉"
+    "message": "AdBlock 视频保护已激活"
   },
-  "reverse_trial_start_body_1": {
+  "reverse_trial_start_body": {
     "description": "First paragraph of the start dialog body",
-    "message": "我们刚刚为您开启了 <strong>14 天</strong>免费 AdBlock Premium。"
-  },
-  "reverse_trial_start_body_2": {
-    "description": "Second paragraph of the start dialog body",
-    "message": "感受不同之处 – 借助我们的 Premium 过滤器，视频现在广告更少、延迟更短！"
-  },
-  "reverse_trial_start_button": {
-    "description": "CTA button text for the start dialog",
-    "message": "谢谢！"
+    "message": "我们最先进的拦截技术意味着在其激活期间，您应该看到更少的广告中断。"
   },
   "reverse_trial_midpoint_title": {
     "description": "Title for the reverse trial midpoint dialog",
-    "message": "您的试用期将在 $days_left$ 天后结束",
-    "placeholders": {
-      "days_left": {
-        "content": "$1",
-        "example": "7"
-      }
-    }
+    "message": "正在享受更少的视频广告？"
   },
-  "reverse_trial_midpoint_body": {
-    "description": "Body text for the reverse trial midpoint dialog",
-    "message": "立即订阅，继续屏蔽视频广告，无中断享受所有高级功能。"
+  "reverse_trial_midpoint_body_1": {
+    "description": "Body text for the reverse trial midpoint dialog part 1",
+    "message": "您正处于我们高级视频广告拦截 14 天试用期的中途。"
   },
-  "reverse_trial_premium_button": {
-    "description": "CTA button text for the midpoint and ended dialogs",
-    "message": "获取 AdBlock Premium"
+  "reverse_trial_midpoint_body_2": {
+    "description": "Body text for the reverse trial midpoint dialog part 2",
+    "message": "升级以保留它，或者在试用结束时自动恢复到标准拦截。"
+  },
+  "reverse_trial_midpoint_premium_button": {
+    "description": "CTA button text for the midpoint dialogs",
+    "message": "查看升级选项"
+  },
+  "reverse_trial_midpoint_decide_later": {
+    "description": "Link text for decide later close link",
+    "message": "我稍后再决定"
+  },
+  "reverse_trial_midpoint_opt_out": {
+    "description": "Link text for opting out of the trial on the midpoint",
+    "message": "今天结束试用"
   },
   "reverse_trial_ended_title": {
     "description": "Title for the reverse trial ended dialog",
-    "message": "您的免费试用期已结束"
+    "message": "增强视频广告拦截已结束"
   },
-  "reverse_trial_ended_body": {
-    "description": "Body text for the reverse trial ended dialog",
-    "message": "订阅 AdBlock Premium，继续屏蔽视频广告并享受所有高级功能。"
+  "reverse_trial_ended_body_1": {
+    "description": "Body text for the reverse trial ended dialog part 1",
+    "message": "希望您享受了 14 天更少中断的体验。"
+  },
+  "reverse_trial_ended_body_2": {
+    "description": "Body text for the reverse trial ended dialog part 2",
+    "message": "我们的标准拦截仍在继续，但您可能会注意到差异。"
+  },
+  "reverse_trial_ended_premium_button": {
+    "description": "CTA button text for the ended dialogs",
+    "message": "保持激活"
   },
   "reverse_trial_learn_more": {
     "description": "Text for the 'learn more' link that appear under the CTA button",
     "message": "了解更多"
+  },
+  "reverse_trial_submit_feedback": {
+    "description": "Text for the 'submit feedback' link that appears under the CTA button",
+    "message": "提交反馈"
   }
 }

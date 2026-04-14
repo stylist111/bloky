@@ -1,48 +1,58 @@
 {
   "reverse_trial_start_title": {
     "description": "Title for the reverse trial start dialog",
-    "message": "AdBlock Premium jest teraz aktywny 🎉"
+    "message": "Ochrona wideo AdBlock aktywna"
   },
-  "reverse_trial_start_body_1": {
+  "reverse_trial_start_body": {
     "description": "First paragraph of the start dialog body",
-    "message": "Właśnie włączyliśmy dla Ciebie <strong>14 dni</strong> bezpłatnego AdBlock Premium."
-  },
-  "reverse_trial_start_body_2": {
-    "description": "Second paragraph of the start dialog body",
-    "message": "Poczuj różnicę – filmy mają teraz mniej reklam i opóźnień dzięki naszym filtrom Premium!"
-  },
-  "reverse_trial_start_button": {
-    "description": "CTA button text for the start dialog",
-    "message": "Dzięki!"
+    "message": "Nasza najbardziej zaawansowana technologia blokowania oznacza, że powinieneś widzieć mniej przerw, gdy jest aktywna."
   },
   "reverse_trial_midpoint_title": {
     "description": "Title for the reverse trial midpoint dialog",
-    "message": "Twój okres próbny kończy się za $days_left$ dzień/dni",
-    "placeholders": {
-      "days_left": {
-        "content": "$1",
-        "example": "7"
-      }
-    }
+    "message": "Cieszysz się mniejszą liczbą reklam wideo?"
   },
-  "reverse_trial_midpoint_body": {
-    "description": "Body text for the reverse trial midpoint dialog",
-    "message": "Subskrybuj teraz, aby nadal blokować reklamy wideo i korzystać ze wszystkich funkcji premium bez przerwy."
+  "reverse_trial_midpoint_body_1": {
+    "description": "Body text for the reverse trial midpoint dialog part 1",
+    "message": "Jesteś w połowie 14-dniowego okresu próbnego naszego zaawansowanego blokowania reklam wideo."
   },
-  "reverse_trial_premium_button": {
-    "description": "CTA button text for the midpoint and ended dialogs",
-    "message": "Pobierz AdBlock Premium"
+  "reverse_trial_midpoint_body_2": {
+    "description": "Body text for the reverse trial midpoint dialog part 2",
+    "message": "Dokonaj ulepszenia, aby je zachować, lub automatycznie powróci do standardowego blokowania po zakończeniu."
+  },
+  "reverse_trial_midpoint_premium_button": {
+    "description": "CTA button text for the midpoint dialogs",
+    "message": "Zobacz opcje ulepszenia"
+  },
+  "reverse_trial_midpoint_decide_later": {
+    "description": "Link text for decide later close link",
+    "message": "Zdecyduję później"
+  },
+  "reverse_trial_midpoint_opt_out": {
+    "description": "Link text for opting out of the trial on the midpoint",
+    "message": "Zakończ okres próbny dzisiaj"
   },
   "reverse_trial_ended_title": {
     "description": "Title for the reverse trial ended dialog",
-    "message": "Twój bezpłatny okres próbny dobiegł końca"
+    "message": "Zaawansowane blokowanie reklam wideo zakończyło się"
   },
-  "reverse_trial_ended_body": {
-    "description": "Body text for the reverse trial ended dialog",
-    "message": "Subskrybuj AdBlock Premium, aby nadal blokować reklamy wideo i korzystać ze wszystkich funkcji premium."
+  "reverse_trial_ended_body_1": {
+    "description": "Body text for the reverse trial ended dialog part 1",
+    "message": "Mamy nadzieję, że cieszysz się 14 dniami z mniejszą liczbą przerw."
+  },
+  "reverse_trial_ended_body_2": {
+    "description": "Body text for the reverse trial ended dialog part 2",
+    "message": "Nasze standardowe blokowanie działa dalej, choć możesz zauważyć różnicę."
+  },
+  "reverse_trial_ended_premium_button": {
+    "description": "CTA button text for the ended dialogs",
+    "message": "Zachowaj aktywność"
   },
   "reverse_trial_learn_more": {
     "description": "Text for the 'learn more' link that appear under the CTA button",
     "message": "Dowiedz się więcej"
+  },
+  "reverse_trial_submit_feedback": {
+    "description": "Text for the 'submit feedback' link that appears under the CTA button",
+    "message": "Prześlij opinię"
   }
 }

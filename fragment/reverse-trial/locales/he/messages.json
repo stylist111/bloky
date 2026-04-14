@@ -1,48 +1,58 @@
 {
   "reverse_trial_start_title": {
     "description": "Title for the reverse trial start dialog",
-    "message": "‏AdBlock Premium פעיל עכשיו 🎉"
+    "message": "‏הגנת הווידאו של AdBlock פעילה"
   },
-  "reverse_trial_start_body_1": {
+  "reverse_trial_start_body": {
     "description": "First paragraph of the start dialog body",
-    "message": "הפעלנו עבורך <strong>14 ימים</strong> של AdBlock Premium חינמי."
-  },
-  "reverse_trial_start_body_2": {
-    "description": "Second paragraph of the start dialog body",
-    "message": "הרגש את ההבדל - לסרטוני הווידאו יש כעת פחות מודעות ועיכובים הודות לפילטרים Premium שלנו!"
-  },
-  "reverse_trial_start_button": {
-    "description": "CTA button text for the start dialog",
-    "message": "תודה!"
+    "message": "טכנולוגיית החסימה המתקדמת ביותר שלנו אמורה לגרום לכם לראות פחות הפרעות כל עוד היא פעילה."
   },
   "reverse_trial_midpoint_title": {
     "description": "Title for the reverse trial midpoint dialog",
-    "message": "הניסיון שלך מסתיים בעוד $days_left$ ימים",
-    "placeholders": {
-      "days_left": {
-        "content": "$1",
-        "example": "7"
-      }
-    }
+    "message": "נהנים מפחות פרסומות בווידאו?"
   },
-  "reverse_trial_midpoint_body": {
-    "description": "Body text for the reverse trial midpoint dialog",
-    "message": "הירשם עכשיו כדי להמשיך לחסום פרסומות בווידאו וליהנות מכל התכונות הפרימיום ללא הפרעה."
+  "reverse_trial_midpoint_body_1": {
+    "description": "Body text for the reverse trial midpoint dialog part 1",
+    "message": "אתם באמצע תקופת ניסיון של 14 ימים לחסימת פרסומות הווידאו המתקדמת שלנו."
   },
-  "reverse_trial_premium_button": {
-    "description": "CTA button text for the midpoint and ended dialogs",
-    "message": "קבל את ‏AdBlock Premium"
+  "reverse_trial_midpoint_body_2": {
+    "description": "Body text for the reverse trial midpoint dialog part 2",
+    "message": "שדרגו כדי לשמור עליה, או שהיא תחזור אוטומטית לחסימה הרגילה בתום התקופה."
+  },
+  "reverse_trial_midpoint_premium_button": {
+    "description": "CTA button text for the midpoint dialogs",
+    "message": "הצג אפשרויות שדרוג"
+  },
+  "reverse_trial_midpoint_decide_later": {
+    "description": "Link text for decide later close link",
+    "message": "אחליט מאוחר יותר"
+  },
+  "reverse_trial_midpoint_opt_out": {
+    "description": "Link text for opting out of the trial on the midpoint",
+    "message": "סיים את הניסיון היום"
   },
   "reverse_trial_ended_title": {
     "description": "Title for the reverse trial ended dialog",
-    "message": "תקופת הניסיון החינמית שלך הסתיימה"
+    "message": "חסימת פרסומות הווידאו המשופרת הסתיימה"
   },
-  "reverse_trial_ended_body": {
-    "description": "Body text for the reverse trial ended dialog",
-    "message": "הירשם ל-‏AdBlock Premium כדי להמשיך לחסום פרסומות בווידאו וליהנות מכל התכונות הפרימיום."
+  "reverse_trial_ended_body_1": {
+    "description": "Body text for the reverse trial ended dialog part 1",
+    "message": "אנו מקווים שנהניתם מ-14 ימים עם פחות הפרעות."
+  },
+  "reverse_trial_ended_body_2": {
+    "description": "Body text for the reverse trial ended dialog part 2",
+    "message": "החסימה הרגילה שלנו ממשיכה, אם כי ייתכן שתשימו לב להבדל."
+  },
+  "reverse_trial_ended_premium_button": {
+    "description": "CTA button text for the ended dialogs",
+    "message": "שמרו על פעילות"
   },
   "reverse_trial_learn_more": {
     "description": "Text for the 'learn more' link that appear under the CTA button",
     "message": "למד עוד"
+  },
+  "reverse_trial_submit_feedback": {
+    "description": "Text for the 'submit feedback' link that appears under the CTA button",
+    "message": "שלח משוב"
   }
 }

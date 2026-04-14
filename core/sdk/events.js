@@ -1230,6 +1230,31 @@ export default {
         }
       }
     },
+    dialog_should_still_show_checked: {
+      description: "The service worker checked whether a visible reverse trial dialog should still be shown after the tab became active",
+      data: {
+        description: "Details about the check",
+        type: "object",
+        properties: {
+          touchPointStep: {
+            description: "The touch point step number of the dialog being checked",
+            type: "number"
+          },
+          shouldStillShow: {
+            description: "Whether the dialog should remain visible",
+            type: "boolean"
+          },
+          installDate: {
+            description: "The timestamp when the extension was installed",
+            type: "number"
+          },
+          reverseTrialStartDate: {
+            description: "The timestamp when the reverse trial started",
+            type: "number"
+          }
+        }
+      }
+    },
     dialog_action: {
       description: "The user interacted with the reverse trial dialog",
       data: {
@@ -1242,6 +1267,48 @@ export default {
           },
           touchPointStep: {
             description: "The touch point step number of the dialog that was interacted with",
+            type: "number"
+          },
+          installDate: {
+            description: "The timestamp when the extension was installed",
+            type: "number"
+          },
+          reverseTrialStartDate: {
+            description: "The timestamp when the reverse trial started",
+            type: "number"
+          }
+        }
+      }
+    },
+    opt_out: {
+      description: "The user opted out of the reverse trial by clicking the opt-out link on the dialog",
+      data: {
+        description: "Details about the opt-out",
+        type: "object",
+        properties: {
+          touchPointStep: {
+            description: "The touch point step number of the dialog from which the user opted out",
+            type: "number"
+          },
+          installDate: {
+            description: "The timestamp when the extension was installed",
+            type: "number"
+          },
+          reverseTrialStartDate: {
+            description: "The timestamp when the reverse trial started",
+            type: "number"
+          }
+        }
+      }
+    },
+    feedback_clicked: {
+      description: "The user clicked the feedback link on the reverse trial dialog",
+      data: {
+        description: "Details about the feedback link click",
+        type: "object",
+        properties: {
+          touchPointStep: {
+            description: "The touch point step number of the dialog from which the user clicked feedback",
             type: "number"
           },
           installDate: {

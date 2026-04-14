@@ -20,8 +20,11 @@ import browser from "webextension-polyfill";
 
 import {
   GET_DIALOG_MESSAGE_TYPE,
+  GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
   DIALOG_ACTION_MESSAGE_TYPE,
   DISMISS_DIALOG_MESSAGE_TYPE,
+  OPT_OUT_MESSAGE_TYPE,
+  FEEDBACK_MESSAGE_TYPE,
 } from "../shared/constants.js";
 import type { DialogPayload, BodyLine } from "../shared/types.js";
 
@@ -74,6 +77,37 @@ function isDarkMode(): boolean {
  * the dialog on user interaction.
  */
 let dialogContainer: HTMLElement | null = null;
+
+/**
+ * True if the dialog was removed. Used to prevent opening the dialog if it was
+ * dismissed on another tab prior to rendering it.
+ */
+let dialogRemoved = false;
+
+/**
+ * Handle for the auto-dismiss timer, if one is active. Cleared when the dialog
+ * is removed by any means so the timer cannot fire after dismissal.
+ */
+let autoDismissTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * The auto-dismiss duration in milliseconds, stored so the timer can be
+ * restarted after the cursor leaves the dialog.
+ */
+let autoDismissMs: number | null = null;
+
+/**
+ * Touch point step of the currently-rendered dialog, used when checking
+ * with the service worker whether the dialog should still be shown.
+ */
+let currentTouchPointStep: number | null = null;
+
+/**
+ * True if the start function has been called before. Used to prevent having
+ * multiple versions of the dialog rendering and callbacks running at the same
+ * time, even if start is called twice.
+ */
+let startCalled = false;
 
 const DIALOG_STYLES = `
   :host {
@@ -150,12 +184,26 @@ const DIALOG_STYLES = `
     background: #c62828;
   }
 
-  #learn-more {
-    display: block;
-    text-align: center;
+  #links-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
     margin-top: 10px;
     font-size: 13px;
+  }
+
+  #links-row.no-cta {
+    margin-top: 32px;
+  }
+
+  #links-row a {
     text-decoration: none;
+  }
+
+  .links-separator {
+    user-select: none;
   }
 
   .heading {
@@ -205,12 +253,16 @@ const DARK_DIALOG_STYLES = `
     color: #fff;
   }
 
-  #learn-more {
+  #links-row a {
     color: #aaa;
   }
 
-  #learn-more:hover {
+  #links-row a:hover {
     color: #e0e0e0;
+  }
+
+  .links-separator {
+    color: #aaa;
   }
 
   .heading {
@@ -249,12 +301,16 @@ const LIGHT_DIALOG_STYLES = `
     color: #111111;
   }
 
-  #learn-more {
+  #links-row a {
     color: #666666;
   }
 
-  #learn-more:hover {
+  #links-row a:hover {
     color: #333333;
+  }
+
+  .links-separator {
+    color: #666666;
   }
 
   .heading {
@@ -332,9 +388,49 @@ function renderBodyLine(line: BodyLine): HTMLElement {
  * Removes the dialog container from the DOM and clears the module reference.
  */
 function removeDialog(): void {
+  dialogRemoved = true;
+  currentTouchPointStep = null;
+  autoDismissMs = null;
+
+  if (autoDismissTimer !== null) {
+    clearTimeout(autoDismissTimer);
+    autoDismissTimer = null;
+  }
+
   if (dialogContainer) {
     dialogContainer.remove();
     dialogContainer = null;
+  }
+}
+
+/**
+ * Starts (or restarts) the auto-dismiss timer using the stored duration.
+ * No-op if no duration is set.
+ */
+function startAutoDismissTimer(): void {
+  if (autoDismissMs === null) {
+    return;
+  }
+
+  const touchPointStep = currentTouchPointStep;
+  autoDismissTimer = setTimeout(() => {
+    removeDialog();
+    void browser.runtime.sendMessage({
+      type: DIALOG_ACTION_MESSAGE_TYPE,
+      touchPointStep,
+      action: "auto-dismiss",
+      silent: true,
+    });
+  }, autoDismissMs);
+}
+
+/**
+ * Clears the auto-dismiss timer without removing the dialog.
+ */
+function stopAutoDismissTimer(): void {
+  if (autoDismissTimer !== null) {
+    clearTimeout(autoDismissTimer);
+    autoDismissTimer = null;
   }
 }
 
@@ -402,25 +498,28 @@ function buildDialog(payload: DialogPayload): HTMLElement {
   }
 
   // CTA button
-  const ctaBtn = document.createElement("button");
-  ctaBtn.id = "cta-btn";
-  ctaBtn.textContent = payload.button;
-  ctaBtn.addEventListener("click", () => {
-    if (payload.target) {
-      window.open(payload.target, "_blank");
-    }
-    void browser.runtime.sendMessage({
-      type: DIALOG_ACTION_MESSAGE_TYPE,
-      touchPointStep: payload.touchPointStep,
-      action: payload.target ? "cta" : "close",
+  if (payload.button) {
+    const ctaBtn = document.createElement("button");
+    ctaBtn.id = "cta-btn";
+    ctaBtn.textContent = payload.button;
+    ctaBtn.addEventListener("click", () => {
+      if (payload.target) {
+        window.open(payload.target, "_blank");
+      }
+      void browser.runtime.sendMessage({
+        type: DIALOG_ACTION_MESSAGE_TYPE,
+        touchPointStep: payload.touchPointStep,
+        action: payload.target ? "cta" : "close",
+      });
+      removeDialog();
     });
-    removeDialog();
-  });
-  dialog.appendChild(ctaBtn);
+    dialog.appendChild(ctaBtn);
+  }
+
+  const linkDefs: HTMLElement[] = [];
 
   if (payload.learnMore) {
     const learnMore = document.createElement("a");
-    learnMore.id = "learn-more";
     learnMore.href = payload.learnMore.url;
     learnMore.target = "_blank";
     learnMore.textContent = payload.learnMore.text;
@@ -431,7 +530,70 @@ function buildDialog(payload: DialogPayload): HTMLElement {
         action: "cta",
       });
     });
-    dialog.appendChild(learnMore);
+    linkDefs.push(learnMore);
+  }
+
+  if (payload.dismiss) {
+    const dismiss = document.createElement("a");
+    dismiss.href = "#";
+    dismiss.textContent = payload.dismiss.text;
+    dismiss.addEventListener("click", (e) => {
+      e.preventDefault();
+      void browser.runtime.sendMessage({
+        type: DIALOG_ACTION_MESSAGE_TYPE,
+        touchPointStep: payload.touchPointStep,
+        action: "close",
+      });
+      removeDialog();
+    });
+    linkDefs.push(dismiss);
+  }
+
+  if (payload.optOut) {
+    const optOut = document.createElement("a");
+    optOut.href = "#";
+    optOut.textContent = payload.optOut.text;
+    optOut.addEventListener("click", (e) => {
+      e.preventDefault();
+      void browser.runtime.sendMessage({
+        type: OPT_OUT_MESSAGE_TYPE,
+        touchPointStep: payload.touchPointStep,
+      });
+      removeDialog();
+    });
+    linkDefs.push(optOut);
+  }
+
+  if (payload.feedback) {
+    const feedback = document.createElement("a");
+    feedback.href = payload.feedback.url;
+    feedback.target = "_blank";
+    feedback.textContent = payload.feedback.text;
+    feedback.addEventListener("click", () => {
+      void browser.runtime.sendMessage({
+        type: FEEDBACK_MESSAGE_TYPE,
+        touchPointStep: payload.touchPointStep,
+      });
+    });
+    linkDefs.push(feedback);
+  }
+
+  if (linkDefs.length > 0) {
+    const linksRow = document.createElement("div");
+    linksRow.id = "links-row";
+    if (!payload.button) {
+      linksRow.classList.add("no-cta");
+    }
+    for (let i = 0; i < linkDefs.length; i++) {
+      linksRow.appendChild(linkDefs[i]);
+      if (i < linkDefs.length - 1) {
+        const sep = document.createElement("span");
+        sep.className = "links-separator";
+        sep.textContent = "\u2022";
+        linksRow.appendChild(sep);
+      }
+    }
+    dialog.appendChild(linksRow);
   }
 
   shadow.appendChild(dialog);
@@ -447,11 +609,21 @@ function buildDialog(payload: DialogPayload): HTMLElement {
  * @param payload - The resolved dialog content from the service worker
  */
 function renderDialog(payload: DialogPayload): void {
-  if (dialogContainer) {
+  if (dialogContainer !== null || dialogRemoved) {
     return;
   }
   dialogContainer = buildDialog(payload);
+  currentTouchPointStep = payload.touchPointStep;
   document.body.appendChild(dialogContainer);
+
+  if (payload.autoDismissMs) {
+    autoDismissMs = payload.autoDismissMs;
+    startAutoDismissTimer();
+    dialogContainer.addEventListener("pointerenter", stopAutoDismissTimer);
+    dialogContainer.addEventListener("pointerleave", startAutoDismissTimer);
+    dialogContainer.addEventListener("focusin", stopAutoDismissTimer);
+    dialogContainer.addEventListener("focusout", startAutoDismissTimer);
+  }
 }
 
 /**
@@ -466,9 +638,41 @@ function renderDialog(payload: DialogPayload): void {
  * will not produce duplicate dialogs.
  */
 export async function start(): Promise<void> {
-  if (dialogContainer) {
+  if (startCalled) {
     return;
   }
+  startCalled = true;
+
+  document.addEventListener("visibilitychange", () => {
+    const needsCheck =
+      document.visibilityState === "visible" &&
+      dialogContainer !== null &&
+      document.contains(dialogContainer);
+    if (needsCheck) {
+      void browser.runtime
+        .sendMessage({
+          type: GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
+          touchPointStep: currentTouchPointStep,
+        })
+        .then((shouldStillShow) => {
+          if (!shouldStillShow) {
+            removeDialog();
+          }
+        });
+    }
+  });
+
+  // Must not be async: returning undefined (not a Promise) for unhandled message
+  // types is required to signal to the browser that this listener did not handle
+  // those messages. Making it async would always return a Promise.
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  browser.runtime.onMessage.addListener(function dismissListener(message) {
+    if ((message as { type?: string })?.type === DISMISS_DIALOG_MESSAGE_TYPE) {
+      removeDialog();
+      browser.runtime.onMessage.removeListener(dismissListener);
+      return Promise.resolve();
+    }
+  });
 
   const ytPremium = await detectYouTubePremium();
 
@@ -487,16 +691,4 @@ export async function start(): Promise<void> {
   }
 
   renderDialog(payload);
-
-  // Must not be async: returning undefined (not a Promise) for unhandled message
-  // types is required to signal to the browser that this listener did not handle
-  // those messages. Making it async would always return a Promise.
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
-  browser.runtime.onMessage.addListener(function dismissListener(message) {
-    if ((message as { type?: string })?.type === DISMISS_DIALOG_MESSAGE_TYPE) {
-      removeDialog();
-      browser.runtime.onMessage.removeListener(dismissListener);
-      return Promise.resolve();
-    }
-  });
 }

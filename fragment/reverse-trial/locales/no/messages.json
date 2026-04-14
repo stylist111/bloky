@@ -1,48 +1,58 @@
 {
   "reverse_trial_start_title": {
     "description": "Title for the reverse trial start dialog",
-    "message": "AdBlock Premium er nå aktivt 🎉"
+    "message": "AdBlock Video Protection aktiv"
   },
-  "reverse_trial_start_body_1": {
+  "reverse_trial_start_body": {
     "description": "First paragraph of the start dialog body",
-    "message": "Vi har nettopp aktivert <strong>14 dager</strong> med gratis AdBlock Premium for deg."
-  },
-  "reverse_trial_start_body_2": {
-    "description": "Second paragraph of the start dialog body",
-    "message": "Kjenn forskjellen – videoer har nå færre annonser og forsinkelser takket være Premium-filtrene våre!"
-  },
-  "reverse_trial_start_button": {
-    "description": "CTA button text for the start dialog",
-    "message": "Takk!"
+    "message": "Vår mest avanserte blokkeringsteknologi betyr at du bør se færre avbrudd mens den er aktiv."
   },
   "reverse_trial_midpoint_title": {
     "description": "Title for the reverse trial midpoint dialog",
-    "message": "Prøveperioden din avsluttes om $days_left$ dag(er)",
-    "placeholders": {
-      "days_left": {
-        "content": "$1",
-        "example": "7"
-      }
-    }
+    "message": "Nyter du færre videoannonser?"
   },
-  "reverse_trial_midpoint_body": {
-    "description": "Body text for the reverse trial midpoint dialog",
-    "message": "Abonner nå for å fortsette å blokkere videoannonser og nyte alle premiumfunksjoner uten avbrudd."
+  "reverse_trial_midpoint_body_1": {
+    "description": "Body text for the reverse trial midpoint dialog part 1",
+    "message": "Du er halvveis gjennom en 14-dagers prøveperiode av vår avanserte blokkering av videoannonser."
   },
-  "reverse_trial_premium_button": {
-    "description": "CTA button text for the midpoint and ended dialogs",
-    "message": "Få AdBlock Premium"
+  "reverse_trial_midpoint_body_2": {
+    "description": "Body text for the reverse trial midpoint dialog part 2",
+    "message": "Oppgrader for å beholde det, eller det tilbakestilles automatisk til standard blokkering når det slutter."
+  },
+  "reverse_trial_midpoint_premium_button": {
+    "description": "CTA button text for the midpoint dialogs",
+    "message": "Se oppgraderingsalternativer"
+  },
+  "reverse_trial_midpoint_decide_later": {
+    "description": "Link text for decide later close link",
+    "message": "Jeg bestemmer meg senere"
+  },
+  "reverse_trial_midpoint_opt_out": {
+    "description": "Link text for opting out of the trial on the midpoint",
+    "message": "Avslutt prøveperioden i dag"
   },
   "reverse_trial_ended_title": {
     "description": "Title for the reverse trial ended dialog",
-    "message": "Din gratis prøveperiode er avsluttet"
+    "message": "Forbedret blokkering av videoannonser er avsluttet"
   },
-  "reverse_trial_ended_body": {
-    "description": "Body text for the reverse trial ended dialog",
-    "message": "Abonner på AdBlock Premium for å fortsette å blokkere videoannonser og nyte alle premiumfunksjoner."
+  "reverse_trial_ended_body_1": {
+    "description": "Body text for the reverse trial ended dialog part 1",
+    "message": "Håper du nøt 14 dager med færre avbrudd."
+  },
+  "reverse_trial_ended_body_2": {
+    "description": "Body text for the reverse trial ended dialog part 2",
+    "message": "Vår standard blokkering fortsetter, selv om du kanskje merker en forskjell."
+  },
+  "reverse_trial_ended_premium_button": {
+    "description": "CTA button text for the ended dialogs",
+    "message": "Hold det aktivt"
   },
   "reverse_trial_learn_more": {
     "description": "Text for the 'learn more' link that appear under the CTA button",
     "message": "Les mer"
+  },
+  "reverse_trial_submit_feedback": {
+    "description": "Text for the 'submit feedback' link that appears under the CTA button",
+    "message": "Send tilbakemelding"
   }
 }

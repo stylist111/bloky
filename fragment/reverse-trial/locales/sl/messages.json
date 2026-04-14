@@ -1,48 +1,58 @@
 {
   "reverse_trial_start_title": {
     "description": "Title for the reverse trial start dialog",
-    "message": "AdBlock Premium je zdaj aktiven 🎉"
+    "message": "Zaščita videoposnetkov AdBlock je aktivna"
   },
-  "reverse_trial_start_body_1": {
+  "reverse_trial_start_body": {
     "description": "First paragraph of the start dialog body",
-    "message": "Pravkar smo vam aktivirali <strong>14 dni</strong> brezplačnega AdBlock Premiuma."
-  },
-  "reverse_trial_start_body_2": {
-    "description": "Second paragraph of the start dialog body",
-    "message": "Začutite razliko – videoposnetki imajo zdaj manj oglasov in zamud zahvaljujoč našim Premium filtrom!"
-  },
-  "reverse_trial_start_button": {
-    "description": "CTA button text for the start dialog",
-    "message": "Hvala!"
+    "message": "Naša najnaprednejša tehnologija blokiranja pomeni, da bi morali med njeno aktivacijo videti manj prekinitev."
   },
   "reverse_trial_midpoint_title": {
     "description": "Title for the reverse trial midpoint dialog",
-    "message": "Vaše preskusno obdobje se konča čez $days_left$ dan(i)",
-    "placeholders": {
-      "days_left": {
-        "content": "$1",
-        "example": "7"
-      }
-    }
+    "message": "Uživate v manj video oglasih?"
   },
-  "reverse_trial_midpoint_body": {
-    "description": "Body text for the reverse trial midpoint dialog",
-    "message": "Naročite se zdaj, da boste lahko nadaljevali z blokiranjem video oglasov in brez prekinitev uživali v vseh Premium funkcijah."
+  "reverse_trial_midpoint_body_1": {
+    "description": "Body text for the reverse trial midpoint dialog part 1",
+    "message": "Ste na polovici 14-dnevnega preskusa našega naprednega blokiranja video oglasov."
   },
-  "reverse_trial_premium_button": {
-    "description": "CTA button text for the midpoint and ended dialogs",
-    "message": "Pridobite AdBlock Premium"
+  "reverse_trial_midpoint_body_2": {
+    "description": "Body text for the reverse trial midpoint dialog part 2",
+    "message": "Nadgradite, da ga obdržite, ali pa se ob koncu samodejno vrne na standardno blokiranje."
+  },
+  "reverse_trial_midpoint_premium_button": {
+    "description": "CTA button text for the midpoint dialogs",
+    "message": "Oglejte si možnosti nadgradnje"
+  },
+  "reverse_trial_midpoint_decide_later": {
+    "description": "Link text for decide later close link",
+    "message": "Odločil se bom kasneje"
+  },
+  "reverse_trial_midpoint_opt_out": {
+    "description": "Link text for opting out of the trial on the midpoint",
+    "message": "Danes končaj preskus"
   },
   "reverse_trial_ended_title": {
     "description": "Title for the reverse trial ended dialog",
-    "message": "Vaše brezplačno preskusno obdobje je poteklo"
+    "message": "Izboljšano blokiranje video oglasov se je končalo"
   },
-  "reverse_trial_ended_body": {
-    "description": "Body text for the reverse trial ended dialog",
-    "message": "Naročite se na AdBlock Premium, da boste lahko nadaljevali z blokiranjem video oglasov in uživali v vseh Premium funkcijah."
+  "reverse_trial_ended_body_1": {
+    "description": "Body text for the reverse trial ended dialog part 1",
+    "message": "Upamo, da ste uživali v 14 dneh z manj prekinitvami."
+  },
+  "reverse_trial_ended_body_2": {
+    "description": "Body text for the reverse trial ended dialog part 2",
+    "message": "Naše standardno blokiranje se nadaljuje, čeprav boste morda opazili razliko."
+  },
+  "reverse_trial_ended_premium_button": {
+    "description": "CTA button text for the ended dialogs",
+    "message": "Ohrani aktivno"
   },
   "reverse_trial_learn_more": {
     "description": "Text for the 'learn more' link that appear under the CTA button",
     "message": "Izvedite več"
+  },
+  "reverse_trial_submit_feedback": {
+    "description": "Text for the 'submit feedback' link that appears under the CTA button",
+    "message": "Pošlji povratne informacije"
   }
 }

@@ -1,48 +1,58 @@
 {
   "reverse_trial_start_title": {
     "description": "Title for the reverse trial start dialog",
-    "message": "Το AdBlock Premium είναι τώρα ενεργό 🎉"
+    "message": "Η Προστασία Βίντεο AdBlock είναι ενεργή"
   },
-  "reverse_trial_start_body_1": {
+  "reverse_trial_start_body": {
     "description": "First paragraph of the start dialog body",
-    "message": "Μόλις ενεργοποιήσαμε για εσάς <strong>14 ημέρες</strong> δωρεάν AdBlock Premium."
-  },
-  "reverse_trial_start_body_2": {
-    "description": "Second paragraph of the start dialog body",
-    "message": "Νιώστε τη διαφορά – τα βίντεο έχουν τώρα λιγότερες διαφημίσεις και καθυστερήσεις χάρη στα Premium φίλτρα μας!"
-  },
-  "reverse_trial_start_button": {
-    "description": "CTA button text for the start dialog",
-    "message": "Ευχαριστώ!"
+    "message": "Η πιο προηγμένη τεχνολογία αποκλεισμού μας σημαίνει ότι θα πρέπει να βλέπετε λιγότερες διακοπές όσο είναι ενεργή."
   },
   "reverse_trial_midpoint_title": {
     "description": "Title for the reverse trial midpoint dialog",
-    "message": "Η δοκιμαστική περίοδος λήγει σε $days_left$ ημέρα/ες",
-    "placeholders": {
-      "days_left": {
-        "content": "$1",
-        "example": "7"
-      }
-    }
+    "message": "Απολαμβάνετε λιγότερες διαφημίσεις βίντεο;"
   },
-  "reverse_trial_midpoint_body": {
-    "description": "Body text for the reverse trial midpoint dialog",
-    "message": "Εγγραφείτε τώρα για να συνεχίσετε να αποκλείετε διαφημίσεις βίντεο και να απολαμβάνετε όλες τις premium λειτουργίες χωρίς διακοπές."
+  "reverse_trial_midpoint_body_1": {
+    "description": "Body text for the reverse trial midpoint dialog part 1",
+    "message": "Βρίσκεστε στα μισά μιας δοκιμαστικής περιόδου 14 ημερών του προηγμένου αποκλεισμού διαφημίσεων βίντεο."
   },
-  "reverse_trial_premium_button": {
-    "description": "CTA button text for the midpoint and ended dialogs",
-    "message": "Αποκτήστε AdBlock Premium"
+  "reverse_trial_midpoint_body_2": {
+    "description": "Body text for the reverse trial midpoint dialog part 2",
+    "message": "Κάντε αναβάθμιση για να το διατηρήσετε, ή επιστρέφει αυτόματα στον τυπικό αποκλεισμό όταν λήξει."
+  },
+  "reverse_trial_midpoint_premium_button": {
+    "description": "CTA button text for the midpoint dialogs",
+    "message": "Προβολή επιλογών αναβάθμισης"
+  },
+  "reverse_trial_midpoint_decide_later": {
+    "description": "Link text for decide later close link",
+    "message": "Θα αποφασίσω αργότερα"
+  },
+  "reverse_trial_midpoint_opt_out": {
+    "description": "Link text for opting out of the trial on the midpoint",
+    "message": "Λήξη δοκιμής σήμερα"
   },
   "reverse_trial_ended_title": {
     "description": "Title for the reverse trial ended dialog",
-    "message": "Η δωρεάν δοκιμαστική σας περίοδος έληξε"
+    "message": "Ο Βελτιωμένος Αποκλεισμός Διαφημίσεων Βίντεο έληξε"
   },
-  "reverse_trial_ended_body": {
-    "description": "Body text for the reverse trial ended dialog",
-    "message": "Εγγραφείτε στο AdBlock Premium για να συνεχίσετε να αποκλείετε διαφημίσεις βίντεο και να απολαμβάνετε όλες τις premium λειτουργίες."
+  "reverse_trial_ended_body_1": {
+    "description": "Body text for the reverse trial ended dialog part 1",
+    "message": "Ελπίζουμε να απολαύσατε 14 ημέρες με λιγότερες διακοπές."
+  },
+  "reverse_trial_ended_body_2": {
+    "description": "Body text for the reverse trial ended dialog part 2",
+    "message": "Ο τυπικός αποκλεισμός μας συνεχίζεται, αν και μπορεί να παρατηρήσετε μια διαφορά."
+  },
+  "reverse_trial_ended_premium_button": {
+    "description": "CTA button text for the ended dialogs",
+    "message": "Διατηρήστε το ενεργό"
   },
   "reverse_trial_learn_more": {
     "description": "Text for the 'learn more' link that appear under the CTA button",
     "message": "Μάθετε περισσότερα"
+  },
+  "reverse_trial_submit_feedback": {
+    "description": "Text for the 'submit feedback' link that appears under the CTA button",
+    "message": "Υποβολή σχολίων"
   }
 }

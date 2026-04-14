@@ -159,9 +159,8 @@ export default function () {
 
     await openTabAndCheckDialog(true);
 
-    // Step should still be 0 (dialog shown but not dismissed), but the trail
-    // has started.
-    expect(await getStep()).toBe(0);
+    // Step should be 1 (dialog is showOnce), and the trail has started.
+    expect(await getStep()).toBe(1);
     expect(await getStartDate()).not.toBe(0);
 
     // Simulate user dismissing the start dialog
@@ -186,10 +185,10 @@ export default function () {
 
     await openTabAndCheckDialog(true);
 
-    // Step should still be 1 (not advanced yet)
-    expect(await getStep()).toBe(1);
+    // Step should be advanced, step 2 is showOnce
+    expect(await getStep()).toBe(2);
 
-    // Dismiss via dialog-action, step advances
+    // Dismiss via dialog-action
     await sendDialogAction(2, "cta");
     expect(await getStep()).toBe(2);
   });
