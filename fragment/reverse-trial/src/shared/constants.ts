@@ -19,6 +19,9 @@
 /** Remote experiment flag that gates the reverse trial feature */
 export const EXPERIMENT_FLAG = "show-reverse-trial-opd";
 
+/** Kill switch for showing the reverse trial OPDs */
+export const OPD_KILL_SWITCH = "reverse-trial-opd-kill-switch";
+
 /** Message type sent from content script to service worker */
 export const GET_DIALOG_MESSAGE_TYPE = "reverse-trial.get-dialog";
 

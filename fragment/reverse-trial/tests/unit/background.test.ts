@@ -116,7 +116,10 @@ describe("reverse-trial background", () => {
         return Promise.reject(new Error(`Unexpected fetch call: ${url}`));
       }),
     );
-    vi.mocked(ewe.experiments.getFlag).mockResolvedValue(true);
+    vi.mocked(ewe.experiments.getFlag).mockImplementation((flag: string) => {
+      if (flag === "show-reverse-trial-opd") return Promise.resolve(true);
+      return Promise.resolve(false);
+    });
     vi.mocked(browser.tabs.query).mockResolvedValue([]);
   });
 
@@ -292,7 +295,9 @@ describe("reverse-trial background", () => {
   });
 
   it("returns null when experiment flag is disabled and trial has not started", async () => {
-    vi.mocked(ewe.experiments.getFlag).mockResolvedValue(false);
+    vi.mocked(ewe.experiments.getFlag).mockImplementation(() =>
+      Promise.resolve(false),
+    );
 
     const params = createMockParams({
       [STEP_PREF_KEY]: 0,
@@ -304,7 +309,11 @@ describe("reverse-trial background", () => {
   });
 
   it("continues showing dialogs when experiment flag is disabled but trial has already started", async () => {
-    vi.mocked(ewe.experiments.getFlag).mockResolvedValue(false);
+    vi.mocked(ewe.experiments.getFlag).mockImplementation((flag: string) => {
+      if (flag === "reverse-trial-opd-kill-switch")
+        return Promise.resolve(false);
+      return Promise.resolve(false);
+    });
 
     const params = createMockParams({
       [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
@@ -315,6 +324,42 @@ describe("reverse-trial background", () => {
     const result = await sendMessage();
     expect(result).not.toBeNull();
     expect(result).toHaveProperty("touchPointStep", 2);
+  });
+
+  it("returns null and ends trial when kill switch is active", async () => {
+    vi.mocked(ewe.experiments.getFlag).mockImplementation((flag: string) => {
+      if (flag === "reverse-trial-opd-kill-switch")
+        return Promise.resolve(true);
+      if (flag === "show-reverse-trial-opd") return Promise.resolve(true);
+      return Promise.resolve(false);
+    });
+
+    const params = createMockParams({
+      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
+      [STEP_PREF_KEY]: 1,
+    });
+    start(params);
+
+    const result = await sendMessage();
+    expect(result).toBeNull();
+    expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
+  });
+
+  it("returns null when kill switch is active even without an ongoing trial", async () => {
+    vi.mocked(ewe.experiments.getFlag).mockImplementation((flag: string) => {
+      if (flag === "reverse-trial-opd-kill-switch")
+        return Promise.resolve(true);
+      if (flag === "show-reverse-trial-opd") return Promise.resolve(true);
+      return Promise.resolve(false);
+    });
+
+    const params = createMockParams({
+      [STEP_PREF_KEY]: 0,
+    });
+    start(params);
+
+    const result = await sendMessage();
+    expect(result).toBeNull();
   });
 
   it("registers both handlers via port.on", () => {

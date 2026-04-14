@@ -28,6 +28,7 @@ import {
   TRIAL_START_DATE_PREF_KEY,
   TRIAL_DURATION_DAYS,
   MS_PER_DAY,
+  OPD_KILL_SWITCH,
 } from "../shared/constants.js";
 import type { StartInfo, DialogPayload } from "../shared/types.js";
 import { resolveNextTouchPoint, LAST_TOUCH_POINT_STEP } from "./touchpoints.js";
@@ -49,7 +50,7 @@ async function toDataUrl(url: string): Promise<string> {
 /**
  * Checks if a trial is currently in progress, and if it is ends it immediately
  * by setting the current step to the last one. This is used to end the trial if
- * a user has purchased premium.
+ * a user has purchased premium or if the kill switch is active.
  *
  * Note the users without premium may be excluded by the feature flag, that
  * would only target non-premium users. Updating the step is necessary so that
@@ -80,7 +81,9 @@ async function requestDialogHandler(
   message: { ytPremium?: boolean },
   params: StartInfo,
 ): Promise<DialogPayload | null> {
-  if (await params.hasPremium()) {
+  const opdKillSwitch = Boolean(await ewe.experiments.getFlag(OPD_KILL_SWITCH));
+
+  if ((await params.hasPremium()) || opdKillSwitch) {
     await ensureTrialIsNotInProgress(params);
     return null;
   }
@@ -91,6 +94,8 @@ async function requestDialogHandler(
 
   // The flag must be enabled for the trial to start. However, after it has
   // started, we let it run to its conclusion regardless of the flag's status.
+  // The last opd step can be shown after more than 14 days when the user
+  // is not in the experiment anymore
   if (!flagEnabled && !trialStartDate) {
     return null;
   }
@@ -120,7 +125,7 @@ async function requestDialogHandler(
   // ended" OPD if they later log out of their Premium account.
   if (message.ytPremium) {
     if (config.step === LAST_TOUCH_POINT_STEP) {
-      await params.prefs.set(STEP_PREF_KEY, LAST_TOUCH_POINT_STEP);
+      await ensureTrialIsNotInProgress(params);
     }
     serverLogger.debug("dialog_skipped_yt_premium", {
       touchPointStep: config.step,
