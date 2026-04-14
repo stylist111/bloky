@@ -26,6 +26,39 @@ import {
 import type { DialogPayload, BodyLine } from "../shared/types.js";
 
 /**
+ * Waits for YouTube's `#masthead` element to appear in the DOM and
+ * resolves with whether the user has a Premium subscription based on
+ * the `logo-type` attribute. Disconnects the observer as soon as
+ * `#masthead` is found, or after a timeout (assumes non-Premium).
+ */
+async function detectYouTubePremium(timeoutMs = 10000): Promise<boolean> {
+  const masthead = document.querySelector("#masthead");
+  if (masthead) {
+    return masthead.getAttribute("logo-type") === "YOUTUBE_PREMIUM_LOGO";
+  }
+
+  return await new Promise((resolve) => {
+    const observer = new MutationObserver(() => {
+      const el = document.querySelector("#masthead");
+      if (el) {
+        observer.disconnect();
+        resolve(el.getAttribute("logo-type") === "YOUTUBE_PREMIUM_LOGO");
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+
+    setTimeout(() => {
+      observer.disconnect();
+      resolve(false);
+    }, timeoutMs);
+  });
+}
+
+/**
  * Checks if the dark mode is enabled
  */
 function isDarkMode(): boolean {
@@ -437,10 +470,13 @@ export async function start(): Promise<void> {
     return;
   }
 
+  const ytPremium = await detectYouTubePremium();
+
   let payload: DialogPayload | null = null;
   try {
     payload = await browser.runtime.sendMessage({
       type: GET_DIALOG_MESSAGE_TYPE,
+      ytPremium,
     });
   } catch {
     return;
@@ -450,19 +486,7 @@ export async function start(): Promise<void> {
     return;
   }
 
-  const validPayload = payload;
-
-  if (document.body) {
-    renderDialog(validPayload);
-  } else {
-    document.addEventListener(
-      "DOMContentLoaded",
-      () => {
-        renderDialog(validPayload);
-      },
-      { once: true },
-    );
-  }
+  renderDialog(payload);
 
   // Must not be async: returning undefined (not a Promise) for unhandled message
   // types is required to signal to the browser that this listener did not handle

@@ -77,6 +77,7 @@ async function ensureTrialIsNotInProgress(params: StartInfo): Promise<void> {
  * @returns The dialog payload for the next touch point, or null
  */
 async function requestDialogHandler(
+  message: { ytPremium?: boolean },
   params: StartInfo,
 ): Promise<DialogPayload | null> {
   if (await params.hasPremium()) {
@@ -94,6 +95,12 @@ async function requestDialogHandler(
     return null;
   }
 
+  // If the user has YouTube Premium and the trial hasn't started yet,
+  // don't start it — treat this session as if the visit didn't happen.
+  if (message.ytPremium && !trialStartDate) {
+    return null;
+  }
+
   if (!trialStartDate) {
     trialStartDate = Date.now();
     await params.prefs.set(TRIAL_START_DATE_PREF_KEY, trialStartDate);
@@ -103,6 +110,23 @@ async function requestDialogHandler(
 
   const config = resolveNextTouchPoint(lastShown, elapsedDays);
   if (!config) {
+    return null;
+  }
+
+  // If the user has YouTube Premium and a dialog would have been shown,
+  // skip it without advancing the step. Log the skip for analytics.
+  // Exception: advance the step for the final touch point so the trial
+  // is marked as ended — otherwise the user would see a stale "trial
+  // ended" OPD if they later log out of their Premium account.
+  if (message.ytPremium) {
+    if (config.step === LAST_TOUCH_POINT_STEP) {
+      await params.prefs.set(STEP_PREF_KEY, LAST_TOUCH_POINT_STEP);
+    }
+    serverLogger.debug("dialog_skipped_yt_premium", {
+      touchPointStep: config.step,
+      installDate: params.prefs.get("installDate") ?? 0,
+      reverseTrialStartDate: trialStartDate,
+    });
     return null;
   }
 
@@ -231,7 +255,8 @@ async function dismissOpenDialogs(): Promise<void> {
 export function start(params: StartInfo): void {
   params.port.on(
     GET_DIALOG_MESSAGE_TYPE,
-    async () => await requestDialogHandler(params),
+    async (message: { ytPremium?: boolean }) =>
+      await requestDialogHandler(message ?? {}, params),
   );
   params.port.on(
     DIALOG_ACTION_MESSAGE_TYPE,

@@ -1209,6 +1209,27 @@ export default {
         }
       }
     },
+    dialog_skipped_yt_premium: {
+      description: "The reverse trial dialog would have been shown but was skipped because the user has YouTube Premium",
+      data: {
+        description: "Details about the skipped dialog",
+        type: "object",
+        properties: {
+          touchPointStep: {
+            description: "The touch point step number of the dialog that was skipped",
+            type: "number"
+          },
+          installDate: {
+            description: "The timestamp when the extension was installed",
+            type: "number"
+          },
+          reverseTrialStartDate: {
+            description: "The timestamp when the reverse trial started",
+            type: "number"
+          }
+        }
+      }
+    },
     dialog_action: {
       description: "The user interacted with the reverse trial dialog",
       data: {

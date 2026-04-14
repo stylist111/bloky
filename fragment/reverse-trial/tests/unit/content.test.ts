@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import browser from "webextension-polyfill";
 import type { DialogPayload } from "../../src/shared";
 import {
+  GET_DIALOG_MESSAGE_TYPE,
   DIALOG_ACTION_MESSAGE_TYPE,
   DISMISS_DIALOG_MESSAGE_TYPE,
 } from "../../src/shared";
@@ -22,9 +23,18 @@ describe("reverse-trial content script", () => {
   let start: () => Promise<void>;
   let restoreShadow: (() => void) | null = null;
 
+  function addMasthead(logoType = "YOUTUBE_LOGO"): void {
+    const masthead = document.createElement("div");
+    masthead.id = "masthead";
+    masthead.setAttribute("logo-type", logoType);
+    document.body.appendChild(masthead);
+  }
+
   beforeEach(async () => {
     document.body.innerHTML = "";
     vi.clearAllMocks();
+
+    addMasthead();
 
     // Fresh import each test to reset module-scoped state
     vi.resetModules();
@@ -99,7 +109,7 @@ describe("reverse-trial content script", () => {
 
     await start();
 
-    expect(document.body.children.length).toBe(0);
+    expect(document.body.children.length).toBe(1);
   });
 
   it("removes dialog and sends close action when close button is clicked", async () => {
@@ -245,9 +255,9 @@ describe("reverse-trial content script", () => {
     await start();
     await start();
 
-    // Only one dialog container should exist
+    // Only one dialog container should exist (plus masthead)
     const containers = document.body.children;
-    expect(containers.length).toBe(1);
+    expect(containers.length).toBe(2);
   });
 
   it("removes dialog when DISMISS_DIALOG_MESSAGE_TYPE message is received", async () => {
@@ -255,7 +265,7 @@ describe("reverse-trial content script", () => {
 
     await start();
 
-    expect(document.body.children.length).toBe(1);
+    expect(document.body.children.length).toBe(2);
 
     const addListenerMock = vi.mocked(browser.runtime.onMessage.addListener);
     expect(addListenerMock).toHaveBeenCalled();
@@ -265,7 +275,7 @@ describe("reverse-trial content script", () => {
     ) => void;
     dismissListener({ type: DISMISS_DIALOG_MESSAGE_TYPE });
 
-    expect(document.body.children.length).toBe(0);
+    expect(document.body.children.length).toBe(1);
   });
 
   it("does not remove dialog for unrelated message types", async () => {
@@ -273,7 +283,7 @@ describe("reverse-trial content script", () => {
 
     await start();
 
-    expect(document.body.children.length).toBe(1);
+    expect(document.body.children.length).toBe(2);
 
     const addListenerMock = vi.mocked(browser.runtime.onMessage.addListener);
     const dismissListener = addListenerMock.mock.calls[0][0] as (
@@ -281,7 +291,7 @@ describe("reverse-trial content script", () => {
     ) => void;
     dismissListener({ type: "some-other-message" });
 
-    expect(document.body.children.length).toBe(1);
+    expect(document.body.children.length).toBe(2);
   });
 
   it("removes the onMessage listener after dismissal", async () => {
@@ -305,6 +315,46 @@ describe("reverse-trial content script", () => {
 
     await start();
 
+    expect(
+      vi.mocked(browser.runtime.onMessage.addListener),
+    ).not.toHaveBeenCalled();
+  });
+
+  it("sends ytPremium: false when masthead has YOUTUBE_LOGO", async () => {
+    vi.mocked(browser.runtime).sendMessage.mockResolvedValue(null);
+
+    await start();
+
+    expect(vi.mocked(browser.runtime).sendMessage).toHaveBeenCalledWith({
+      type: GET_DIALOG_MESSAGE_TYPE,
+      ytPremium: false,
+    });
+  });
+
+  it("sends ytPremium: true when masthead has YOUTUBE_PREMIUM_LOGO", async () => {
+    document
+      .querySelector("#masthead")!
+      .setAttribute("logo-type", "YOUTUBE_PREMIUM_LOGO");
+    vi.mocked(browser.runtime).sendMessage.mockResolvedValue(null);
+
+    await start();
+
+    expect(vi.mocked(browser.runtime).sendMessage).toHaveBeenCalledWith({
+      type: GET_DIALOG_MESSAGE_TYPE,
+      ytPremium: true,
+    });
+  });
+
+  it("does not render dialog when user has YouTube Premium", async () => {
+    document
+      .querySelector("#masthead")!
+      .setAttribute("logo-type", "YOUTUBE_PREMIUM_LOGO");
+    vi.mocked(browser.runtime).sendMessage.mockResolvedValue(null);
+
+    await start();
+
+    // Only masthead should be in the body, no dialog
+    expect(document.body.children.length).toBe(1);
     expect(
       vi.mocked(browser.runtime.onMessage.addListener),
     ).not.toHaveBeenCalled();

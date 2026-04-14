@@ -12,8 +12,9 @@ import {
   MS_PER_DAY,
 } from "../../src/shared";
 
-const { mockLoggerInfo } = vi.hoisted(() => ({
+const { mockLoggerInfo, mockLoggerDebug } = vi.hoisted(() => ({
   mockLoggerInfo: vi.fn(),
+  mockLoggerDebug: vi.fn(),
 }));
 
 vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
@@ -24,6 +25,7 @@ vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
   telemetry: {
     ServerLogger: vi.fn().mockImplementation(() => ({
       info: mockLoggerInfo,
+      debug: mockLoggerDebug,
     })),
     getRotatingClientId: vi.fn().mockResolvedValue("mock-rcid"),
   },
@@ -77,10 +79,12 @@ function createMockParams(prefsData: Record<string, unknown> = {}): StartInfo {
   };
 }
 
-async function sendMessage(): Promise<unknown> {
+async function sendMessage(
+  message?: Record<string, unknown>,
+): Promise<unknown> {
   const handler = portHandlers.get(GET_DIALOG_MESSAGE_TYPE);
   if (!handler) throw new Error("No handler registered");
-  return handler();
+  return handler(message);
 }
 
 async function sendDialogAction(
@@ -451,6 +455,51 @@ describe("reverse-trial background", () => {
     const result = await sendMessage();
     expect(result).not.toBeNull();
     expect(result).toHaveProperty("touchPointStep", 2);
+  });
+
+  it("YT Premium user on first visit does not start the trial", async () => {
+    const params = createMockParams({
+      [STEP_PREF_KEY]: 0,
+    });
+    start(params);
+
+    const result = await sendMessage({ ytPremium: true });
+    expect(result).toBeNull();
+    expect(params.prefs.set).not.toHaveBeenCalledWith(
+      TRIAL_START_DATE_PREF_KEY,
+      expect.any(Number),
+    );
+    expect(params.prefs.set).not.toHaveBeenCalledWith(
+      STEP_PREF_KEY,
+      expect.any(Number),
+    );
+  });
+
+  it("YT Premium user mid-trial skips dialog without advancing step", async () => {
+    const params = createMockParams({
+      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
+      [STEP_PREF_KEY]: 0,
+    });
+    start(params);
+
+    const result = await sendMessage({ ytPremium: true });
+    expect(result).toBeNull();
+    expect(params.prefs.set).not.toHaveBeenCalledWith(
+      STEP_PREF_KEY,
+      expect.any(Number),
+    );
+  });
+
+  it("YT Premium user at final touch point advances step to last", async () => {
+    const params = createMockParams({
+      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
+      [STEP_PREF_KEY]: 2,
+    });
+    start(params);
+
+    const result = await sendMessage({ ytPremium: true });
+    expect(result).toBeNull();
+    expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
   });
 
   it("omits tracking params from target URL when user is opted out", async () => {
