@@ -138,11 +138,11 @@
     "@eyeo/get-browser-binary": "0.24.0",
     "@eyeo/test-utils": "*",
     "@sentry/cli": "2.37.0",
-    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/forms": "0.5.10",
     "@types/jest": "29.5.12",
     "@xmldom/xmldom": "0.8.10",
     "adm-zip": "0.5.9",
-    "autoprefixer": "^10.4.20",
+    "autoprefixer": "10.4.20",
     "babel-jest": "29.7.0",
     "basichtml": "2.4.9",
     "chai": "4.3.6",
@@ -160,11 +160,11 @@
     "mocha": "10.7.3",
     "moment": "2.29.4",
     "node-fetch": "2.7.0",
-    "postcss": "^8.4.41",
-    "postcss-loader": "^8.1.1",
+    "postcss": "8.5.1",
+    "postcss-loader": "8.2.1",
     "selenium-webdriver": "4.23.0",
     "sharp": "0.33.5",
-    "tailwindcss": "^3.4.10"
+    "tailwindcss": "3.4.17"
   },
   "nx": {
     "targets": {

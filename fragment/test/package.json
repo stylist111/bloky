@@ -48,12 +48,12 @@
   },
   "devDependencies": {
     "@eyeo/test-utils": "*",
-    "copy-webpack-plugin": "^9.0.1",
-    "expect": "^25.5.0",
+    "copy-webpack-plugin": "9.1.0",
+    "expect": "25.5.0",
     "mocha": "10.7.3",
     "selenium-webdriver": "4.23.0",
     "sinon": "20.0.0",
     "webpack": "5.97.1",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "5.1.4"
   }
 }
