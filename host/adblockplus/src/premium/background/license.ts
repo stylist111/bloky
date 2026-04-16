@@ -16,20 +16,12 @@
  */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import {
-  addTrustedMessageTypes,
-  installHandler,
-  port
-} from "../../core/messaging/background";
+import { installHandler, port } from "../../core/messaging/background";
 import * as logger from "../../logger/background";
 import { EventEmitter } from "../../../adblockpluschrome/lib/events";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import * as scheduledEmitter from "../../core/scheduled-event-emitter/background/scheduled-event-emitter";
 
-import {
-  type Message,
-  isPremiumActivateOptions
-} from "../../core/messaging/shared";
 import { ScheduleType } from "../../core/scheduled-event-emitter/background/scheduled-event-emitter.types";
 import { type EventEmitterCallback } from "../../polyfills/background";
 import { type PremiumState } from "../shared";
@@ -283,23 +275,6 @@ function initializeLicenseChecks(): void {
  * Initializes Messaging API endpoints
  */
 function initializeMessaging(): void {
-  port.on("premium.activate", async (msg: Message) => {
-    if (!isPremiumActivateOptions(msg)) {
-      return false;
-    }
-
-    if (!msg.userId) {
-      return false;
-    }
-
-    // The Premium license doesn't contain the Premium user ID,
-    // so we need to store it separately for the time being
-    void Prefs.set("premium_user_id", msg.userId);
-    await checkLicense();
-
-    return true;
-  });
-
   port.on("premium.get", async () => await getPremiumState());
 
   installHandler(
@@ -317,8 +292,6 @@ function initializeMessaging(): void {
       };
     }
   );
-
-  addTrustedMessageTypes(null, ["premium.activate"]);
 }
 
 /**

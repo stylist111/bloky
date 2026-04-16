@@ -9,6 +9,7 @@ This release contains only minor updates and under-the-hood changes.
 - Source code release bundles no longer include the full monorepo, but instead
   only include the code to build the current extension.
 - Removed notification and page to make new users aware of additional features.
+- Removed the Premium license activation via cross-origin web page messaging.
 
 # 4.36.4 - 2026-04-07
 

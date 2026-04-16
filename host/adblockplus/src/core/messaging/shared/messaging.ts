@@ -19,7 +19,6 @@ import {
   type EventMessage,
   type ListenMessage,
   type Message,
-  type PremiumActivateOptions,
   type PremiumSubscriptionsAddRemoveOptions
 } from "./messaging.types";
 
@@ -75,21 +74,6 @@ export function isListenMessage(
   candidate: unknown
 ): candidate is ListenMessage {
   return isMessage(candidate) && "filter" in candidate;
-}
-
-/**
- * Checks whether given candidate is mesage of type "premium.activate"
- *
- * @param candidate - Candidate
- *
- * @returns whether candidate is message of type "premium.activate"
- */
-export function isPremiumActivateOptions(
-  candidate: unknown
-): candidate is PremiumActivateOptions {
-  return (
-    candidate !== null && typeof candidate === "object" && "userId" in candidate
-  );
 }
 
 /**

@@ -51,16 +51,6 @@ export interface ListenMessage extends Message {
 }
 
 /**
- * Options for activating Premium license
- */
-export interface PremiumActivateOptions {
-  /**
-   * Premium user ID
-   */
-  userId: string;
-}
-
-/**
  * Options for adding/removing Premium subscription
  */
 export interface PremiumSubscriptionsAddRemoveOptions {

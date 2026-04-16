@@ -17,24 +17,9 @@
 
 import { type PremiumState } from "../../../premium/shared";
 import { type PremiumSubscriptionsState } from "../../../premium-subscriptions/shared";
-import {
-  type PremiumActivateOptions,
-  type PremiumSubscriptionsAddRemoveOptions
-} from "../shared";
+import { type PremiumSubscriptionsAddRemoveOptions } from "../shared";
 import * as messaging from "./messaging";
 import { send } from "./utils";
-
-/**
- * Triggers activation of Premium license with the given user ID
- *
- * @param userId - Premium user ID
- *
- * @returns whether activating Premium was successful
- */
-export async function activate(userId: string): Promise<boolean> {
-  const options: PremiumActivateOptions = { userId };
-  return await send("premium.activate", options);
-}
 
 /**
  * Add Premium subscription with given type

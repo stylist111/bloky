@@ -25,18 +25,6 @@ jest.mock("./messaging");
 jest.mock("./utils");
 
 describe("Messaging category: premium", () => {
-  it("premium.activate", async () => {
-    (utils.send as jest.Mock).mockImplementation(async () => mockReturnValue);
-
-    const userId = "foo";
-    const value = await premium.activate(userId);
-
-    expect(utils.send).toHaveBeenCalledWith("premium.activate", {
-      userId
-    });
-    expect(value).toStrictEqual(mockReturnValue);
-  });
-
   it("premium.add", async () => {
     const subscriptionType = "annoyances";
     await premium.add(subscriptionType);

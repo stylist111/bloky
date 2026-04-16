@@ -84,10 +84,6 @@ export default {
         src: ["src/popup/ui/bootstrap.entry.ts", "js/pages/popup/index.mjs"]
       },
       {
-        dest: "premium.preload.js",
-        src: ["src/premium/content/index.ts"]
-      },
-      {
         dest: "premium-onboarding.js",
         src: ["src/premium-onboarding/ui/index.ts"]
       },

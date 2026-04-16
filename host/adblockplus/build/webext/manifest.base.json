@@ -46,11 +46,7 @@
       "run_at": "document_start"
     },
     {
-      "js": [
-        "polyfill.js",
-        "premium.preload.js",
-        "premium-onboarding.preload.js"
-      ],
+      "js": ["polyfill.js", "premium-onboarding.preload.js"],
       "matches": [
         "https://accounts.adblockplus.org/*",
         "https://*.myaccount.adblockplus.org/*"

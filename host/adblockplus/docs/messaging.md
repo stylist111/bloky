@@ -344,16 +344,6 @@ If filter includes `showPageOptions`:
 
 ### premium
 
-#### premium.activate
-
-**Arguments**
-
-- **string** userId
-
-**Response**
-
-- **boolean** isSuccess
-
 #### premium.get
 
 **Response**
