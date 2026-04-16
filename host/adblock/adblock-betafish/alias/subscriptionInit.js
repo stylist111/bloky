@@ -253,6 +253,7 @@ const start = async function () {
     await detectFirstRun(eweFirstRun.foundSubscriptions, eweFirstRun.foundStorage);
     (await ewe.filters.getMigrationErrors()).forEach(console.error);
     (await ewe.subscriptions.getMigrationErrors()).forEach(console.error);
+    eweFirstRun.errors.forEach(console.error);
     eweFirstRun.warnings.forEach(console.warn);
     await Prefs.untilLoaded.catch(() => {
       setDataCorrupted(true);

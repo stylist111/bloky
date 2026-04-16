@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed: Extension failed to initialize if too many filter lists were enabled.
+
 # 4.37.0 - 2026-04-14
 
 This release contains only minor updates and under-the-hood changes.

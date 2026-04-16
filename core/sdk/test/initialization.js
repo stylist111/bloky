@@ -266,6 +266,7 @@ describe("Initialization", function() {
 
     expect(result).toEqual({foundStorage: expectedFoundStorage,
                             foundSubscriptions: false,
+                            errors: [],
                             warnings: []});
 
     await EWE.subscriptions.addDefaults("en");
@@ -281,6 +282,7 @@ describe("Initialization", function() {
     ]);
     expect(result).toEqual({foundStorage: expectedFoundStorage,
                             foundSubscriptions: true,
+                            errors: [],
                             warnings: []});
   });
 

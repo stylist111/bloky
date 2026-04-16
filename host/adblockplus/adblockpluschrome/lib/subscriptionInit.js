@@ -218,6 +218,7 @@ export async function start(eweFirstRun) {
 
   (await ewe.filters.getMigrationErrors()).forEach(console.error);
   (await ewe.subscriptions.getMigrationErrors()).forEach(console.error);
+  eweFirstRun.errors.forEach(console.error);
   eweFirstRun.warnings.forEach(console.warn);
   await detectFirstRun(
     eweFirstRun.foundSubscriptions,

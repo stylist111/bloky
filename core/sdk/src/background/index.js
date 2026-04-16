@@ -58,6 +58,7 @@ import {migrateCustomFilters, clearRulesetUpdates,
   from "./dnr-filters.js";
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3, Prefs} from "./prefs.js";
 import {isRunningInServiceWorker} from "./browser-features.js";
+import {default as sentry} from "./sentry.js";
 
 // "Allowlisting" might be used before EWE is actually started
 // and it does not require pre- and post- actions.
@@ -203,13 +204,14 @@ async function onInstalled(details) {
 
 /**
 * @typedef {Object} FirstRunInfo
+* @property {Array.<string>} errors An array of errors.
 * @property {boolean} foundStorage Whether the subscriptions storage was
 *                                  initialized or not.
 * @property {boolean} foundSubscriptions True when pre-existing subscriptions
 *                                        were found, false otherwise.
 *                                        Considers also whether custom filters
 *                                        exist.
-* @property {Array.<string>?} [warnings] An array of warnings.
+* @property {Array.<string>} warnings An array of warnings.
 */
 
 /**
@@ -317,6 +319,7 @@ export async function start(addonInfo) {
   if (isSafari()) {
     patchForSafari(false);
   }
+  let errors = [];
   let warnings = [];
 
   let addonInfoResult = setAddonInfo(addonInfo);
@@ -353,16 +356,26 @@ export async function start(addonInfo) {
 
   let {filterStorage} = filterEngine;
   let firstRun = {
+    errors,
     foundSubscriptions: filterStorage.getSubscriptionCount() != 0,
     foundStorage: !filterStorage.firstRun,
     warnings
   };
 
   if (browser.declarativeNetRequest) {
-    let migratedToMv3 = await checkAndMigrateSubscriptions();
-    // If it has just migrated to MV3 there is no diff updates data,
-    // so we can skip wiping it.
-    await checkAndInitSubscriptions(migratedToMv3);
+    try {
+      let migratedToMv3 = await checkAndMigrateSubscriptions();
+      // If it has just migrated to MV3 there is no diff updates data,
+      // so we can skip wiping it.
+      await checkAndInitSubscriptions(migratedToMv3);
+    } catch (error) {
+      sentry.reportError(error);
+      errors.push(
+        error instanceof Error ?
+        error.message :
+        "Failed to initialize subscriptions"
+      );
+    }
   }
 
   if (addonInfo && addonInfo.telemetry) {
