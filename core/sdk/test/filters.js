@@ -871,13 +871,27 @@ describe("Filters", function() {
       }, timeout);
     });
 
-    it("adds 'hide-if-classifies' snippet without domains limitation", async function() {
-      await expect(EWE.filters.add("#$#hide-if-classifies .selector"))
+    it("adds domain-exempt snippets without domains limitation", async function() {
+      // log-if-* snippets accepted without domain
+      await expect(EWE.filters.add("#$#log-if-selector-exists .ad"))
         .resolves.not.toThrow();
 
+      await expect(EWE.filters.add("#$#log-if-script-loads html-load.com adshield script-loader"))
+        .resolves.not.toThrow();
+
+      // log-if-* with domain — still works
+      await expect(EWE.filters.add("example.com#$#log-if-selector-exists .ad"))
+        .resolves.not.toThrow();
+
+      // bare log without domain — still rejected (not a log-if-* variant)
+      await expect(EWE.filters.add("#$#log 'hello world'"))
+        .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_snippet_nodomain\",\"option\":null}");
+
+      // other snippets without domain — still rejected
       await expect(EWE.filters.add("#$#some-snippet .selector"))
         .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_snippet_nodomain\",\"option\":null}");
 
+      // elem-hide emulation without domain — still rejected (unrelated guard)
       await expect(EWE.filters.add("#?#:-abp-properties(foo)"))
         .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_elemhideemulation_nodomain\",\"option\":null}");
     });

@@ -948,10 +948,11 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
   if (type == "$") {
     // Element hiding emulation and snippet filters are inefficient so we need
     // to make sure that they're only applied if they specify active domains.
-    // The only exception is "hide-if-classifies" snippet (EE-138).
+    // Exception: "log-if-*" monitoring snippets are allowed without a domain.
 
     let snippetFilter = new SnippetFilter(text, domains, body);
-    if (!restrictedByDomain && !snippetFilter.script.startsWith("hide-if-classifies")) {
+    if (!restrictedByDomain &&
+        !snippetFilter.script.startsWith("log-if-")) {
       return new InvalidFilter(text, "filter_snippet_nodomain");
     }
     return snippetFilter;

@@ -1,6 +1,13 @@
 # Unreleased
 
 - Updated snippets to 2.8.0
+- Snippets whose names start with `log-if-` are now exempt from the
+  domain restriction in `ContentFilter.fromText`, allowing a single
+  filter to cover all sites without per-domain duplication.
+- Removed the domain-restriction exemption for `hide-if-classifies`
+  (dead code — the snippet no longer exists). Filters of the form
+  `#$hide-if-classifies(...)` without a domain will now be rejected
+  at parse time.
 
 ## General
 

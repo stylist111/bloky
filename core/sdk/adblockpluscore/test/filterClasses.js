@@ -640,6 +640,47 @@ describe("Filter classes", function() {
     compareFilter("~foo.com,bar.com#$#abc", ["type=snippet", "scriptDomains=bar.com", "script=abc", "domains=bar.com|~foo.com"]);
   });
 
+  it("Wildcard log-if snippet filters (no domain)", function() {
+    // log-if-selector-exists: accepted without domain restriction
+    compareFilter("#$#log-if-selector-exists .ad", ["type=snippet", "script=log-if-selector-exists .ad"]);
+
+    // log-if-script-loads: accepted without domain restriction
+    compareFilter("#$#log-if-script-loads foo.js label", ["type=snippet", "script=log-if-script-loads foo.js label"]);
+
+    // log-if-* with a domain still works (regression)
+    compareFilter("foo.com#$#log-if-selector-exists .ad", [
+      "type=snippet",
+      "scriptDomains=foo.com",
+      "script=log-if-selector-exists .ad",
+      "domains=foo.com"
+    ]);
+
+    // bare 'log' without domain is still rejected
+    compareFilter("#$#log 'hello world'", [
+      "type=invalid",
+      "reason=filter_snippet_nodomain"
+    ]);
+
+    // Other snippets without domain are still rejected
+    compareFilter("#$#some-snippet .selector", [
+      "type=invalid",
+      "reason=filter_snippet_nodomain"
+    ]);
+
+    // 'logger' — not a log-if-* snippet — still rejected
+    compareFilter("#$#logger 'x'", ["type=invalid", "reason=filter_snippet_nodomain"]);
+  });
+
+  it("Wildcard log-if snippet isActiveOnDomain", function() {
+    let filter = Filter.fromText("#$#log-if-selector-exists .ad");
+    assert.ok(filter instanceof SnippetFilter, "should be SnippetFilter, not InvalidFilter");
+    assert.strictEqual(filter.domains, null, "domains should be null for wildcard snippet");
+    assert.equal(filter.isActiveOnDomain("example.com"), true, "active on example.com");
+    assert.equal(filter.isActiveOnDomain("news.bbc.co.uk"), true, "active on subdomain");
+    assert.equal(filter.isActiveOnDomain("localhost"), true, "active on localhost");
+    assert.equal(filter.isActiveOnDomain(""), true, "active on empty string");
+  });
+
   it("Filter normalization", function() {
     // Line breaks etc
     assert.equal(Filter.normalize("\n\t\nad\ns"),
@@ -1172,7 +1213,7 @@ describe("isActiveFilter()", function() {
 
   // Snippet filters.
   it("should return false for #$#log 'Hello, world'", function() {
-    // Snippet filters require a domain.
+    // Snippet filters require a domain (log is not a log-if-* variant).
     assert.strictEqual(isActiveFilter(Filter.fromText("#$#log 'Hello, world'")), false);
   });
 
