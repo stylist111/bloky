@@ -265,7 +265,7 @@ defaults.onpage_dialog_last_shown = 0;
  *
  * @type {number}
  */
-defaults.onpage_dialog_cool_down = 24 * 60 * 60 * 1000;
+defaults.onpage_dialog_cool_down = 3 * 24 * 60 * 60 * 1000;
 
 /**
  * The timestamp of the last time we opened a new tab.
@@ -279,7 +279,7 @@ defaults.new_tab_last_shown = 0;
  *
  * @type {number}
  */
-defaults.new_tab_cool_down = 24 * 60 * 60 * 1000;
+defaults.new_tab_cool_down = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * Date to use when testing the update campaign that automatically opens on
