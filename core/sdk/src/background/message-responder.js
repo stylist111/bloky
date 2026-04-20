@@ -33,7 +33,7 @@ import {serverLogValidatedEvent} from "./telemetry/server-logger.js";
 import {handleMessageAPICall} from "./message-invoked-api.js";
 import {onHistoryStateUpdatedSafari} from "./safari-polyfill.js";
 import {filterEngine} from "./core.js";
-import {getFrameInfo} from "./frame-state.js";
+import {getFrameInfo, TOP_LEVEL_FRAME_ID} from "./frame-state.js";
 import {default as experiments} from "./experiments.js";
 import {default as account} from "./account/index.js";
 
@@ -102,6 +102,7 @@ async function handleMessage(message, sender) {
       break;
     case "ewe:get-filters-config": {
       const frame = getFrameInfo(sender.tab.id, sender.frameId);
+      const topFrame = getFrameInfo(sender.tab.id, TOP_LEVEL_FRAME_ID);
       const hostname = frame.hostname;
       const [experimentHosts, isPremium, zeroDelayTrial] = await Promise.all([
         experiments.getFlag("zero-delay-snippet-domains"),
@@ -131,7 +132,8 @@ async function handleMessage(message, sender) {
         ),
         hitEventEnabled: Boolean(
           await experiments.getFlag("snippet-hit-event")
-        )
+        ),
+        topLevelHostname: topFrame ? topFrame.hostname : null
       };
 
       // If the document is allowlisted, no filters should be applied.

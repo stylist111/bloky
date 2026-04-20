@@ -35,7 +35,8 @@ import {
   createSnippetDetectionEventSender,
   createSnippetHitEventSender,
   gateSnippetEvent,
-  handleSnippetHitMessage
+  handleSnippetHitMessage,
+  withTopLevelDomain
 } from "./snippet-events.js";
 
 const commsChannelName = claimCommsChannel(uuidv4());
@@ -170,8 +171,13 @@ function executeSnippets(filtersConfig) {
     const env = {
       debugCSSProperties: debug ? DEBUG_CSS_PROPERTIES : null,
       sendDetectionEvent: gateSnippetEvent(
-        detectionEventEnabled, sendDetectionEvent
+        detectionEventEnabled,
+        withTopLevelDomain(
+          filtersConfig.topLevelHostname, sendDetectionEvent
+        )
       ),
+      // sendSnippetHitEvent is not wrapped with withTopLevelDomain:
+      // hit events get their domain from the filter, not the frame.
       sendSnippetHitEvent: gateSnippetEvent(
         snippetHitEventEnabled, sendSnippetHitEvent
       )

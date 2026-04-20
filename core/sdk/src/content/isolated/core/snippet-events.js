@@ -101,7 +101,15 @@ export function createSnippetHitEventSender(
 
 const NOOP = () => {};
 
-// Gates a snippet event sender behind an experiment flag
+/**
+ * Gates a snippet event sender behind an experiment flag so that
+ * no event processing or wrapper overhead occurs when the feature
+ * is disabled.
+ *
+ * @param {boolean} enabled - Whether the experiment flag is on
+ * @param {Function} sender - The event sender function to gate
+ * @returns {Function} The sender if enabled, or a no-op function
+ */
 export function gateSnippetEvent(enabled, sender) {
   return enabled ? sender : NOOP;
 }
@@ -123,4 +131,28 @@ export function handleSnippetHitMessage(detail, enabled, sendFn) {
     return;
   }
   sendFn(filter, domain);
+}
+
+/**
+ * Wraps a sendDetectionEvent function so that detection events from
+ * iframes report the top-level page domain instead of the iframe
+ * domain. When the domains already match (main frame) or no
+ * top-level domain is available, the event passes through unchanged.
+ *
+ * @param {?string} topLevelDomain - Hostname from getTopLevelDomain,
+ *   or null if unavailable
+ * @param {Function} sender - The sendDetectionEvent function to wrap
+ * @returns {Function} Wrapped sender, or the original if no
+ *   replacement is needed
+ */
+export function withTopLevelDomain(topLevelDomain, sender) {
+  if (!topLevelDomain) {
+    return sender;
+  }
+  return function(type, domain, ...rest) {
+    if (topLevelDomain === domain) {
+      return sender(type, domain, ...rest);
+    }
+    return sender(type, topLevelDomain, ...rest);
+  };
 }

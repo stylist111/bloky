@@ -22,6 +22,10 @@
   behind the `snippet-detection-event` experiment flag. No events
   are emitted unless the experiment is enabled.
 - Enabled zero delay snippets for Premium and trial users.
+- Added top-level domain enrichment for `snippet_detection_event`.
+  Detection events from iframes now report the page domain the user
+  is visiting instead of the iframe domain. Events from the main
+  frame pass through unchanged.
 
 ## Fixes
 
