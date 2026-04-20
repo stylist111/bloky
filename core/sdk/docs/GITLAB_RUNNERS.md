@@ -86,7 +86,7 @@ build:
   tags:
     - local-test
 
-func:v3:chromium:latest:
+func:v3:chrome:latest:
   ...
   tags:
     - local-test-dind
@@ -109,7 +109,7 @@ To artificially keep the container running, `sleep` can be used as the last
 script command. Example:
 
 ```yaml
-func:v3:chromium:latest:
+func:v3:chrome:latest:
   ...
   script:
     - docker build -t functional-local -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" .;
@@ -138,7 +138,7 @@ docker exec -it <CONTAINER ID> <COMMAND>
 For instance, we could run `docker run` inside that container:
 
 ```sh
-docker exec -it a76adec7b47f docker run -e TEST_PARAMS="v3 chromium --testKinds reload" functional-local
+docker exec -it a76adec7b47f docker run -e TEST_PARAMS="v3 chrome --testKinds reload" functional-local
 ```
 
 #### Interactive web terminal

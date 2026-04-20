@@ -20,6 +20,6 @@ ARG BROWSERS=
 RUN for BROWSER in $BROWSERS; do node core/sdk/test/dockerfiles/get-browser-binaries.js $BROWSER; done
 
 ENV IS_DOCKER_RUN="true"
-ENV TEST_PARAMS="3 chromium"
+ENV TEST_PARAMS="3 chrome"
 ENV ONLY_FLAKY="false"
 ENTRYPOINT core/sdk/test/dockerfiles/functional-entrypoint.sh

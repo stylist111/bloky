@@ -54,12 +54,6 @@ fragments-tests:MV2:edge:latest:
     BROWSER: edge
     MANIFEST_VERSION: 2
 
-fragments-tests:MV3:chromium:latest:
-  extends: .fragments-tests-n-times
-  variables:
-    BROWSER: chromium
-    MANIFEST_VERSION: 3
-
 fragments-tests:MV3:chrome:latest:
   extends: .fragments-tests-n-times
   variables:
@@ -83,13 +77,6 @@ fragments-tests:MV2:firefox:beta:
   variables:
     MANIFEST_VERSION: 2
     BROWSER: firefox
-    BROWSER_VERSION: beta
-
-fragments-tests:MV3:chromium:beta:
-  extends: .fragments-tests-nightly
-  variables:
-    MANIFEST_VERSION: 3
-    BROWSER: chromium
     BROWSER_VERSION: beta
 
 fragments-tests:MV3:chrome:beta:

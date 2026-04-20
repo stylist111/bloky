@@ -191,18 +191,6 @@ adblockpluscore:browser:
   parallel: $[[ inputs.job_runs ]]
 
 # Functional tests - MV2
-func:v2:chromium:latest:
-  extends: .functional-n-times
-  variables:
-    BROWSER: chromium latest
-    TEST_PARAMS: 2 $BROWSER
-
-func:v2:chromium:incognito:
-  extends: .functional-n-times
-  variables:
-    BROWSER: chromium latest
-    TEST_PARAMS: 2 $BROWSER --incognito
-
 func:v2:chromium:oldest:
   extends: .functional-n-times
   variables:
@@ -251,23 +239,11 @@ func:v2:windows:edge:
     - npm run -w=@eyeo/webext-ad-filtering-solution test:functional "--" 2 edge latest --timeout=10000
 
 # Functional tests - MV3
-func:v3:chromium:latest:
-  extends: .functional-n-times
-  variables:
-    BROWSER: chromium latest
-    TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
-
 func:v3:chrome:latest:
   extends: .functional-n-times
   variables:
     BROWSER: chrome latest
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
-
-func:v3:chromium:incognito:
-  extends: .functional-n-times
-  variables:
-    BROWSER: chromium latest
-    TEST_PARAMS: 3 $BROWSER --testKinds functional reload update --incognito
 
 func:v3:chrome:incognito:
   extends: .functional-n-times
@@ -338,11 +314,6 @@ func:v3:edge:latest:
       Subscribe
       Pop-up.blocking
 
-fi:v3:chromium:latest:
-  extends: .functional-isolated-mv3
-  variables:
-    TEST_PARAMS: 3 chromium latest
-
 fi:v3:chrome:latest:
   extends: .functional-isolated-mv3
   variables:
@@ -363,12 +334,6 @@ fi:v2:firefox:
   extends: .functional
   rules:
     - !reference [.nightly-run, rules]
-
-func:v3:chromium:beta:
-  extends: .functional-nightly
-  variables:
-    BROWSER: chromium beta
-    TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
 
 func:v3:chrome:beta:
   extends: .functional-nightly
@@ -395,27 +360,12 @@ func:v2:edge:latest:
   variables:
     TEST_PARAMS: 3 $BROWSER $INCOGNITO --testKinds fuzz
 
-fuzz:v3:chromium:latest:
-  extends:
-    - .functional-n-times
-    - .fuzz
-  variables:
-    BROWSER: chromium latest
-
 fuzz:v3:chrome:latest:
   extends:
     - .functional-nightly
     - .fuzz
   variables:
     BROWSER: chrome latest
-
-fuzz:v3:chromium:incognito:
-  extends:
-    - .functional-nightly
-    - .fuzz
-  variables:
-    BROWSER: chromium latest
-    INCOGNITO: --incognito
 
 fuzz:v3:chrome:incognito:
   extends:
@@ -465,14 +415,6 @@ comp:v2:chromium:
     VERSION: $LATEST_CHROMIUM_MV2_VERSION
     BROWSER: chromium
     MANIFEST: mv2
-
-comp:v3:chromium:
-  extends: .compliance
-  variables:
-    VERSION: latest
-    BROWSER: chromium
-    MANIFEST: mv3
-    MV3_ONLY_TESTS: exceptions/sitekey_mv3
 
 comp:v3:chrome:
   extends: .compliance
@@ -533,34 +475,10 @@ int:safari:
   script:
     - docker run $DOCKER_OPTIONS -e NODE_OPTIONS="--max-old-space-size=4096" --entrypoint npm $FUNCTIONAL_IMAGE run -w @eyeo/webext-ad-filtering-solution test:performance -- $PARAMS
 
-perf:v2:chromium:
-  extends: .performance
-  variables:
-    PARAMS: 2 chromium
-
-perf:v3:chromium:
-  extends: .performance
-  variables:
-    PARAMS: 3 chromium
-
 perf:v3:chrome:
   extends: .performance
   variables:
     PARAMS: 3 chrome
-
-perf:save-baseline:v3:chromium:
-  extends: .performance
-  after_script:
-    - docker cp $(docker ps -aqf ancestor=$FUNCTIONAL_IMAGE | head -n 1):/extensions/core/sdk/test/performance/baseline_docker.json ./core/sdk/test/performance/baseline_docker.json
-  artifacts:
-    paths:
-      - core/sdk/test/performance/baseline_docker.json
-    when: on_success
-    expire_in: 1 day
-  variables:
-    PARAMS: 3 chromium --saveBaseline
-  rules:
-    - if: $SAVE_BASELINE == "true"
 
 perf:save-baseline:v3:chrome:
   extends: .performance

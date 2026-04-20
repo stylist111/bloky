@@ -136,7 +136,7 @@ npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- {2|3} {chromium
 For example:
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- 3 chromium --grep="Test Name"
+npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- 3 chrome --grep="Test Name"
 ```
 
 ### Func:bundle
@@ -545,7 +545,7 @@ docker cp $(docker ps -aqf ancestor=functional | head -n 1):/extensions/core/sdk
 ```
 
 On the CI, setting the `SAVE_BASELINE` pipeline variable to `true` will trigger
-the `perf:save-baseline:v3:chromium` job.
+the `perf:save-baseline:v3:chrome` job.
 
 #### ARM architecture (M1/M2 Apple Silicon)
 
@@ -620,7 +620,7 @@ to the job that is failing:
 
 ```
 
-func:v2:chromium:latest:
+func:v3:chrome:latest:
   tags: [ saas-linux-large-amd64 ]
 
 ```
@@ -686,5 +686,5 @@ with each other if they are run concurrently.
 To run test suites locally in isolation, run the following docker commands:
 
 ```
-docker run --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="v3 chromium" --entrypoint core/sdk/test/dockerfiles/isolated-entrypoint.sh functional
+docker run --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="v3 chrome" --entrypoint core/sdk/test/dockerfiles/isolated-entrypoint.sh functional
 ```

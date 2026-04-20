@@ -173,12 +173,6 @@ checkbuildsizes:MV2:firefox:
     when: on_failure
     expire_in: 1 month
 
-comp:MV3:chromium:latest:
-  extends: .compliance
-  variables:
-    BROWSER: chromium latest
-    EXTENSION: adblock-chrome-*-mv3.zip
-
 comp:MV3:chrome:latest:
   extends: .compliance
   variables:
@@ -252,12 +246,6 @@ end-to-end:MV2:edge:latest:
     BROWSER: edge
     MANIFEST_VERSION: 2
 
-end-to-end:MV3:chromium:latest:
-  extends: .end-to-end-n-times
-  variables:
-    BROWSER: chromium
-    MANIFEST_VERSION: 3
-
 end-to-end:MV3:chrome:latest:
   extends: .end-to-end-n-times
   variables:
@@ -281,13 +269,6 @@ end-to-end:MV2:firefox:beta:
   variables:
     MANIFEST_VERSION: 2
     BROWSER: firefox
-    BROWSER_VERSION: beta
-
-end-to-end:MV3:chromium:beta:
-  extends: .end-to-end-nightly
-  variables:
-    MANIFEST_VERSION: 3
-    BROWSER: chromium
     BROWSER_VERSION: beta
 
 end-to-end:MV3:chrome:beta:

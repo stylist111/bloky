@@ -190,11 +190,6 @@ checkbuildsizes:MV2:firefox:
     EXTENSION: adblockplus-chrome-*-mv3.zip
     MANIFEST: mv3
 
-comp:MV3:chromium:latest:
-  extends: .compliance:MV3
-  variables:
-    BROWSER: chromium latest
-
 comp:MV3:chrome:latest:
   extends: .compliance:MV3
   variables:
@@ -273,12 +268,6 @@ end-to-end:MV2:edge:latest:
     MANIFEST_VERSION: 2
     BROWSER: edge
 
-end-to-end:MV3:chromium:latest:
-  extends: .end-to-end-n-times
-  variables:
-    MANIFEST_VERSION: 3
-    BROWSER: chromium
-
 end-to-end:MV3:chrome:latest:
   extends: .end-to-end-n-times
   variables:
@@ -302,13 +291,6 @@ end-to-end:MV2:firefox:beta:
   variables:
     MANIFEST_VERSION: 2
     BROWSER: firefox
-    BROWSER_VERSION: beta
-
-end-to-end:MV3:chromium:beta:
-  extends: .end-to-end-nightly
-  variables:
-    MANIFEST_VERSION: 3
-    BROWSER: chromium
     BROWSER_VERSION: beta
 
 end-to-end:MV3:chrome:beta:

@@ -76,13 +76,13 @@ docker run --shm-size=2g -it -e NODE_OPTIONS="--max-old-space-size=4096" --entry
 Running container in a mode that will run only tests that are tagged [flaky]:
 
 ```
-docker run --shm-size=2g -it -e TEST_PARAMS="3 chromium" -e ONLY_FLAKY="true" functional
+docker run --shm-size=2g -it -e TEST_PARAMS="3 chrome" -e ONLY_FLAKY="true" functional
 ```
 
 ### Functional Isolated Tests
 
 ```
-docker run --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="3 chromium" --entrypoint core/sdk/test/dockerfiles/isolated-entrypoint.sh functional
+docker run --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="3 chrome" --entrypoint core/sdk/test/dockerfiles/isolated-entrypoint.sh functional
 ```
 
 ## I just want to run the tests on my machine, give me the command
@@ -103,11 +103,11 @@ npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- {2|3} {chromium
 ### Build and run a specific test
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- 3 chromium --grep="test name"
+npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- 3 chrome --grep="test name"
 ```
 
 ### Build and run all tests of a specific type
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- 3 chromium --testKinds="{functional|reload|update|mv2-mv3-migrate|fuzz}"
+npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- 3 chrome --testKinds="{functional|reload|update|mv2-mv3-migrate|fuzz}"
 ```
