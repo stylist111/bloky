@@ -51,6 +51,19 @@ or disabled on that client.
 | `warn`     | 4     | Warnings and potential issues                        |
 | `off`      | 5     | No logging (can be used to disable specific modules) |
 
+### Modules requiring explicit level
+
+Some modules are listed in `MODULES_REQUIRING_EXPLICIT_LEVEL` in
+[server-logger.js](../core/sdk/src/background/telemetry/server-logger.js). These
+modules will not log to the server unless they have an explicit entry in
+`loggingLevels.byModule`. The global log level is ignored for these modules.
+
+This is used for modules where events should only flow through specific
+pipelines (e.g. CDP behaviour counters) and must not be sent as individual event
+logs, even when the global level would otherwise allow it.
+
+Currently: `detection_snippets`.
+
 ## How do I set this up?
 
 ### Document your new events

@@ -41,7 +41,7 @@ import {
 import { adWallTestPageUrl } from "@eyeo/test-utils/host-urls";
 import { initOptionsGeneralTab } from "../utils/page.js";
 
-const SNIPPET_EVENT_COUNT_KEY = "snippets:snippet_detection_event";
+const SNIPPET_EVENT_COUNT_KEY = "detection_snippets:snippet_detection_event";
 const CSS_WALL_FILTER =
   "localhost#$#log-if-selector-exists #ad-wall test-ad-wall test-specifier";
 const CSS_STYLE_WALL_FILTER =

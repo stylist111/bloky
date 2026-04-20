@@ -23,6 +23,10 @@ import {Prefs, init as initializePrefs} from "../prefs.js";
 import {PersistentState} from "../persistence.js";
 import {EventDispatcher} from "../types.js";
 
+const MODULES_REQUIRING_EXPLICIT_LEVEL = new Set([
+  "detection_snippets"
+]);
+
 // Console logging is primarily for devs who are currently adding logging to
 // be able to see the logs, or for devs trying to reproduce something that
 // they saw in the server logs.
@@ -155,12 +159,16 @@ function loggingEnabled(module, level, loggingConfig) {
   const moduleLevel = loggingConfig.byModule ?
     loggingConfig.byModule[module] :
     null;
-  if (moduleLevel) {
+  if (moduleLevel != null) {
     return level >= moduleLevel;
   }
 
+  if (MODULES_REQUIRING_EXPLICIT_LEVEL.has(module)) {
+    return false;
+  }
+
   const globalLevel = loggingConfig.global;
-  return globalLevel && level >= globalLevel;
+  return globalLevel != null && level >= globalLevel;
 }
 
 async function consoleLog(logTime, module, level, event, data, ipmId) {

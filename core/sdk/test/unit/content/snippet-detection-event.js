@@ -225,7 +225,7 @@ describe("snippet_detection_event schema validation", function() {
   let spy;
 
   beforeEach(function() {
-    logger = new AbstractLogger("snippets", events);
+    logger = new AbstractLogger("detection_snippets", events);
     spy = sinon.spy(logger, "_validatedLog");
     sinon.stub(console, "error");
   });

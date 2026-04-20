@@ -8,6 +8,11 @@
   (dead code — the snippet no longer exists). Filters of the form
   `#$hide-if-classifies(...)` without a domain will now be rejected
   at parse time.
+- Moved `snippet_detection_event` to the new `detection_snippets`
+  logging module (from `snippets`), allowing independent log level
+  control via `loggingLevels.byModule`. Defaults to `"off"` if not
+  explicitly configured, so detection events do not flow to eyeometry
+  without an explicit remote config entry.
 
 ## General
 

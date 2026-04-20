@@ -49,7 +49,10 @@ let cachedFiltersConfig;
 let cachedFiltersConfigSerialized = null;
 let storageAvailable = true;
 const logger = new telemetry.ServerLogger("snippets");
-const sendDetectionEvent = createSnippetDetectionEventSender(logger, sentry);
+const detectionLogger = new telemetry.ServerLogger("detection_snippets");
+const sendDetectionEvent = createSnippetDetectionEventSender(
+  detectionLogger, sentry
+);
 const sendSnippetHitEvent = createSnippetHitEventSender(logger, sentry);
 
 let snippetHitEventEnabled = false;
