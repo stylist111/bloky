@@ -54,11 +54,20 @@ export const EVENT_SESSION_START = "session_start";
 export const EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW =
   "blockthrough_acceptable_ads_page_view";
 
+/**
+ * "Wall detection" event type. These are triggered when a snippet detects
+ * a wall (ad reinsertion, anti-adblock overlay, etc.) on a page.
+ * Counts are stored per domain for CDP domain stats.
+ * @ignore
+ */
+export const EVENT_WALL_DETECTION = "wall_detection";
+
 // CDP events and pages user activity loading delay (for testing)
 let _loadDelay = 0;
 
 let deferredBrowserEvents = [];
 let deferredBlockthroughEvents = [];
+let deferredWallDetectionEvents = [];
 
 // incapsulates domain to site grouping logics
 let processor = new SpecialDomainsProcessor();
@@ -115,6 +124,12 @@ function initializeEvents() {
       EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW,
       new PersistentState(
         "ewe:cdp-blockthrough-acceptable-ads-page-view", browser.storage.local
+      )
+    ],
+    [
+      EVENT_WALL_DETECTION,
+      new PersistentState(
+        "ewe:cdp-wall-detection", browser.storage.local
       )
     ]
   ]);
@@ -210,6 +225,15 @@ export function getData(eventType, siteId) {
   let counter = toCounter(events.get(eventType).getState()[siteId]);
   debug("counter=" + counter);
   return counter;
+}
+
+/**
+ * Returns the in-memory wall detection counts per domain.
+ * @returns {Promise<Object>} Domain-keyed counts object.
+ * @ignore
+ */
+export async function getWallDetectionState() {
+  return events.get(EVENT_WALL_DETECTION).getStateLoaded();
 }
 
 /**
@@ -485,6 +509,39 @@ export function countBTAADetectionEvent(url, details) {
   count(EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW, siteId, timeStamp);
 }
 
+/**
+ * Count a wall detection event for CDP domain stats.
+ * Takes a getBaseDomain-normalised domain directly, NOT via
+ * SpecialDomainsProcessor.findSiteId. Intentional: wall detection
+ * needs exact domain granularity, not the site-group split used
+ * by sessions/page_views/BTAA. Both es and ds paths use the same
+ * normalised domain for consistency.
+ * @param {string} domain The normalised domain where the wall was detected.
+ * @ignore
+ */
+export function countWallDetectionEvent(domain) {
+  trace({domain});
+
+  if (!isStateLoaded()) {
+    warn(() => `Deferring wall detection event: ${JSON.stringify({domain})}`);
+    deferredWallDetectionEvents.push({domain});
+    return;
+  }
+
+  if (isOptedOut()) {
+    return;
+  }
+
+  if (!domain) {
+    return;
+  }
+
+  log(`countWallDetectionEvent() domain=${domain}`);
+
+  const timeStamp = Date.now();
+  count(EVENT_WALL_DETECTION, domain, timeStamp);
+}
+
 async function loadEvents() {
   for (const state of events.values()) {
     await state.load();
@@ -503,22 +560,23 @@ function isStateLoaded() {
   return true;
 }
 
-function handleDeferredEvents() {
-  if (deferredBrowserEvents.length > 0) {
-    for (const eachEvent of deferredBrowserEvents) {
-      handleBrowserEvent(eachEvent.details, eachEvent.doMarkActive);
+function drainQueue(queue, name, handler) {
+  if (queue.length > 0) {
+    for (const event of queue) {
+      handler(event);
     }
-    warn(`Processed ${deferredBrowserEvents.length} deferred browser events`);
-    deferredBrowserEvents = [];
+    warn(`Processed ${queue.length} deferred ${name} events`);
+    queue.length = 0;
   }
+}
 
-  if (deferredBlockthroughEvents.length > 0) {
-    for (const eachEvent of deferredBlockthroughEvents) {
-      countBTAADetectionEvent(eachEvent.url, eachEvent.details);
-    }
-    warn(`Processed ${deferredBlockthroughEvents.length} deferred blockthrough events`);
-    deferredBlockthroughEvents = [];
-  }
+function handleDeferredEvents() {
+  drainQueue(deferredBrowserEvents, "browser",
+    e => handleBrowserEvent(e.details, e.doMarkActive));
+  drainQueue(deferredBlockthroughEvents, "blockthrough",
+    e => countBTAADetectionEvent(e.url, e.details));
+  drainQueue(deferredWallDetectionEvents, "wall detection",
+    e => countWallDetectionEvent(e.domain));
 }
 
 /**

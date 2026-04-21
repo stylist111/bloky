@@ -87,15 +87,18 @@ let behaviourCountState = new PersistentState(
   "ewe:telemetry-behaviour-counts",
   browser.storage.local
 );
+behaviourCountState.doDebounce();
 
-async function trackBehaviourEvent(module, event, ipmId) {
+async function trackBehaviourEvent(module, event, keySuffix) {
   let state = await behaviourCountState.getStateLoaded();
 
   if (!state.counts) {
     state.counts = {};
   }
 
-  const key = ipmId ? `${module}:${event}:${ipmId}` : `${module}:${event}`;
+  const key = keySuffix
+    ? `${module}:${event}:${keySuffix}`
+    : `${module}:${event}`;
   state.counts[key] = (state.counts[key] || 0) + 1;
   await behaviourCountState.save();
 }
@@ -171,7 +174,7 @@ function loggingEnabled(module, level, loggingConfig) {
   return globalLevel != null && level >= globalLevel;
 }
 
-async function consoleLog(logTime, module, level, event, data, ipmId) {
+async function consoleLog(logTime, module, level, event, data, keySuffix) {
   if (loggingEnabled(module, level, await consoleLogLevel.getStateLoaded())) {
     const logParams = [
       logTime,
@@ -183,8 +186,9 @@ async function consoleLog(logTime, module, level, event, data, ipmId) {
       logParams.push(data);
     }
 
-    if (typeof ipmId !== "undefined") {
-      logParams.push(`ipmId: ${ipmId}`);
+    if (typeof keySuffix !== "undefined") {
+      // ipmId for IPM events, type:domain for detection snippets
+      logParams.push(`keySuffix: ${keySuffix}`);
     }
 
     // eslint-disable-next-line no-console
@@ -236,16 +240,18 @@ async function queueServerLog(logTime, module, level, event, data) {
  * @param {number} level The logging level, from 1=debug to 4=warn.
  * @param {string} event The event being logged. This should be unique.
  * @param {string|number|Object|Array|boolean} [data]
- * @param {string} [ipmId] Optional IPM ID to associate with this event.
+ * @param {string} [keySuffix] Optional suffix appended to the behaviour
+ *   counter key ({module}:{event}:{keySuffix}). IPM events pass the
+ *   campaign ID; detection snippets pass type:domain for CDP es counters.
  */
 export function serverLogValidatedEvent(
-  logTime, module, level, event, data, ipmId
+  logTime, module, level, event, data, keySuffix
 ) {
   if (level === logLevelNamesToNumbers.behavior) {
-    void trackBehaviourEvent(module, event, ipmId);
+    void trackBehaviourEvent(module, event, keySuffix);
   }
 
-  void consoleLog(logTime, module, level, event, data, ipmId);
+  void consoleLog(logTime, module, level, event, data, keySuffix);
   void queueServerLog(logTime, module, level, event, data);
 }
 
@@ -261,8 +267,10 @@ export class ServerLogger extends AbstractLogger {
     super(module);
   }
 
-  _validatedLog(logTime, level, event, data, ipmId) {
-    serverLogValidatedEvent(logTime, this._module, level, event, data, ipmId);
+  _validatedLog(logTime, level, event, data, keySuffix) {
+    serverLogValidatedEvent(
+      logTime, this._module, level, event, data, keySuffix
+    );
   }
 }
 

@@ -33,7 +33,8 @@ import {getBehaviourLoggingState, clearBehaviourLoggingState, ServerLogger}
   from "../telemetry/server-logger.js";
 
 import {isOptedOut, getDomainStats, clearData, EVENT_SESSION_START,
-        EVENT_PAGE_VIEW, EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW}
+        EVENT_PAGE_VIEW, EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW,
+        EVENT_WALL_DETECTION}
   from "./index.js";
 import {premiumStatusCallback} from "./callbacks.js";
 import {importRSAPublicKey, encryptRSA, AES_LENGTH,
@@ -205,7 +206,8 @@ function hasLastStats(state) {
 const EVENT_TYPE_TO_METRIC = {
   [EVENT_SESSION_START]: "s",
   [EVENT_PAGE_VIEW]: "p",
-  [EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW]: "b"
+  [EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW]: "b",
+  [EVENT_WALL_DETECTION]: "w"
 };
 
 export async function buildStatsPayload() {
@@ -216,7 +218,8 @@ export async function buildStatsPayload() {
   const domainStatMetrics = [
     EVENT_TYPE_TO_METRIC[EVENT_SESSION_START],
     EVENT_TYPE_TO_METRIC[EVENT_PAGE_VIEW],
-    EVENT_TYPE_TO_METRIC[EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW]
+    EVENT_TYPE_TO_METRIC[EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW],
+    EVENT_TYPE_TO_METRIC[EVENT_WALL_DETECTION]
   ];
   const dict = new MaxLengthMetricsDict(
     STATS_UNCOMPRESSED_SIZE_LIMIT, domainStatMetrics, null

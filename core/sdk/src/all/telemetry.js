@@ -217,7 +217,9 @@ export class AbstractLogger {
    * @param {string} event The name of the event to log. This should be unique.
    * @param {string|number|object|array|boolean|null} [data]
    *    The dynamic data relevant to the event.
-   * @param {string} [ipmId] Optional IPM ID to associate with this event.
+   * @param {string} [ipmId] Optional suffix appended to the behaviour
+   *   counter key. IPM events pass the campaign ID; detection snippets
+   *   pass type:domain. Renamed to `keySuffix` in ServerLogger internals.
    */
   behavior(event, data, ipmId) {
     this._log(BEHAVIOR, event, data, ipmId);

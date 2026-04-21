@@ -60,6 +60,7 @@ import * as cohorts from "./cohorts/index.js";
 import * as experiments from "./experiments.js";
 import * as sentry from "./sentry.js";
 import {hashString} from "../all/hashing.js";
+import {logLevelNamesToNumbers} from "../all/telemetry.js";
 import {remoteConfigState, setFactsGetter} from "./remote-config/storage.js";
 import {MILLIS_IN_DAY, MILLIS_IN_HOUR} from "../../adblockpluscore/lib/time.js";
 
@@ -341,6 +342,26 @@ export default {
   _setCdpDataArray: cdp.setDataArray,
   _getCdpData: cdp.getData,
   _clearCdpData: cdp.clearData,
+  _countWallDetectionEvent: cdp.countWallDetectionEvent,
+  getCdpWallDetectionState: cdp.getWallDetectionState,
+
+  // Simulates the full background message-handler path for a snippet detection
+  // event: increments both the CDP wall-detection counter (ds "w" metric) and
+  // the behaviour-log counter (es path). Use this in functional tests where the
+  // log-if-* snippets (which live in abp-snippets, not @eyeo/snippets) are not
+  // available in the test environment.
+  _simulateSnippetDetectionEvent(type, domain) {
+    const keySuffix = `${type}:${domain}`;
+    cdp.countWallDetectionEvent(domain);
+    serverLogger.serverLogValidatedEvent(
+      Date.now(),
+      "detection_snippets",
+      logLevelNamesToNumbers.behavior,
+      "snippet_detection_event",
+      {type, domain, specifier: null},
+      keySuffix
+    );
+  },
   _clearCdpActivity: cdp.clearActivity,
   _buildCdpStatsPayload: cdpUploader.buildStatsPayload,
   _isCdpOptedOut: cdp.isOptedOut,

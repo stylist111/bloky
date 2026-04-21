@@ -13,6 +13,13 @@
   control via `loggingLevels.byModule`. Defaults to `"off"` if not
   explicitly configured, so detection events do not flow to eyeometry
   without an explicit remote config entry.
+- Detection events now record granular CDP behaviour counter keys
+  (`detection_snippets:snippet_detection_event:{type}:{domain}`)
+  instead of a single global counter, enabling per-type per-domain
+  breakdowns in the `es` (event stats) pipeline.
+- Detection events now count per-domain wall detections in CDP domain
+  stats (`ds` path, `"w"` metric). Enables "which domains have walls"
+  queries in BigQuery.
 
 ## General
 

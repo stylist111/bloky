@@ -41,15 +41,15 @@ import {
 import { adWallTestPageUrl } from "@eyeo/test-utils/host-urls";
 import { initOptionsGeneralTab } from "../utils/page.js";
 
-const SNIPPET_EVENT_COUNT_KEY = "detection_snippets:snippet_detection_event";
-const CSS_WALL_FILTER = "localhost#$#log-if-selector-exists #ad-wall test-ad-wall test-specifier";
+const SNIPPET_EVENT_COUNT_KEY = "detection_snippets:snippet_detection_event:wall-test:localhost";
+const CSS_WALL_FILTER = "localhost#$#log-if-selector-exists #ad-wall wall-test test-specifier";
 const CSS_STYLE_WALL_FILTER =
-  "localhost#$#log-if-computed-style-matches test-ad-wall test-specifier position fixed z-index 999999";
+  "localhost#$#log-if-computed-style-matches wall-test test-specifier position fixed z-index 999999";
 const SCRIPT_WALL_FILTER =
-  "localhost#$#log-if-script-loads ad-wall-loader.js test-ad-wall test-specifier";
-const IFRAME_WALL_FILTER = "localhost#$#log-if-iframe-loads localhost test-ad-wall test-specifier";
+  "localhost#$#log-if-script-loads ad-wall-loader.js wall-test test-specifier";
+const IFRAME_WALL_FILTER = "localhost#$#log-if-iframe-loads localhost wall-test test-specifier";
 const RACE_WALL_FILTER =
-  "localhost#$#race start; log-if-selector-exists #ad-wall test-ad-wall test-selector; log-if-computed-style-matches test-ad-wall test-css position fixed z-index 999999; log-if-script-loads ad-wall-loader.js test-ad-wall test-script; log-if-iframe-loads localhost test-ad-wall test-iframe; race end";
+  "localhost#$#race start; log-if-selector-exists #ad-wall wall-test test-selector; log-if-computed-style-matches wall-test test-css position fixed z-index 999999; log-if-script-loads ad-wall-loader.js wall-test test-script; log-if-iframe-loads localhost wall-test test-iframe; race end";
 
 export default () => {
   before(async function () {
@@ -99,6 +99,9 @@ export default () => {
       return result?.counts?.[SNIPPET_EVENT_COUNT_KEY] > baselineCount ? result : null;
     }, 5000);
     expect(counts[SNIPPET_EVENT_COUNT_KEY]).toBe(baselineCount + 1);
+    // ds path (wall detection per-domain counts) is verified by
+    // integration tests in core/sdk/test/cdp.js which have direct
+    // access to EWE.testing and can call setOptOut properly.
   }
 
   it("snippet fires snippet_detection_event when CSS is detected", async function () {

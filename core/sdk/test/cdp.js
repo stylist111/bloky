@@ -37,6 +37,7 @@ const SITE_ID = "siteId";
 const EVENT_PAGE_VIEW = "page_view";
 const EVENT_SESSION_START = "session_start";
 const EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW = "blockthrough_acceptable_ads_page_view";
+const EVENT_WALL_DETECTION = "wall_detection";
 
 const PEM_PRIVATE_KEY_HEADER = "-----BEGIN PRIVATE KEY-----";
 const PEM_PRIVATE_KEY_FOOTER = "-----END PRIVATE KEY-----";
@@ -224,7 +225,36 @@ describe("CDP", function() {
       await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID, 4);
       const stats = await EWE.testing._buildCdpStatsPayload();
       expect(stats).toEqual(
-        `{"ds":[{"i":"${SITE_ID}","s":3,"p":4,"b":0}],"es":[]}`);
+        `{"ds":[{"i":"${SITE_ID}","s":3,"p":4,"b":0,"w":0}],"es":[]}`);
+    });
+
+    it("includes wall detection count in \"domain_stats\" payload", async function() {
+      await EWE.testing.clearBehaviourLoggingState();
+      await EWE.testing._setCdpData(
+        EVENT_SESSION_START, SITE_ID, [1]
+      );
+      await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID, 2);
+      await EWE.testing._setCdpData(EVENT_WALL_DETECTION, SITE_ID, 3);
+      const stats = await EWE.testing._buildCdpStatsPayload();
+      expect(stats).toEqual(
+        `{"ds":[{"i":"${SITE_ID}","s":1,"p":2,"b":0,"w":3}],"es":[]}`);
+    });
+
+    it("includes wall detection count from countWallDetectionEvent in payload", async function() {
+      await EWE.testing.clearBehaviourLoggingState();
+      await EWE.testing.stopCdp();
+      await EWE.testing.startCdp();
+      await EWE.cdp.setOptOut(false);
+      await EWE.testing._countWallDetectionEvent("example.com");
+      await EWE.testing._countWallDetectionEvent("example.com");
+      await EWE.testing._countWallDetectionEvent("other.com");
+      await EWE.debugging.ensureEverythingHasSaved();
+      const stats = await EWE.testing._buildCdpStatsPayload();
+      const parsed = JSON.parse(stats);
+      const example = parsed.ds.find(d => d.i === "example.com");
+      const other = parsed.ds.find(d => d.i === "other.com");
+      expect(example.w).toEqual(2);
+      expect(other.w).toEqual(1);
     });
 
     it("sorts \"domain_stats\" payload for sessions count", async function() {
@@ -245,9 +275,9 @@ describe("CDP", function() {
       );
       const stats = await EWE.testing._buildCdpStatsPayload();
       expect(stats).toEqual("{\"ds\":[" +
-        `{"i":"${SITE_ID2}","s":3,"p":1,"b":0},` +
-        `{"i":"${SITE_ID3}","s":2,"p":5,"b":2},` +
-        `{"i":"${SITE_ID1}","s":1,"p":2,"b":0}` +
+        `{"i":"${SITE_ID2}","s":3,"p":1,"b":0,"w":0},` +
+        `{"i":"${SITE_ID3}","s":2,"p":5,"b":2,"w":0},` +
+        `{"i":"${SITE_ID1}","s":1,"p":2,"b":0,"w":0}` +
         "],\"es\":[]}");
     });
   });
@@ -372,6 +402,54 @@ describe("CDP", function() {
                          1);
     });
 
+    it("tracks 'wall_detection' events per domain", async function() {
+      await EWE.testing._countWallDetectionEvent("example.com");
+      await EWE.debugging.ensureEverythingHasSaved();
+      await assertEvents("example.com", EVENT_WALL_DETECTION, 1);
+    });
+
+    it("increments 'wall_detection' count for repeated events on same domain", async function() {
+      await EWE.testing._countWallDetectionEvent("example.com");
+      await EWE.testing._countWallDetectionEvent("example.com");
+      await EWE.testing._countWallDetectionEvent("example.com");
+      await EWE.debugging.ensureEverythingHasSaved();
+      await assertEvents("example.com", EVENT_WALL_DETECTION, 3);
+    });
+
+    it("tracks 'wall_detection' events independently per domain", async function() {
+      await EWE.testing._countWallDetectionEvent("example.com");
+      await EWE.testing._countWallDetectionEvent("example.com");
+      await EWE.testing._countWallDetectionEvent("other.com");
+      await EWE.debugging.ensureEverythingHasSaved();
+      await assertEvents("example.com", EVENT_WALL_DETECTION, 2);
+      await assertEvents("other.com", EVENT_WALL_DETECTION, 1);
+    });
+
+    it("does not track 'wall_detection' if opted out", async function() {
+      await EWE.cdp.setOptOut(true);
+      await EWE.testing._countWallDetectionEvent("example.com");
+      await EWE.debugging.ensureEverythingHasSaved();
+      await assertEvents("example.com", EVENT_WALL_DETECTION, 0);
+    });
+
+    it("does not track 'wall_detection' for empty domain", async function() {
+      await EWE.testing._countWallDetectionEvent("");
+      await EWE.debugging.ensureEverythingHasSaved();
+      await assertEvents("", EVENT_WALL_DETECTION, 0);
+    });
+
+    it("does not track 'wall_detection' for null domain", async function() {
+      await EWE.testing._countWallDetectionEvent(null);
+      await EWE.debugging.ensureEverythingHasSaved();
+      await assertEvents(null, EVENT_WALL_DETECTION, 0);
+    });
+
+    it("does not track 'wall_detection' for undefined domain", async function() {
+      await EWE.testing._countWallDetectionEvent(void 0);
+      await EWE.debugging.ensureEverythingHasSaved();
+      await assertEvents(void 0, EVENT_WALL_DETECTION, 0);
+    });
+
     it("supports History API", async function() {
       await addFilter(`image.png$domain=${TEST_PAGES_DOMAIN}`);
 
@@ -494,6 +572,31 @@ describe("CDP", function() {
         await assertEvents(
           TEST_PAGES_DOMAIN, EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW, 2
         );
+      }
+      finally {
+        await EWE.testing.setCdpLoadDelay(0);
+      }
+    });
+
+    it("defers and processes wall detection events when the data is loaded", async function() {
+      const loadDelay = 1000;
+
+      await EWE.testing._countWallDetectionEvent("example.com");
+      await EWE.debugging.ensureEverythingHasSaved();
+      await assertEvents("example.com", EVENT_WALL_DETECTION, 1);
+
+      await EWE.testing.stopCdp();
+      try {
+        await EWE.testing.setCdpLoadDelay(loadDelay);
+        await EWE.testing.startCdp();
+
+        // Event fired while state not loaded should be deferred
+        await EWE.testing._countWallDetectionEvent("example.com");
+
+        // the deferred events are processed now
+        await new Promise(r => setTimeout(r, loadDelay));
+
+        await assertEvents("example.com", EVENT_WALL_DETECTION, 2);
       }
       finally {
         await EWE.testing.setCdpLoadDelay(0);
@@ -1471,7 +1574,8 @@ describe("CDP", function() {
           i: CROSS_DOMAIN,
           s: 1,
           p: 1,
-          b: 0
+          b: 0,
+          w: 0
         }]);
 
         // configure backend to return ok
@@ -1513,7 +1617,8 @@ describe("CDP", function() {
           i: TEST_PAGES_DOMAIN,
           s: 1,
           p: 1,
-          b: 0
+          b: 0,
+          w: 0
         }]);
       }
       finally {
@@ -1634,23 +1739,82 @@ describe("CDP", function() {
           i: CROSS_DOMAIN,
           s: 1,
           p: 1,
-          b: 0
+          b: 0,
+          w: 0
         }, {
           i: TEST_PAGES_DOMAIN,
           s: 1,
           p: 3,
-          b: 1
+          b: 1,
+          w: 0
         }, {
           i: "adblockplus.org",
           s: 1,
           p: expect.any(Number),
-          b: 0
+          b: 0,
+          w: 0
         }]));
 
         expect(stats.es).toEqual([{
           e: "test_ewe_background:test_event_no_data",
           c: 1
         }]);
+      });
+
+      it("decrypted payload includes wall detection events from snippet pipeline", async function() {
+        setMinTimeout(this, 20 * 1000);
+
+        await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+
+        await startMetricsUploaderWithTestArgs();
+
+        let payload;
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1);
+          payload = requestLogs[0].body.payload;
+        }, LOGS_WAIT_INTERVAL_MS);
+        expect(payload).not.toHaveProperty("encrypted_data");
+
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+        await new Page(`${TEST_PAGES_URL}/image-from-custom-filter.html`).loaded;
+
+        // log-if-* snippets live in abp-snippets, not in @eyeo/snippets, so
+        // they don't run in the SDK functional test environment. Simulate the
+        // background message-handler path directly: increments both the CDP
+        // wall-detection counter (ds "w") and the behaviour-log (es path).
+        await EWE.testing._simulateSnippetDetectionEvent(
+          "test-ad-wall", TEST_PAGES_DOMAIN
+        );
+        await EWE.testing._simulateSnippetDetectionEvent(
+          "test-ad-wall", TEST_PAGES_DOMAIN
+        );
+
+        await EWE.debugging.ensureEverythingHasSaved();
+        await EWE.testing._uploadCdp();
+
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(2);
+          payload = requestLogs[1].body.payload;
+        }, LOGS_WAIT_INTERVAL_MS);
+
+        expect(payload).toHaveProperty("encrypted_data");
+        expect(payload).toHaveProperty("public_key_id");
+
+        const stats = await decryptStats(payload);
+        expect(stats.ds).toEqual(expect.arrayContaining([{
+          i: TEST_PAGES_DOMAIN,
+          s: 1,
+          p: 2,
+          b: 0,
+          w: 2
+        }]));
+
+        expect(stats.es).toEqual(expect.arrayContaining([{
+          e: "detection_snippets:snippet_detection_event:test-ad-wall:localhost",
+          c: 2
+        }]));
       });
 
       it("stops retry sending after reaching the limit - event stats", async function() {
@@ -1720,7 +1884,8 @@ describe("CDP", function() {
           i: TEST_PAGES_DOMAIN,
           s: 1,
           p: 1,
-          b: 0
+          b: 0,
+          w: 0
         }]);
         expect(successfulStats.es).toEqual([
           {

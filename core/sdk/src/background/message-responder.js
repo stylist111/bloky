@@ -22,12 +22,14 @@ import {default as initializer} from "./initializer.js";
 import {applyContentFilters, injectCSS} from "./content-filter.js";
 import {createStyleSheet} from "#adblockpluscore/lib/elemHide.js";
 import {contentTypes} from "#adblockpluscore/lib/contentTypes.js";
+import {getBaseDomain} from "#adblockpluscore/lib/url.js";
 import {subscribeLinkClicked} from "./subscribe-links.js";
 import {logHiddenElements, logItem} from "./diagnostics.js";
 import {allowlistPage} from "./allowlisting.js";
 import {debugOptions, trace} from "./debugging.js";
 import {onContentHelloReceived} from "./content-message-deferrer.js";
-import {markActive, countBTAADetectionEvent} from "./cdp/index.js";
+import {markActive, countBTAADetectionEvent, countWallDetectionEvent}
+  from "./cdp/index.js";
 import {default as sentry} from "./sentry.js";
 import {serverLogValidatedEvent} from "./telemetry/server-logger.js";
 import {handleMessageAPICall} from "./message-invoked-api.js";
@@ -36,6 +38,9 @@ import {filterEngine} from "./core.js";
 import {getFrameInfo, TOP_LEVEL_FRAME_ID} from "./frame-state.js";
 import {default as experiments} from "./experiments.js";
 import {default as account} from "./account/index.js";
+
+// Detection types with this prefix count in CDP domain stats (ds path).
+const WALL_TYPE_PREFIX = "wall-";
 
 async function handleMessage(message, sender) {
   trace({
@@ -85,15 +90,26 @@ async function handleMessage(message, sender) {
       const error = fromSerializableError(message.error);
       sentry.reportError(error);
       break;
-    case "ewe:telemetry-log":
+    case "ewe:telemetry-log": {
+      let keySuffix;
+      if (message.event === "snippet_detection_event" && message.data) {
+        const domain = getBaseDomain(message.data.domain)
+          || message.data.domain;
+        keySuffix = `${message.data.type}:${domain}`;
+        if (message.data.type.startsWith(WALL_TYPE_PREFIX)) {
+          countWallDetectionEvent(domain);
+        }
+      }
       serverLogValidatedEvent(
         message.logTime,
         message.module,
         message.level,
         message.event,
-        message.data
+        message.data,
+        keySuffix
       );
       break;
+    }
     case "ewe:api-call":
       const {apiName, methodName, params} = message;
       return await handleMessageAPICall(apiName, methodName, params);

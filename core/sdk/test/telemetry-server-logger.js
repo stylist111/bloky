@@ -250,8 +250,8 @@ describe("Telemetry - Server Logging", function() {
 
       await expectConsoleLogs({
         expected: [
-          [module1, "behavior", "test_event_no_data", "ipmId: 5"],
-          [module1, "behavior", "test_event", "yoooooo", "ipmId: 5"]
+          [module1, "behavior", "test_event_no_data", "keySuffix: 5"],
+          [module1, "behavior", "test_event", "yoooooo", "keySuffix: 5"]
         ]
       });
     });
