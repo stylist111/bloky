@@ -24,6 +24,7 @@
 */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import rulesIndex from "@eyeo/rules-utils/adblock/index/adblock.json";
 import { toPlainFilterError } from "../../adblockplusui/adblockpluschrome/lib/messaging/types";
 import { getDebugInfo } from "../debug/background/index";
 import { adblockIsPaused } from "../../src/pause/background";
@@ -46,6 +47,19 @@ import { getInfoCommand } from "../../src/info-injector/shared";
 import { getInjectionInfo } from "../../src/info-injector/background";
 import { getUserId } from "~/id/background/index";
 import { allowlistTab, removeAllAllowlistRulesForTab } from "../../src/pause/background/index";
+
+let ruleInfoByUrl;
+function getRuleInfoByUrl() {
+  if (!ruleInfoByUrl) {
+    ruleInfoByUrl = new Map(
+      rulesIndex.map((entry) => [
+        entry.url,
+        { ruleCount: entry.rule_count != null ? entry.rule_count : 0, rulesetId: entry.id },
+      ]),
+    );
+  }
+  return ruleInfoByUrl;
+}
 
 export const processMessageResponse = (sendResponse, responseData) => {
   return Promise.resolve(responseData);
@@ -213,6 +227,42 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return removeAllAllowlistRulesForTab(message.tabId).then((results) => results);
     case "getDebugInfo":
       return getDebugInfo();
+    case "getAdFilteringState":
+      return (async () => {
+        const manifestVersion = browser.runtime.getManifest().manifest_version;
+        const isMV3 = manifestVersion === 3;
+        const [allSubscriptions, userFilters, dynamicRules] = await Promise.all([
+          ewe.subscriptions.getSubscriptions(),
+          ewe.filters.getUserFilters(),
+          isMV3 ? browser.declarativeNetRequest.getDynamicRules() : [],
+        ]);
+        const subscriptions = allSubscriptions.filter((sub) => sub.enabled);
+        const filterCounts = await Promise.all(
+          subscriptions.map((sub) =>
+            ewe.subscriptions.getFilters(sub.url).then((filters) => filters.length),
+          ),
+        );
+        return {
+          manifestVersion,
+          subscriptions: subscriptions.map((sub, index) => {
+            const ruleInfo = getRuleInfoByUrl().get(sub.url);
+            return {
+              title: sub.title || sub.url,
+              version: sub.version,
+              filterCount: filterCounts[index],
+              ...(isMV3 && ruleInfo ? ruleInfo : {}),
+            };
+          }),
+          userFiltersCount: userFilters.length,
+          dnrDynamicRulesCount: dynamicRules.length,
+          maxEnabledRulesets: isMV3
+            ? browser.declarativeNetRequest.MAX_NUMBER_OF_ENABLED_STATIC_RULESETS
+            : 0,
+          maxDynamicRules: isMV3
+            ? browser.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES
+            : 0,
+        };
+      })();
     case "resetBadgeText":
       sendResponse({});
       resetBadgeText();

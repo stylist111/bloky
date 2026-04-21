@@ -75,6 +75,149 @@ $(async () => {
     downloadDebugData(debugData);
   });
 
+  // Populate extension state debug section
+  const extensionStateContainer = document.getElementById("extension-state");
+
+  const loadExtensionState = async () => {
+    try {
+      const state = await send("getAdFilteringState");
+      if (!state) {
+        extensionStateContainer.textContent = "Failed to load extension state.";
+        return;
+      }
+
+      const subscriptions = state.subscriptions || [];
+      const isMV3 = state.manifestVersion === 3;
+      const totalFilters = subscriptions.reduce((sum, sub) => sum + (sub.filterCount ?? 0), 0);
+
+      const makeDefinitionList = (entries) => {
+        const list = document.createElement("dl");
+        for (const [label, value] of entries) {
+          const term = document.createElement("dt");
+          term.textContent = label;
+          const definition = document.createElement("dd");
+          definition.textContent = value;
+          list.append(term, definition);
+        }
+        return list;
+      };
+
+      const makeTable = (rows) => {
+        const table = document.createElement("table");
+        const thead = table.createTHead();
+        const headerRow = thead.insertRow();
+        const columns = [
+          ["Filter List", ""],
+          ["Version", ""],
+          ["Filters", "num"],
+        ];
+        if (isMV3) {
+          columns.push(["Rules", "num"]);
+        }
+        for (const [text, className] of columns) {
+          const header = document.createElement("th");
+          header.textContent = text;
+          if (className) {
+            header.className = className;
+          }
+          headerRow.appendChild(header);
+        }
+        const tbody = table.createTBody();
+        for (const sub of rows) {
+          const row = tbody.insertRow();
+
+          const nameCell = row.insertCell();
+          nameCell.textContent = sub.title;
+          if (isMV3 && sub.rulesetId) {
+            const rulesetLabel = document.createElement("small");
+            rulesetLabel.textContent = sub.rulesetId;
+            nameCell.appendChild(rulesetLabel);
+          }
+
+          row.insertCell().textContent = sub.version || "";
+
+          const filtersCell = row.insertCell();
+          filtersCell.textContent = (sub.filterCount ?? 0).toLocaleString();
+          filtersCell.className = "num";
+
+          if (isMV3) {
+            const rulesCell = row.insertCell();
+            rulesCell.textContent = (sub.ruleCount ?? 0).toLocaleString();
+            rulesCell.className = "num";
+          }
+        }
+        return table;
+      };
+
+      const totals = [
+        ["Filters", totalFilters.toLocaleString()],
+        ["User Filters", state.userFiltersCount.toLocaleString()],
+      ];
+      if (isMV3) {
+        const totalRules = subscriptions.reduce((sum, sub) => sum + (sub.ruleCount ?? 0), 0);
+        const enabledRulesets = subscriptions.filter((sub) => sub.rulesetId).length;
+        totals.push(
+          ["Static Rules", totalRules.toLocaleString()],
+          [
+            "Static Rulesets",
+            `${enabledRulesets.toLocaleString()} of ${state.maxEnabledRulesets.toLocaleString()}`,
+          ],
+          [
+            "Dynamic Rules",
+            `${state.dnrDynamicRulesCount.toLocaleString()} of ${state.maxDynamicRules.toLocaleString()}`,
+          ],
+        );
+      }
+
+      const copyButton = document.createElement("button");
+      copyButton.type = "button";
+      copyButton.className = "feedback-button btn";
+      copyButton.textContent = "Copy";
+      copyButton.addEventListener("click", async () => {
+        const lines = [...totals.map(([key, value]) => `${key}\t${value}`), ""];
+        const headers = ["Filter List", "Version", "Filters"];
+        if (isMV3) {
+          headers.push("Rules");
+        }
+        lines.push(headers.join("\t"));
+        for (const sub of subscriptions) {
+          const values = [sub.title, sub.version || "", sub.filterCount ?? 0];
+          if (isMV3) {
+            values.push(sub.ruleCount ?? 0);
+          }
+          lines.push(values.join("\t"));
+        }
+        const originalText = copyButton.textContent;
+        try {
+          await navigator.clipboard.writeText(lines.join("\n"));
+          copyButton.textContent = "Copied!";
+        } catch (err) {
+          copyButton.textContent = "Failed to copy";
+          modulesAsGlobal.ewe.sentry.reportError(err);
+        }
+        setTimeout(() => {
+          copyButton.textContent = originalText;
+        }, 1500);
+      });
+
+      extensionStateContainer.replaceChildren(
+        makeDefinitionList(totals),
+        makeTable(subscriptions),
+        copyButton,
+      );
+    } catch (error) {
+      extensionStateContainer.textContent = "Failed to load extension state.";
+      modulesAsGlobal.ewe.sentry.reportError(error);
+    }
+  };
+
+  loadExtensionState();
+  document.addEventListener("tabActivated", (e) => {
+    if (e.detail.tabId === "support") {
+      loadExtensionState();
+    }
+  });
+
   selected("#whatsnew_link", () => {
     fetch(browser.runtime.getURL("RELEASE_NOTES.md"))
       .then((response) => response.text())

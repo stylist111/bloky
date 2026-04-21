@@ -121,6 +121,9 @@ function displayActiveTab($activeTab) {
   if (document.readyState === "complete") {
     setLangAndDirAttributes();
   }
+  document.dispatchEvent(
+    new CustomEvent("tabActivated", { detail: { tabId: $activeTabPanel.attr("id") } }),
+  );
 }
 
 function activateTab(tabHref) {

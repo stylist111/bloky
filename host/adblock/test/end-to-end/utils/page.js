@@ -100,6 +100,11 @@ export async function initOptionsCustomizeTab(optionsHandle) {
   await loadOptionsTab(optionsHandle, "customize");
 }
 
+export async function initOptionsSupportTab(optionsHandle) {
+  await loadOptionsTab(optionsHandle, "support");
+  await getDisplayedElement("#extension-state", { timeout: 5000 });
+}
+
 export async function initOptionsGeneralTab(optionsHandle) {
   await loadOptionsTab(optionsHandle, "general");
   await waitForNotNullProperty("#acceptable_ads", "checked", { timeout: 2000 });
