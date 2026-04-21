@@ -45,6 +45,7 @@ async function handleGetInjectionInfo(): Promise<InjectionInfo> {
   const version = info.addonVersion;
   const premiumId = Prefs.get("premium_user_id");
   const blockCount = Prefs.get("blocked_total");
+  const installDate = Prefs.get("installDate");
 
   return {
     isPremium,
@@ -53,6 +54,7 @@ async function handleGetInjectionInfo(): Promise<InjectionInfo> {
     id,
     premiumId,
     blockCount,
+    installDate,
     experimentFlags,
     er,
     ev,

@@ -3,6 +3,7 @@
 - Fixed: Extension failed to initialize if too many filter lists were enabled.
 - Added extension state to the Support tab, showing active filter lists, filter
   and rule counts, and DNR dynamic rule usage.
+- Added the extension install date to the data injected on product websites.
 
 # 6.39.1 - 2026-04-14
 

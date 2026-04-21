@@ -44,6 +44,11 @@ export interface InjectionInfo {
    */
   blockCount: number;
   /**
+   * The timestamp (milliseconds since epoch) when the extension was installed,
+   * or `0` when unset (e.g. profile predates install-date tracking).
+   */
+  installDate: number;
+  /**
    * All feature flags for the user, including overridden flags and their values
    */
   experimentFlags: Record<string, unknown>;

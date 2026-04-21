@@ -1,6 +1,7 @@
 # Unreleased
 
 - Fixed: Extension failed to initialize if too many filter lists were enabled.
+- Added the extension install date to the data injected on product websites.
 
 # 4.37.0 - 2026-04-14
 

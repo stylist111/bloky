@@ -252,6 +252,7 @@ export async function verifyInjectedExtensionData(testUrl, dataAttribute, getAct
     "isTrial",
     "version",
     "blockCount",
+    "installDate",
     "experimentFlags",
     "er",
     "ev",

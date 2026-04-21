@@ -42,6 +42,7 @@ export async function getInjectionInfo(): Promise<InjectionInfo> {
 
   const version = info.addonVersion;
   const blockCount = Prefs.get("blocked_total");
+  const installDate = Prefs.get("installDate");
 
-  return { isPremium, isTrial, version, id, blockCount, experimentFlags, er, ev, ca };
+  return { isPremium, isTrial, version, id, blockCount, installDate, experimentFlags, er, ev, ca };
 }
