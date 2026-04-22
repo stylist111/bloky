@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.37.1 - 2026-04-22
+
+This release contains bugfixes and under-the-hood changes.
+
 - Fixed: Extension failed to initialize if too many filter lists were enabled.
 - Added the extension install date to the data injected on product websites.
 
