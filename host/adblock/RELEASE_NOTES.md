@@ -4,7 +4,7 @@
 
 This release contains bugfixes and under-the-hood changes
 and adds extension state to the Support tab,
-showing active filter lists, filter and rule counts, 
+showing active filter lists, filter and rule counts,
 and DNR dynamic rule usage.
 
 - Fixed: Extension failed to initialize if too many filter lists were enabled.
