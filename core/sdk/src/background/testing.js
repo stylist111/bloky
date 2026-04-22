@@ -47,6 +47,8 @@ import * as activePing from "./telemetry/active-ping.js";
 import * as serverLogUploader from "./telemetry/server-log-uploader.js";
 import * as serverLogConfig from "./telemetry/server-log-config.js";
 import * as serverLogger from "./telemetry/server-logger.js";
+import {clearDedupState, setDedupWindowForTesting, restoreDedupWindow}
+  from "./telemetry/snippet-event-dedup.js";
 import * as cdpUploader from "./cdp/uploader.js";
 import * as filters from "./filters.js";
 
@@ -362,6 +364,9 @@ export default {
       keySuffix
     );
   },
+  _clearSnippetEventDedupState: clearDedupState,
+  _setDedupWindowForTesting: setDedupWindowForTesting,
+  _restoreDedupWindow: restoreDedupWindow,
   _clearCdpActivity: cdp.clearActivity,
   _buildCdpStatsPayload: cdpUploader.buildStatsPayload,
   _isCdpOptedOut: cdp.isOptedOut,

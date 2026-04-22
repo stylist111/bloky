@@ -32,6 +32,7 @@ import {markActive, countBTAADetectionEvent, countWallDetectionEvent}
   from "./cdp/index.js";
 import {default as sentry} from "./sentry.js";
 import {serverLogValidatedEvent} from "./telemetry/server-logger.js";
+import {isSnippetEventDuplicate} from "./telemetry/snippet-event-dedup.js";
 import {handleMessageAPICall} from "./message-invoked-api.js";
 import {onHistoryStateUpdatedSafari} from "./safari-polyfill.js";
 import {filterEngine} from "./core.js";
@@ -95,6 +96,9 @@ async function handleMessage(message, sender) {
       if (message.event === "snippet_detection_event" && message.data) {
         const domain = getBaseDomain(message.data.domain)
           || message.data.domain;
+        if (isSnippetEventDuplicate(message.data.type, domain)) {
+          break;
+        }
         keySuffix = `${message.data.type}:${domain}`;
         if (message.data.type.startsWith(WALL_TYPE_PREFIX)) {
           countWallDetectionEvent(domain);

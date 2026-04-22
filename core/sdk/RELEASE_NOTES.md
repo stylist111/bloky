@@ -20,6 +20,9 @@
 - Detection events now count per-domain wall detections in CDP domain
   stats (`ds` path, `"w"` metric). Enables "which domains have walls"
   queries in BigQuery.
+- Cross-frame de-duplication for detection events: same (type, domain)
+  within 5 minutes produces one event regardless of how many frames
+  fired it. Prevents duplicate counting from multi-frame pages.
 
 ## General
 

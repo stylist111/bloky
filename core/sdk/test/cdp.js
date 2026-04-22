@@ -450,6 +450,81 @@ describe("CDP", function() {
       await assertEvents(void 0, EVENT_WALL_DETECTION, 0);
     });
 
+    describe("snippet detection event de-duplication", function() {
+      const ES_KEY = "detection_snippets:snippet_detection_event:wall-test-dedup:example.com";
+
+      function sendDetectionEvent(type, domain) {
+        return browser.runtime.sendMessage({
+          type: "ewe:telemetry-log",
+          logTime: new Date().toISOString(),
+          module: "detection_snippets",
+          level: 3,
+          event: "snippet_detection_event",
+          data: {type, domain, specifier: null}
+        });
+      }
+
+      async function assertEsCount(key, expectedCount) {
+        await EWE.debugging.ensureEverythingHasSaved();
+        await waitForAssertion(async() => {
+          const state = await EWE.testing.getBehaviourLoggingState();
+          expect(state[key] || 0).toEqual(expectedCount);
+        }, 2000);
+      }
+
+      beforeEach(async function() {
+        await EWE.testing._clearSnippetEventDedupState();
+        await EWE.testing._clearCdpData();
+        await EWE.testing.clearBehaviourLoggingState();
+      });
+
+      it("counts first detection event in both ds and es", async function() {
+        await sendDetectionEvent("wall-test-dedup", "example.com");
+        await assertEvents("example.com", EVENT_WALL_DETECTION, 1);
+        await assertEsCount(ES_KEY, 1);
+      });
+
+      it("de-duplicates same (type, domain) in both ds and es", async function() {
+        await sendDetectionEvent("wall-test-dedup", "example.com");
+        await sendDetectionEvent("wall-test-dedup", "example.com");
+        await sendDetectionEvent("wall-test-dedup", "example.com");
+        await assertEvents("example.com", EVENT_WALL_DETECTION, 1);
+        await assertEsCount(ES_KEY, 1);
+      });
+
+      it("counts different types independently in both ds and es", async function() {
+        const keyA = "detection_snippets:snippet_detection_event:wall-type-a:example.com";
+        const keyB = "detection_snippets:snippet_detection_event:wall-type-b:example.com";
+        await sendDetectionEvent("wall-type-a", "example.com");
+        await sendDetectionEvent("wall-type-b", "example.com");
+        await assertEvents("example.com", EVENT_WALL_DETECTION, 2);
+        await assertEsCount(keyA, 1);
+        await assertEsCount(keyB, 1);
+      });
+
+      it("counts again after clearing de-duplication state", async function() {
+        await sendDetectionEvent("wall-test-dedup", "example.com");
+        await EWE.testing._clearSnippetEventDedupState();
+        await sendDetectionEvent("wall-test-dedup", "example.com");
+        await assertEvents("example.com", EVENT_WALL_DETECTION, 2);
+        await assertEsCount(ES_KEY, 2);
+      });
+
+      it("allows event through after de-duplication window expires", async function() {
+        await EWE.testing._setDedupWindowForTesting(100);
+        try {
+          await sendDetectionEvent("wall-test-dedup", "example.com");
+          await new Promise(r => setTimeout(r, 150));
+          await sendDetectionEvent("wall-test-dedup", "example.com");
+          await assertEvents("example.com", EVENT_WALL_DETECTION, 2);
+          await assertEsCount(ES_KEY, 2);
+        }
+        finally {
+          await EWE.testing._restoreDedupWindow();
+        }
+      });
+    });
+
     it("supports History API", async function() {
       await addFilter(`image.png$domain=${TEST_PAGES_DOMAIN}`);
 

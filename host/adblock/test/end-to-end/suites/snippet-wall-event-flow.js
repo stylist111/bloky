@@ -41,15 +41,17 @@ import {
 import { adWallTestPageUrl } from "@eyeo/test-utils/host-urls";
 import { initOptionsGeneralTab } from "../utils/page.js";
 
-const SNIPPET_EVENT_COUNT_KEY = "detection_snippets:snippet_detection_event:wall-test:localhost";
-const CSS_WALL_FILTER = "localhost#$#log-if-selector-exists #ad-wall wall-test test-specifier";
-const CSS_STYLE_WALL_FILTER =
-  "localhost#$#log-if-computed-style-matches wall-test test-specifier position fixed z-index 999999";
-const SCRIPT_WALL_FILTER =
-  "localhost#$#log-if-script-loads ad-wall-loader.js wall-test test-specifier";
-const IFRAME_WALL_FILTER = "localhost#$#log-if-iframe-loads localhost wall-test test-specifier";
-const RACE_WALL_FILTER =
-  "localhost#$#race start; log-if-selector-exists #ad-wall wall-test test-selector; log-if-computed-style-matches wall-test test-css position fixed z-index 999999; log-if-script-loads ad-wall-loader.js wall-test test-script; log-if-iframe-loads localhost wall-test test-iframe; race end";
+const CSS_WALL_TYPE = "wall-test-css";
+const CSS_STYLE_WALL_TYPE = "wall-test-style";
+const SCRIPT_WALL_TYPE = "wall-test-script";
+const IFRAME_WALL_TYPE = "wall-test-iframe";
+const RACE_WALL_TYPE = "wall-test-race";
+const DEDUP_WALL_TYPE = "wall-test-dedup";
+const CSS_WALL_FILTER = `localhost#$#log-if-selector-exists #ad-wall ${CSS_WALL_TYPE} test-specifier`;
+const CSS_STYLE_WALL_FILTER = `localhost#$#log-if-computed-style-matches ${CSS_STYLE_WALL_TYPE} test-specifier position fixed z-index 999999`;
+const SCRIPT_WALL_FILTER = `localhost#$#log-if-script-loads ad-wall-loader.js ${SCRIPT_WALL_TYPE} test-specifier`;
+const IFRAME_WALL_FILTER = `localhost#$#log-if-iframe-loads localhost ${IFRAME_WALL_TYPE} test-specifier`;
+const RACE_WALL_FILTER = `localhost#$#race start; log-if-selector-exists #ad-wall ${RACE_WALL_TYPE} test-selector; log-if-computed-style-matches ${RACE_WALL_TYPE} test-css position fixed z-index 999999; log-if-script-loads ad-wall-loader.js ${RACE_WALL_TYPE} test-script; log-if-iframe-loads localhost ${RACE_WALL_TYPE} test-iframe; race end`;
 
 export default () => {
   before(async function () {
@@ -76,7 +78,13 @@ export default () => {
     await syncRemoteConfig(initOptionsGeneralTab);
   });
 
-  async function assertSnippetDetectionEvent(pageUrl) {
+  function countKeyForType(type) {
+    return `detection_snippets:snippet_detection_event:${type}:localhost`;
+  }
+
+  async function assertSnippetDetectionEvent(pageUrl, wallType) {
+    const countKey = countKeyForType(wallType);
+
     // Snapshot before opening the page — the snippet fires on page load so
     // the baseline must be captured first.
     // We cannot simply reset counts between tests because PersistentState
@@ -86,7 +94,7 @@ export default () => {
     // test assert a delta of +1 regardless of what prior tests accumulated.
     await driver.switchTo().window(getOptionsHandle());
     const before = await getPendingLoggerCdpEventStats();
-    const baselineCount = before?.counts?.[SNIPPET_EVENT_COUNT_KEY] ?? 0;
+    const baselineCount = before?.counts?.[countKey] ?? 0;
 
     await openNewTab(pageUrl);
 
@@ -96,9 +104,9 @@ export default () => {
     await driver.switchTo().window(getOptionsHandle());
     const { counts } = await driver.wait(async () => {
       const result = await getPendingLoggerCdpEventStats();
-      return result?.counts?.[SNIPPET_EVENT_COUNT_KEY] > baselineCount ? result : null;
+      return result?.counts?.[countKey] > baselineCount ? result : null;
     }, 5000);
-    expect(counts[SNIPPET_EVENT_COUNT_KEY]).toBe(baselineCount + 1);
+    expect(counts[countKey]).toBe(baselineCount + 1);
     // ds path (wall detection per-domain counts) is verified by
     // integration tests in core/sdk/test/cdp.js which have direct
     // access to EWE.testing and can call setOptOut properly.
@@ -107,7 +115,7 @@ export default () => {
   it("snippet fires snippet_detection_event when CSS is detected", async function () {
     await addFiltersProgrammatically(getOptionsHandle, CSS_WALL_FILTER);
     try {
-      await assertSnippetDetectionEvent(adWallTestPageUrl);
+      await assertSnippetDetectionEvent(adWallTestPageUrl, CSS_WALL_TYPE);
     } finally {
       await removeFilterProgrammatically(getOptionsHandle, CSS_WALL_FILTER);
     }
@@ -116,7 +124,7 @@ export default () => {
   it("snippet fires snippet_detection_event when CSS style is detected", async function () {
     await addFiltersProgrammatically(getOptionsHandle, CSS_STYLE_WALL_FILTER);
     try {
-      await assertSnippetDetectionEvent(adWallTestPageUrl);
+      await assertSnippetDetectionEvent(adWallTestPageUrl, CSS_STYLE_WALL_TYPE);
     } finally {
       await removeFilterProgrammatically(getOptionsHandle, CSS_STYLE_WALL_FILTER);
     }
@@ -125,7 +133,7 @@ export default () => {
   it("snippet fires snippet_detection_event when script is detected", async function () {
     await addFiltersProgrammatically(getOptionsHandle, SCRIPT_WALL_FILTER);
     try {
-      await assertSnippetDetectionEvent(adWallTestPageUrl);
+      await assertSnippetDetectionEvent(adWallTestPageUrl, SCRIPT_WALL_TYPE);
     } finally {
       await removeFilterProgrammatically(getOptionsHandle, SCRIPT_WALL_FILTER);
     }
@@ -134,18 +142,53 @@ export default () => {
   it("snippet fires snippet_detection_event when iframe is detected", async function () {
     await addFiltersProgrammatically(getOptionsHandle, IFRAME_WALL_FILTER);
     try {
-      await assertSnippetDetectionEvent(adWallTestPageUrl);
+      await assertSnippetDetectionEvent(adWallTestPageUrl, IFRAME_WALL_TYPE);
     } finally {
       await removeFilterProgrammatically(getOptionsHandle, IFRAME_WALL_FILTER);
     }
   });
 
+  it("de-duplicates same detection type on repeated page loads", async function () {
+    const dedupCountKey = countKeyForType(DEDUP_WALL_TYPE);
+    const dedupFilter = `localhost#$#log-if-selector-exists #ad-wall ${DEDUP_WALL_TYPE} test-specifier`;
+    await addFiltersProgrammatically(getOptionsHandle, dedupFilter);
+    try {
+      // First page load — event should pass through.
+      await driver.switchTo().window(getOptionsHandle());
+      const before = await getPendingLoggerCdpEventStats();
+      const baselineCount = before?.counts?.[dedupCountKey] ?? 0;
+
+      await openNewTab(adWallTestPageUrl);
+
+      await driver.switchTo().window(getOptionsHandle());
+      await driver.wait(async () => {
+        const result = await getPendingLoggerCdpEventStats();
+        return result?.counts?.[dedupCountKey] > baselineCount ? result : null;
+      }, 5000);
+
+      // Second page load — same (type, domain) within 5 minutes, should
+      // be de-duplicated. Counter must NOT increment.
+      await openNewTab(adWallTestPageUrl);
+
+      // Pause to allow the (de-duplicated) event to arrive if it
+      // were going to — matches the race test's negative-assertion pattern.
+      await driver.switchTo().window(getOptionsHandle());
+      await driver.sleep(500);
+
+      const after = await getPendingLoggerCdpEventStats();
+      expect(after?.counts?.[dedupCountKey]).toBe(baselineCount + 1);
+    } finally {
+      await removeFilterProgrammatically(getOptionsHandle, dedupFilter);
+    }
+  });
+
   it("race filter fires snippet_detection_event exactly once when multiple snippets match", async function () {
+    const raceCountKey = countKeyForType(RACE_WALL_TYPE);
     await addFiltersProgrammatically(getOptionsHandle, RACE_WALL_FILTER);
     try {
       await driver.switchTo().window(getOptionsHandle());
       const before = await getPendingLoggerCdpEventStats();
-      const baselineCount = before?.counts?.[SNIPPET_EVENT_COUNT_KEY] ?? 0;
+      const baselineCount = before?.counts?.[raceCountKey] ?? 0;
 
       await openNewTab(adWallTestPageUrl);
 
@@ -153,7 +196,7 @@ export default () => {
       // Wait for the first (and only) detection event from the race winner.
       await driver.wait(async () => {
         const result = await getPendingLoggerCdpEventStats();
-        return result?.counts?.[SNIPPET_EVENT_COUNT_KEY] > baselineCount ? result : null;
+        return result?.counts?.[raceCountKey] > baselineCount ? result : null;
       }, 5000);
 
       // Pause to allow any additional events from losing snippets
@@ -161,7 +204,7 @@ export default () => {
       await driver.sleep(500);
 
       const final = await getPendingLoggerCdpEventStats();
-      expect(final?.counts?.[SNIPPET_EVENT_COUNT_KEY]).toBe(baselineCount + 1);
+      expect(final?.counts?.[raceCountKey]).toBe(baselineCount + 1);
     } finally {
       await removeFilterProgrammatically(getOptionsHandle, RACE_WALL_FILTER);
     }
