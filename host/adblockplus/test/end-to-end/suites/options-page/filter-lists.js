@@ -261,6 +261,19 @@ export default () => {
     expect(await getCustomFilters()).not.toContain(customBlockingFilter);
   });
 
+  it("re-enables Add button after adding a custom filter", async function () {
+    await addCustomFilters([customBlockingFilter]);
+
+    await getDisplayedElement("#custom-filters button[disabled]");
+
+    const input = await getDisplayedElement("#custom-filters input");
+    await input.sendKeys("a");
+    await waitForNotDisplayed("#custom-filters button[disabled]");
+
+    await input.clear();
+    await deleteCustomFilters();
+  });
+
   it("displays an error for disabled filters", async function () {
     const name = "EasyList";
     const errorMsg =

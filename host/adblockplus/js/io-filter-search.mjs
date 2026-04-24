@@ -90,7 +90,6 @@ class IOFilterSearch extends IOElement {
   created() {
     const { i18n } = browser;
     this._placeholder = i18n.getMessage("options_filters_search_or_add");
-    this._addingFilter = false;
     this._timer = 0;
     this.render();
   }
@@ -125,12 +124,6 @@ class IOFilterSearch extends IOElement {
   onkeyup() {
     // clear timeout on any action
     clearTimeout(this._timer);
-
-    // in case it was just added, don't do anything
-    if (this._addingFilter) {
-      this._addingFilter = false;
-      return;
-    }
 
     // debounce the search operations to avoid degrading
     // performance on very long list of filters
@@ -203,7 +196,6 @@ function addFilter(data) {
   } else {
     const result = search.call(this, value);
     if (result.accuracy < 1) {
-      this._addingFilter = true;
       dispatch.call(this, "filter:add", value);
     } else if (result.accuracy && value.length >= MINIMUM_SEARCH_LENGTH)
       dispatch.call(this, "filter:match", result);
