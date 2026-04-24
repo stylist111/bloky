@@ -282,13 +282,13 @@ export function shimStorage(CACHED_FILTERS_CONFIG_KEY) {
   // Handles: {...localStorage}, Object.keys(), Object.values(), for...in, etc.
   const methodProxyCache = new Map();
 
-  function getMethodProxy(storage, method) {
+  function getMethodProxy(method) {
     if (mapHas(methodProxyCache, method)) {
       return mapGet(methodProxyCache, method);
     }
     const methodProxy = new Proxy(method, {
-      apply(fn, _, args) {
-        return $ReflectApply(fn, storage, args);
+      apply(fn, thisArg, args) {
+        return $ReflectApply(fn, thisArg, args);
       }
     });
     mapSet(methodProxyCache, method, methodProxy);
@@ -356,7 +356,7 @@ export function shimStorage(CACHED_FILTERS_CONFIG_KEY) {
       // For methods, wrap in a proxy to bind `this` to original target
       // while preserving toString behavior
       if (typeof value === "function") {
-        return getMethodProxy(target, value);
+        return getMethodProxy(value);
       }
       return value;
     },

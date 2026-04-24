@@ -167,6 +167,12 @@ describe("localStorage shim", function() {
       expect(localStorage.length).toBe(1);
     });
 
+    it("does not contaminate localStorage reads after sessionStorage access", function() {
+      sessionStorage.getItem("session-token");
+      localStorage.setItem("test", "hello");
+      expect(localStorage.getItem("test")).toBe("hello");
+    });
+
     it("excludes config key from Object.keys", function() {
       localStorage.setItem("user-key", "user-value");
       const keys = Object.keys(localStorage);

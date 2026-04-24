@@ -1017,9 +1017,9 @@ describe("Snippets", function() {
 
       const getItemResultSession = await executeScript(tabId, (key, val) => {
         sessionStorage.setItem(key, val);
-        const valueAfterSet = localStorage.getItem(key);
+        const valueAfterSet = sessionStorage.getItem(key);
         sessionStorage.removeItem(key);
-        const valueAfterRemove = localStorage.getItem(key);
+        const valueAfterRemove = sessionStorage.getItem(key);
         return {valueAfterSet, valueAfterRemove};
       }, [CACHED_FILTERS_CONFIG_KEY, value], "MAIN");
 
