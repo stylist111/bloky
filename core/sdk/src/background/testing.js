@@ -364,6 +364,18 @@ export default {
       keySuffix
     );
   },
+  _simulateSnippetHitEvent(filter, domain, topLevelDomain) {
+    const effectiveTopLevel = topLevelDomain || domain;
+    const keySuffix = `${filter}:${domain}:${effectiveTopLevel}`;
+    serverLogger.serverLogValidatedEvent(
+      Date.now(),
+      "hit_snippets",
+      logLevelNamesToNumbers.behavior,
+      "snippet_hit_event",
+      {filter, domain, topLevelDomain: effectiveTopLevel},
+      keySuffix
+    );
+  },
   _clearSnippetEventDedupState: clearDedupState,
   _setDedupWindowForTesting: setDedupWindowForTesting,
   _restoreDedupWindow: restoreDedupWindow,

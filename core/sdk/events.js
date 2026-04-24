@@ -305,6 +305,29 @@ export default {
       }
     }
   },
+  hit_snippets: {
+    snippet_hit_event: {
+      description: "Recorded when a snippet successfully executes on a page.",
+      data: {
+        description: "Metadata about the snippet execution",
+        type: "object",
+        properties: {
+          filter: {
+            description: "Snippet filter body, e.g. 'json-prune ads userId'",
+            type: "string"
+          },
+          domain: {
+            description: "Domain where the snippet fired (document.location.hostname of the frame)",
+            type: "string"
+          },
+          topLevelDomain: {
+            description: "Top-level page domain. Equals domain for main-frame snippets; differs for cross-origin iframe snippets.",
+            type: "string"
+          }
+        }
+      }
+    }
+  },
   snippets: {
     context_tampering: {
       description: "Recorded when the website is trying to disable the snippets"
@@ -330,23 +353,6 @@ export default {
         properties: {
           key: {
             description: "The storage key that was cleaned up",
-            type: "string"
-          }
-        }
-      }
-    },
-    snippet_hit_event: {
-      description: "Recorded when a snippet successfully executes on a page.",
-      data: {
-        description: "Metadata about the snippet execution",
-        type: "object",
-        properties: {
-          filter: {
-            description: "Snippet filter body, e.g. 'json-prune ads userId'",
-            type: "string"
-          },
-          domain: {
-            description: "Domain where the snippet fired, e.g. 'example.com'",
             type: "string"
           }
         }

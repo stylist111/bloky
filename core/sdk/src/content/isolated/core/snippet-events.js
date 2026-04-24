@@ -73,10 +73,12 @@ export function createSnippetDetectionEventSender(
  *
  * @param {Object} snippetLogger - ServerLogger instance
  * @param {Object} sentryReporter - Sentry module with reportError method
+ * @param {?string} topLevelDomain - Top-level page hostname from
+ *   filtersConfig, or null if unavailable
  * @returns {Function} sendSnippetHitEvent(filter, domain)
  */
 export function createSnippetHitEventSender(
-  snippetLogger, sentryReporter
+  snippetLogger, sentryReporter, topLevelDomain
 ) {
   return function sendSnippetHitEvent(filter, domain) {
     if (typeof filter !== "string" || typeof domain !== "string") {
@@ -86,7 +88,11 @@ export function createSnippetHitEventSender(
       return;
     }
 
-    const data = {filter, domain};
+    const data = {
+      filter,
+      domain,
+      topLevelDomain: topLevelDomain || domain
+    };
 
     try {
       snippetLogger.behavior("snippet_hit_event", data);

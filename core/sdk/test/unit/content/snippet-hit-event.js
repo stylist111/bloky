@@ -40,7 +40,7 @@ describe("createSnippetHitEventSender", function() {
       reportError: sinon.stub()
     };
     sendSnippetHitEvent = createSnippetHitEventSender(
-      mockLogger, mockSentry
+      mockLogger, mockSentry, null
     );
   });
 
@@ -54,7 +54,8 @@ describe("createSnippetHitEventSender", function() {
     expect(mockLogger.behavior.calledOnce).toBe(true);
     expect(mockLogger.behavior.calledWith("snippet_hit_event", {
       filter: "json-prune 'ads' 'userId'",
-      domain: "example.com"
+      domain: "example.com",
+      topLevelDomain: "example.com"
     })).toBe(true);
     expect(console.error.called).toBe(false);
   });
@@ -114,7 +115,8 @@ describe("createSnippetHitEventSender", function() {
     expect(mockLogger.behavior.calledOnce).toBe(true);
     expect(mockLogger.behavior.calledWith("snippet_hit_event", {
       filter: "override-property-read 'adConfig'",
-      domain: "example.com"
+      domain: "example.com",
+      topLevelDomain: "example.com"
     })).toBe(true);
     expect(console.error.called).toBe(false);
   });
@@ -134,8 +136,51 @@ describe("createSnippetHitEventSender", function() {
   });
 
   it("returns a function", function() {
-    const sender = createSnippetHitEventSender(mockLogger);
+    const sender = createSnippetHitEventSender(mockLogger, mockSentry, null);
     expect(typeof sender).toBe("function");
+  });
+
+  describe("topLevelDomain enrichment", function() {
+    it("sets topLevelDomain to domain when topLevelDomain is null", function() {
+      const sender = createSnippetHitEventSender(
+        mockLogger, mockSentry, null
+      );
+      sender("json-prune ads", "example.com");
+
+      expect(mockLogger.behavior.firstCall.args[1].topLevelDomain)
+        .toBe("example.com");
+    });
+
+    it("sets topLevelDomain to domain when topLevelDomain is undefined", function() {
+      const sender = createSnippetHitEventSender(
+        mockLogger, mockSentry, void 0
+      );
+      sender("json-prune ads", "example.com");
+
+      expect(mockLogger.behavior.firstCall.args[1].topLevelDomain)
+        .toBe("example.com");
+    });
+
+    it("sets topLevelDomain to domain when they match", function() {
+      const sender = createSnippetHitEventSender(
+        mockLogger, mockSentry, "example.com"
+      );
+      sender("json-prune ads", "example.com");
+
+      expect(mockLogger.behavior.firstCall.args[1].topLevelDomain)
+        .toBe("example.com");
+    });
+
+    it("uses provided topLevelDomain when it differs from domain", function() {
+      const sender = createSnippetHitEventSender(
+        mockLogger, mockSentry, "parent.com"
+      );
+      sender("json-prune ads", "ads.doubleclick.net");
+
+      const data = mockLogger.behavior.firstCall.args[1];
+      expect(data.domain).toBe("ads.doubleclick.net");
+      expect(data.topLevelDomain).toBe("parent.com");
+    });
   });
 });
 
@@ -144,7 +189,7 @@ describe("snippet_hit_event schema validation", function() {
   let spy;
 
   beforeEach(function() {
-    logger = new AbstractLogger("snippets", events);
+    logger = new AbstractLogger("hit_snippets", events);
     spy = sinon.spy(logger, "_validatedLog");
     sinon.stub(console, "error");
   });
@@ -153,10 +198,11 @@ describe("snippet_hit_event schema validation", function() {
     sinon.restore();
   });
 
-  it("passes validation with filter and domain", function() {
+  it("passes validation with filter, domain, and topLevelDomain", function() {
     logger.behavior("snippet_hit_event", {
       filter: "override-property-read 'adConfig' 'undefined'",
-      domain: "example.com"
+      domain: "example.com",
+      topLevelDomain: "example.com"
     });
 
     expect(spy.calledOnce).toBe(true);
@@ -165,7 +211,8 @@ describe("snippet_hit_event schema validation", function() {
 
   it("fails validation without domain property", function() {
     logger.behavior("snippet_hit_event", {
-      filter: "override-property-read 'adConfig'"
+      filter: "override-property-read 'adConfig'",
+      topLevelDomain: "example.com"
     });
 
     expect(spy.called).toBe(false);
@@ -175,6 +222,18 @@ describe("snippet_hit_event schema validation", function() {
 
   it("fails validation without filter property", function() {
     logger.behavior("snippet_hit_event", {
+      domain: "example.com",
+      topLevelDomain: "example.com"
+    });
+
+    expect(spy.called).toBe(false);
+    expect(console.error.calledOnce).toBe(true);
+    expect(console.error.firstCall.args[0]).toMatch(/does not match the schema/);
+  });
+
+  it("fails validation without topLevelDomain property", function() {
+    logger.behavior("snippet_hit_event", {
+      filter: "override-property-read 'adConfig'",
       domain: "example.com"
     });
 
@@ -187,6 +246,7 @@ describe("snippet_hit_event schema validation", function() {
     logger.behavior("snippet_hit_event", {
       filter: "override-property-read 'adConfig'",
       domain: "example.com",
+      topLevelDomain: "example.com",
       extra: "ignored"
     });
 
@@ -197,7 +257,8 @@ describe("snippet_hit_event schema validation", function() {
   it("fails validation with non-string filter", function() {
     logger.behavior("snippet_hit_event", {
       filter: 123,
-      domain: "example.com"
+      domain: "example.com",
+      topLevelDomain: "example.com"
     });
 
     expect(spy.called).toBe(false);
@@ -207,7 +268,19 @@ describe("snippet_hit_event schema validation", function() {
   it("fails validation with non-string domain", function() {
     logger.behavior("snippet_hit_event", {
       filter: "override-property-read 'adConfig'",
-      domain: 123
+      domain: 123,
+      topLevelDomain: "example.com"
+    });
+
+    expect(spy.called).toBe(false);
+    expect(console.error.calledOnce).toBe(true);
+  });
+
+  it("fails validation with non-string topLevelDomain", function() {
+    logger.behavior("snippet_hit_event", {
+      filter: "override-property-read 'adConfig'",
+      domain: "example.com",
+      topLevelDomain: 123
     });
 
     expect(spy.called).toBe(false);

@@ -24,7 +24,8 @@ import {PersistentState} from "../persistence.js";
 import {EventDispatcher} from "../types.js";
 
 const MODULES_REQUIRING_EXPLICIT_LEVEL = new Set([
-  "detection_snippets"
+  "detection_snippets",
+  "hit_snippets"
 ]);
 
 // Console logging is primarily for devs who are currently adding logging to

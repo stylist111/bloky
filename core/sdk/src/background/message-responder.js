@@ -104,6 +104,14 @@ async function handleMessage(message, sender) {
           countWallDetectionEvent(domain);
         }
       }
+      else if (message.event === "snippet_hit_event" && message.data) {
+        const domain = getBaseDomain(message.data.domain)
+          || message.data.domain;
+        const topLevelDomain =
+          getBaseDomain(message.data.topLevelDomain)
+          || message.data.topLevelDomain;
+        keySuffix = `${message.data.filter}:${domain}:${topLevelDomain}`;
+      }
       serverLogValidatedEvent(
         message.logTime,
         message.module,

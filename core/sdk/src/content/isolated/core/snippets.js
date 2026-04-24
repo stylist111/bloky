@@ -50,12 +50,13 @@ let cachedFiltersConfigSerialized = null;
 let storageAvailable = true;
 const logger = new telemetry.ServerLogger("snippets");
 const detectionLogger = new telemetry.ServerLogger("detection_snippets");
+const hitLogger = new telemetry.ServerLogger("hit_snippets");
 const sendDetectionEvent = createSnippetDetectionEventSender(
   detectionLogger, sentry
 );
-const sendSnippetHitEvent = createSnippetHitEventSender(logger, sentry);
 
 let snippetHitEventEnabled = false;
+let currentHitEventSender = () => {};
 
 /**
  * Checks if the current context is a cross-origin iframe
@@ -109,6 +110,14 @@ function executeSnippets(filtersConfig) {
 
   const {debug, detectionEventEnabled} = filtersConfig;
   snippetHitEventEnabled = Boolean(filtersConfig.hitEventEnabled);
+
+  const hitSender = createSnippetHitEventSender(
+    hitLogger, sentry, filtersConfig.topLevelHostname
+  );
+  currentHitEventSender = gateSnippetEvent(
+    snippetHitEventEnabled, hitSender
+  );
+
   const filters = filtersConfig.filters.map(parseScript);
 
   let eventDetails = {
@@ -179,11 +188,7 @@ function executeSnippets(filtersConfig) {
           filtersConfig.topLevelHostname, sendDetectionEvent
         )
       ),
-      // sendSnippetHitEvent is not wrapped with withTopLevelDomain:
-      // hit events get their domain from the filter, not the frame.
-      sendSnippetHitEvent: gateSnippetEvent(
-        snippetHitEventEnabled, sendSnippetHitEvent
-      )
+      sendSnippetHitEvent: currentHitEventSender
     };
     snippetsCallback(env, ...isolatedSnippets);
   }
@@ -289,7 +294,9 @@ function handleMainWorldError(detail) {
 const mainWorldMessageHandlers = {
   "ewe:main-error": handleMainWorldError,
   "ewe:snippet-hit": (detail) =>
-    handleSnippetHitMessage(detail, snippetHitEventEnabled, sendSnippetHitEvent)
+    handleSnippetHitMessage(
+      detail, snippetHitEventEnabled, currentHitEventSender
+    )
 };
 
 /**

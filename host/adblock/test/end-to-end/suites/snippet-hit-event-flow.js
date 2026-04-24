@@ -42,7 +42,8 @@ import {
 import { snippetHitEventTestPageUrl } from "@eyeo/test-utils/host-urls";
 import { initOptionsGeneralTab } from "../utils/page.js";
 
-const SNIPPET_HIT_EVENT_COUNT_KEY = "snippets:snippet_hit_event";
+const SNIPPET_HIT_EVENT_COUNT_KEY =
+  "hit_snippets:snippet_hit_event:json-prune 'snippet-hit-test-property':localhost:localhost";
 const JSON_PRUNE_FILTER = "localhost#$#json-prune snippet-hit-test-property";
 
 export default () => {
