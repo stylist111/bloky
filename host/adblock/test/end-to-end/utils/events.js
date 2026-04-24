@@ -22,7 +22,7 @@ export const tabCreatedEvent = "new_tab:tab_created";
 export const tabLoadedEvent = "new_tab:tab_loaded";
 
 export const opdCommandReadyEvent = "onpage_dialog:command_ready";
-export const opdDialogClickedEvent = "onpage_dialog:dialog_button_clicked";
-export const opdDialogClosedEvent = "onpage_dialog:dialog_closed";
-export const opdDialogIgnoredEvent = "onpage_dialog:dialog_ignored";
-export const opdDialogInjectedEvent = "onpage_dialog:dialog_injected";
+export const opdDialogClickedEvent = "onpage_dialog_ui:dialog_button_clicked";
+export const opdDialogClosedEvent = "onpage_dialog_ui:dialog_closed";
+export const opdDialogIgnoredEvent = "onpage_dialog_ui:dialog_ignored";
+export const opdDialogInjectedEvent = "onpage_dialog_ui:dialog_injected";

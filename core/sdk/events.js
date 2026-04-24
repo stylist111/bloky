@@ -1114,7 +1114,9 @@ export default {
         description: "IPM command ID",
         type: "string"
       }
-    },
+    }
+  },
+  onpage_dialog_ui: {
     dialog_button_clicked: {
       description: "The user clicked on the button presented on the dialog",
       data: {

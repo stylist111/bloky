@@ -90,6 +90,11 @@ export const pagesWithCookieBanner = new Set<number>();
 const serverLogger = new ewe.telemetry.ServerLogger("onpage_dialog");
 
 /**
+ * Server logger instance for events related to the on-page dialog UI
+ */
+const uiServerLogger = new ewe.telemetry.ServerLogger("onpage_dialog_ui");
+
+/**
  * Compares two dialogs to see which has the higher priority.
  *
  * @param dialogA The first dialog
@@ -235,7 +240,7 @@ async function handleCloseMessage(
   }
 
   void removeDialog(sender.tab.id);
-  serverLogger.behavior("dialog_closed", dialog.ipmId ?? "", dialog.ipmId);
+  uiServerLogger.behavior("dialog_closed", dialog.ipmId ?? "", dialog.ipmId);
 }
 
 /**
@@ -265,7 +270,7 @@ async function handleContinueMessage(
   void browser.tabs.create({ url: safeTargetUrl });
 
   void removeDialog(sender.tab.id);
-  serverLogger.behavior(
+  uiServerLogger.behavior(
     "dialog_button_clicked",
     dialog.ipmId ?? "",
     dialog.ipmId
@@ -353,7 +358,7 @@ async function handlePingMessage(
   }
 
   void removeDialog(sender.tab.id);
-  serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
+  uiServerLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
 }
 
 /**
@@ -369,7 +374,7 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
   }
 
   void removeDialog(tabId);
-  serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
+  uiServerLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
 }
 
 /**
@@ -588,7 +593,7 @@ export async function showOnpageDialog(
     return ShowOnpageDialogResult.error;
   }
 
-  serverLogger.behavior("dialog_injected", dialog.ipmId ?? "", dialog.ipmId);
+  uiServerLogger.behavior("dialog_injected", dialog.ipmId ?? "", dialog.ipmId);
   return ShowOnpageDialogResult.shown;
 }
 
