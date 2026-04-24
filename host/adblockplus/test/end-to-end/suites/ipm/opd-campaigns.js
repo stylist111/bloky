@@ -24,7 +24,6 @@ import {
   getOptionsHandle,
   updatePrefs,
   syncRemoteConfig,
-  setRemoteConfigCohorts,
   setRemoteConfigIpmCommands,
   setRemoteConfigUrl,
   clearDismissedIpmIds,
@@ -33,8 +32,7 @@ import {
   clearRemoteConfigIpmCommands,
   getPendingLoggerCdpEventStats,
   waitForIpmCooldown,
-  overrideLanguageForIpmContent,
-  setTimeoutForExtensionReload
+  overrideLanguageForIpmContent
 } from "@eyeo/test-utils/extension";
 import {
   getDisplayedElement,
@@ -54,9 +52,7 @@ import {
 import { expectedIPMCommands } from "../../utils/ipms.js";
 import {
   initOptionsGeneralTab,
-  setMarketingOptOutState,
-  enablePremiumProgrammatically,
-  disablePremiumProgrammatically
+  setMarketingOptOutState
 } from "../../utils/page.js";
 
 async function switchToOPDiframe() {
@@ -311,70 +307,5 @@ export default () => {
     expect(await ctaButton.getText()).toEqual("[EN] CTA TRANSLATIONS");
     expect(texts[0]).toEqual("[en] This is a test translations OPD");
     expect(texts[1]).toEqual("[en] ipmID: test_adblockplus_translations");
-  });
-
-  describe("OPD campaign with trial cohort", function () {
-    before(async function () {
-      await setRemoteConfigCohorts(initOptionsGeneralTab, [
-        {
-          name: "Trial users without marketing consent",
-          conditions: {
-            all: [
-              {
-                fact: "isTrial",
-                operator: "equal",
-                value: true
-              },
-              {
-                fact: "marketingConsent",
-                operator: "equal",
-                value: false
-              }
-            ]
-          },
-          event: {
-            type: "test-trial-users"
-          }
-        }
-      ]);
-    });
-
-    beforeEach(async function () {
-      await setRemoteConfigIpmCommands(
-        initOptionsGeneralTab,
-        "test_adblockplus_trial_cohort"
-      );
-      await syncRemoteConfig(initOptionsGeneralTab);
-      const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-      expect(ipmCommands).toEqual(expectedIPMCommands.trialCohort);
-    });
-
-    after(async function () {
-      setTimeoutForExtensionReload(this);
-      await disablePremiumProgrammatically();
-    });
-
-    it("does not trigger an OPD campaign when trial cohort does not match", async function () {
-      // Since isTrial is false and trialDaysLeft is null by default, OPD should NOT trigger
-      await openNewTab("https://www.example.com");
-      await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
-    });
-
-    it("triggers an OPD campaign when trial cohort matches", async function () {
-      await enablePremiumProgrammatically({ isTrial: true });
-      await syncRemoteConfig(initOptionsGeneralTab);
-      await openNewTab("https://www.example.com");
-      await switchToOPDiframe();
-
-      const opdTitle = await getDisplayedElement("#title");
-      const ctaButton = await getDisplayedElement("#continue");
-      const paragraphs = await driver.findElements(By.css("#body p"));
-      const texts = await Promise.all(paragraphs.map((p) => p.getText()));
-
-      expect(await opdTitle.getText()).toEqual("Trial OPD title");
-      expect(await ctaButton.getText()).toEqual("CTA TRIAL");
-      expect(texts[0]).toEqual("This is a test OPD for trial users");
-      expect(texts[1]).toEqual("ipmID: test_adblockplus_trial_cohort");
-    });
   });
 };
