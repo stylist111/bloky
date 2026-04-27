@@ -1,6 +1,7 @@
 # Unreleased
 
 - Fixed: "Add" button on the custom filters page stayed disabled after adding a filter.
+- Updated snippets to 2.9.0
 
 # 4.37.1 - 2026-04-22
 

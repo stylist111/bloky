@@ -1,6 +1,6 @@
 # Unreleased
 
-- Updated snippets to 2.8.0
+- Updated snippets to 2.9.0
 - Snippets whose names start with `log-if-` are now exempt from the
   domain restriction in `ContentFilter.fromText`, allowing a single
   filter to cover all sites without per-domain duplication.

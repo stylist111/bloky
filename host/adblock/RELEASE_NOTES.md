@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.9.0
+
 # 6.40.0 - 2026-04-22
 
 This release contains bugfixes and under-the-hood changes
