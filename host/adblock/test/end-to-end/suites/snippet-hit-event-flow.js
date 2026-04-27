@@ -51,12 +51,12 @@ export default () => {
     await initOptionsGeneralTab(getOptionsHandle());
     await setRemoteConfigExperiments(getOptionsHandle, [
       {
-        experimentId: "snippet-hit-event",
+        experimentId: "snippet-hit-event-cdp",
         variants: [
           {
             variantId: "enabled",
             mods: [0, 1000],
-            flags: { "snippet-hit-event": true },
+            flags: { "snippet-hit-event-cdp": true },
           },
         ],
       },

@@ -159,7 +159,7 @@ async function handleMessage(message, sender) {
           await experiments.getFlag("snippet-detection-event")
         ),
         hitEventEnabled: Boolean(
-          await experiments.getFlag("snippet-hit-event")
+          await experiments.getFlag("snippet-hit-event-cdp")
         ),
         topLevelHostname: topFrame ? topFrame.hostname : null
       };
