@@ -123,6 +123,17 @@ export async function simulatePremiumActivation(
   // navigate to a webpage where we can trigger the login
   await openNewTab(localTestPageUrl);
 
+  // We need to wait for the test page to be ready before we can reliably
+  // execute scripts in it
+  await driver.wait(
+    async () => {
+      const readyState = await driver.executeScript(() => document.readyState);
+      return readyState === "complete";
+    },
+    5000,
+    "Test page not ready",
+  );
+
   // Simulate the request to login the extension. This will be intercepted
   // by the mock server the response will activate the premium account in
   // the extension
