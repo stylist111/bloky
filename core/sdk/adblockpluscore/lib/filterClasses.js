@@ -1155,10 +1155,6 @@ class ElemHideEmulationFilter extends ElemHideBase {
   get css() {
     return this._css;
   }
-
-  get requiresPrivilegedSubscription() {
-    return this._css;
-  }
 };
 
 let SnippetFilter =

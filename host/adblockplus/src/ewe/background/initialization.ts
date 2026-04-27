@@ -43,9 +43,6 @@ const addonInfo: AddonInfo = {
     loginRequestPattern:
       "https://myaccount.adblockplus.org/api/auth/ext-login*",
     applicationId: "8aac1ab7a162dc3c81f1574281f3aecc"
-  },
-  featureFlags: {
-    inlineCss: false
   }
 };
 

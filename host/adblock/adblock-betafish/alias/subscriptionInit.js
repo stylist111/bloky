@@ -217,9 +217,6 @@ const start = async function () {
       loginRequestPattern: "https://myaccount.getadblock.com/api/auth/ext-login*",
       applicationId: "b793c0eaad23705f155df0a9609dc95c",
     },
-    featureFlags: {
-      inlineCss: false,
-    },
   };
 
   let cdp = {

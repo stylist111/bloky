@@ -33,7 +33,7 @@ import {
 import {subTestCustom1, subAntiCVLocal} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {addFilter, addFilters, EWE, setFeatureFlags} from "./messaging.js";
-import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
+import {isFuzzingServiceWorker, suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {CACHED_FILTERS_CONFIG_KEY} from "../src/content/shared/constants.js";
 import {restartWithTestArgs as restartWithTelemetryTestArgs} from "./fixtures/telemetry-server-logger.js";
 
@@ -399,22 +399,28 @@ describe("Element Hiding", function() {
       await expectElementToHaveInlineStyle("inline-css-div-2", "");
     });
 
-    it("only allows inline CSS filters for privileged subscriptions", async function() {
-      await setFeatureFlags({inlineCss: true});
+    it("enables inline CSS when experiment flag is set after restart [mv3-only]", async function () {
+      const filter = `${TEST_PAGES_DOMAIN}###some-id {margin-bottom: 0px}`;
 
-      const elemId = "inline-css-div";
+      await expect(
+        EWE.filters.add(filter)
+      ).rejects.toThrow("FilterError");
 
-      await EWE.subscriptions.add(subTestCustom1.url, {privileged: false});
-      await waitForSubscriptionsToDownload();
-      await expectElementToHaveInlineStyle(elemId, "");
+      await EWE.experiments.overrideFlag("inline-css-filters", true);
 
-      await EWE.subscriptions.remove(subTestCustom1.url);
+      await expect(
+        EWE.filters.add(filter)
+      ).rejects.toThrow("FilterError");
 
-      await EWE.subscriptions.add(subTestCustom1.url, {privileged: true});
-      await waitForSubscriptionsToDownload();
-      await expectElementToHaveInlineStyle(elemId, "margin-bottom: 0px !important;");
+      // In MV3 the filter engine can be restarted by restarting the service
+      // worker. In MV2, this would mean the browser restarting or the extension
+      // being updated.
+      await suspendServiceWorker(this);
+
+      await expect(
+        EWE.filters.add(filter)
+      ).resolves.toBeDefined();
     });
-
 
     it("does not remove a DOM element with a {remove: true;} filter if it is allowlisted", async function() {
       const elemId = "remove-id";
