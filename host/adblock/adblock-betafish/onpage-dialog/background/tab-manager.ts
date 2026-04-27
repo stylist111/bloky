@@ -387,21 +387,27 @@ async function injectDialog(tabId: number): Promise<void> {
  * @returns whether dialogs should be ignored
  */
 async function shouldBeIgnored(): Promise<boolean> {
+  // Ignore and dismiss command if user opted-out of marketing messages
+  if (Prefs.get("marketing_opt_out") === true) {
+    logger.debug("[onpage-dialog]: marketing_opt_out - enabled");
+    return true;
+  }
+
   // Ignore and dismiss command if user opted-out of 'surveys'
   if (getSettings().show_survey === false) {
-    logger.debug("[onpage-dialog]:show_survey - disabled");
+    logger.debug("[onpage-dialog]: show_survey - disabled");
     return true;
   }
 
   // Ignore and dismiss command if user opted-out of 'surveys'
   if (getSettings().suppress_surveys) {
-    logger.debug("[onpage-dialog]:suppress_surveys - enabled");
+    logger.debug("[onpage-dialog]: suppress_surveys - enabled");
     return true;
   }
 
   // Ignore and dismiss command if user opted-out of 'on page messages'
   if (getSettings().onpageMessages === false) {
-    logger.debug("[onpage-dialog]:onpageMessages - disabled");
+    logger.debug("[onpage-dialog]: onpageMessages - disabled");
     return true;
   }
   return false;

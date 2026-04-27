@@ -228,14 +228,39 @@ export async function openNewTab(url) {
 }
 
 /**
- * Waits for an element to not be displayed. Usually used on elements that were
- * previously displayed and expected to become hidden after a certain action
+ * Waits for the duration of the timeout to confirm that an element has never
+ * been displayed. Usually used for elements that weren't displayed before and
+ * are expected to continue not being displayed after a certain action.
+ *
+ * @param {string} cssSelector - The CSS locator of the element
+ * @param {Object} options - Options object
+ * @param {number} options.timeout - Overall polling timeout in ms
+ * @param {boolean} options.checkDisplayed - When false, the element doesn't need to be displayed
+ * @returns {Promise<void>}
+ */
+export async function waitForNeverDisplayed(
+  cssSelector,
+  { timeout = 3000, checkDisplayed = true } = {},
+) {
+  try {
+    await getDisplayedElement(cssSelector, { timeout, checkDisplayed });
+  } catch (err) {
+    return;
+  }
+
+  throw new Error(`Expected element "${cssSelector}" to never be displayed`);
+}
+
+/**
+ * Waits for an element to no longer be displayed. Usually used on elements that were
+ * previously displayed and expected to become hidden after a certain action.
  *
  * @param {string} cssSelector - The CSS locator of the element
  * @param {Object} options - Options object
  * @param {number} options.timeout - Overall polling timeout in ms
  * @param {number} options.displayedTimeout - Timeout in ms for the displayed element to be hidden
  * @param {boolean} options.forceRefresh - Refresh the page if the element is found
+ * @param {boolean} options.checkDisplayed - When false, the element doesn't need to be displayed
  * @returns {Promise<void>}
  * @example
  * timeout=1000, displayedTimeout=500 will produce up to 2 wait() retries

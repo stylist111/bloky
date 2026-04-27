@@ -1,6 +1,7 @@
 # Unreleased
 
 - Updated snippets to 2.9.0
+- Fixed: Marketing messages opt-out had no effect on on-page dialogs.
 
 # 6.40.0 - 2026-04-22
 

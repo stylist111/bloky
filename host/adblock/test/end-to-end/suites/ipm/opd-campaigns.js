@@ -35,7 +35,7 @@ import {
 } from "@eyeo/test-utils/extension";
 import {
   getDisplayedElement,
-  waitForNotDisplayed,
+  waitForNeverDisplayed,
   findUrl,
   openNewTab,
 } from "@eyeo/test-utils/driver";
@@ -117,7 +117,7 @@ export default () => {
     await ctaButton.click();
     await findUrl(premiumUrl);
     await openNewTab("https://www.wikipedia.org");
-    await waitForNotDisplayed("#__ABoverlay");
+    await waitForNeverDisplayed("#__ABoverlay", { checkDisplayed: false });
 
     await initOptionsGeneralTab(getOptionsHandle());
     ipmCommands = await getIPMCommands(initOptionsGeneralTab);
@@ -143,7 +143,7 @@ export default () => {
     expect(ipmCommands).toEqual(expectedIPMCommands.exclusion);
 
     await openNewTab("https://www.example.com");
-    await waitForNotDisplayed("#__ABoverlay");
+    await waitForNeverDisplayed("#__ABoverlay", { checkDisplayed: false });
 
     await openNewTab("https://www.wikipedia.org");
     const opd = await getOPDShadowRoot();
@@ -163,7 +163,7 @@ export default () => {
     await waitForIpmCooldown();
 
     await driver.navigate().refresh();
-    await waitForNotDisplayed("#__ABoverlay");
+    await waitForNeverDisplayed("#__ABoverlay", { checkDisplayed: false });
 
     await initOptionsGeneralTab(getOptionsHandle());
     ipmCommands = await getIPMCommands(initOptionsGeneralTab);
@@ -189,7 +189,7 @@ export default () => {
     expect(ipmCommands).toEqual(expectedIPMCommands.cookie);
 
     await openNewTab("https://www.example.com");
-    await waitForNotDisplayed("#__ABoverlay");
+    await waitForNeverDisplayed("#__ABoverlay", { checkDisplayed: false });
 
     await openNewTab("https://www.welt.de");
     const opd = await getOPDShadowRoot();
@@ -214,7 +214,7 @@ export default () => {
     expect(ipmCommands).toEqual(expectedIPMCommands.navigation);
     await openNewTab("https://www.example.com");
 
-    await waitForNotDisplayed("#__ABoverlay");
+    await waitForNeverDisplayed("#__ABoverlay", { checkDisplayed: false });
   });
 
   it("triggers an OPD campaign using strings matching user locale", async function () {

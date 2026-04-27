@@ -36,7 +36,7 @@ import {
 } from "@eyeo/test-utils/extension";
 import {
   getDisplayedElement,
-  waitForNotDisplayed,
+  waitForNeverDisplayed,
   findUrl,
   openNewTab
 } from "@eyeo/test-utils/driver";
@@ -127,7 +127,9 @@ export default () => {
 
     await findUrl(updateUrlNavigation);
     await openNewTab("https://www.example.net");
-    await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
+    await waitForNeverDisplayed("#__abp-overlay-onpage-dialog iframe", {
+      checkDisplayed: false
+    });
 
     await initOptionsGeneralTab(getOptionsHandle());
     ipmCommands = await getIPMCommands(initOptionsGeneralTab);
@@ -156,7 +158,9 @@ export default () => {
     expect(ipmCommands).toEqual(expectedIPMCommands.exclusion);
 
     await openNewTab("https://www.example.org");
-    await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
+    await waitForNeverDisplayed("#__abp-overlay-onpage-dialog iframe", {
+      checkDisplayed: false
+    });
 
     await openNewTab("https://www.wikipedia.org");
     await switchToOPDiframe();
@@ -176,7 +180,9 @@ export default () => {
     await waitForIpmCooldown();
 
     await driver.navigate().refresh();
-    await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
+    await waitForNeverDisplayed("#__abp-overlay-onpage-dialog iframe", {
+      checkDisplayed: false
+    });
 
     await initOptionsGeneralTab(getOptionsHandle());
 
@@ -203,7 +209,9 @@ export default () => {
     expect(ipmCommands).toEqual(expectedIPMCommands.cookie);
 
     await openNewTab("https://www.example.org");
-    await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
+    await waitForNeverDisplayed("#__abp-overlay-onpage-dialog iframe", {
+      checkDisplayed: false
+    });
 
     await openNewTab("https://www.welt.de");
     await switchToOPDiframe();
@@ -231,7 +239,9 @@ export default () => {
     expect(ipmCommands).toEqual(expectedIPMCommands.navigation);
     await openNewTab("https://www.example.com");
 
-    await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
+    await waitForNeverDisplayed("#__abp-overlay-onpage-dialog iframe", {
+      checkDisplayed: false
+    });
   });
 
   it("triggers an OPD campaign using strings matching user locale", async function () {
