@@ -2841,6 +2841,12 @@
   "overlay_notification_button_yes": {
     "message": "Sim"
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "Seletor CSS inválido"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "Lista de propriedades CSS inválida"
+  },
   "filter_elemhideemulation_nodomain": {
     "message": "Não há domínio ativo especificado para estender o filtro de elemento ocultador"
   },

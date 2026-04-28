@@ -2833,6 +2833,12 @@
   "overlay_notification_button_yes": {
     "message": "是"
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "無效的 CSS 選取器"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "無效的 CSS 屬性清單"
+  },
   "filter_elemhideemulation_nodomain": {
     "message": "沒有擴充元素隱藏過濾條件的指定啟用網域"
   },

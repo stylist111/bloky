@@ -5,6 +5,12 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Nincs aktív domain meghatározva. Adjon meg legalább egy domain-t e kiterjesztett elem elrejtő szűrő számára."
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "Érvénytelen CSS-szelektor"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "Érvénytelen CSS-tulajdonságlista"
+  },
   "filter_invalid_addheader": {
     "message": "Érvénytelen addheader szűrő"
   },

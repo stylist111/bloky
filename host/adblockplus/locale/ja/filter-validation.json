@@ -5,6 +5,12 @@
   "filter_elemhideemulation_nodomain": {
     "message": "有効なドメインが指定されていません。この拡張要素非表示フィルターには、少なくとも1つのドメインを指定してください。"
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "無効なCSSセレクター"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "無効なCSSプロパティリスト"
+  },
   "filter_invalid_addheader": {
     "message": "無効な addheader フィルター"
   },

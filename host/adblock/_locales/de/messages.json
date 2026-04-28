@@ -2841,6 +2841,12 @@
   "overlay_notification_button_yes": {
     "message": "Ja"
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "Ungültiger CSS-Selektor"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "Ungültige CSS-Eigenschaftsliste"
+  },
   "filter_elemhideemulation_nodomain": {
     "message": "Keine aktive Domain für den Filter zum Ausblenden erweiterter Elemente angegeben"
   },

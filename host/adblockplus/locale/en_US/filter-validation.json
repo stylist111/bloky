@@ -15,6 +15,14 @@
     "description": "https://gitlab.com/eyeo/specs/spec/-/blob/7b0211f0bce836052977583bcaf764f34aee95e5/spec/abp/desktop-settings/advanced-tab.md#custom-filters-alert",
     "message": "No active domain specified. Please specify at least one domain for this extended element hiding filter."
   },
+  "filter_elemhide_invalid_selector": {
+    "description": "Error message to be shown if an elemhide filter uses a CSS selector that isn't supported, for example a selector starting with @",
+    "message": "Invalid CSS selector"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "description": "Error message to be shown if an elemhide filter has an invalid inline CSS property list, for example using a forbidden property value",
+    "message": "Invalid CSS property list"
+  },
   "filter_invalid_addheader": {
     "description": "https://gitlab.com/eyeo/specs/spec/-/blob/7b0211f0bce836052977583bcaf764f34aee95e5/spec/abp/desktop-settings/advanced-tab.md#custom-filters-alert",
     "message": "Invalid addheader filter"

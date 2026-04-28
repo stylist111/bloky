@@ -5,6 +5,12 @@
   "filter_elemhideemulation_nodomain": {
     "message": "지정된 활성 도메인이 없습니다. 확장 요소 숨김 필터에 최소 하나의 도메인을 지정해 주십시오."
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "잘못된 CSS 선택기"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "잘못된 CSS 속성 목록"
+  },
   "filter_invalid_addheader": {
     "message": "유효하지 않은 addheader 필터"
   },

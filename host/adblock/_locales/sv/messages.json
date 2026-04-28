@@ -2829,6 +2829,12 @@
   "overlay_notification_button_yes": {
     "message": "Ja"
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "Ogiltig CSS-väljare"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "Ogiltig lista över CSS-egenskaper"
+  },
   "filter_elemhideemulation_nodomain": {
     "message": "Ingen aktiv domän har specificerats för det utökade elementdöljande filtret"
   },

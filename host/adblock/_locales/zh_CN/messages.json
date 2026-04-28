@@ -2841,6 +2841,12 @@
   "overlay_notification_button_yes": {
     "message": "是"
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "无效的 CSS 选择器"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "无效的 CSS 属性列表"
+  },
   "filter_elemhideemulation_nodomain": {
     "message": "没有为扩展元素隐藏过滤器指定活动域"
   },

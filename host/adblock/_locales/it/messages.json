@@ -2841,6 +2841,12 @@
   "overlay_notification_button_yes": {
     "message": "Sì"
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "Selettore CSS non valido"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "Elenco di proprietà CSS non valido"
+  },
   "filter_elemhideemulation_nodomain": {
     "message": "Nessun dominio attivo specificato per il filtro di occultamento degli elementi esteso"
   },

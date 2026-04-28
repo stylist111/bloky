@@ -5,6 +5,12 @@
   "filter_elemhideemulation_nodomain": {
     "message": "未指定活动域。请为此扩展元素隐藏筛选器指定至少一个域。"
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "无效的CSS选择器"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "无效的CSS属性列表"
+  },
   "filter_invalid_addheader": {
     "message": "无效的 addheader 采用"
   },

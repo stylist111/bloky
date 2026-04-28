@@ -5,6 +5,12 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Não há domínio ativo especificado. Especifique pelo menos um domínio para este filtro de ocultação de elemento estendido."
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "Seletor CSS inválido"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "Lista de propriedades CSS inválida"
+  },
   "filter_invalid_addheader": {
     "message": "Filtro addheader inválido"
   },

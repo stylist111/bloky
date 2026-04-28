@@ -2841,6 +2841,12 @@
   "overlay_notification_button_yes": {
     "message": "Да"
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "Недопустимый CSS-селектор"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "Недопустимый список CSS-свойств"
+  },
   "filter_elemhideemulation_nodomain": {
     "message": "Не указан активный домен для фильтра элементов"
   },

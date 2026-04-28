@@ -5,6 +5,12 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Keine aktive Domain angegeben. Bitte gib mindestens eine Domain für diesen erweiterten Ausblendefilter für Elemente an."
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "Ungültiger CSS-Selektor"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "Ungültige CSS-Eigenschaftsliste"
+  },
   "filter_invalid_addheader": {
     "message": "Ungültiger addheader-Filter"
   },

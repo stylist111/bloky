@@ -5,6 +5,12 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Geen actief domein aangegeven. Geef ten minste één domein op voor dit toegevoegde element om filters te verbergen."
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "Ongeldige CSS-selector"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "Ongeldige CSS-eigenschappenlijst"
+  },
   "filter_invalid_addheader": {
     "message": "Ongeldig addheader-filter"
   },

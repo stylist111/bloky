@@ -5,6 +5,12 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Κανένας ενεργός επιλεγμένος τομέας. Επιλέξτε τουλάχιστον έναν τομέα για το συγκεκριμένο εκτεταμένο φίλτρο απόκρυψης στοιχείων."
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "Μη έγκυρος επιλογέας CSS"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "Μη έγκυρη λίστα ιδιοτήτων CSS"
+  },
   "filter_invalid_addheader": {
     "message": "Μη έγκυρο φίλτρο addheader"
   },

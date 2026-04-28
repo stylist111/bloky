@@ -5,6 +5,12 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Nessun dominio attivo specificato. Specificare almeno un dominio per questo filtro nascondi-elementi esteso."
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "Selettore CSS non valido"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "Elenco di proprietà CSS non valido"
+  },
   "filter_invalid_addheader": {
     "message": "Filtro addheader non valido"
   },

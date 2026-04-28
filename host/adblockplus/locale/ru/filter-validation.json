@@ -5,6 +5,12 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Не указан активный домен. Укажите хотя бы один домен для данного расширенного фильтра скрытия элементов."
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "Недопустимый CSS-селектор"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "Недопустимый список CSS-свойств"
+  },
   "filter_invalid_addheader": {
     "message": "Недопустимый фильтр addheader"
   },

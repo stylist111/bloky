@@ -5,6 +5,12 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Etkin alan belirtilmedi. Lütfen, bu genişletilmiş öge gizleme filtresi için en az bir alan adı belirtin."
   },
+  "filter_elemhide_invalid_selector": {
+    "message": "Geçersiz CSS seçicisi"
+  },
+  "filter_elemhide_invalid_inline_css": {
+    "message": "Geçersiz CSS özellik listesi"
+  },
   "filter_invalid_addheader": {
     "message": "Geçersiz addheader filtresi"
   },
