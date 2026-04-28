@@ -105,6 +105,55 @@ export function createSnippetHitEventSender(
   };
 }
 
+/**
+ * Creates a function that sends detection events via the logger without
+ * including domain. Domain is intentionally excluded for GDPR compliance —
+ * this event supports user-level retention signals without per-domain
+ * identification. Do not add domain to the payload.
+ *
+ * @param {Object} snippetLogger - ServerLogger instance
+ * @param {Object} sentryReporter - Sentry module with reportError method
+ * @returns {Function} sendDetectionDomainlessEvent(type, domain, specifier?)
+ */
+export function createSnippetDetectionDomainlessSender(
+  snippetLogger, sentryReporter
+) {
+  return function sendDetectionDomainlessEvent(type, _domain, specifier) {
+    if (typeof type !== "string") {
+      console.error(
+        "sendDetectionDomainlessEvent: type is a required string. " +
+        `Received type=${typeof type}.`
+      );
+      return;
+    }
+
+    let validSpecifier = null;
+    if (specifier != null) {
+      if (typeof specifier !== "string") {
+        console.error(
+          "sendDetectionDomainlessEvent: specifier must be a string if provided. " +
+          `Received ${typeof specifier}.`
+        );
+      }
+      else {
+        validSpecifier = specifier;
+      }
+    }
+
+    try {
+      snippetLogger.behavior("snippet_detection_domainless", {
+        type,
+        specifier: validSpecifier
+      });
+    }
+    catch (e) {
+      // Workaround: the logger doesn't guarantee it won't throw.
+      // Ideally error handling would live inside the logger itself.
+      sentryReporter.reportError(e);
+    }
+  };
+}
+
 const NOOP = () => {};
 
 /**

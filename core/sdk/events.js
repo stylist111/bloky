@@ -357,6 +357,23 @@ export default {
           }
         }
       }
+    },
+    snippet_detection_domainless: {
+      description: "Domain omitted intentionally to support user-level retention signals without per-domain identification.",
+      data: {
+        description: "Metadata about the detected condition",
+        type: "object",
+        properties: {
+          type: {
+            description: "Detection type identifier passed from the snippet filter, e.g. 'wall_detected'.",
+            type: "string"
+          },
+          specifier: {
+            description: "Extra context from the detection snippet, e.g. a matched CSS selector or filter rule identifier. null when no specifier is available.",
+            type: ["string", "null"]
+          }
+        }
+      }
     }
   },
   youtube: {

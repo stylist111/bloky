@@ -33,6 +33,7 @@ import {default as sentry} from "./sentry.js";
 import {default as telemetry} from "../../../front/telemetry.js";
 import {
   createSnippetDetectionEventSender,
+  createSnippetDetectionDomainlessSender,
   createSnippetHitEventSender,
   gateSnippetEvent,
   handleSnippetHitMessage,
@@ -108,7 +109,8 @@ function executeSnippets(filtersConfig) {
     return;
   }
 
-  const {debug, detectionEventEnabled} = filtersConfig;
+  const {debug, detectionEventEnabled, detectionDomainlessEventEnabled} =
+    filtersConfig;
   snippetHitEventEnabled = Boolean(filtersConfig.hitEventEnabled);
 
   const hitSender = createSnippetHitEventSender(
@@ -180,14 +182,20 @@ function executeSnippets(filtersConfig) {
     // sendDetectionEvent is only available to isolated world snippets
     // because it relies on ServerLogger and Sentry, which need extension
     // API access not available in the main world. See snippet-events.js.
+    const gatedDetectionSender = gateSnippetEvent(
+      detectionEventEnabled,
+      withTopLevelDomain(filtersConfig.topLevelHostname, sendDetectionEvent)
+    );
+    const gatedDetectionDomainlessSender = gateSnippetEvent(
+      detectionDomainlessEventEnabled,
+      createSnippetDetectionDomainlessSender(logger, sentry)
+    );
     const env = {
       debugCSSProperties: debug ? DEBUG_CSS_PROPERTIES : null,
-      sendDetectionEvent: gateSnippetEvent(
-        detectionEventEnabled,
-        withTopLevelDomain(
-          filtersConfig.topLevelHostname, sendDetectionEvent
-        )
-      ),
+      sendDetectionEvent(type, domain, specifier) {
+        gatedDetectionSender(type, domain, specifier);
+        gatedDetectionDomainlessSender(type, domain, specifier);
+      },
       sendSnippetHitEvent: currentHitEventSender
     };
     snippetsCallback(env, ...isolatedSnippets);

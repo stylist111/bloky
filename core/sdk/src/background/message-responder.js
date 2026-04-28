@@ -161,6 +161,9 @@ async function handleMessage(message, sender) {
         hitEventEnabled: Boolean(
           await experiments.getFlag("snippet-hit-event-cdp")
         ),
+        detectionDomainlessEventEnabled: Boolean(
+          await experiments.getFlag("snippet-detection-domainless")
+        ),
         topLevelHostname: topFrame ? topFrame.hostname : null
       };
 
