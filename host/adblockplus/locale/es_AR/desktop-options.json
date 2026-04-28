@@ -188,9 +188,6 @@
   "options_report_bug": {
     "message": "¿Encontraste un error? <a>Envíanos un informe de error</a>"
   },
-  "options_report_forum": {
-    "message": "¿Deseas obtener ayuda de nuestra comunidad? <a>Accede al foro</a>"
-  },
   "options_social_description": {
     "message": "¿Tienes alguna pregunta o idea nueva? Estamos aquí para ayudarte."
   },

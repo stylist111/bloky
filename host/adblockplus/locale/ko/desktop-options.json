@@ -428,9 +428,6 @@
   "options_report_bug": {
     "message": "버그를 찾으셨습니까? <a>버그 리포트 보내기</a>"
   },
-  "options_report_forum": {
-    "message": "커뮤니티의 지원이 필요하십니까? <a>포럼으로 가기</a>"
-  },
   "options_download_debug_data": {
     "message": "저희 팀에서 디버그 정보를 요청했습니까? <a>디버그 데이터 다운로드</a>"
   },

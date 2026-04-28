@@ -428,9 +428,6 @@
   "options_report_bug": {
     "message": "Vous avez trouvé un bogue ? <a>Envoyez-nous un rapport de bogue</a>"
   },
-  "options_report_forum": {
-    "message": "Vous voulez le soutien de notre communauté ? <a>Accédez au Forum</a>"
-  },
   "options_download_debug_data": {
     "message": "Notre équipe vous a-t-elle demandé des informations de débogage ? <a>Télécharger les données de débogage</a>"
   },

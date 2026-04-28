@@ -428,9 +428,6 @@
   "options_report_bug": {
     "message": "Hibát talált? <a>Küldjön hibajelentést nekünk</a>"
   },
-  "options_report_forum": {
-    "message": "Szeretne támogatást a közösségtől? <a>Irány a fórum</a>"
-  },
   "options_download_debug_data": {
     "message": "Kért a csapatunk hibakeresési információkat? <a>Hibakeresési adatok letöltése</a>"
   },

@@ -428,9 +428,6 @@
   "options_report_bug": {
     "message": "发现错误？<a>向我们发送错误报告</a>"
   },
-  "options_report_forum": {
-    "message": "想要我们社区的支持？<a>前往论坛</a>"
-  },
   "options_download_debug_data": {
     "message": "我们的团队是否已要求提供调试信息？<a>下载调试数据</a>"
   },

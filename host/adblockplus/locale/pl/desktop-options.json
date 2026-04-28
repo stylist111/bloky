@@ -428,9 +428,6 @@
   "options_report_bug": {
     "message": "Widzisz błąd? <a>Wyślij do nas zgłoszenie</a>"
   },
-  "options_report_forum": {
-    "message": "Potrzebujesz pomocy od naszej społeczności? <a>Przejdź do forum</a>"
-  },
   "options_download_debug_data": {
     "message": "Czy nasz zespół poprosił o informacje debugowania? <a>Pobierz dane debugowania</a>"
   },

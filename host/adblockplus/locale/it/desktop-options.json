@@ -428,9 +428,6 @@
   "options_report_bug": {
     "message": "Hai trovato un bug? <a>Inviaci un bug report</a>"
   },
-  "options_report_forum": {
-    "message": "Hai bisogno di supporto dalla nostra community? <a>Vai al Forum</a>"
-  },
   "options_download_debug_data": {
     "message": "Il nostro team ha richiesto informazioni di debug? <a>Scarica i dati di debug</a>"
   },

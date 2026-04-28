@@ -459,10 +459,6 @@
     "description": "'Support' section list item in Help tab",
     "message": "Found a bug? <a>Send us a bug report</a>"
   },
-  "options_report_forum": {
-    "description": "'Support' section list item in Help tab",
-    "message": "Want support from our community? <a>Go to the Forum</a>"
-  },
   "options_download_debug_data": {
     "description": "'Support' section list item in Help tab",
     "message": "Has our team requested debug info? <a>Download debug data</a>"

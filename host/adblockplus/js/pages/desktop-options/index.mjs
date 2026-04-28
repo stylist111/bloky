@@ -1695,9 +1695,6 @@ async function startTabHelp() {
     }),
     messaging.doclinks.get("adblock_plus_report_bug").then((link) => {
       setElementLinks("report-bug", link);
-    }),
-    messaging.doclinks.get("{browser}_support").then((url) => {
-      setElementLinks("visit-forum", url);
     })
   ]);
 
