@@ -205,24 +205,12 @@ ext.addTrustedMessageTypes(null, ["adblock:load_my_adblock"]);
  * where the sender URL starts with the extension URL)
  *
  */
-port.on("adblock:activate", async () => {
-  await License.ready();
-  await License.activate();
-});
 port.on("adblock:cleanUpSevenDayAlarm", async () => {
   await License.ready();
   License.cleanUpSevenDayAlarm();
   return {};
 });
 port.on("adblock:getLicenseConfig", () => processLicenseConfig());
-
-// TODO: This might be deprecated and no longer needed.
-// Investigate and remove if so
-port.on("adblock:updatePeriodically", async () => {
-  await License.ready();
-  License.updatePeriodically();
-  return {};
-});
 
 /**
  * Process messages related to the 'License' object
@@ -231,21 +219,8 @@ port.on("adblock:updatePeriodically", async () => {
  *
  */
 port.on("adblock:isActiveLicense", processIsActiveLicense);
-port.on("adblock:payment_success", async () => {
-  await License.ready();
-  try {
-    await License.activate();
-    return { ack: true };
-  } catch (e) {
-    /* eslint-disable-next-line no-console */
-    console.error("error occurred during payment_success message handling");
-    /* eslint-disable-next-line no-console */
-    console.error(e);
-    return { ack: false };
-  }
-});
 
-ext.addTrustedMessageTypes(null, ["adblock:isActiveLicense", "adblock:payment_success"]);
+ext.addTrustedMessageTypes(null, ["adblock:isActiveLicense"]);
 
 /**
  * Process the messages related to Channels object
@@ -347,9 +322,7 @@ function addChannelsNotifierListeners() {
  */
 function addLicenseNotifierListeners() {
   License.ready().then(() => {
-    License.licenseNotifier.on("license.updating", getListener("license", "updating"));
     License.licenseNotifier.on("license.updated", getListener("license", "updated"));
-    License.licenseNotifier.on("license.updated.error", getListener("license", "updated.error"));
     License.licenseNotifier.on("license.expired", getListener("license", "expired"));
   });
 }

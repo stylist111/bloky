@@ -2,6 +2,7 @@
 
 - Updated snippets to 2.9.0
 - Fixed: Marketing messages opt-out had no effect on on-page dialogs.
+- Removed the Premium license activation via cross-origin web page messaging.
 
 # 6.40.0 - 2026-04-22
 

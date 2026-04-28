@@ -48,11 +48,6 @@ async function initializeLicense() {
       if (prop === "get") {
         return () => obj;
       }
-      // The 'activate' function is here as a special case for testers to
-      // enable premium (temporarily)
-      if (prop === "activate") {
-        return () => modulesAsGlobal.messaging.send("adblock:activate");
-      }
       return Reflect.get(obj, prop);
     },
   });

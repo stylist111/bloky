@@ -18,29 +18,6 @@
 /* For ESLint: List any global identifiers used in this file below */
 /* global browser, onReady */
 
-// listen to messages from the background page
-function onMessage(request, sender, sendResponse) {
-  if (Object.prototype.hasOwnProperty.call(request, "dataMigrationStatus")) {
-    browser.runtime.onMessage.removeListener(onMessage);
-    window.postMessage({ dataMigrationStatus: request.dataMigrationStatus }, "*");
-    sendResponse({});
-  }
-}
-
-async function receiveMessage(event) {
-  if (event.data && event.data.command === "payment_success") {
-    window.removeEventListener("message", receiveMessage);
-    browser.runtime.onMessage.addListener(onMessage);
-    const response = await modulesAsGlobal.messaging.send("adblock:payment_success", {
-      version: 1,
-      origin: event.origin,
-    });
-    window.postMessage(response, "*");
-  }
-}
-
-window.addEventListener("message", receiveMessage, false);
-
 const serverLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_ui");
 
 async function unsubscribeAcceptableAds(event) {
@@ -81,7 +58,6 @@ async function getStartedWithMyAdBlock(event) {
 
 onReady(async () => {
   if (window.top === window.self) {
-    window.addEventListener("message", receiveMessage, false);
     let response = await browser.storage.local.get("userid");
     if (response.userid) {
       const elemDiv = document.createElement("div");

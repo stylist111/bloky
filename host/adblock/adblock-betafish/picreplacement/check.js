@@ -34,17 +34,13 @@ import { Prefs } from "~/alias/prefs";
 import { initialize } from "~/alias/subscriptionInit";
 import * as logger from "~/utilities/background";
 import SubscriptionAdapter from "../subscriptionadapter";
-import postData from "../fetch-util";
 import {
   chromeStorageSetHelper,
   chromeStorageGetHelper,
   migrateData,
-  log,
   storageSet,
   reloadOptionsPageTabs,
 } from "~/utilities/background";
-
-const checkCustomerLifecycleServerLogger = new ewe.telemetry.ServerLogger("customer_lifecycle");
 
 const licenseNotifier = new EventEmitter();
 
@@ -55,12 +51,10 @@ export const License = (function getLicense() {
   const userClosedSyncCTAKey = "user_closed_sync_cta";
   const userSawSyncCTAKey = "user_saw_sync_cta";
   const pageReloadedOnSettingChangeKey = "page_reloaded_on_user_settings_change";
-  const licenseAlarmName = "licenseAlarm";
   const sevenDayAlarmName = "sevenDayLicenseAlarm";
 
   let theLicense;
   const initialized = false;
-  let ajaxRetryCount = 0;
   let readyComplete;
   const licensePromise = new Promise((resolve) => {
     readyComplete = resolve;
@@ -226,14 +220,12 @@ export const License = (function getLicense() {
     themesForCTA,
     pageReloadedOnSettingChangeKey,
     initialized,
-    licenseAlarmName,
     sevenDayAlarmName,
     checkSevenDayAlarm,
     processSevenDayAlarm,
     addSevenDayAlarmStateListener,
     removeSevenDayAlarmStateListener,
     cleanUpSevenDayAlarm,
-    licenseTimer: undefined, // the license update timer token
     licenseNotifier,
     MAB_CONFIG,
     isProd,
@@ -284,63 +276,6 @@ export const License = (function getLicense() {
       currentThemeIndex = lastThemeIndex === currentThemeIndex ? 0 : (currentThemeIndex += 1);
       return theme || "";
     },
-    // Get the latest license data from the server, and talk to the user if needed.
-    async update() {
-      // TODO: Remove this when the old license system is fully deprecated
-      // Force using the new user account system and ignore the old license
-      if (await ewe.experiments.getFlag("ab_legacy_license_disabled")) {
-        return;
-      }
-
-      const userID = await getUserId();
-      licenseNotifier.emit("license.updating");
-      const postDataObj = {};
-      postDataObj.u = userID;
-      postDataObj.cmd = "license_check";
-      const licenseStatusBefore = License.get().status;
-      // license version
-      postDataObj.v = "1";
-      postData(License.MAB_CONFIG.licenseURL, postDataObj)
-        .then(async (response) => {
-          if (response.ok) {
-            const responseObj = await response.json();
-            ajaxRetryCount = 0;
-            const updatedLicense = responseObj;
-            licenseNotifier.emit("license.updated", updatedLicense);
-            if (!updatedLicense) {
-              return;
-            }
-            // merge the updated license
-            theLicense = { ...theLicense, ...updatedLicense };
-            theLicense.licenseId = theLicense.code;
-            License.set(theLicense);
-            // now check to see if we need to do anything because of a status change
-            if (
-              licenseStatusBefore === "active" &&
-              updatedLicense.status &&
-              updatedLicense.status === "expired"
-            ) {
-              void License.processExpiredLicense();
-              checkCustomerLifecycleServerLogger.behavior("trial_license_expired");
-            }
-          } else {
-            log("license server error response", response.status, ajaxRetryCount);
-            licenseNotifier.emit("license.updated.error", ajaxRetryCount);
-            ajaxRetryCount += 1;
-            if (ajaxRetryCount > 3) {
-              log("Retry Count exceeded, giving up", ajaxRetryCount);
-              return;
-            }
-            const oneMinute = 1 * 60 * 1000;
-            setTimeout(() => {
-              License.updatePeriodically(`error${ajaxRetryCount}`);
-            }, oneMinute);
-          }
-        })
-        .catch((error) => {
-          log("license server returned error: ", error);
-        });
-    },
     async processExpiredLicense() {
       theLicense = License.get();
       theLicense.myadblock_enrollment = true;
@@ -350,37 +285,9 @@ export const License = (function getLicense() {
       setSetting("color_themes", { popup_menu: "default_theme", options_page: "default_theme" });
       SubscriptionAdapter.unsubscribe({ adblockId: "distraction-control" });
       SubscriptionAdapter.unsubscribe({ adblockId: "cookies-premium" });
-      browser.alarms.clear(licenseAlarmName);
     },
     ready() {
       return licensePromise;
-    },
-    async create24HourAlarm() {
-      if (!(await License.isActiveLicense())) {
-        return;
-      }
-
-      // If the license is active, we should update it every 24 hours
-      // We double check the alarm is set correctly, because it was used with
-      // different parameters in the past and we need to migrate it.
-      const oneDayInMinutes = 24 * 60;
-      const licenseAlarm = await browser.alarms.get(License.licenseAlarmName);
-      if (!licenseAlarm || licenseAlarm.periodInMinutes !== oneDayInMinutes) {
-        browser.alarms.create(License.licenseAlarmName, { periodInMinutes: oneDayInMinutes });
-      }
-    },
-
-    async updatePeriodically() {
-      if (!(await License.isActiveLicense())) {
-        return;
-      }
-      await License.update();
-      await License.create24HourAlarm();
-
-      const response = await browser.storage.local.get(installTimestampStorageKey);
-      if (!response[installTimestampStorageKey]) {
-        await browser.storage.local.set({ [installTimestampStorageKey]: Date.now() });
-      }
     },
     async getLicenseInstallationDate() {
       const response = await browser.storage.local.get(installTimestampStorageKey);
@@ -389,32 +296,6 @@ export const License = (function getLicense() {
         return new Date(originalInstallTimestamp);
       }
       return undefined;
-    },
-    // activate the current license and configure the extension in licensed mode.
-    // Call with an optional delay parameter (in milliseconds) if the first license
-    // update should be delayed by a custom delay (default is 0 minutes).
-    async activate(delayMs) {
-      // TODO: Remove this when the old license system is fully deprecated
-      // Force using the new user account system and ignore the old license
-      if (await ewe.experiments.getFlag("ab_legacy_license_disabled")) {
-        return;
-      }
-
-      let delay = delayMs;
-      const currentLicense = License.get() || {};
-      const newLicense = { ...currentLicense };
-      newLicense.status = "active";
-      License.set(newLicense);
-      reloadOptionsPageTabs();
-      if (typeof delay !== "number") {
-        delay = 0; // 0 minutes
-      }
-      if (!this.licenseTimer) {
-        this.licenseTimer = setTimeout(() => {
-          License.updatePeriodically();
-        }, delay);
-      }
-      setSetting("picreplacement", false);
     },
     async getFormattedActiveSinceDate() {
       if (
@@ -437,15 +318,7 @@ export const License = (function getLicense() {
       return formattedDate;
     },
     async isActiveLicense() {
-      const hasPremium = await ewe.account.hasPremium();
-
-      // TODO: Remove this when the old license system is fully deprecated
-      // Force using the new user account system and ignore the old license
-      if (await ewe.experiments.getFlag("ab_legacy_license_disabled")) {
-        return hasPremium;
-      }
-
-      return hasPremium || (License && License.get() && License.get().status === "active");
+      return ewe.account.hasPremium();
     },
     isLicenseCodeValid() {
       return License && License.get().code && typeof License.get().code === "string";
@@ -545,20 +418,12 @@ Promise.all([onInstalledPromise, License.ready(), initialize]).then((detailsArra
   }
 });
 
-// Make sure the 24 hour license update alarm is set when the browser starts
-// just in case it was removed or not set correctly
 browser.runtime.onStartup.addListener(async () => {
   await License.ready();
-  await License.create24HourAlarm();
   await migrateToUserAccount();
 });
 
-browser.alarms.onAlarm.addListener(async (alarm) => {
-  if (alarm.name === License.licenseAlarmName) {
-    await License.ready();
-    await License.updatePeriodically();
-  }
-
+browser.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === License.sevenDayAlarmName) {
     License.processSevenDayAlarm();
   }
@@ -592,9 +457,9 @@ async function migrateToUserAccount() {
     return;
   }
 
-  // If the user doesn't have an active license, we don't need to migrate
-  if (!(await License.isActiveLicense())) {
-    logger.debug("Not active license, skipping migration");
+  // If the user doesn't have an active legacy license, we don't need to migrate
+  if (!License.isLicenseCodeValid() || License.get().status !== "active") {
+    logger.debug("Not active legacy license, skipping migration");
     return;
   }
 
