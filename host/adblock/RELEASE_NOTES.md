@@ -1,5 +1,9 @@
 # Unreleased
 
+# 6.40.1 - 2026-04-28
+
+This release contains bugfixes and under-the-hood changes.
+
 - Updated snippets to 2.9.0
 - Fixed: Marketing messages opt-out had no effect on on-page dialogs.
 - Removed the Premium license activation via cross-origin web page messaging.

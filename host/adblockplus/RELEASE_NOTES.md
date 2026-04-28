@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.37.2 - 2026-04-28
+
+This release contains bugfixes and under-the-hood changes.
+
 - Fixed: "Add" button on the custom filters page stayed disabled after adding a filter.
 - Updated snippets to 2.9.0
 - Fixed: Removed broken forum link from Support tab in settings page.
