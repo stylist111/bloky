@@ -17,8 +17,8 @@ Read more about the architecture [here](./docs/ARCHITECTURE.md).
 
 ### Prerequisites
 
-- node >= 22
-- npm >= 10
+- node >= 24
+- npm >= 11
 
 ### Building on Windows
 

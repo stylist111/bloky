@@ -4,6 +4,8 @@ set -eu
 
 APP_NAME=testSafariApp
 BUNDLE_ID=org.adblockplus.testSafariApp
+IOS_DEVICE_NAME="iPhone 17 Pro"
+IOS_PLATFORM_VERSION="26.2"
 
 pushd $(dirname "$0")
 DIRNAME_PATH=$(pwd)
@@ -49,4 +51,10 @@ pushd $testingProject
 npm install
 
 # Run tests
-APP_PATH="$APP_PATH" APP_BUNDLE_ID=$BUNDLE_ID TEST_SERVER_PATH=$TEST_TOOLS_PATH ./gradlew testSDK
+env \
+  APP_PATH="$APP_PATH" \
+  APP_BUNDLE_ID=$BUNDLE_ID \
+  IOS_DEVICE_NAME="$IOS_DEVICE_NAME" \
+  IOS_PLATFORM_VERSION="$IOS_PLATFORM_VERSION" \
+  TEST_SERVER_PATH=$TEST_TOOLS_PATH \
+  ./gradlew testSDK

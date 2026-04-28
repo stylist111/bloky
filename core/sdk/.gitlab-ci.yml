@@ -11,7 +11,7 @@ include: "/.gitlab/ci-common.yml"
 
 default:
   interruptible: true
-  image: node:22.14.0
+  image: node:24.14.1
   tags:
     - "GCP"
 
@@ -65,7 +65,7 @@ workflow:
 
 .macos-image:
   # https://docs.gitlab.com/ci/runners/hosted_runners/macos/
-  image: macos-15-xcode-16
+  image: macos-26-xcode-26
   tags:
     - saas-macos-large-m2pro
 
@@ -224,6 +224,10 @@ func:v2:firefox:oldest:
     # like the extensions monorepo, if npm can't retry fetching dependencies.
     npm_config_fetch_retries: 2
   before_script:
+    # While eyeo-windows doesn't come with Node 24 out of the box yet, we need
+    # to install it ourselves
+    - choco uninstall -y nodejs nodejs.install
+    - choco install -y --no-progress nodejs-lts --version 24.14.1
     - npm install
   tags:
     - eyeo-windows
