@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(BROWSER=* MANIFEST_VERSION=* npm run test:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx mocha:*)",
+      "Bash(npx prettier:*)",
+      "Bash(git ls-tree:*)",
+      "WebFetch(domain:gitlab.com)",
+      "WebFetch(domain:eyeo.atlassian.net)",
+      "mcp__claude_ai_Atlassian__getConfluencePage",
+      "mcp__claude_ai_Atlassian__search"
+    ],
+    "ask": [
+      "Bash(npm install:*)",
+      "Bash(npm ci:*)",
+      "Bash(git reset:*)",
+      "Bash(git clean:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx prettier --write \"$CLAUDE_FILE_PATH\"",
+            "statusMessage": "Running Prettier..."
+          }
+        ]
+      }
+    ]
+  }
+}
