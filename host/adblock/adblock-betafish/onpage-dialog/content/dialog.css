@@ -176,6 +176,7 @@ footer {
   align-items: center;
   color: var(--button-color);
   background-color: var(--button-background);
+  cursor: pointer;
 }
 
 #continue:hover {

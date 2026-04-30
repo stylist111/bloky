@@ -36,6 +36,13 @@ import {
   startWithTestArgs,
   UPDATED_CONFIG
 } from "./fixtures/remote-config.js";
+import {
+  LOWER_HALF_USER_ID,
+  LOWER_VARIANT_IPM_ID,
+  twoVariantConfigWithIpmCommands,
+  UPPER_HALF_USER_ID,
+  UPPER_VARIANT_IPM_ID
+} from "./fixtures/experiments.js";
 import { MILLIS_IN_DAY } from "#adblockpluscore/lib/time.js";
 
 describe("Remote config", function() {
@@ -78,6 +85,62 @@ describe("Remote config", function() {
     await EWE.remoteConfig.sync();
 
     expect(await EWE.remoteConfig.getIpmCommands()).toEqual([]);
+  });
+
+  describe("ipmCommands from variant assignment", function() {
+    const topLevelCommand = {
+      command_name: "create_tab",
+      ipm_id: "top-level-ipm",
+      version: 1,
+      url: "https://www.example.com/top-level"
+    };
+
+    beforeEach(async function() {
+      await EWE.testing.resetExperimentData();
+    });
+
+    it("includes ipmCommands from the assigned variant", async function() {
+      await EWE.testing.mockRemoteConfig({
+        schemaId: SCHEMA_ID,
+        experiments: twoVariantConfigWithIpmCommands([0, 500], [500, 1000]),
+        ipmCommands: [topLevelCommand]
+      });
+      await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
+      await EWE.experiments.sync();
+
+      const commands = await EWE.remoteConfig.getIpmCommands();
+      const ids = commands.map(command => command.ipm_id);
+      expect(ids).toContain("top-level-ipm");
+      expect(ids).toContain(LOWER_VARIANT_IPM_ID);
+      expect(ids).not.toContain(UPPER_VARIANT_IPM_ID);
+    });
+
+    it("returns the other variant's ipmCommands when seed flips", async function() {
+      await EWE.testing.mockRemoteConfig({
+        schemaId: SCHEMA_ID,
+        experiments: twoVariantConfigWithIpmCommands([0, 500], [500, 1000]),
+        ipmCommands: [topLevelCommand]
+      });
+      await EWE.testing.setExperimentsSeed(UPPER_HALF_USER_ID);
+      await EWE.experiments.sync();
+
+      const commands = await EWE.remoteConfig.getIpmCommands();
+      const ids = commands.map(command => command.ipm_id);
+      expect(ids).toContain("top-level-ipm");
+      expect(ids).toContain(UPPER_VARIANT_IPM_ID);
+      expect(ids).not.toContain(LOWER_VARIANT_IPM_ID);
+    });
+
+    it("returns only top-level commands when no variant carries ipmCommands", async function() {
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        ipmCommands: [topLevelCommand]
+      });
+      await EWE.experiments.sync();
+
+      const commands = await EWE.remoteConfig.getIpmCommands();
+      expect(commands).toEqual([topLevelCommand]);
+    });
   });
 
   describe("Scheduled updates", function() {

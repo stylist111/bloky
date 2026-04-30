@@ -62,3 +62,35 @@ export function twoVariantConfig(lowerMods, upperMods) {
     ]
   }];
 }
+
+export const LOWER_VARIANT_IPM_ID = "lower-variant-ipm";
+export const UPPER_VARIANT_IPM_ID = "upper-variant-ipm";
+
+function makeCreateTabCommand(ipmId) {
+  return {
+    command_name: "create_tab",
+    ipm_id: ipmId,
+    version: 1,
+    url: `https://www.example.com/${ipmId}`
+  };
+}
+
+export function twoVariantConfigWithIpmCommands(lowerMods, upperMods) {
+  return [{
+    experimentId: EXPERIMENT_ID,
+    variants: [
+      {
+        variantId: LOWER_VARIANT_ID,
+        flags: {[EXPERIMENT_FLAG]: LOWER_VARIANT_FLAG},
+        mods: lowerMods,
+        ipmCommands: [makeCreateTabCommand(LOWER_VARIANT_IPM_ID)]
+      },
+      {
+        variantId: UPPER_VARIANT_ID,
+        flags: {[EXPERIMENT_FLAG]: UPPER_VARIANT_FLAG},
+        mods: upperMods,
+        ipmCommands: [makeCreateTabCommand(UPPER_VARIANT_IPM_ID)]
+      }
+    ]
+  }];
+}

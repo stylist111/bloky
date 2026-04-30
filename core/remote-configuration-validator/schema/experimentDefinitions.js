@@ -57,6 +57,12 @@ export const Variant = {
     flags: {
       $ref: "#/definitions/Flags",
     },
+    ipmCommands: {
+      type: "array",
+      items: {
+        $ref: "#/definitions/IpmCommand",
+      },
+    },
     mods: {
       type: "array",
       items: {

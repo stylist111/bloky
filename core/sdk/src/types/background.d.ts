@@ -958,7 +958,12 @@ declare module "@eyeo/webext-ad-filtering-solution" {
     const getRevisionId: () => Promise<string | null>;
 
     /**
-     * Retrieves in-product messaging commands
+     * Retrieves in-product messaging commands.
+     *
+     * The result is the concatenation of the top-level `ipmCommands` from
+     * the remote config and any `ipmCommands` carried by experiment
+     * variants the current client is assigned to.
+     *
      * @returns in-product messaging commands
      */
     const getIpmCommands: () => Promise<unknown[] | null>;

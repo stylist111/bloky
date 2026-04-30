@@ -21,6 +21,7 @@ import {hasAcceptableAdsEnabled} from "../subscriptions.js";
 import * as info from "../info.js";
 import initializer from "../initializer.js";
 import {getTrialDaysLeft, getPreferences} from "../account/storage.js";
+import experiments from "../experiments.js";
 
 const UNKNOWN_COUNTRY_CODE = "unknown";
 let _getFacts = async() => ({});
@@ -66,7 +67,46 @@ export async function getCohortsConfig() {
 }
 
 /**
- * Retrieves in-product messaging commands
+ * Collects `ipmCommands` carried by the experiment variants the current
+ * client is assigned to.
+ *
+ * @param {Object[]} experimentsConfig - The remote config raw experiments
+ *   array
+ * @returns {Promise<Object[]>}
+ */
+async function getIpmCommandsFromAssignedVariants(experimentsConfig) {
+  const assignments = await experiments.getAssignments();
+  const commands = [];
+
+  for (const experiment of experimentsConfig) {
+    const assignedVariantId = assignments[experiment.experimentId];
+    if (!assignedVariantId || !Array.isArray(experiment.variants)) {
+      continue;
+    }
+    const assignedVariant = experiment.variants.find(
+      variant => variant.variantId === assignedVariantId
+    );
+    if (assignedVariant && Array.isArray(assignedVariant.ipmCommands)) {
+      commands.push(...assignedVariant.ipmCommands);
+    }
+  }
+
+  return commands;
+}
+
+/**
+ * Retrieves in-product messaging commands.
+ *
+ * Returns the concatenation of:
+ *   - `ipmCommands` carried by experiment variants the current client is
+ *     assigned to (if any), and
+ *   - the top-level `ipmCommands` from the remote config (if any).
+ *
+ * The variant-scoped commands let an experiment variant deliver its own
+ * IPM payload (on-page-dialog, new-tab) to A/B-test entire campaigns.
+ * `ipm_id` uniqueness across the two sources is guaranteed by the config
+ * side, so no duplicate-resolution logic is performed here.
+ *
  * @returns {Promise<Object[]|null>}
  */
 export async function getIpmCommands() {
@@ -80,11 +120,19 @@ export async function getIpmCommands() {
     return null;
   }
 
-  if (!Array.isArray(rawData.ipmCommands)) {
-    return [];
+  const commands = [];
+
+  if (Array.isArray(rawData.experiments)) {
+    commands.push(
+      ...await getIpmCommandsFromAssignedVariants(rawData.experiments)
+    );
   }
 
-  return rawData.ipmCommands;
+  if (Array.isArray(rawData.ipmCommands)) {
+    commands.push(...rawData.ipmCommands);
+  }
+
+  return commands;
 }
 
 /**

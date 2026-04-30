@@ -30,6 +30,7 @@ import {
   CreateOnpageDialogCommand,
   CreateTabCommand,
   DeleteCommandsCommand,
+  IpmCommand,
 } from "./ipmDefinitions.js";
 import { LoggingLevels, LogLevel } from "./loggingLevelsDefinitions.js";
 
@@ -63,11 +64,7 @@ export const remoteConfigSchema = {
         ipmCommands: {
           type: "array",
           items: {
-            anyOf: [
-              { $ref: "#/definitions/CreateOnpageDialogCommand" },
-              { $ref: "#/definitions/CreateTabCommand" },
-              { $ref: "#/definitions/DeleteCommandsCommand" },
-            ],
+            $ref: "#/definitions/IpmCommand",
           },
         },
       },
@@ -89,5 +86,6 @@ export const remoteConfigSchema = {
     CreateOnpageDialogCommand,
     CreateTabCommand,
     DeleteCommandsCommand,
+    IpmCommand,
   },
 };

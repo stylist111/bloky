@@ -26,6 +26,7 @@ import {
   resetRemoteConfig,
   setRemoteConfigCohorts,
   setRemoteConfigCountryCode,
+  setRemoteConfigExperiments,
   setRemoteConfigIpmCommands,
   getIPMCommands,
   setIPMCooldowns,
@@ -285,5 +286,128 @@ export default () => {
 
     await openNewTab(localTestPageUrl);
     await findUrl(updateUrlVersions, { exists: false });
+  });
+
+  describe("variant-scoped ipmCommands", function () {
+    function makeVariantCommand(ipmId) {
+      return {
+        ipm_id: ipmId,
+        command_name: "create_on_page_dialog",
+        timing: "after_navigation",
+        version: 8,
+        // Using a reserved (RFC 2606) domain so the OPD never fires on
+        // navigation in subsequent tests — these tests only assert on
+        // getIpmCommands() output, not on actual rendering.
+        domain_list: "variant-test-only.invalid",
+        content: {
+          en: {
+            sub_title: `OPD ${ipmId} title`,
+            lower_body: `ipmID: ${ipmId}`,
+            upper_body: `Variant-scoped OPD: ${ipmId}`,
+            button_label: "CTA variant",
+          },
+        },
+        button_target: "/premium",
+        display_duration: 1,
+      };
+    }
+
+    it("returns ipmCommands carried by an assigned experiment variant", async function () {
+      // IPMs are not supported in Firefox
+      if (browserDetails.browserName === "firefox") {
+        this.skip();
+      }
+
+      const ipmId = "test_adblock_variant_ipm";
+
+      // Single-variant experiment with mods [0, 1000] so every seed lands on it.
+      // Confirms variant-scoped ipmCommands surface through getIpmCommands.
+      await setRemoteConfigExperiments(initOptionsGeneralTab, [
+        {
+          experimentId: ipmId,
+          variants: [
+            {
+              variantId: "only-variant",
+              flags: {},
+              mods: [0, 1000],
+              ipmCommands: [makeVariantCommand(ipmId)],
+            },
+          ],
+        },
+      ]);
+      await syncRemoteConfig(initOptionsGeneralTab);
+
+      const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+      expect(ipmCommands).toHaveProperty(ipmId);
+    });
+
+    it("merges top-level ipmCommands with the assigned variant's ipmCommands", async function () {
+      // IPMs are not supported in Firefox
+      if (browserDetails.browserName === "firefox") {
+        this.skip();
+      }
+
+      const variantIpmId = "test_adblock_merge_variant";
+
+      await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_versions");
+      await setRemoteConfigExperiments(initOptionsGeneralTab, [
+        {
+          experimentId: variantIpmId,
+          variants: [
+            {
+              variantId: "only-variant",
+              flags: {},
+              mods: [0, 1000],
+              ipmCommands: [makeVariantCommand(variantIpmId)],
+            },
+          ],
+        },
+      ]);
+      await syncRemoteConfig(initOptionsGeneralTab);
+
+      const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+      // Top-level commands stay; variant commands are added on top.
+      expect(ipmCommands).toHaveProperty("test_adblock_versions");
+      expect(ipmCommands).toHaveProperty(variantIpmId);
+    });
+
+    it("returns only the assigned variant's ipmCommands when multiple variants carry them", async function () {
+      // IPMs are not supported in Firefox
+      if (browserDetails.browserName === "firefox") {
+        this.skip();
+      }
+
+      const variantAIpmId = "test_adblock_variant_a_ipm";
+      const variantBIpmId = "test_adblock_variant_b_ipm";
+
+      // Mods [0, 1] and [1, 1000] cover the full range without overlap. The
+      // assertion below holds regardless of which bucket the seed lands in.
+      await setRemoteConfigExperiments(initOptionsGeneralTab, [
+        {
+          experimentId: "test_adblock_two_variants",
+          variants: [
+            {
+              variantId: "variant-a",
+              flags: {},
+              mods: [0, 1],
+              ipmCommands: [makeVariantCommand(variantAIpmId)],
+            },
+            {
+              variantId: "variant-b",
+              flags: {},
+              mods: [1, 1000],
+              ipmCommands: [makeVariantCommand(variantBIpmId)],
+            },
+          ],
+        },
+      ]);
+      await syncRemoteConfig(initOptionsGeneralTab);
+
+      const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+      const present = [variantAIpmId, variantBIpmId].filter((id) =>
+        Object.prototype.hasOwnProperty.call(ipmCommands, id),
+      );
+      expect(present).toHaveLength(1);
+    });
   });
 };

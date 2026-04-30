@@ -87,3 +87,11 @@ export const DeleteCommandsCommand = {
   },
   required: [...requiredBasePropertiesKeys, "commands"],
 };
+
+export const IpmCommand = {
+  anyOf: [
+    { $ref: "#/definitions/CreateOnpageDialogCommand" },
+    { $ref: "#/definitions/CreateTabCommand" },
+    { $ref: "#/definitions/DeleteCommandsCommand" },
+  ],
+};

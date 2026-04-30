@@ -429,6 +429,87 @@ describe("Experiment Data Validation", function () {
     );
   });
 
+  describe("Variant ipmCommands", function () {
+    function getValidCreateTabCommand() {
+      return {
+        command_name: "create_tab",
+        ipm_id: "variant-ipm-1",
+        version: 1,
+        url: "https://www.example.com/",
+      };
+    }
+
+    it("allows a variant with valid ipmCommands", async function () {
+      const data = {
+        schemaId: SCHEMA_ID,
+        experiments: [
+          {
+            experimentId: "test1",
+            variants: [
+              {
+                variantId: "variant1",
+                flags: {},
+                mods: [0, 500],
+                ipmCommands: [getValidCreateTabCommand()],
+              },
+            ],
+          },
+        ],
+      };
+      expect(validateRemoteConfig(data)).toEqual([]);
+    });
+
+    it("reports a variant ipmCommand with missing required field", async function () {
+      const command = getValidCreateTabCommand();
+      delete command.url;
+      await expectErrors(
+        {
+          schemaId: SCHEMA_ID,
+          experiments: [
+            {
+              experimentId: "test1",
+              variants: [
+                {
+                  variantId: "variant1",
+                  flags: {},
+                  mods: [0, 500],
+                  ipmCommands: [command],
+                },
+              ],
+            },
+          ],
+        },
+        [
+          "instance.experiments[0].variants[0].ipmCommands[0] is not any of <#/definitions/CreateOnpageDialogCommand>,<#/definitions/CreateTabCommand>,<#/definitions/DeleteCommandsCommand>",
+        ],
+      );
+    });
+
+    it("reports when variant ipmCommands is not an array", async function () {
+      await expectErrors(
+        {
+          schemaId: SCHEMA_ID,
+          experiments: [
+            {
+              experimentId: "test1",
+              variants: [
+                {
+                  variantId: "variant1",
+                  flags: {},
+                  mods: [0, 500],
+                  ipmCommands: "not an array",
+                },
+              ],
+            },
+          ],
+        },
+        [
+          "instance.experiments[0].variants[0].ipmCommands is not of a type(s) array",
+        ],
+      );
+    });
+  });
+
   describe("Experiment conditions validation", function () {
     it("marks an experiment with valid conditions as valid", async function () {
       const data = {

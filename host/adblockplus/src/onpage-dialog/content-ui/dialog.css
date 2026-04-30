@@ -152,6 +152,7 @@ footer {
   color: #fff;
   text-transform: uppercase;
   background-color: var(--color-premium);
+  cursor: pointer;
 }
 
 #continue:hover {
