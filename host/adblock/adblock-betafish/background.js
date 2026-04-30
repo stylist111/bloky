@@ -753,8 +753,11 @@ initialize
       addTrustedMessageTypes: ext.addTrustedMessageTypes,
       trustedOrigins: [
         "https://getadblock.com",
-        "https://*.dev.getadblock.com",
-        "https://*.myaccount.getadblock.com",
+        "https://stage.dev.getadblock.com",
+        "https://dev1.dev.getadblock.com",
+        "https://dev2.dev.getadblock.com",
+        "https://dev3.dev.getadblock.com",
+        "https://myaccount.getadblock.com",
       ],
     });
     startPublicAPI({
