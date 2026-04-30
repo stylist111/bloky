@@ -97,6 +97,15 @@ export async function open(
 }
 
 /**
+ * Retrieves a snapshot of the extension's current state for debugging
+ *
+ * @returns extension state
+ */
+export async function getAdFilteringState(): Promise<unknown> {
+  return await send("app.getAdFilteringState");
+}
+
+/**
  * Closes the current tab
  */
 export async function close(): Promise<void> {

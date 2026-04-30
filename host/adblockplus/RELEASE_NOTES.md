@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added extension ad-filtering state to the Help tab, showing active filter lists, filter and rule counts, and DNR dynamic rule usage.
+
 # 4.37.2 - 2026-04-28
 
 This release contains bugfixes and under-the-hood changes.

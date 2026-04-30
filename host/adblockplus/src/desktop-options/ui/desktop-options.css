@@ -1609,6 +1609,63 @@ html[dir="rtl"] #social ul li {
 }
 
 /*
+  Extension State Debug Section
+*/
+
+.extension-state-debug dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 12px;
+  margin: 0;
+}
+
+.extension-state-debug dt {
+  font-weight: 700;
+}
+.extension-state-debug dd {
+  margin: 0;
+}
+
+.extension-state-debug table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.extension-state-debug th,
+.extension-state-debug td {
+  padding: 4px 8px;
+  text-align: left;
+  border-bottom: var(--border-width-thin) solid var(--border-color-secondary);
+  vertical-align: top;
+}
+
+.extension-state-debug th:first-child,
+.extension-state-debug td:first-child {
+  padding-left: 0;
+}
+
+.extension-state-debug th {
+  border-bottom-color: var(--border-color-primary);
+}
+
+.extension-state-debug td.num,
+.extension-state-debug th.num {
+  text-align: right;
+}
+
+.extension-state-debug td small {
+  display: block;
+  font-size: var(--font-size-small);
+  color: var(--color-dimmed);
+}
+
+.extension-state-debug button {
+  margin-top: 12px;
+  margin-left: auto;
+}
+
+/*
   Dialog
 */
 

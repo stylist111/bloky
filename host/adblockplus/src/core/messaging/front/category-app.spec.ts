@@ -153,6 +153,15 @@ describe("Messaging category: app", () => {
     });
   });
 
+  it("app.getAdFilteringState", async () => {
+    (utils.send as jest.Mock).mockImplementation(async () => mockReturnValue);
+
+    const value = await app.getAdFilteringState();
+
+    expect(utils.send).toHaveBeenCalledWith("app.getAdFilteringState");
+    expect(value).toStrictEqual(mockReturnValue);
+  });
+
   it("app.close", async () => {
     await app.close();
 

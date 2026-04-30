@@ -273,6 +273,11 @@ export async function initOptionsAllowlistTab(optionsHandle) {
   await getDisplayedElement("#content-allowlist", { timeout: 5000 });
 }
 
+export async function initOptionsHelpTab(optionsHandle) {
+  await loadOptionsTab(optionsHandle, "tab-help");
+  await getDisplayedElement("#extension-state", { timeout: 5000 });
+}
+
 export async function initOptionsAdvancedTab(optionsHandle) {
   await loadOptionsTab(optionsHandle, "tab-advanced");
   await getDisplayedElement("#customize", { timeout: 5000 });

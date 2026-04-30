@@ -18,6 +18,7 @@
 /** @module messageResponder */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import rulesIndex from "@eyeo/rules-utils/adblockplus/index/adblockplus.json";
 
 import { port } from "~/core/messaging/background";
 import { Prefs } from "./prefs.js";
@@ -42,6 +43,22 @@ async function openUiPage(pathname) {
   void browser.tabs.create({
     url: browser.runtime.getURL(pathname)
   });
+}
+
+let ruleInfoByUrl;
+function getRuleInfoByUrl() {
+  if (!ruleInfoByUrl) {
+    ruleInfoByUrl = new Map(
+      rulesIndex.map((entry) => [
+        entry.url,
+        {
+          ruleCount: entry.rule_count != null ? entry.rule_count : 0,
+          rulesetId: entry.id
+        }
+      ])
+    );
+  }
+  return ruleInfoByUrl;
 }
 
 export function start() {
@@ -173,4 +190,46 @@ export function start() {
    * @returns {infoGetResult}
    */
   port.on("info.get", (message, sender) => info);
+
+  /**
+   * Returns a snapshot of the extension's current state for debugging.
+   *
+   * @event "app.getAdFilteringState"
+   * @returns {object}
+   */
+  port.on("app.getAdFilteringState", async (message, sender) => {
+    const manifestVersion = browser.runtime.getManifest().manifest_version;
+    const isMV3 = manifestVersion === 3;
+    const [allSubscriptions, userFilters, dynamicRules] = await Promise.all([
+      ewe.subscriptions.getSubscriptions(),
+      ewe.filters.getUserFilters(),
+      isMV3 ? browser.declarativeNetRequest.getDynamicRules() : []
+    ]);
+    const subscriptions = allSubscriptions.filter((sub) => sub.enabled);
+    const filterCounts = await Promise.all(
+      subscriptions.map((sub) =>
+        ewe.subscriptions.getFilters(sub.url).then((filters) => filters.length)
+      )
+    );
+    return {
+      manifestVersion,
+      subscriptions: subscriptions.map((sub, index) => {
+        const ruleInfo = getRuleInfoByUrl().get(sub.url);
+        return {
+          title: sub.title || sub.url,
+          version: sub.version,
+          filterCount: filterCounts[index],
+          ...(isMV3 && ruleInfo ? ruleInfo : {})
+        };
+      }),
+      userFiltersCount: userFilters.length,
+      dnrDynamicRulesCount: dynamicRules.length,
+      maxEnabledRulesets: isMV3
+        ? browser.declarativeNetRequest.MAX_NUMBER_OF_ENABLED_STATIC_RULESETS
+        : 0,
+      maxDynamicRules: isMV3
+        ? browser.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES
+        : 0
+    };
+  });
 }
