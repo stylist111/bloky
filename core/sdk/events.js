@@ -284,7 +284,7 @@ export default {
   },
   detection_snippets: {
     snippet_detection_event: {
-      description: "Recorded when a snippet detects a condition on a page (e.g. wall detection). Each detection snippet calls this event from a single location with a unique type value. Other snippet concerns (blocking, breakage) should register separate events.",
+      description: "Recorded when a snippet detects a condition on a page (e.g. wall detection). Each detection snippet calls this event from a single location with a unique type value. Other snippet concerns (blocking, breakage) should register separate events. Data is reliable from 2026-04-29 onwards; data before this date may have schema mismatches due to ongoing pipeline development.",
       data: {
         description: "Metadata about the detected condition",
         type: "object",
@@ -359,7 +359,7 @@ export default {
       }
     },
     snippet_detection_domainless: {
-      description: "Domain omitted intentionally to support user-level retention signals without per-domain identification.",
+      description: "Domain omitted intentionally to support user-level retention signals without per-domain identification. Introduced on 2026-04-29; no data exists before this date.",
       data: {
         description: "Metadata about the detected condition",
         type: "object",
