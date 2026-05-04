@@ -1,30 +1,71 @@
+/**
+ * This file is part of eyeo's Reverse Trial fragment,
+ * Copyright (C) 2024-present eyeo GmbH
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import * as touchpointsModule from "../../src/background/touchpoints";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import browser from "webextension-polyfill";
 import { start } from "../../src/background";
-import type { StartInfo } from "../../src/shared";
+import type { DialogPayload, StartInfo } from "../../src/shared";
 import {
   GET_DIALOG_MESSAGE_TYPE,
   DIALOG_ACTION_MESSAGE_TYPE,
   DISMISS_DIALOG_MESSAGE_TYPE,
   GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
-  OPT_OUT_MESSAGE_TYPE,
-  FEEDBACK_MESSAGE_TYPE,
   STEP_PREF_KEY,
   TRIAL_START_DATE_PREF_KEY,
   MS_PER_DAY,
 } from "../../src/shared";
 
-const { mockLoggerInfo, mockLoggerDebug } = vi.hoisted(() => ({
+const {
+  mockLoggerInfo,
+  mockLoggerDebug,
+  mockOnChangedListeners,
+  mockAccountOnChangedListeners,
+} = vi.hoisted(() => ({
   mockLoggerInfo: vi.fn(),
   mockLoggerDebug: vi.fn(),
+  mockOnChangedListeners: [] as Array<(...args: unknown[]) => unknown>,
+  mockAccountOnChangedListeners: [] as Array<(...args: unknown[]) => unknown>,
 }));
 
 vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
   experiments: {
     getFlag: vi.fn(),
+    getFlags: vi.fn().mockResolvedValue({}),
     getEncodedExperiments: vi.fn().mockResolvedValue("mock-ev"),
+    onChanged: {
+      addListener: vi.fn((fn: (...args: unknown[]) => unknown) => {
+        mockOnChangedListeners.push(fn);
+      }),
+    },
+  },
+  account: {
+    hasPremium: vi.fn().mockResolvedValue(false),
+    onChanged: {
+      addListener: vi.fn((fn: (...args: unknown[]) => unknown) => {
+        mockAccountOnChangedListeners.push(fn);
+      }),
+    },
+  },
+  lightningSnippets: {
+    enable: vi.fn().mockResolvedValue(undefined),
+    disable: vi.fn().mockResolvedValue(undefined),
+    clear: vi.fn().mockResolvedValue(undefined),
   },
   telemetry: {
     ServerLogger: vi.fn().mockImplementation(() => ({
@@ -44,10 +85,7 @@ vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
 vi.mock("webextension-polyfill", () => ({
   default: {
     i18n: {
-      getMessage: vi.fn((key: string, subs?: string[]) => {
-        if (subs) return `${key}[${subs.join(",")}]`;
-        return key;
-      }),
+      getUILanguage: vi.fn(() => "en"),
     },
     tabs: {
       query: vi.fn(),
@@ -60,12 +98,113 @@ type MessageHandler = (...args: unknown[]) => unknown;
 
 const portHandlers = new Map<string, MessageHandler>();
 
+const ALLOWED_HOSTS = ["getadblock.com", "docs.google.com"];
+
+/** Builds a valid remote config with three steps matching the plan's example. */
+function buildValidConfig(): unknown {
+  return {
+    trialDurationDays: 14,
+    steps: [
+      {
+        id: 1,
+        minElapsedDays: 0,
+        maxElapsedDays: 0,
+        showCloseButton: true,
+        autoDismissMs: 10000,
+        title: { key: "start_title" },
+        body: [{ key: "start_body" }],
+        links: [
+          {
+            key: "learn_more",
+            action: {
+              type: "NAVIGATE",
+              url: "https://getadblock.com/?step={step}&rcid={rcid}",
+              closeAfter: true,
+            },
+          },
+          {
+            key: "feedback",
+            action: {
+              type: "NAVIGATE",
+              url: "https://docs.google.com/form?step={step}",
+              closeAfter: false,
+            },
+          },
+        ],
+        i18n: {
+          en: {
+            start_title: "Trial active",
+            start_body: "Enjoy fewer ads.",
+            learn_more: "Learn more",
+            feedback: "Feedback",
+          },
+        },
+      },
+      {
+        id: 2,
+        minElapsedDays: 7,
+        maxElapsedDays: 13,
+        showCloseButton: true,
+        title: { key: "mid_title" },
+        body: [{ key: "mid_body" }],
+        ctaButton: {
+          key: "mid_cta",
+          action: {
+            type: "NAVIGATE",
+            url: "https://getadblock.com/upgrade?step={step}",
+            closeAfter: true,
+          },
+        },
+        links: [
+          { key: "mid_later", action: { type: "CLOSE" } },
+          { key: "mid_end", action: { type: "END_TRIAL" } },
+        ],
+        i18n: {
+          en: {
+            mid_title: "Halfway there",
+            mid_body: "{days_remaining} days remaining.",
+            mid_cta: "Upgrade",
+            mid_later: "Later",
+            mid_end: "End trial",
+          },
+        },
+      },
+      {
+        id: 3,
+        minElapsedDays: 14,
+        showCloseButton: true,
+        title: { key: "end_title" },
+        body: [{ key: "end_body" }],
+        ctaButton: {
+          key: "end_cta",
+          action: {
+            type: "NAVIGATE",
+            url: "https://getadblock.com/upgrade?step={step}",
+            closeAfter: true,
+          },
+        },
+        i18n: {
+          en: {
+            end_title: "Trial ended",
+            end_body: "Standard blocking continues.",
+            end_cta: "Keep it active",
+          },
+        },
+      },
+    ],
+  };
+}
+
 function createMockParams(prefsData: Record<string, unknown> = {}): StartInfo {
   return {
     prefs: {
       get: vi.fn((key: string) => prefsData[key] ?? 0),
       set: vi.fn((key: string, value: unknown) => {
         prefsData[key] = value;
+        return Promise.resolve();
+      }),
+      reset: vi.fn((key: string) => {
+        delete prefsData[key];
         return Promise.resolve();
       }),
     },
@@ -76,10 +215,9 @@ function createMockParams(prefsData: Record<string, unknown> = {}): StartInfo {
     },
     addTrustedMessageTypes: vi.fn(),
     logoUrl: "icons/adblock-20.svg",
-    premiumUrl: "https://getadblock.com/premium/",
-    hasPremium: vi.fn().mockResolvedValue(false),
     isOptedOut: vi.fn().mockResolvedValue(false),
     addonVersion: "1.0.0",
+    allowedUrlHosts: ALLOWED_HOSTS,
   };
 }
 
@@ -94,11 +232,10 @@ async function sendMessage(
 async function sendDialogAction(
   touchPointStep: number,
   action: string,
-  silent?: boolean,
 ): Promise<void> {
   const handler = portHandlers.get(DIALOG_ACTION_MESSAGE_TYPE);
   if (!handler) throw new Error("No dialog-action handler registered");
-  await handler({ touchPointStep, action, silent });
+  await handler({ touchPointStep, action });
 }
 
 async function sendDialogShouldStillShow(
@@ -110,16 +247,32 @@ async function sendDialogShouldStillShow(
   return handler({ touchPointStep });
 }
 
-async function sendOptOut(touchPointStep: number): Promise<void> {
-  const handler = portHandlers.get(OPT_OUT_MESSAGE_TYPE);
-  if (!handler) throw new Error("No opt-out handler registered");
-  await handler({ touchPointStep });
-}
-
-async function sendFeedback(touchPointStep: number): Promise<void> {
-  const handler = portHandlers.get(FEEDBACK_MESSAGE_TYPE);
-  if (!handler) throw new Error("No feedback handler registered");
-  await handler({ touchPointStep });
+function mockFlags({
+  experimentId = "test",
+  experimentFlag = true,
+  config = buildValidConfig() as unknown,
+}: {
+  experimentId?: string;
+  experimentFlag?: boolean;
+  config?: unknown;
+} = {}): void {
+  // Build a prefixed-name record mirroring what getFlags() returns in
+  // production: each reverse-trial experiment appends its own id to
+  // the base flag name. Passing `config: null` omits the config entry
+  // entirely (flag absent).
+  const flags: Record<string, unknown> = {};
+  flags[`show-reverse-trial-opd-${experimentId}`] = experimentFlag;
+  if (config !== null) {
+    flags[`reverse-trial-opd-config-${experimentId}`] = config;
+  }
+  vi.mocked(ewe.experiments.getFlags).mockResolvedValue(flags);
+  vi.mocked(ewe.experiments.getFlag).mockImplementation((name: string) =>
+    Promise.resolve(
+      (flags[name] ?? null) as Awaited<
+        ReturnType<typeof ewe.experiments.getFlag>
+      >,
+    ),
+  );
 }
 
 describe("reverse-trial background", () => {
@@ -127,6 +280,9 @@ describe("reverse-trial background", () => {
     vi.clearAllMocks();
     vi.unstubAllGlobals();
     portHandlers.clear();
+    mockOnChangedListeners.length = 0;
+    mockAccountOnChangedListeners.length = 0;
+    vi.mocked(ewe.account.hasPremium).mockResolvedValue(false);
 
     const fakeArrayBuffer = new Uint8Array([60, 115, 118, 103, 62]).buffer; // b"<svg>"
     const fakeBlob = {
@@ -142,639 +298,1054 @@ describe("reverse-trial background", () => {
         return Promise.reject(new Error(`Unexpected fetch call: ${url}`));
       }),
     );
-    vi.mocked(ewe.experiments.getFlag).mockImplementation((flag: string) => {
-      if (flag === "show-reverse-trial-opd") return Promise.resolve(true);
-      return Promise.resolve(false);
-    });
+
+    mockFlags();
     vi.mocked(browser.tabs.query).mockResolvedValue([]);
   });
 
-  it("returns touch point 1 (start) on first visit and sets trial start date", async () => {
-    const params = createMockParams({
-      [STEP_PREF_KEY]: 0,
+  describe("requestDialogHandler: no config = no OPD", () => {
+    it("returns null when the remote config flag is absent", async () => {
+      mockFlags({ config: null });
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      expect(await sendMessage()).toBeNull();
     });
-    start(params);
 
-    const result = await sendMessage();
-
-    expect(result).not.toBeNull();
-    expect(result).toHaveProperty("title", "reverse_trial_start_title");
-    expect(result).toHaveProperty("target", "");
-    expect(result).toHaveProperty("touchPointStep", 1);
-    expect(result).toHaveProperty("body");
-    expect((result as Record<string, unknown[]>).body).toHaveLength(1);
-    expect((result as Record<string, unknown[]>).body[0]).toEqual({
-      text: "reverse_trial_start_body",
-      style: "paragraph",
+    it("returns null when the remote config is malformed", async () => {
+      mockFlags({ config: { trialDurationDays: -1, steps: [] } });
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      expect(await sendMessage()).toBeNull();
     });
-    // Step is advanced immediately because touch point 1 is showOnce
-    expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 1);
-    // Trial start date should be set
-    expect(params.prefs.set).toHaveBeenCalledWith(
-      TRIAL_START_DATE_PREF_KEY,
-      expect.any(Number),
-    );
 
-    expect(mockLoggerInfo).toHaveBeenCalledWith("dialog_shown", {
-      touchPointStep: 1,
-      installDate: expect.any(Number),
-      reverseTrialStartDate: expect.any(Number),
+    it("returns null when experiment flag is disabled and trial hasn't started", async () => {
+      mockFlags({ experimentFlag: false });
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      expect(await sendMessage()).toBeNull();
     });
   });
 
-  it("advances step immediately on dialog return for showOnce touch point 1", async () => {
-    const params = createMockParams({
-      [STEP_PREF_KEY]: 0,
-    });
-    start(params);
+  describe("requestDialogHandler: step resolution", () => {
+    it("returns step 1 payload on first visit, stamps trial start date, and activates lightning snippets", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
 
-    await sendMessage();
-
-    expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 1);
-  });
-
-  it("advances step on dialog-action message", async () => {
-    const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-    start(params);
-
-    await sendDialogAction(1, "close");
-
-    expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 1);
-
-    expect(mockLoggerInfo).toHaveBeenCalledWith("dialog_action", {
-      action: "close",
-      touchPointStep: 1,
-      installDate: expect.any(Number),
-      reverseTrialStartDate: expect.any(Number),
-    });
-  });
-
-  it("dialog-action is idempotent (same touch point is no-op)", async () => {
-    const params = createMockParams({ [STEP_PREF_KEY]: 1 });
-    start(params);
-
-    await sendDialogAction(1, "close");
-
-    expect(params.prefs.set).not.toHaveBeenCalledWith(STEP_PREF_KEY, 1);
-  });
-
-  it("sets trialStartDate only on first show (step 0)", async () => {
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
-      [STEP_PREF_KEY]: 1,
-    });
-    start(params);
-
-    await sendMessage();
-
-    // Should not overwrite existing start date
-    expect(params.prefs.set).not.toHaveBeenCalledWith(
-      TRIAL_START_DATE_PREF_KEY,
-      expect.any(Number),
-    );
-  });
-
-  it("returns touch point 2 (midpoint) when 7 days left", async () => {
-    const trialStarted = Date.now() - 8 * MS_PER_DAY;
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: trialStarted,
-      [STEP_PREF_KEY]: 1,
-    });
-    start(params);
-
-    const result = await sendMessage();
-
-    expect(result).not.toBeNull();
-    expect(result).toHaveProperty("title", "reverse_trial_midpoint_title");
-    expect(result).toHaveProperty(
-      "button",
-      "reverse_trial_midpoint_premium_button",
-    );
-    expect(result).toHaveProperty("touchPointStep", 2);
-    const target = (result as Record<string, string>).target;
-    expect(target).toContain(`${params.premiumUrl}?`);
-    expect(target).toContain(`trialStarted=${trialStarted}`);
-    expect(target).toContain("s=reverse_trial_opd");
-    expect(target).toContain("opdStep=2");
-    expect(target).toContain("rcid=mock-rcid");
-    expect(target).toContain("av=1.0.0");
-    expect(target).toContain("er=mock-er");
-    expect(target).toContain("ev=mock-ev");
-    expect(target).toContain("ca=mock-ca");
-    expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 2);
-  });
-
-  it("returns touch point 3 (ended) when trial expired", async () => {
-    const trialStarted = Date.now() - 15 * MS_PER_DAY;
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: trialStarted,
-      [STEP_PREF_KEY]: 2,
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result).not.toBeNull();
+      expect(result.title).toBe("Trial active");
+      expect(result.body[0].text).toBe("Enjoy fewer ads.");
+      expect(result.touchPointStep).toBe(1);
+      expect(result.showCloseButton).toBe(true);
+      expect(result.autoDismissMs).toBe(10000);
+      // Step advances only on dismiss — not on render
+      expect(params.prefs.set).not.toHaveBeenCalledWith(STEP_PREF_KEY, 1);
+      expect(params.prefs.set).toHaveBeenCalledWith(
+        TRIAL_START_DATE_PREF_KEY,
+        expect.any(Number),
+      );
+      // Auto-enrollment activates lightning snippets via the SDK
+      // caller-opinion API (the variant flag is the kill switch only).
+      expect(ewe.lightningSnippets.enable).toHaveBeenCalled();
+      expect(mockLoggerInfo).toHaveBeenCalledWith("dialog_shown", {
+        touchPointStep: 1,
+        installDate: expect.any(Number),
+        reverseTrialStartDate: expect.any(Number),
+      });
     });
 
-    start(params);
-
-    const result = await sendMessage();
-
-    expect(result).not.toBeNull();
-    expect(result).toHaveProperty("title", "reverse_trial_ended_title");
-    expect(result).toHaveProperty(
-      "button",
-      "reverse_trial_ended_premium_button",
-    );
-    expect(result).toHaveProperty("touchPointStep", 3);
-    const target = (result as Record<string, string>).target;
-    expect(target).toContain(`${params.premiumUrl}?`);
-    expect(target).toContain(`trialStarted=${trialStarted}`);
-    expect(target).toContain("s=reverse_trial_opd");
-    expect(target).toContain("opdStep=3");
-    expect(target).toContain("rcid=mock-rcid");
-    expect(target).toContain("av=1.0.0");
-    expect(target).toContain("er=mock-er");
-    expect(target).toContain("ev=mock-ev");
-    expect(target).toContain("ca=mock-ca");
-    expect(params.prefs.set).not.toHaveBeenCalledWith(STEP_PREF_KEY, 3);
-  });
-
-  it("skips touch point 2 and shows touch point 3 when trial expired without showing touch point 2", async () => {
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
-      [STEP_PREF_KEY]: 1,
+    it("does not set trialStartDate or call enable() if a trial is already in progress", async () => {
+      const params = createMockParams({
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
+        [STEP_PREF_KEY]: 1,
+      });
+      start(params);
+      await sendMessage();
+      expect(params.prefs.set).not.toHaveBeenCalledWith(
+        TRIAL_START_DATE_PREF_KEY,
+        expect.any(Number),
+      );
+      expect(ewe.lightningSnippets.enable).not.toHaveBeenCalled();
     });
 
-    start(params);
+    it("returns step 2 payload at day 8 with ctaButton and links", async () => {
+      const params = createMockParams({
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
+        [STEP_PREF_KEY]: 1,
+      });
+      start(params);
 
-    const result = await sendMessage();
-
-    expect(result).not.toBeNull();
-    expect(result).toHaveProperty("touchPointStep", 3);
-    expect(result).toHaveProperty("title", "reverse_trial_ended_title");
-  });
-
-  it("returns null when all touch points shown", async () => {
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
-      [STEP_PREF_KEY]: 3,
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result.touchPointStep).toBe(2);
+      expect(result.ctaButton?.text).toBe("Upgrade");
+      expect(result.ctaButton?.key).toBe("mid_cta");
+      expect(result.ctaButton?.url).toContain("step=2");
+      expect(result.links).toHaveLength(2);
+      expect(result.links?.[0]).toEqual({ text: "Later", key: "mid_later" });
+      expect(result.links?.[1]).toEqual({ text: "End trial", key: "mid_end" });
     });
 
-    start(params);
+    it("returns step 3 payload at day 15 when step 2 was missed", async () => {
+      const params = createMockParams({
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
+        [STEP_PREF_KEY]: 1,
+      });
+      start(params);
 
-    const result = await sendMessage();
-    expect(result).toBeNull();
-  });
-
-  it("returns null when experiment flag is disabled and trial has not started", async () => {
-    vi.mocked(ewe.experiments.getFlag).mockImplementation(() =>
-      Promise.resolve(false),
-    );
-
-    const params = createMockParams({
-      [STEP_PREF_KEY]: 0,
-    });
-    start(params);
-
-    const result = await sendMessage();
-    expect(result).toBeNull();
-  });
-
-  it("continues showing dialogs when experiment flag is disabled but trial has already started", async () => {
-    vi.mocked(ewe.experiments.getFlag).mockImplementation((flag: string) => {
-      if (flag === "reverse-trial-opd-kill-switch")
-        return Promise.resolve(false);
-      return Promise.resolve(false);
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result.touchPointStep).toBe(3);
+      expect(result.title).toBe("Trial ended");
     });
 
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
-      [STEP_PREF_KEY]: 1,
-    });
-    start(params);
-
-    const result = await sendMessage();
-    expect(result).not.toBeNull();
-    expect(result).toHaveProperty("touchPointStep", 2);
-  });
-
-  it("returns null and ends trial when kill switch is active", async () => {
-    vi.mocked(ewe.experiments.getFlag).mockImplementation((flag: string) => {
-      if (flag === "reverse-trial-opd-kill-switch")
-        return Promise.resolve(true);
-      if (flag === "show-reverse-trial-opd") return Promise.resolve(true);
-      return Promise.resolve(false);
+    it("returns null when all steps have been shown", async () => {
+      const params = createMockParams({
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
+        [STEP_PREF_KEY]: 3,
+      });
+      start(params);
+      expect(await sendMessage()).toBeNull();
     });
 
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
-      [STEP_PREF_KEY]: 1,
-    });
-    start(params);
-
-    const result = await sendMessage();
-    expect(result).toBeNull();
-    expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
-  });
-
-  it("returns null when kill switch is active even without an ongoing trial", async () => {
-    vi.mocked(ewe.experiments.getFlag).mockImplementation((flag: string) => {
-      if (flag === "reverse-trial-opd-kill-switch")
-        return Promise.resolve(true);
-      if (flag === "show-reverse-trial-opd") return Promise.resolve(true);
-      return Promise.resolve(false);
-    });
-
-    const params = createMockParams({
-      [STEP_PREF_KEY]: 0,
-    });
-    start(params);
-
-    const result = await sendMessage();
-    expect(result).toBeNull();
-  });
-
-  it("registers all handlers via port.on", () => {
-    const params = createMockParams();
-    start(params);
-
-    expect(params.port.on).toHaveBeenCalledWith(
-      GET_DIALOG_MESSAGE_TYPE,
-      expect.any(Function),
-    );
-    expect(params.port.on).toHaveBeenCalledWith(
-      DIALOG_ACTION_MESSAGE_TYPE,
-      expect.any(Function),
-    );
-    expect(params.port.on).toHaveBeenCalledWith(
-      GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
-      expect.any(Function),
-    );
-    expect(params.port.on).toHaveBeenCalledWith(
-      FEEDBACK_MESSAGE_TYPE,
-      expect.any(Function),
-    );
-  });
-
-  it("includes feedback in dialog payload when showFeedback is true", async () => {
-    vi.spyOn(touchpointsModule, "resolveNextTouchPoint").mockResolvedValueOnce({
-      step: 1,
-      titleKey: "reverse_trial_start_title",
-      bodyKeys: [{ key: "reverse_trial_start_body", style: "paragraph" }],
-      hasTarget: false,
-      minElapsedDays: 0,
-      showFeedback: true,
-    });
-
-    const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-    start(params);
-
-    const result = (await sendMessage()) as Record<string, unknown>;
-    const feedback = result.feedback as { text: string; url: string };
-    expect(feedback.text).toBe("reverse_trial_submit_feedback");
-    expect(feedback.url).toContain("entry.400370027=1.0.0");
-    expect(feedback.url).toContain("entry.1742752836=1");
-  });
-
-  it("omits feedback from dialog payload when showFeedback is not set", async () => {
-    vi.spyOn(touchpointsModule, "resolveNextTouchPoint").mockResolvedValueOnce({
-      step: 1,
-      titleKey: "reverse_trial_start_title",
-      bodyKeys: [{ key: "reverse_trial_start_body", style: "paragraph" }],
-      hasTarget: false,
-      minElapsedDays: 0,
-    });
-
-    const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-    start(params);
-
-    const result = (await sendMessage()) as Record<string, unknown>;
-    expect(result.feedback).toBeUndefined();
-  });
-
-  it("feedback handler logs feedback_clicked to serverLogger", async () => {
-    const params = createMockParams({
-      [STEP_PREF_KEY]: 1,
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
-    });
-    start(params);
-
-    await sendFeedback(1);
-
-    expect(mockLoggerInfo).toHaveBeenCalledWith("feedback_clicked", {
-      touchPointStep: 1,
-      installDate: expect.any(Number),
-      reverseTrialStartDate: expect.any(Number),
+    it("returns null when in a gap between step windows", async () => {
+      const params = createMockParams({
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
+        [STEP_PREF_KEY]: 1,
+      });
+      start(params);
+      expect(await sendMessage()).toBeNull();
     });
   });
 
-  it("broadcasts DISMISS_DIALOG_MESSAGE_TYPE to all tabs on dialog action", async () => {
-    vi.mocked(browser.tabs.query).mockResolvedValue([
-      { id: 1 } as browser.Tabs.Tab,
-      { id: 2 } as browser.Tabs.Tab,
-      { id: undefined } as browser.Tabs.Tab,
-    ]);
-    vi.mocked(browser.tabs.sendMessage).mockResolvedValue(undefined);
+  describe("requestDialogHandler: prefix-scanned flags", () => {
+    // Each remote reverse-trial experiment appends its own id to the
+    // base flag name (e.g. `show-reverse-trial-opd-trialA`) so the
+    // experiments framework accepts multiple concurrent variants. The
+    // runtime scans for any flag matching the base prefix.
 
-    const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-    start(params);
-
-    await sendDialogAction(1, "close");
-
-    expect(vi.mocked(browser.tabs.sendMessage)).toHaveBeenCalledWith(1, {
-      type: DISMISS_DIALOG_MESSAGE_TYPE,
+    it("resolves the gate and config flags under a non-default experiment id", async () => {
+      mockFlags({ experimentId: "trial-a" });
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result).not.toBeNull();
+      expect(result.touchPointStep).toBe(1);
     });
-    expect(vi.mocked(browser.tabs.sendMessage)).toHaveBeenCalledWith(2, {
-      type: DISMISS_DIALOG_MESSAGE_TYPE,
+
+    it("returns null when no gate flag with the prefix is present", async () => {
+      // No `show-reverse-trial-opd-*` flag at all.
+      vi.mocked(ewe.experiments.getFlags).mockResolvedValue({});
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      expect(await sendMessage()).toBeNull();
     });
-    expect(vi.mocked(browser.tabs.sendMessage)).toHaveBeenCalledTimes(2);
   });
 
-  it("converts logoUrl to a base64 data URL using the response content type", async () => {
-    const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-    start(params);
+  describe("requestDialogHandler: URL variables", () => {
+    it("substitutes {step} and opt-in-sensitive variables into link URLs", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
 
-    const result = (await sendMessage()) as Record<string, unknown>;
-    expect(result.logoUrl).toMatch(/^data:image\/svg\+xml;base64,/);
-  });
-
-  it("swallows sendMessage errors for tabs without content scripts", async () => {
-    vi.mocked(browser.tabs.query).mockResolvedValue([
-      { id: 1 } as browser.Tabs.Tab,
-    ]);
-    vi.mocked(browser.tabs.sendMessage).mockRejectedValue(
-      new Error("Could not establish connection"),
-    );
-
-    const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-    start(params);
-
-    await expect(sendDialogAction(1, "close")).resolves.toBeUndefined();
-  });
-
-  it("premium user with trial in progress at step 1 advances step to last and returns null", async () => {
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
-      [STEP_PREF_KEY]: 1,
+      const result = (await sendMessage()) as DialogPayload;
+      const learnMoreUrl = result.links?.[0].url ?? "";
+      expect(learnMoreUrl).toContain("step=1");
+      expect(learnMoreUrl).toContain("rcid=mock-rcid");
     });
-    vi.mocked(params.hasPremium).mockResolvedValue(true);
-    start(params);
 
-    const result = await sendMessage();
-    expect(result).toBeNull();
-    expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
-  });
+    it("resolves opt-out-sensitive URL variables to empty string when opted out", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      vi.mocked(params.isOptedOut).mockResolvedValue(true);
+      start(params);
 
-  it("premium user with trial in progress at step 2 advances step to last and returns null", async () => {
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 9 * MS_PER_DAY,
-      [STEP_PREF_KEY]: 2,
+      const result = (await sendMessage()) as DialogPayload;
+      const learnMoreUrl = result.links?.[0].url ?? "";
+      expect(learnMoreUrl).toContain("step=1");
+      expect(learnMoreUrl).toContain("rcid=");
+      // rcid should have been substituted with empty string
+      expect(learnMoreUrl).not.toContain("mock-rcid");
     });
-    vi.mocked(params.hasPremium).mockResolvedValue(true);
-    start(params);
 
-    const result = await sendMessage();
-    expect(result).toBeNull();
-    expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
-  });
+    it("percent-encodes substituted URL variable values including + and /", async () => {
+      const params = createMockParams({
+        [STEP_PREF_KEY]: 0,
+        addonVersion: "1.2.3+chrome",
+      });
+      vi.mocked(ewe.experiments.getEncodedExperiments).mockResolvedValue(
+        "a+b/c==",
+      );
+      start(params);
 
-  it("premium user at step 0 with start date advances step to last and returns null", async () => {
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 1 * MS_PER_DAY,
-      [STEP_PREF_KEY]: 0,
+      const config = buildValidConfig() as Record<string, unknown>;
+      (config as { steps: Array<Record<string, unknown>> }).steps[0].links = [
+        {
+          key: "learn_more",
+          action: {
+            type: "NAVIGATE",
+            url: "https://getadblock.com/?av={addon_version}&ev={experiments}",
+            closeAfter: true,
+          },
+        },
+      ];
+      mockFlags({ config });
+
+      const paramsWithVersion = createMockParams({ [STEP_PREF_KEY]: 0 });
+      paramsWithVersion.addonVersion = "1.2.3+chrome";
+      start(paramsWithVersion);
+
+      const result = (await sendMessage()) as DialogPayload;
+      const url = result.links?.[0].url ?? "";
+      expect(url).toContain("av=1.2.3%2Bchrome");
+      expect(url).toContain("ev=a%2Bb%2Fc%3D%3D");
     });
-    vi.mocked(params.hasPremium).mockResolvedValue(true);
-    start(params);
 
-    const result = await sendMessage();
-    expect(result).toBeNull();
-    expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
-  });
+    it("leaves unrecognized URL variables as literal {name}", async () => {
+      const config = buildValidConfig() as Record<string, unknown>;
+      (config as { steps: Array<Record<string, unknown>> }).steps[0].links = [
+        {
+          key: "learn_more",
+          action: {
+            type: "NAVIGATE",
+            url: "https://getadblock.com/?x={unknown}",
+            closeAfter: true,
+          },
+        },
+      ];
+      mockFlags({ config });
 
-  it("premium user with no trial start date does not advance step and returns null", async () => {
-    const params = createMockParams({
-      [STEP_PREF_KEY]: 0,
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result.links?.[0].url).toBe("https://getadblock.com/?x={unknown}");
     });
-    vi.mocked(params.hasPremium).mockResolvedValue(true);
-    start(params);
-
-    const result = await sendMessage();
-    expect(result).toBeNull();
-    expect(params.prefs.set).not.toHaveBeenCalledWith(
-      STEP_PREF_KEY,
-      expect.any(Number),
-    );
   });
 
-  it("premium user already at last step does not call prefs.set for step and returns null", async () => {
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
-      [STEP_PREF_KEY]: 3,
+  describe("requestDialogHandler: text variables", () => {
+    it("substitutes {days_remaining} as plain digits in translated text", async () => {
+      const params = createMockParams({
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
+        [STEP_PREF_KEY]: 1,
+      });
+      start(params);
+
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result.body[0].text).toBe("6 days remaining.");
     });
-    vi.mocked(params.hasPremium).mockResolvedValue(true);
-    start(params);
 
-    const result = await sendMessage();
-    expect(result).toBeNull();
-    expect(params.prefs.set).not.toHaveBeenCalledWith(
-      STEP_PREF_KEY,
-      expect.any(Number),
-    );
-  });
+    it("clamps {days_remaining} to 0 when past trial duration", async () => {
+      const config = buildValidConfig() as Record<string, unknown>;
+      (config as { steps: Array<Record<string, unknown>> }).steps[2] = {
+        ...((config as { steps: Array<Record<string, unknown>> })
+          .steps[2] as Record<string, unknown>),
+        body: [{ key: "end_body" }],
+        i18n: {
+          en: {
+            end_title: "Trial ended",
+            end_body: "{days_remaining} days left (clamped).",
+            end_cta: "Keep it active",
+          },
+        },
+      };
+      mockFlags({ config });
+      const params = createMockParams({
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 20 * MS_PER_DAY,
+        [STEP_PREF_KEY]: 2,
+      });
+      start(params);
 
-  it("non-premium user with trial in progress returns normal dialog", async () => {
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
-      [STEP_PREF_KEY]: 1,
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result.body[0].text).toBe("0 days left (clamped).");
     });
-    start(params);
 
-    const result = await sendMessage();
-    expect(result).not.toBeNull();
-    expect(result).toHaveProperty("touchPointStep", 2);
-  });
+    it("substitutes {days_elapsed} as plain digits in translated text", async () => {
+      const config = buildValidConfig() as Record<string, unknown>;
+      (config as { steps: Array<Record<string, unknown>> }).steps[1] = {
+        ...((config as { steps: Array<Record<string, unknown>> })
+          .steps[1] as Record<string, unknown>),
+        body: [{ key: "mid_body" }],
+        i18n: {
+          en: {
+            mid_title: "Halfway",
+            mid_body: "Active for {days_elapsed} days.",
+            mid_cta: "Upgrade",
+            mid_later: "Later",
+            mid_end: "End trial",
+          },
+        },
+      };
+      mockFlags({ config });
+      const params = createMockParams({
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 10 * MS_PER_DAY,
+        [STEP_PREF_KEY]: 1,
+      });
+      start(params);
 
-  it("YT Premium user on first visit does not start the trial", async () => {
-    const params = createMockParams({
-      [STEP_PREF_KEY]: 0,
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result.body[0].text).toBe("Active for 10 days.");
     });
-    start(params);
-
-    const result = await sendMessage({ ytPremium: true });
-    expect(result).toBeNull();
-    expect(params.prefs.set).not.toHaveBeenCalledWith(
-      TRIAL_START_DATE_PREF_KEY,
-      expect.any(Number),
-    );
-    expect(params.prefs.set).not.toHaveBeenCalledWith(
-      STEP_PREF_KEY,
-      expect.any(Number),
-    );
   });
 
-  it("YT Premium user mid-trial skips dialog without advancing step", async () => {
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
-      [STEP_PREF_KEY]: 0,
+  describe("requestDialogHandler: locale fallback", () => {
+    it("uses exact locale when available", async () => {
+      vi.mocked(browser.i18n.getUILanguage).mockReturnValue("de");
+      const config = buildValidConfig() as Record<string, unknown>;
+      const step0 = (config as { steps: Array<Record<string, unknown>> })
+        .steps[0];
+      step0.i18n = {
+        en: {
+          start_title: "EN",
+          start_body: "EN body",
+          learn_more: "LM",
+          feedback: "FB",
+        },
+        de: {
+          start_title: "DE",
+          start_body: "DE body",
+          learn_more: "LM",
+          feedback: "FB",
+        },
+      };
+      mockFlags({ config });
+
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result.title).toBe("DE");
     });
-    start(params);
 
-    const result = await sendMessage({ ytPremium: true });
-    expect(result).toBeNull();
-    expect(params.prefs.set).not.toHaveBeenCalledWith(
-      STEP_PREF_KEY,
-      expect.any(Number),
-    );
-  });
+    it("falls back from regional variant to base language", async () => {
+      vi.mocked(browser.i18n.getUILanguage).mockReturnValue("de-AT");
+      const config = buildValidConfig() as Record<string, unknown>;
+      const step0 = (config as { steps: Array<Record<string, unknown>> })
+        .steps[0];
+      step0.i18n = {
+        en: {
+          start_title: "EN",
+          start_body: "EN body",
+          learn_more: "LM",
+          feedback: "FB",
+        },
+        de: {
+          start_title: "DE",
+          start_body: "DE body",
+          learn_more: "LM",
+          feedback: "FB",
+        },
+      };
+      mockFlags({ config });
 
-  it("YT Premium user at final touch point advances step to last", async () => {
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
-      [STEP_PREF_KEY]: 2,
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result.title).toBe("DE");
     });
-    start(params);
 
-    const result = await sendMessage({ ytPremium: true });
-    expect(result).toBeNull();
-    expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
+    it("falls back to en when locale is missing", async () => {
+      vi.mocked(browser.i18n.getUILanguage).mockReturnValue("fr");
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result.title).toBe("Trial active");
+    });
   });
 
-  it("showOnce touch point advances step immediately on dialog return", async () => {
-    const spy = vi
-      .spyOn(touchpointsModule, "resolveNextTouchPoint")
-      .mockResolvedValue({
-        step: 1,
-        titleKey: "reverse_trial_start_title",
-        bodyKeys: [{ key: "reverse_trial_start_body_1", style: "paragraph" }],
-        buttonKey: "reverse_trial_start_button",
-        hasTarget: false,
-        minElapsedDays: 0,
-        showOnce: true,
+  describe("requestDialogHandler: runtime URL validation", () => {
+    it("keeps substituted URLs that stay within the allowlist", async () => {
+      const config: unknown = {
+        trialDurationDays: 14,
+        steps: [
+          {
+            id: 1,
+            minElapsedDays: 0,
+            title: { key: "t" },
+            body: [{ key: "b" }],
+            ctaButton: {
+              key: "cta",
+              action: {
+                type: "NAVIGATE",
+                url: "https://getadblock.com/path/{step}",
+                closeAfter: true,
+              },
+            },
+            i18n: { en: { t: "Title", b: "Body", cta: "Go" } },
+          },
+        ],
+      };
+      mockFlags({ config });
+
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result.ctaButton?.url).toBe("https://getadblock.com/path/1");
+    });
+  });
+
+  describe("dialogActionHandler", () => {
+    it("logs dialog_action with action and touchPointStep", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+
+      await sendDialogAction(1, "learn_more");
+
+      expect(mockLoggerInfo).toHaveBeenCalledWith("dialog_action", {
+        action: "learn_more",
+        touchPointStep: 1,
+        installDate: expect.any(Number),
+        reverseTrialStartDate: expect.any(Number),
+      });
+    });
+
+    it("advances step on close action", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      await sendDialogAction(1, "CLOSE");
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 1);
+    });
+
+    it("advances step on auto-dismiss action", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      await sendDialogAction(1, "AUTO_DISMISS");
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 1);
+    });
+
+    it("advances step on NAVIGATE with closeAfter=true (default)", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      await sendDialogAction(1, "learn_more");
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 1);
+    });
+
+    it("does not advance step on NAVIGATE with closeAfter=false", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      await sendDialogAction(1, "feedback");
+      expect(params.prefs.set).not.toHaveBeenCalledWith(STEP_PREF_KEY, 1);
+    });
+
+    it("does not broadcast on NAVIGATE with closeAfter=false", async () => {
+      vi.mocked(browser.tabs.query).mockResolvedValue([
+        { id: 1 } as browser.Tabs.Tab,
+      ]);
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      await sendDialogAction(1, "feedback");
+      expect(vi.mocked(browser.tabs.sendMessage)).not.toHaveBeenCalled();
+    });
+
+    it("sets step to last and clears lightning-snippets opinion on END_TRIAL", async () => {
+      const params = createMockParams({
+        [STEP_PREF_KEY]: 1,
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
+      });
+      start(params);
+      await sendDialogAction(2, "mid_end");
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
+      expect(ewe.lightningSnippets.clear).toHaveBeenCalled();
+    });
+
+    it("clears lightning-snippets opinion when advancing to the last step", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 2 });
+      start(params);
+      await sendDialogAction(3, "CLOSE");
+      expect(ewe.lightningSnippets.clear).toHaveBeenCalled();
+    });
+
+    it("dialog-action is idempotent — repeating the same step is a no-op on step", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 1 });
+      start(params);
+      await sendDialogAction(1, "CLOSE");
+      expect(params.prefs.set).not.toHaveBeenCalledWith(STEP_PREF_KEY, 1);
+    });
+
+    it("broadcasts DISMISS_DIALOG_MESSAGE_TYPE on close", async () => {
+      vi.mocked(browser.tabs.query).mockResolvedValue([
+        { id: 1 } as browser.Tabs.Tab,
+        { id: 2 } as browser.Tabs.Tab,
+      ]);
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      await sendDialogAction(1, "CLOSE");
+      expect(vi.mocked(browser.tabs.sendMessage)).toHaveBeenCalledWith(1, {
+        type: DISMISS_DIALOG_MESSAGE_TYPE,
+      });
+      expect(vi.mocked(browser.tabs.sendMessage)).toHaveBeenCalledWith(2, {
+        type: DISMISS_DIALOG_MESSAGE_TYPE,
+      });
+    });
+
+    it("swallows broadcast errors for tabs without the content script", async () => {
+      vi.mocked(browser.tabs.query).mockResolvedValue([
+        { id: 1 } as browser.Tabs.Tab,
+      ]);
+      vi.mocked(browser.tabs.sendMessage).mockRejectedValue(
+        new Error("no content script"),
+      );
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      await expect(sendDialogAction(1, "CLOSE")).resolves.toBeUndefined();
+    });
+  });
+
+  describe("opt-in flow (requireOptIn + START_TRIAL)", () => {
+    /**
+     * Opt-in config: step 1 has a START_TRIAL CTA, step 2 / step 3
+     * mirror the auto-enrollment trial's midpoint and end OPDs.
+     * Optional links/extras are added via overrides for individual
+     * tests so each one can exercise a specific closing path.
+     */
+    function buildOptInConfig(
+      step1Overrides: Record<string, unknown> = {},
+    ): unknown {
+      return {
+        trialDurationDays: 14,
+        requireOptIn: true,
+        steps: [
+          {
+            id: 1,
+            minElapsedDays: 0,
+            showCloseButton: true,
+            title: { key: "opt_title" },
+            body: [{ key: "opt_body" }],
+            ctaButton: {
+              key: "accept",
+              action: { type: "START_TRIAL" },
+            },
+            links: [{ key: "decline", action: { type: "END_TRIAL" } }],
+            i18n: {
+              en: {
+                opt_title: "Try Premium",
+                opt_body: "Free 14-day trial.",
+                accept: "Start trial",
+                decline: "No thanks",
+              },
+            },
+            ...step1Overrides,
+          },
+          {
+            id: 2,
+            minElapsedDays: 10,
+            maxElapsedDays: 13,
+            title: { key: "mid_title" },
+            body: [{ key: "mid_body" }],
+            i18n: { en: { mid_title: "Trial ending", mid_body: "Soon." } },
+          },
+          {
+            id: 3,
+            minElapsedDays: 14,
+            title: { key: "end_title" },
+            body: [{ key: "end_body" }],
+            i18n: { en: { end_title: "Trial ended", end_body: "Done." } },
+          },
+        ],
+      };
+    }
+
+    it("requireOptIn: true defers trial start on first visit (no enable, no start date)", async () => {
+      mockFlags({ config: buildOptInConfig() });
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result).not.toBeNull();
+      expect(result.touchPointStep).toBe(1);
+      expect(params.prefs.set).not.toHaveBeenCalledWith(
+        TRIAL_START_DATE_PREF_KEY,
+        expect.any(Number),
+      );
+      expect(ewe.lightningSnippets.enable).not.toHaveBeenCalled();
+    });
+
+    it("requireOptIn: true keeps elapsedDays at 0 — windowed steps are not eligible before accept", async () => {
+      // Step 2 (minElapsedDays: 10) and step 3 (minElapsedDays: 14) must
+      // not fire while the trial start date is unset, even after the user
+      // dismissed step 1 and the calendar advanced.
+      mockFlags({ config: buildOptInConfig() });
+      const params = createMockParams({ [STEP_PREF_KEY]: 1 });
+      start(params);
+      expect(await sendMessage()).toBeNull();
+    });
+
+    it("START_TRIAL action stamps the trial start date and activates lightning snippets", async () => {
+      mockFlags({ config: buildOptInConfig() });
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+
+      await sendDialogAction(1, "accept");
+
+      expect(params.prefs.set).toHaveBeenCalledWith(
+        TRIAL_START_DATE_PREF_KEY,
+        expect.any(Number),
+      );
+      expect(ewe.lightningSnippets.enable).toHaveBeenCalled();
+    });
+
+    it("START_TRIAL advances the step normally (not straight to last)", async () => {
+      mockFlags({ config: buildOptInConfig() });
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+
+      await sendDialogAction(1, "accept");
+
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 1);
+      expect(ewe.lightningSnippets.clear).not.toHaveBeenCalled();
+    });
+
+    it("× close on the opt-in step is treated as END_TRIAL", async () => {
+      mockFlags({ config: buildOptInConfig() });
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+
+      await sendDialogAction(1, "CLOSE");
+
+      // Step jumps to last (3), lightning snippets caller opinion cleared.
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
+      expect(ewe.lightningSnippets.clear).toHaveBeenCalled();
+      expect(ewe.lightningSnippets.enable).not.toHaveBeenCalled();
+    });
+
+    it("AUTO_DISMISS on the opt-in step is treated as END_TRIAL", async () => {
+      mockFlags({ config: buildOptInConfig() });
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+
+      await sendDialogAction(1, "AUTO_DISMISS");
+
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
+      expect(ewe.lightningSnippets.clear).toHaveBeenCalled();
+      expect(ewe.lightningSnippets.enable).not.toHaveBeenCalled();
+    });
+
+    it("a configured CLOSE link on the opt-in step is treated as END_TRIAL", async () => {
+      mockFlags({
+        config: buildOptInConfig({
+          links: [
+            { key: "later", action: { type: "CLOSE" } },
+            { key: "decline", action: { type: "END_TRIAL" } },
+          ],
+          i18n: {
+            en: {
+              opt_title: "Try Premium",
+              opt_body: "Free 14-day trial.",
+              accept: "Start trial",
+              later: "Maybe later",
+              decline: "No thanks",
+            },
+          },
+        }),
+      });
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+
+      await sendDialogAction(1, "later");
+
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
+      expect(ewe.lightningSnippets.clear).toHaveBeenCalled();
+    });
+
+    it("NAVIGATE with closeAfter: true on the opt-in step is treated as END_TRIAL", async () => {
+      mockFlags({
+        config: buildOptInConfig({
+          links: [
+            {
+              key: "learn",
+              action: {
+                type: "NAVIGATE",
+                url: "https://getadblock.com/learn",
+                closeAfter: true,
+              },
+            },
+          ],
+          i18n: {
+            en: {
+              opt_title: "Try Premium",
+              opt_body: "Free 14-day trial.",
+              accept: "Start trial",
+              learn: "Learn more",
+            },
+          },
+        }),
+      });
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+
+      await sendDialogAction(1, "learn");
+
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
+      expect(ewe.lightningSnippets.clear).toHaveBeenCalled();
+    });
+
+    it("NAVIGATE with closeAfter: false on the opt-in step does NOT end the trial", async () => {
+      mockFlags({
+        config: buildOptInConfig({
+          links: [
+            {
+              key: "feedback",
+              action: {
+                type: "NAVIGATE",
+                url: "https://docs.google.com/feedback",
+                closeAfter: false,
+              },
+            },
+          ],
+          i18n: {
+            en: {
+              opt_title: "Try Premium",
+              opt_body: "Free 14-day trial.",
+              accept: "Start trial",
+              feedback: "Send feedback",
+            },
+          },
+        }),
+      });
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+
+      await sendDialogAction(1, "feedback");
+
+      // OPD stays open; no step change, no end-trial side effects.
+      expect(params.prefs.set).not.toHaveBeenCalledWith(
+        STEP_PREF_KEY,
+        expect.any(Number),
+      );
+      expect(ewe.lightningSnippets.clear).not.toHaveBeenCalled();
+    });
+
+    it("the closing rule does NOT apply to non-opt-in steps in the same config", async () => {
+      // Step 2 has no START_TRIAL action — its CLOSE / NAVIGATE behavior
+      // must remain as in non-opt-in configs (advance step, do not end
+      // trial unless reaching the last step).
+      mockFlags({ config: buildOptInConfig() });
+      const params = createMockParams({
+        [STEP_PREF_KEY]: 1,
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 11 * MS_PER_DAY,
+      });
+      start(params);
+
+      await sendDialogAction(2, "CLOSE");
+
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 2);
+      expect(ewe.lightningSnippets.clear).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("dialogShouldStillShow", () => {
+    it("returns true when currentStep is less than touchPointStep", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 1 });
+      start(params);
+      expect(await sendDialogShouldStillShow(2)).toBe(true);
+    });
+
+    it("returns false when currentStep has advanced to or past touchPointStep", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 2 });
+      start(params);
+      expect(await sendDialogShouldStillShow(2)).toBe(false);
+      expect(await sendDialogShouldStillShow(1)).toBe(false);
+    });
+
+    it("logs dialog_should_still_show_checked with the decision and step", async () => {
+      const params = createMockParams({
+        [STEP_PREF_KEY]: 1,
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
+      });
+      start(params);
+      await sendDialogShouldStillShow(2);
+      expect(mockLoggerDebug).toHaveBeenCalledWith(
+        "dialog_should_still_show_checked",
+        {
+          touchPointStep: 2,
+          shouldStillShow: true,
+          installDate: expect.any(Number),
+          reverseTrialStartDate: expect.any(Number),
+        },
+      );
+    });
+  });
+
+  describe("premium / YT premium handling", () => {
+    // AdBlock Premium is gated inside the fragment: the runtime
+    // hasPremium check in requestDialogHandler ends the trial (step →
+    // last, lightning-snippets caller opinion cleared) so no OPD is
+    // shown and the precedence chain resolves lightning snippets via
+    // hasPremium for paying users.
+
+    it("Premium user with no prior trial state ends the trial and does not start a trialStartDate", async () => {
+      vi.mocked(ewe.account.hasPremium).mockResolvedValue(true);
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      expect(await sendMessage()).toBeNull();
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
+      expect(params.prefs.set).not.toHaveBeenCalledWith(
+        TRIAL_START_DATE_PREF_KEY,
+        expect.any(Number),
+      );
+      expect(ewe.lightningSnippets.clear).toHaveBeenCalled();
+    });
+
+    it("Premium user mid-trial (upgraded while trial active) ends the trial", async () => {
+      vi.mocked(ewe.account.hasPremium).mockResolvedValue(true);
+      const params = createMockParams({
+        [STEP_PREF_KEY]: 1,
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
+      });
+      start(params);
+      expect(await sendMessage()).toBeNull();
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
+      expect(ewe.lightningSnippets.clear).toHaveBeenCalled();
+    });
+
+    it("Premium user already at last step does not re-advance", async () => {
+      vi.mocked(ewe.account.hasPremium).mockResolvedValue(true);
+      const params = createMockParams({
+        [STEP_PREF_KEY]: 3,
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
+      });
+      start(params);
+      expect(await sendMessage()).toBeNull();
+      expect(params.prefs.set).not.toHaveBeenCalledWith(
+        STEP_PREF_KEY,
+        expect.any(Number),
+      );
+      expect(ewe.lightningSnippets.clear).not.toHaveBeenCalled();
+    });
+
+    it("Premium user does NOT reset trial prefs (reset is reserved for experiment exit)", async () => {
+      vi.mocked(ewe.account.hasPremium).mockResolvedValue(true);
+      const params = createMockParams({
+        [STEP_PREF_KEY]: 1,
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
+      });
+      start(params);
+      await sendMessage();
+      expect(params.prefs.reset).not.toHaveBeenCalled();
+    });
+
+    it("Non-Premium user still shows OPDs as before (regression)", async () => {
+      vi.mocked(ewe.account.hasPremium).mockResolvedValue(false);
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result).not.toBeNull();
+      expect(result.touchPointStep).toBe(1);
+    });
+
+    it("YT Premium user on first visit does not start the trial", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      expect(await sendMessage({ ytPremium: true })).toBeNull();
+      expect(params.prefs.set).not.toHaveBeenCalledWith(
+        TRIAL_START_DATE_PREF_KEY,
+        expect.any(Number),
+      );
+    });
+
+    it("YT Premium at final step advances step to last", async () => {
+      const params = createMockParams({
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
+        [STEP_PREF_KEY]: 2,
+      });
+      start(params);
+      expect(await sendMessage({ ytPremium: true })).toBeNull();
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
+    });
+
+    it("YT Premium mid-trial skips dialog without advancing step", async () => {
+      const params = createMockParams({
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
+        [STEP_PREF_KEY]: 1,
+      });
+      start(params);
+      expect(await sendMessage({ ytPremium: true })).toBeNull();
+      expect(mockLoggerDebug).toHaveBeenCalledWith(
+        "dialog_skipped_yt_premium",
+        expect.objectContaining({ touchPointStep: 2 }),
+      );
+      expect(params.prefs.set).not.toHaveBeenCalledWith(
+        STEP_PREF_KEY,
+        expect.any(Number),
+      );
+    });
+  });
+
+  describe("start() wiring", () => {
+    it("registers all handlers via port.on", () => {
+      const params = createMockParams();
+      start(params);
+
+      expect(params.port.on).toHaveBeenCalledWith(
+        GET_DIALOG_MESSAGE_TYPE,
+        expect.any(Function),
+      );
+      expect(params.port.on).toHaveBeenCalledWith(
+        DIALOG_ACTION_MESSAGE_TYPE,
+        expect.any(Function),
+      );
+      expect(params.port.on).toHaveBeenCalledWith(
+        GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
+        expect.any(Function),
+      );
+    });
+
+    it("registers an experiments.onChanged listener for lightning-snippets cleanup", async () => {
+      const params = createMockParams();
+      start(params);
+
+      expect(ewe.experiments.onChanged.addListener).toHaveBeenCalledTimes(1);
+      expect(mockOnChangedListeners).toHaveLength(1);
+
+      // User is no longer targeted — the OPD config flag is absent.
+      mockFlags({ config: null });
+      await mockOnChangedListeners[0]();
+      expect(ewe.lightningSnippets.clear).toHaveBeenCalled();
+    });
+
+    it("does not clear caller opinion while the OPD config flag is present", async () => {
+      const params = createMockParams();
+      start(params);
+
+      mockFlags();
+      await mockOnChangedListeners[0]();
+      expect(ewe.lightningSnippets.clear).not.toHaveBeenCalled();
+    });
+
+    it("converts logoUrl to a base64 data URL", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      start(params);
+      const result = (await sendMessage()) as DialogPayload;
+      expect(result.logoUrl).toMatch(/^data:image\/svg\+xml;base64,/);
+    });
+
+    it("registers an account.onChanged listener", () => {
+      const params = createMockParams();
+      start(params);
+      expect(ewe.account.onChanged.addListener).toHaveBeenCalledTimes(1);
+      expect(mockAccountOnChangedListeners).toHaveLength(1);
+    });
+
+    it("upgrade transition ends the trial and broadcasts dismiss", async () => {
+      vi.mocked(browser.tabs.query).mockResolvedValue([
+        { id: 1 } as browser.Tabs.Tab,
+      ]);
+      const params = createMockParams({
+        [STEP_PREF_KEY]: 1,
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
+      });
+      start(params);
+
+      await mockAccountOnChangedListeners[0]({
+        user: { hasPremium: true },
+        oldUser: { hasPremium: false },
       });
 
-    const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-    start(params);
+      expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
+      expect(ewe.lightningSnippets.clear).toHaveBeenCalled();
+      expect(vi.mocked(browser.tabs.sendMessage)).toHaveBeenCalledWith(1, {
+        type: DISMISS_DIALOG_MESSAGE_TYPE,
+      });
+    });
 
-    await sendMessage();
+    it("upgrade transition with step already at last is a no-op", async () => {
+      vi.mocked(browser.tabs.query).mockResolvedValue([
+        { id: 1 } as browser.Tabs.Tab,
+      ]);
+      const params = createMockParams({
+        [STEP_PREF_KEY]: 3,
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
+      });
+      start(params);
 
-    spy.mockRestore();
-
-    expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 1);
-  });
-
-  it("dialog-action with silent: true does not broadcast", async () => {
-    vi.mocked(browser.tabs.query).mockResolvedValue([
-      { id: 1 } as browser.Tabs.Tab,
-    ]);
-    vi.mocked(browser.tabs.sendMessage).mockResolvedValue(undefined);
-
-    const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-    start(params);
-
-    await sendDialogAction(1, "auto-dismiss", true);
-
-    expect(vi.mocked(browser.tabs.sendMessage)).not.toHaveBeenCalled();
-  });
-
-  it("autoDismissMs is passed through in payload", async () => {
-    const spy = vi
-      .spyOn(touchpointsModule, "resolveNextTouchPoint")
-      .mockResolvedValue({
-        step: 1,
-        titleKey: "reverse_trial_start_title",
-        bodyKeys: [{ key: "reverse_trial_start_body_1", style: "paragraph" }],
-        buttonKey: "reverse_trial_start_button",
-        hasTarget: false,
-        minElapsedDays: 0,
-        autoDismissMs: 5000,
+      await mockAccountOnChangedListeners[0]({
+        user: { hasPremium: true },
+        oldUser: { hasPremium: false },
       });
 
-    const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-    start(params);
-
-    const result = await sendMessage();
-
-    spy.mockRestore();
-
-    expect(result).toHaveProperty("autoDismissMs", 5000);
-  });
-
-  it("returns true for showOnce touch point when step matches (step 1 shown, current step is 1)", async () => {
-    const params = createMockParams({ [STEP_PREF_KEY]: 1 });
-    start(params);
-
-    const result = await sendDialogShouldStillShow(1);
-    expect(result).toBe(true);
-  });
-
-  it("returns false for showOnce touch point when step has advanced past the touch point", async () => {
-    const params = createMockParams({ [STEP_PREF_KEY]: 2 });
-    start(params);
-
-    const result = await sendDialogShouldStillShow(1);
-    expect(result).toBe(false);
-  });
-
-  it("returns false for non-showOnce touch point when step has been advanced (step 3)", async () => {
-    const params = createMockParams({ [STEP_PREF_KEY]: 3 });
-    start(params);
-
-    const result = await sendDialogShouldStillShow(3);
-    expect(result).toBe(false);
-  });
-
-  it("returns true for non-showOnce touch point when step has not been advanced (step 3)", async () => {
-    const params = createMockParams({ [STEP_PREF_KEY]: 2 });
-    start(params);
-
-    const result = await sendDialogShouldStillShow(3);
-    expect(result).toBe(true);
-  });
-
-  it("opt-out advances step to last touch point", async () => {
-    const params = createMockParams({
-      [STEP_PREF_KEY]: 2,
-      [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
+      expect(params.prefs.set).not.toHaveBeenCalledWith(
+        STEP_PREF_KEY,
+        expect.any(Number),
+      );
+      expect(ewe.lightningSnippets.clear).not.toHaveBeenCalled();
+      expect(vi.mocked(browser.tabs.sendMessage)).not.toHaveBeenCalled();
     });
-    start(params);
 
-    await sendOptOut(2);
+    it("upgrade transition when config is absent is a no-op", async () => {
+      mockFlags({ config: null });
+      vi.mocked(browser.tabs.query).mockResolvedValue([
+        { id: 1 } as browser.Tabs.Tab,
+      ]);
+      const params = createMockParams({
+        [STEP_PREF_KEY]: 1,
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
+      });
+      start(params);
 
-    expect(params.prefs.set).toHaveBeenCalledWith(
-      STEP_PREF_KEY,
-      touchpointsModule.LAST_TOUCH_POINT_STEP,
-    );
-  });
+      await mockAccountOnChangedListeners[0]({
+        user: { hasPremium: true },
+        oldUser: { hasPremium: false },
+      });
 
-  it("opt-out broadcasts dismiss to open tabs", async () => {
-    vi.mocked(browser.tabs.query).mockResolvedValue([
-      { id: 1 } as browser.Tabs.Tab,
-    ]);
-    vi.mocked(browser.tabs.sendMessage).mockResolvedValue(undefined);
-
-    const params = createMockParams({ [STEP_PREF_KEY]: 2 });
-    start(params);
-
-    await sendOptOut(2);
-
-    expect(vi.mocked(browser.tabs.sendMessage)).toHaveBeenCalledWith(1, {
-      type: DISMISS_DIALOG_MESSAGE_TYPE,
+      expect(params.prefs.set).not.toHaveBeenCalled();
+      expect(ewe.lightningSnippets.clear).not.toHaveBeenCalled();
+      expect(vi.mocked(browser.tabs.sendMessage)).not.toHaveBeenCalled();
     });
-  });
 
-  it("omits tracking params from target URL when user is opted out", async () => {
-    const trialStarted = Date.now() - 8 * MS_PER_DAY;
-    const params = createMockParams({
-      [TRIAL_START_DATE_PREF_KEY]: trialStarted,
-      [STEP_PREF_KEY]: 1,
+    it("downgrade transition is a no-op", async () => {
+      const params = createMockParams({
+        [STEP_PREF_KEY]: 1,
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
+      });
+      start(params);
+
+      await mockAccountOnChangedListeners[0]({
+        user: { hasPremium: false },
+        oldUser: { hasPremium: true },
+      });
+
+      expect(params.prefs.set).not.toHaveBeenCalled();
+      expect(ewe.lightningSnippets.clear).not.toHaveBeenCalled();
     });
-    vi.mocked(params.isOptedOut).mockResolvedValue(true);
-    start(params);
 
-    const result = (await sendMessage()) as Record<string, string>;
-    expect(result.target).not.toContain("s=reverse_trial_opd");
-    expect(result.target).not.toContain("opdStep");
-    expect(result.target).not.toContain("rcid");
-    expect(result.target).not.toContain("av=");
-    expect(result.target).not.toContain("er=");
-    expect(result.target).not.toContain("ev=");
-    expect(result.target).not.toContain("ca=");
-    expect(result.target).toContain(`trialStarted=${trialStarted}`);
+    it("no-change transitions (both true, both false) are no-ops", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 1 });
+      start(params);
+
+      await mockAccountOnChangedListeners[0]({
+        user: { hasPremium: true },
+        oldUser: { hasPremium: true },
+      });
+      await mockAccountOnChangedListeners[0]({
+        user: { hasPremium: false },
+        oldUser: { hasPremium: false },
+      });
+
+      expect(params.prefs.set).not.toHaveBeenCalled();
+      expect(ewe.lightningSnippets.clear).not.toHaveBeenCalled();
+    });
+
+    it("logout (user=null) is a no-op", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 1 });
+      start(params);
+
+      await mockAccountOnChangedListeners[0]({
+        user: null,
+        oldUser: { hasPremium: true },
+      });
+
+      expect(params.prefs.set).not.toHaveBeenCalled();
+      expect(ewe.lightningSnippets.clear).not.toHaveBeenCalled();
+    });
+
+    it("upgrade transition does NOT reset trial prefs", async () => {
+      const params = createMockParams({
+        [STEP_PREF_KEY]: 1,
+        [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
+      });
+      start(params);
+
+      await mockAccountOnChangedListeners[0]({
+        user: { hasPremium: true },
+        oldUser: { hasPremium: false },
+      });
+
+      expect(params.prefs.reset).not.toHaveBeenCalled();
+    });
   });
 });

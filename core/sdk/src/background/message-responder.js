@@ -38,7 +38,7 @@ import {onHistoryStateUpdatedSafari} from "./safari-polyfill.js";
 import {filterEngine} from "./core.js";
 import {getFrameInfo, TOP_LEVEL_FRAME_ID} from "./frame-state.js";
 import {default as experiments} from "./experiments.js";
-import {default as account} from "./account/index.js";
+import {default as lightningSnippets} from "./lightning-snippets.js";
 
 // Detection types with this prefix count in CDP domain stats (ds path).
 const WALL_TYPE_PREFIX = "wall-";
@@ -132,10 +132,9 @@ async function handleMessage(message, sender) {
       const frame = getFrameInfo(sender.tab.id, sender.frameId);
       const topFrame = getFrameInfo(sender.tab.id, TOP_LEVEL_FRAME_ID);
       const hostname = frame.hostname;
-      const [experimentHosts, isPremium, zeroDelayTrial] = await Promise.all([
+      const [experimentHosts, isEnabled] = await Promise.all([
         experiments.getFlag("zero-delay-snippet-domains"),
-        account.hasPremium(),
-        experiments.getFlag("zero-delay-reverse-trial")
+        lightningSnippets.isEnabled()
       ]);
       const request = {
         tabId: sender.tab.id,
@@ -143,16 +142,22 @@ async function handleMessage(message, sender) {
         url: frame.url
       };
 
+      // `useCache` activates Lightning Snippets (zero-delay filter caching)
+      // for this frame. It composes two independent sources:
+      //   - lightningSnippets.isEnabled(): resolved global state from the
+      //     caller-opinion / premium-status / host-default precedence
+      //     chain (see the lightningSnippets namespace).
+      //   - zero-delay-snippet-domains: a per-host activation list in the
+      //     experiment config, independent of global state.
       const defaultFiltersConfig = {
         // If true, content scripts will mark visually the elements hidden
         debug: debugOptions.elemHide,
         // If true, content scripts will apply the filters from the local cache
         // first, and if there are changes will update the cache and refresh
         // the page.
-        useCache: isPremium || zeroDelayTrial ||
-          Boolean(
-            experimentHosts && experimentHosts.includes(hostname)
-          ),
+        useCache: isEnabled || Boolean(
+          experimentHosts && experimentHosts.includes(hostname)
+        ),
         // If true, isolated snippets will fire
         // snippet_detection_event telemetry
         detectionEventEnabled: Boolean(

@@ -46,6 +46,7 @@ import * as remoteConfig from "./remote-config/index.js";
 import * as experiments from "./experiments.js";
 import * as cohorts from "./cohorts/index.js";
 import * as account from "./account/index.js";
+import * as lightningSnippets from "./lightning-snippets.js";
 import {setAddonInfo, isSafari} from "./info.js";
 import {filterEngine} from "./core.js";
 import {validate as validateSubscriptions,
@@ -179,6 +180,12 @@ export {wrappedCohorts as cohorts};
 const wrappedAccount = wrapApiNamespace(account.default);
 export {wrappedAccount as account};
 
+/**
+ * @ignore
+ */
+const wrappedLightningSnippets = wrapApiNamespace(lightningSnippets.default);
+export {wrappedLightningSnippets as lightningSnippets};
+
 const SKIP_INIT_RULESETS_STORAGE_KEY = "ewe:skip_init_rulesets";
 
 /**
@@ -298,6 +305,12 @@ async function onInstalled(details) {
  *   of the returned `FirstRunInfo`.
  * @param {boolean?} [addonInfo.featureFlags.inlineCss] Enable inline CSS in
  *   element hiding and element hiding emulation filters.
+ * @param {boolean?} [addonInfo.lightningSnippets] Default value for
+ *   Lightning Snippets (zero-delay filter caching). Defaults to `false`
+ *   when omitted. Acts as the lowest-priority value in the
+ *   `lightningSnippets` namespace precedence chain — runtime calls to
+ *   `ewe.lightningSnippets.enable()` / `disable()` override it, and
+ *   premium users are enabled when no runtime opinion has been set.
  * @param {Object?} [addonInfo.remoteConfig] Remote configuration parameters.
  * @param {string} [addonInfo.remoteConfig.url] The URL to make a GET request to
  *   for getting the remote config data.
@@ -326,6 +339,9 @@ export async function start(addonInfo) {
   if (addonInfoResult.warnings) {
     warnings.push(...addonInfoResult.warnings);
   }
+
+  const lightningSnippetsEnabled = addonInfo && addonInfo.lightningSnippets;
+  lightningSnippets.initialize(lightningSnippetsEnabled);
 
   if (addonInfo && addonInfo.telemetryEventLogging) {
     serverLogUploader.start(addonInfo.telemetryEventLogging);

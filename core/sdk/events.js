@@ -1289,7 +1289,7 @@ export default {
         type: "object",
         properties: {
           action: {
-            description: "The action taken: 'close' for the x button, 'cta' for the call-to-action button",
+            description: "Identifier of the clicked element: the i18n key of a configured ctaButton or link (e.g. 'mid_cta', 'mid_end_trial'), or an uppercase built-in value ('CLOSE' for the x button, 'AUTO_DISMISS' for the auto-dismiss timeout)",
             type: "string"
           },
           touchPointStep: {
@@ -1307,44 +1307,19 @@ export default {
         }
       }
     },
-    opt_out: {
-      description: "The user opted out of the reverse trial by clicking the opt-out link on the dialog",
+    config_validation_failed: {
+      description: "The remote reverse-trial OPD config failed validation. Fires at load time when the experiment flag is present but the schema is invalid (e.g. missing field, unknown action type, URL not on the allowlist), and at runtime when a NAVIGATE URL fails the allowlist check after template substitution. The full URL is intentionally not logged because template variables may contain PII.",
       data: {
-        description: "Details about the opt-out",
+        description: "Details about the validation failure.",
         type: "object",
         properties: {
-          touchPointStep: {
-            description: "The touch point step number of the dialog from which the user opted out",
-            type: "number"
+          reason: {
+            description: "Why validation failed. Load-time reasons include 'config_missing' (flag absent despite the user being in a reverse-trial variant), 'trial_duration_days_invalid', 'require_opt_in_invalid', 'steps_invalid', 'step_id_invalid', 'step_title_invalid', 'step_body_invalid', 'step_i18n_en_missing', 'step_i18n_key_missing_in_en', 'navigate_url_missing', 'navigate_url_not_allowlisted', 'action_type_unknown'. Runtime reason is 'url_validation_failed_after_substitution'.",
+            type: "string"
           },
-          installDate: {
-            description: "The timestamp when the extension was installed",
-            type: "number"
-          },
-          reverseTrialStartDate: {
-            description: "The timestamp when the reverse trial started",
-            type: "number"
-          }
-        }
-      }
-    },
-    feedback_clicked: {
-      description: "The user clicked the feedback link on the reverse trial dialog",
-      data: {
-        description: "Details about the feedback link click",
-        type: "object",
-        properties: {
-          touchPointStep: {
-            description: "The touch point step number of the dialog from which the user clicked feedback",
-            type: "number"
-          },
-          installDate: {
-            description: "The timestamp when the extension was installed",
-            type: "number"
-          },
-          reverseTrialStartDate: {
-            description: "The timestamp when the reverse trial started",
-            type: "number"
+          hostname: {
+            description: "Hostname of the failing URL for runtime URL validation failures; absent for load-time schema failures.",
+            type: "string"
           }
         }
       }

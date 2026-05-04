@@ -366,6 +366,28 @@ export default {
   },
 
   /**
+   * Clears a single feature flag override, restoring it to the
+   * remote-configured value.
+   * Unlike clearFlagOverrides() which removes all overrides, this
+   * targets a specific flag.
+   *
+   * @param {string} flagId - Identifier of the feature flag override to clear
+   * @returns {Promise<void>}
+   */
+  async clearFlagOverride(flagId) {
+    const state = await experimentData.getStateLoaded();
+
+    if (!state.overrides || !(flagId in state.overrides)) {
+      return;
+    }
+
+    delete state.overrides[flagId];
+    await experimentData.save();
+
+    emitter.emit("updated");
+  },
+
+  /**
    * Retrieves current experiment variant assignments for the current client
    * @returns {Promise<Object.<string, string>>} Object specifying the assigned
    *   variant ID for each active assigned experiment ID

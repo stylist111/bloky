@@ -20,28 +20,44 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import browser from "webextension-polyfill";
 
 import {
-  EXPERIMENT_FLAG,
+  EXPERIMENT_FLAG_PREFIX,
   GET_DIALOG_MESSAGE_TYPE,
   GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
   DIALOG_ACTION_MESSAGE_TYPE,
   DISMISS_DIALOG_MESSAGE_TYPE,
-  OPT_OUT_MESSAGE_TYPE,
-  FEEDBACK_MESSAGE_TYPE,
-  FEEDBACK_URL,
   STEP_PREF_KEY,
+  TOUCH_POINT_CONFIG_FLAG_PREFIX,
   TRIAL_START_DATE_PREF_KEY,
   MS_PER_DAY,
-  OPD_KILL_SWITCH,
 } from "../shared/constants.js";
-import type { StartInfo, DialogPayload } from "../shared/types.js";
 import {
+  DialogAction,
+  type DialogPayload,
+  type RemoteStepConfig,
+  type StartInfo,
+  type StepAction,
+} from "../shared/types.js";
+import { assertExhaustive } from "../shared/assert-exhaustive.js";
+import { buildDialogPayload, findElementByKey } from "./dialog-payload.js";
+import { findFlagByPrefix } from "./flags.js";
+import { getRemoteOpdConfig, isObject } from "./remote-config.js";
+import { buildTextVariables, buildUrlVariables } from "./templating.js";
+import {
+  getLastStepId,
+  getStepById,
   resolveNextTouchPoint,
-  getTouchPoint,
-  LAST_TOUCH_POINT_STEP,
 } from "./touchpoints.js";
+import { advanceTrialStep, endTrial, startTrial } from "./trial-lifecycle.js";
 
 const serverLogger = new ewe.telemetry.ServerLogger("reverse_trial");
 
+/**
+ * Fetches an image URL and returns its contents as a base64 data URL.
+ *
+ * Done in the service worker rather than the content script so the
+ * image request is not visible to the page — otherwise the YouTube page
+ * could detect our extension by observing the logo fetch.
+ */
 async function toDataUrl(url: string): Promise<string> {
   const response = await fetch(url);
   const blob = await response.blob();
@@ -55,287 +71,294 @@ async function toDataUrl(url: string): Promise<string> {
 }
 
 /**
- * Checks if a trial is currently in progress, and if it is ends it immediately
- * by setting the current step to the last one. This is used to end the trial if
- * a user has purchased premium or if the kill switch is active.
- *
- * Note the users without premium may be excluded by the feature flag, that
- * would only target non-premium users. Updating the step is necessary so that
- * if they ever cancel their premium, they won't then see an OPD saying that
- * their trial has ended.
- */
-async function ensureTrialIsNotInProgress(params: StartInfo): Promise<void> {
-  const trialStartDate: number =
-    params.prefs.get(TRIAL_START_DATE_PREF_KEY) ?? 0;
-  if (trialStartDate) {
-    await advanceTrialStep(params, LAST_TOUCH_POINT_STEP);
-  }
-}
-
-/**
- * Set the trial step to the new value. Enforces that the trial step can only
- * ever increase.
- */
-async function advanceTrialStep(
-  params: StartInfo,
-  newStep: number,
-): Promise<void> {
-  const currentStep: number = params.prefs.get(STEP_PREF_KEY) ?? 0;
-  if (currentStep < newStep) {
-    await params.prefs.set(STEP_PREF_KEY, newStep);
-  }
-}
-
-/**
  * Handles a dialog request from the content script.
  *
- * Checks whether the reverse trial experiment is enabled, determines the
- * next eligible touch point, and returns a fully resolved {@link DialogPayload}.
- * On the first visit (step 0, no start date), sets the trial start date.
- * Does NOT advance the step — that happens when the user dismisses the dialog.
- *
- * @param params - Host-provided dependencies (prefs, URLs, logger)
- * @returns The dialog payload for the next touch point, or null
+ * Reads the remote OPD config, determines the next eligible step, and
+ * builds a fully resolved {@link DialogPayload}. Without a valid remote
+ * config no OPD is shown. Does NOT advance the step — that happens when
+ * the user dismisses the dialog.
  */
 async function requestDialogHandler(
   message: { ytPremium?: boolean },
   params: StartInfo,
 ): Promise<DialogPayload | null> {
-  const opdKillSwitch = Boolean(await ewe.experiments.getFlag(OPD_KILL_SWITCH));
+  const flags = await ewe.experiments.getFlags();
 
-  if ((await params.hasPremium()) || opdKillSwitch) {
-    await ensureTrialIsNotInProgress(params);
+  // Gate flag must be on to start a trial or to show OPDs. Each
+  // experiment appends its own id to the base flag name; we accept
+  // whichever matching flag is present.
+  if (!findFlagByPrefix(flags, EXPERIMENT_FLAG_PREFIX)) {
     return null;
   }
 
-  const lastShown: number = params.prefs.get(STEP_PREF_KEY) ?? 0;
-  let trialStartDate: number = params.prefs.get(TRIAL_START_DATE_PREF_KEY) ?? 0;
-  const flagEnabled = Boolean(await ewe.experiments.getFlag(EXPERIMENT_FLAG));
-
-  // The flag must be enabled for the trial to start. However, after it has
-  // started, we let it run to its conclusion regardless of the flag's status.
-  // The last opd step can be shown after more than 14 days when the user
-  // is not in the experiment anymore
-  if (!flagEnabled && !trialStartDate) {
-    return null;
-  }
-
-  // If the user has YouTube Premium and the trial hasn't started yet,
-  // don't start it — treat this session as if the visit didn't happen.
-  if (message.ytPremium && !trialStartDate) {
-    return null;
-  }
-
-  if (!trialStartDate) {
-    trialStartDate = Date.now();
-    await params.prefs.set(TRIAL_START_DATE_PREF_KEY, trialStartDate);
-  }
-
-  const elapsedDays = Math.floor((Date.now() - trialStartDate) / MS_PER_DAY);
-
-  const config = await resolveNextTouchPoint(lastShown, elapsedDays);
+  const config = getRemoteOpdConfig(
+    findFlagByPrefix(flags, TOUCH_POINT_CONFIG_FLAG_PREFIX),
+    params.allowedUrlHosts,
+  );
+  // Config must be valid to start the trial or to show OPDs
   if (!config) {
     return null;
   }
 
-  // If the user has YouTube Premium and a dialog would have been shown,
-  // skip it without advancing the step. Log the skip for analytics.
-  // Exception: advance the step for the final touch point so the trial
-  // is marked as ended — otherwise the user would see a stale "trial
-  // ended" OPD if they later log out of their Premium account.
+  // Runtime Premium gate: the experiment enrolls all users regardless of
+  // hasPremium, so the fragment is the single source of truth for "don't
+  // show OPDs to premium users." End the trial (step → last, caller
+  // opinion cleared) so no further OPDs fire and lightning snippets
+  // resolve via the hasPremium rung of the precedence chain.
+  if (await ewe.account.hasPremium()) {
+    const currentStep =
+      (params.prefs.get(STEP_PREF_KEY) as number | undefined) ?? 0;
+    if (currentStep < getLastStepId(config)) {
+      await endTrial(params, config);
+    }
+    return null;
+  }
+
+  const lastShown =
+    (params.prefs.get(STEP_PREF_KEY) as number | undefined) ?? 0;
+  let trialStartDate =
+    (params.prefs.get(TRIAL_START_DATE_PREF_KEY) as number | undefined) ?? 0;
+
+  // YT Premium + no existing trial → treat as if this visit didn't
+  // happen so we don't start a trial they won't benefit from.
+  if (message.ytPremium && !trialStartDate) {
+    return null;
+  }
+
+  if (!trialStartDate && !config.requireOptIn) {
+    // Auto-enrollment: stamp the trial start and turn lightning snippets
+    // on. Opt-in configs skip this — the start happens inside the
+    // START_TRIAL action handler when the user accepts.
+    await startTrial(params);
+    trialStartDate = Date.now();
+  }
+
+  // For opt-in configs before acceptance, trialStartDate is 0 so the
+  // opt-in step (minElapsedDays: 0) is eligible while later windowed
+  // steps are not. Once START_TRIAL fires the date is stamped and day
+  // counting runs normally from acceptance time forward.
+  const elapsedDays = trialStartDate
+    ? Math.floor((Date.now() - trialStartDate) / MS_PER_DAY)
+    : 0;
+  const step = resolveNextTouchPoint(config, lastShown, elapsedDays);
+  if (!step) {
+    return null;
+  }
+
+  const lastStepId = getLastStepId(config);
+
+  // YT Premium mid-trial: skip the dialog. Exception: if we'd have shown
+  // the final touch point, advance to last anyway so the trial is
+  // marked ended — otherwise the user would see a stale "trial ended"
+  // OPD if they later log out of their Premium account.
   if (message.ytPremium) {
-    if (config.step === LAST_TOUCH_POINT_STEP) {
-      await ensureTrialIsNotInProgress(params);
+    if (step.id === lastStepId) {
+      await endTrial(params, config);
     }
     serverLogger.debug("dialog_skipped_yt_premium", {
-      touchPointStep: config.step,
-      installDate: params.prefs.get("installDate") ?? 0,
+      touchPointStep: step.id,
+      installDate: (params.prefs.get("installDate") as number | undefined) ?? 0,
       reverseTrialStartDate: trialStartDate,
     });
     return null;
   }
 
-  if (config.showOnce) {
-    await advanceTrialStep(params, config.step);
-  }
-
-  // We convert the logo to a data url so that fetching it happens in the
-  // service worker. Otherwise the page would be able to detect our request.
   const logoUrl = await toDataUrl(params.logoUrl);
 
   serverLogger.info("dialog_shown", {
-    touchPointStep: config.step,
-    installDate: params.prefs.get("installDate") ?? 0,
+    touchPointStep: step.id,
+    installDate: (params.prefs.get("installDate") as number | undefined) ?? 0,
     reverseTrialStartDate: trialStartDate,
   });
 
-  const urlParams = new URLSearchParams();
-  urlParams.set("trialStarted", String(trialStartDate));
-
   const isOptedOut = await params.isOptedOut();
+  const urlVars = await buildUrlVariables(
+    step.id,
+    trialStartDate,
+    params,
+    isOptedOut,
+  );
+  const textVars = buildTextVariables(config, elapsedDays);
+  const locale = browser.i18n.getUILanguage();
 
-  if (!isOptedOut) {
-    urlParams.set("s", "reverse_trial_opd");
-    urlParams.set("opdStep", String(config.step));
-    urlParams.set("rcid", await ewe.telemetry.getRotatingClientId());
-    urlParams.set("av", params.addonVersion);
-    urlParams.set("er", String(await ewe.remoteConfig.getRevisionId()));
-    urlParams.set("ev", await ewe.experiments.getEncodedExperiments());
-    urlParams.set("ca", await ewe.cohorts.getEncodedCohorts());
-  }
-
-  const premiumUrl = `${params.premiumUrl}?${urlParams.toString()}`;
-
-  let target = "";
-  if (config.hasTarget) {
-    target = premiumUrl;
-  }
-
-  let learnMore;
-  if (config.learnMore) {
-    learnMore = {
-      text: browser.i18n.getMessage(config.learnMore),
-      url: premiumUrl,
-    };
-  }
-
-  const dismiss = config.showDismissLink
-    ? { text: browser.i18n.getMessage("reverse_trial_midpoint_decide_later") }
-    : undefined;
-
-  const optOut = config.optOutKey
-    ? { text: browser.i18n.getMessage(config.optOutKey) }
-    : undefined;
-
-  let feedback;
-  if (config.showFeedback) {
-    feedback = {
-      text: browser.i18n.getMessage("reverse_trial_submit_feedback"),
-      url: FEEDBACK_URL + `&entry.1742752836=${config.step}`,
-    };
-    if (!isOptedOut) {
-      feedback.url += `&entry.400370027=${params.addonVersion}`;
-    }
-  }
-
-  return {
-    title: browser.i18n.getMessage(config.titleKey),
-    body: config.bodyKeys.map((entry) => ({
-      text: browser.i18n.getMessage(entry.key),
-      style: entry.style,
-    })),
-    button: config.buttonKey
-      ? browser.i18n.getMessage(config.buttonKey)
-      : undefined,
-    target,
+  return buildDialogPayload(
+    step,
     logoUrl,
-    touchPointStep: config.step,
-    learnMore,
-    dismiss,
-    optOut,
-    showOnce: config.showOnce,
-    autoDismissMs: config.autoDismissMs,
-    feedback,
-  };
+    locale,
+    urlVars,
+    textVars,
+    params.allowedUrlHosts,
+  );
 }
 
 /**
- * Handles a dialog dismiss action from the content script.
+ * True if the step exposes a `START_TRIAL` action — i.e. it's the
+ * opt-in OPD. Used to route any non-`START_TRIAL` closing interaction
+ * through the end-trial path so dismissal doesn't leave the user in a
+ * limbo state where later (post-acceptance) steps could still fire.
+ */
+function stepHasStartTrial(step: RemoteStepConfig | undefined): boolean {
+  if (!step) {
+    return false;
+  }
+  if (step.ctaButton?.action.type === DialogAction.START_TRIAL) {
+    return true;
+  }
+  return (
+    step.links?.some((l) => l.action.type === DialogAction.START_TRIAL) ?? false
+  );
+}
+
+/**
+ * Resolves a dialog-action message's `action` field to the configured
+ * `StepAction`. Built-in uppercase defaults (`CLOSE`, `AUTO_DISMISS`)
+ * always mean "close action"; configured i18n keys are looked up in the
+ * step config. Unknown keys (e.g. from a stale dialog) default to
+ * `CLOSE` so the dialog still dismisses cleanly.
+ */
+function resolveMessageAction(
+  message: { touchPointStep: number; action: string },
+  config: ReturnType<typeof getRemoteOpdConfig>,
+): StepAction {
+  if (
+    !config ||
+    message.action === DialogAction.CLOSE ||
+    message.action === DialogAction.AUTO_DISMISS
+  ) {
+    return { type: DialogAction.CLOSE };
+  }
+  const step = getStepById(config, message.touchPointStep);
+  const element = findElementByKey(step, message.action);
+  return element?.action ?? { type: DialogAction.CLOSE };
+}
+
+/**
+ * Handles a dialog-action message from the content script.
  *
- * Advances the step if the reported touch point is ahead of the current step.
- * This ensures idempotency — multiple tabs showing the same dialog won't
- * double-advance.
- *
- * After advancing the step, broadcasts DISMISS_DIALOG_MESSAGE_TYPE to all open
- * tabs so that any other tab still showing the same dialog closes it.
- * Errors from tabs that have no content script are intentionally swallowed.
- *
- * @param message - The dismiss message with touchPointStep and action.
- *   `action` is `"close"` when the user clicked the × button,
- *   or `"cta"` when the user clicked the call-to-action button.
- * @param params - Host-provided dependencies
+ * Logs telemetry, resolves the action, and applies its behavior:
+ * - `NAVIGATE` with `closeAfter: false` → no step advance, no broadcast
+ * - `END_TRIAL` → end the trial (step → last, lightning-snippets caller
+ *   opinion cleared), broadcast
+ * - `START_TRIAL` → start the trial (stamp start date, activate
+ *   lightning snippets), advance the step
+ * - On a step that contains a `START_TRIAL` action (the opt-in OPD),
+ *   any non-`START_TRIAL` closing interaction (×, auto-dismiss,
+ *   configured `CLOSE`, `NAVIGATE` with `closeAfter: true`) is routed
+ *   through the end-trial path — without it the user could dismiss the
+ *   opt-in OPD and still see post-acceptance OPDs once their day count
+ *   drifted into later windows.
+ * - Otherwise (`CLOSE`, `NAVIGATE` with `closeAfter: true`, built-in
+ *   close/auto-dismiss, or unknown key) → advance step to
+ *   `touchPointStep`; if that reaches the last step, end the trial;
+ *   broadcast dismiss.
  */
 async function dialogActionHandler(
-  message: { touchPointStep: number; action: string; silent?: boolean },
+  message: { touchPointStep: number; action: string },
   params: StartInfo,
 ): Promise<void> {
-  await advanceTrialStep(params, message.touchPointStep);
-
   serverLogger.info("dialog_action", {
     action: message.action,
     touchPointStep: message.touchPointStep,
-    installDate: params.prefs.get("installDate") ?? 0,
-    reverseTrialStartDate: params.prefs.get(TRIAL_START_DATE_PREF_KEY) ?? 0,
+    installDate: (params.prefs.get("installDate") as number | undefined) ?? 0,
+    reverseTrialStartDate:
+      (params.prefs.get(TRIAL_START_DATE_PREF_KEY) as number | undefined) ?? 0,
   });
 
-  if (!message.silent) {
+  const flags = await ewe.experiments.getFlags();
+  const config = getRemoteOpdConfig(
+    findFlagByPrefix(flags, TOUCH_POINT_CONFIG_FLAG_PREFIX),
+    params.allowedUrlHosts,
+  );
+  const stepAction = resolveMessageAction(message, config);
+
+  const willClose =
+    stepAction.type !== DialogAction.NAVIGATE ||
+    stepAction.closeAfter !== false;
+  const isOptInStep =
+    config !== null &&
+    stepHasStartTrial(getStepById(config, message.touchPointStep));
+
+  if (
+    isOptInStep &&
+    willClose &&
+    stepAction.type !== DialogAction.START_TRIAL
+  ) {
+    if (config) {
+      await endTrial(params, config);
+    }
     await dismissOpenDialogs();
+    return;
   }
+
+  // Exhaustiveness check below means adding a new `StepAction`
+  // variant triggers a compile error until this switch handles it.
+  switch (stepAction.type) {
+    case DialogAction.NAVIGATE:
+      if (stepAction.closeAfter === false) {
+        return;
+      }
+      break;
+    case DialogAction.END_TRIAL:
+      if (config) {
+        await endTrial(params, config);
+      }
+      await dismissOpenDialogs();
+      return;
+    case DialogAction.START_TRIAL:
+      await startTrial(params);
+      break;
+    case DialogAction.CLOSE:
+      break;
+    default:
+      assertExhaustive(stepAction);
+  }
+
+  if (config && message.touchPointStep >= getLastStepId(config)) {
+    await endTrial(params, config);
+  } else {
+    await advanceTrialStep(params, message.touchPointStep);
+  }
+  await dismissOpenDialogs();
 }
 
 /**
- * Handles a check from the content script asking whether a currently-visible
- * dialog should still be shown.
+ * Handles a check from the content script asking whether a
+ * currently-visible dialog should still be shown.
  *
- * @param message - Contains the touch point step
- * @param params - Host-provided dependencies
+ * The dialog is still valid while `currentStep < touchPointStep`. Once
+ * the step has been advanced (by this tab or another) the displayed
+ * dialog is stale and should be removed.
  */
 async function dialogShouldStillShowHandler(
   message: { touchPointStep: number },
   params: StartInfo,
 ): Promise<boolean> {
-  const touchpoint = await getTouchPoint(message.touchPointStep);
-  const currentStep: number = params.prefs.get(STEP_PREF_KEY) ?? 0;
-
-  // showOnce touchpoints increment the step immediately when they are shown, so if the step isn't still the current step then the user has moved on.
-  let shouldStillShow: boolean;
-  if (touchpoint?.showOnce) {
-    shouldStillShow = currentStep === message.touchPointStep;
-  } else {
-    shouldStillShow = currentStep < message.touchPointStep;
-  }
+  const currentStep =
+    (params.prefs.get(STEP_PREF_KEY) as number | undefined) ?? 0;
+  const shouldStillShow = currentStep < message.touchPointStep;
 
   serverLogger.debug("dialog_should_still_show_checked", {
     touchPointStep: message.touchPointStep,
     shouldStillShow,
-    installDate: params.prefs.get("installDate") ?? 0,
-    reverseTrialStartDate: params.prefs.get(TRIAL_START_DATE_PREF_KEY) ?? 0,
+    installDate: (params.prefs.get("installDate") as number | undefined) ?? 0,
+    reverseTrialStartDate:
+      (params.prefs.get(TRIAL_START_DATE_PREF_KEY) as number | undefined) ?? 0,
   });
 
   return shouldStillShow;
 }
 
-async function optOutHandler(
-  message: { touchPointStep: number },
-  params: StartInfo,
-): Promise<void> {
-  await advanceTrialStep(params, LAST_TOUCH_POINT_STEP);
-
-  serverLogger.info("opt_out", {
-    touchPointStep: message.touchPointStep,
-    installDate: params.prefs.get("installDate") ?? 0,
-    reverseTrialStartDate: params.prefs.get(TRIAL_START_DATE_PREF_KEY) ?? 0,
-  });
-
-  await dismissOpenDialogs();
-}
-
-async function feedbackHandler(
-  message: { touchPointStep: number },
-  params: StartInfo,
-): Promise<void> {
-  serverLogger.info("feedback_clicked", {
-    touchPointStep: message.touchPointStep,
-    installDate: params.prefs.get("installDate") ?? 0,
-    reverseTrialStartDate: params.prefs.get(TRIAL_START_DATE_PREF_KEY) ?? 0,
-  });
-}
-
+/**
+ * Broadcasts a dismiss message to every tab. Tabs without the
+ * reverse-trial content script reject the message, which is expected
+ * and swallowed — the broadcast is intentionally best-effort because
+ * the service worker cannot efficiently enumerate only relevant tabs.
+ *
+ * Uses per-message try/catch rather than `Promise.allSettled` because
+ * allSettled isn't available in the oldest supported Firefox (pre-71).
+ */
 async function dismissOpenDialogs(): Promise<void> {
   const tabs = await browser.tabs.query({});
-  // Note: This could be simplified by using Promise.allSettled, but that isn't
-  // supported in the oldest Firefox we currently support. It is available from
-  // Firefox 71.0 onwards.
   await Promise.all(
     tabs.map(async (tab) => {
       if (tab.id !== undefined) {
@@ -344,8 +367,7 @@ async function dismissOpenDialogs(): Promise<void> {
             type: DISMISS_DIALOG_MESSAGE_TYPE,
           });
         } catch (_e) {
-          // Errors indicate that the tab isn't one with the reverse trial
-          // content script running, safe to ignore.
+          // Tab without the reverse-trial content script; safe to ignore.
         }
       }
     }),
@@ -355,11 +377,14 @@ async function dismissOpenDialogs(): Promise<void> {
 /**
  * Initializes the reverse trial background logic.
  *
- * Registers a message handler via the port object that responds to dialog
- * requests from the content script and registers the trusted message
- * types for the origins.
- *
- * @param params - Host-provided dependencies (prefs, port, URLs)
+ * Registers port handlers and trusted message types for YouTube.
+ * Installs two listeners:
+ *   - account.onChanged: ends any in-progress trial when the user
+ *     upgrades to Premium and dismisses open OPDs.
+ *   - experiments.onChanged: when the config flag is withdrawn (the
+ *     user leaves the experiment), clears the lightning-snippets
+ *     caller opinion (defense-in-depth — endTrial already clears it)
+ *     and resets trial prefs so the user can be re-targeted later.
  */
 export function start(params: StartInfo): void {
   params.port.on(
@@ -369,11 +394,7 @@ export function start(params: StartInfo): void {
   );
   params.port.on(
     DIALOG_ACTION_MESSAGE_TYPE,
-    async (message: {
-      touchPointStep: number;
-      action: string;
-      silent?: boolean;
-    }) => {
+    async (message: { touchPointStep: number; action: string }) => {
       await dialogActionHandler(message, params);
     },
   );
@@ -382,32 +403,67 @@ export function start(params: StartInfo): void {
     async (message: { touchPointStep: number }) =>
       await dialogShouldStillShowHandler(message, params),
   );
-  params.port.on(
-    OPT_OUT_MESSAGE_TYPE,
-    async (message: { touchPointStep: number }) => {
-      await optOutHandler(message, params);
-    },
-  );
-  params.port.on(
-    FEEDBACK_MESSAGE_TYPE,
-    async (message: { touchPointStep: number }) => {
-      await feedbackHandler(message, params);
-    },
-  );
 
   const trustedTypes = [
     GET_DIALOG_MESSAGE_TYPE,
     GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
     DIALOG_ACTION_MESSAGE_TYPE,
-    OPT_OUT_MESSAGE_TYPE,
-    FEEDBACK_MESSAGE_TYPE,
   ];
   params.addTrustedMessageTypes("https://youtube.com", trustedTypes);
   params.addTrustedMessageTypes("https://www.youtube.com", trustedTypes);
 
-  void params.hasPremium().then(async (premium) => {
-    if (premium) {
-      await ensureTrialIsNotInProgress(params);
+  // When the user upgrades to Premium during an active trial, end it
+  // immediately — don't wait until the next YouTube visit (the runtime
+  // gate in requestDialogHandler) or for the experiments-facts
+  // round-trip. endTrial is Premium-safe: .clear() on lightning
+  // snippets lets the precedence chain resolve via hasPremium for a
+  // premium user. Trial prefs are NOT reset here — that's reserved for
+  // experiment exit via the experiments.onChanged listener below.
+  ewe.account.onChanged.addListener(async ({ user, oldUser }) => {
+    const becamePremium = user?.hasPremium && !oldUser?.hasPremium;
+    if (!becamePremium) {
+      return;
+    }
+
+    const flags = await ewe.experiments.getFlags();
+    const rawConfig = findFlagByPrefix(flags, TOUCH_POINT_CONFIG_FLAG_PREFIX);
+    if (!rawConfig) {
+      return;
+    }
+
+    const config = getRemoteOpdConfig(rawConfig, params.allowedUrlHosts);
+    if (!config) {
+      return;
+    }
+
+    const currentStep =
+      (params.prefs.get(STEP_PREF_KEY) as number | undefined) ?? 0;
+    if (currentStep < getLastStepId(config)) {
+      await endTrial(params, config);
+      await dismissOpenDialogs();
+    }
+  });
+
+  // Clean-up path for users no longer targeted by the OPD: when the
+  // OPD config flag is withdrawn (e.g. user buys premium and the
+  // experiment conditions drop them, or the remote config is
+  // retired), clearing the lightning-snippets caller opinion lets
+  // premium / default resolve via the namespace precedence chain.
+  // Trial prefs (step, start date) are left in place — they're only
+  // read when a valid config is present, so stale values are inert.
+  // lightningSnippets.clear() is a no-op when no opinion is set, so
+  // calling unconditionally on every experiments change is safe.
+  ewe.experiments.onChanged.addListener(async () => {
+    const flags = await ewe.experiments.getFlags();
+    const config = findFlagByPrefix(flags, TOUCH_POINT_CONFIG_FLAG_PREFIX);
+    if (!isObject(config)) {
+      // disable lightning snippets, since the trial ended
+      await ewe.lightningSnippets.clear();
+
+      // reset trial step and start date, so this user can be re-targeted
+      // in the future for another reverse trial
+      await params.prefs.reset(STEP_PREF_KEY);
+      await params.prefs.reset(TRIAL_START_DATE_PREF_KEY);
     }
   });
 }

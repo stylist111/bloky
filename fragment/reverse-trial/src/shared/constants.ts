@@ -16,25 +16,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/** Remote experiment flag that gates the reverse trial feature */
-export const EXPERIMENT_FLAG = "show-reverse-trial-opd";
+/**
+ * Prefix for the remote flag that gates the reverse trial feature.
+ *
+ * Actual flag names are `<prefix><experiment-id>` — each concurrent
+ * reverse-trial experiment appends its own identifier so the
+ * experiments framework (which rejects duplicate flag names across
+ * experiments) accepts multiple variants. See the Confluence page for
+ * the naming convention.
+ */
+export const EXPERIMENT_FLAG_PREFIX = "show-reverse-trial-opd-";
 
-/** Kill switch for showing the reverse trial OPDs */
-export const OPD_KILL_SWITCH = "reverse-trial-opd-kill-switch";
-
-/** Remote experiment flag that provides per-step touch point config overrides */
-export const TOUCH_POINT_CONFIG_FLAG = "reverse-trial-opd-config";
+/** Prefix for the flag holding the OPD config object. Same convention
+ *  as {@link EXPERIMENT_FLAG_PREFIX}. */
+export const TOUCH_POINT_CONFIG_FLAG_PREFIX = "reverse-trial-opd-config-";
 
 /** Message type sent from content script to service worker */
 export const GET_DIALOG_MESSAGE_TYPE = "reverse-trial.get-dialog";
 
-/** Pref key storing the last shown touch point number (0-3) */
+/** Pref key storing the last shown touch point step id */
 export const STEP_PREF_KEY = "reverse_trial_step";
 
 /** Pref key for the trial start date (epoch ms), set on first visit to a matched site */
 export const TRIAL_START_DATE_PREF_KEY = "reverse_trial_start_date";
 
-/** Message type sent from content script when user dismisses a dialog */
+/** Message type sent from content script when user interacts with the dialog */
 export const DIALOG_ACTION_MESSAGE_TYPE = "reverse-trial.dialog-action";
 
 /** Message type broadcast from service worker to all tabs to close the dialog */
@@ -44,21 +50,13 @@ export const DISMISS_DIALOG_MESSAGE_TYPE = "reverse-trial.dismiss-dialog";
 export const GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE =
   "reverse-trial.get-dialog-should-still-show";
 
-/** Message type sent from content script when the user opts out of the reverse trial */
-export const OPT_OUT_MESSAGE_TYPE = "reverse-trial.opt-out";
-
-/** Message type sent from content script when the user clicks the feedback link */
-export const FEEDBACK_MESSAGE_TYPE = "reverse-trial.feedback";
-
-/** URL template for the feedback form */
-export const FEEDBACK_URL =
-  "https://docs.google.com/forms/d/e/1FAIpQLSdMfL5RrrDbPr5Ud1oBm8oYDOFp_TeHLwxKHEGksUY2OMwDCQ/viewform?usp=pp_url";
-
-/** Total duration of the trial period in days */
-export const TRIAL_DURATION_DAYS = 14;
-
-/** Days from the start of the trial at which the midpoint dialog is shown */
-export const MIDPOINT_THRESHOLD_DAYS = 7;
-
 /** Milliseconds in one day */
 export const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+/**
+ * How long the content script waits for YouTube's `#masthead` element to
+ * appear before assuming the user is non-Premium. YouTube usually renders
+ * the masthead within a second; 10s is a generous safety margin for slow
+ * connections without delaying the dialog indefinitely.
+ */
+export const YT_MASTHEAD_TIMEOUT_MS = 10000;

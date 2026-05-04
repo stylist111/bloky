@@ -415,16 +415,6 @@ export async function handleCommand(ipmId: string): Promise<void> {
     return;
   }
 
-  // Don't open new tabs for users in the reverse trial OPD experiment
-  const reverseTrialFlag = await ewe.experiments.getFlag(
-    "show-reverse-trial-opd"
-  );
-  if (reverseTrialFlag) {
-    logger.debug("[new-tab]: User is in reverse trial OPD experiment");
-    dismissNewtabCommand(ipmId);
-    return;
-  }
-
   const behavior = getBehavior(ipmId);
 
   // Don't open new tabs if something's wrong with the data we got

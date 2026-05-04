@@ -23,18 +23,44 @@ import {
   GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
   DIALOG_ACTION_MESSAGE_TYPE,
   DISMISS_DIALOG_MESSAGE_TYPE,
-  OPT_OUT_MESSAGE_TYPE,
-  FEEDBACK_MESSAGE_TYPE,
+  YT_MASTHEAD_TIMEOUT_MS,
 } from "../shared/constants.js";
-import type { DialogPayload, BodyLine } from "../shared/types.js";
+import {
+  DialogAction,
+  type DialogPayload,
+  type BodyLine,
+} from "../shared/types.js";
 
 /**
- * Waits for YouTube's `#masthead` element to appear in the DOM and
- * resolves with whether the user has a Premium subscription based on
- * the `logo-type` attribute. Disconnects the observer as soon as
- * `#masthead` is found, or after a timeout (assumes non-Premium).
+ * Sends a dialog-action message to the service worker. The `action`
+ * field is either a configured i18n key (for ctaButton / links) or a
+ * built-in uppercase default (`CLOSE`, `AUTO_DISMISS`). Fire-and-forget
+ * — the service worker owns the response (step advancement, broadcast).
  */
-async function detectYouTubePremium(timeoutMs = 10000): Promise<boolean> {
+function sendDialogAction(touchPointStep: number, action: string): void {
+  void browser.runtime.sendMessage({
+    type: DIALOG_ACTION_MESSAGE_TYPE,
+    touchPointStep,
+    action,
+  });
+}
+
+/**
+ * Resolves with `true` if the user has a YouTube Premium subscription.
+ *
+ * Checks the `logo-type` attribute on YouTube's `#masthead` element
+ * because that attribute flips to `YOUTUBE_PREMIUM_LOGO` only for
+ * Premium accounts — other detection signals (cookies, DOM markers) are
+ * either unreliable or flag the extension to content-blocker detection.
+ *
+ * Observes the DOM for the masthead's arrival since this content script
+ * runs at `document_start`. Gives up after `YT_MASTHEAD_TIMEOUT_MS` and
+ * assumes non-Premium — YouTube users with the masthead never rendered
+ * within that window are almost certainly not Premium.
+ */
+async function detectYouTubePremium(
+  timeoutMs = YT_MASTHEAD_TIMEOUT_MS,
+): Promise<boolean> {
   const masthead = document.querySelector("#masthead");
   if (masthead) {
     return masthead.getAttribute("logo-type") === "YOUTUBE_PREMIUM_LOGO";
@@ -62,7 +88,10 @@ async function detectYouTubePremium(timeoutMs = 10000): Promise<boolean> {
 }
 
 /**
- * Checks if the dark mode is enabled
+ * Checks whether YouTube is rendering in dark mode. Inspects two
+ * markers — the `dark` attribute on `documentElement` (set early during
+ * page load) and `ytd-app[dark]` (set once the React tree mounts) — so
+ * the check is accurate both during initial render and after hydration.
  */
 function isDarkMode(): boolean {
   const docAttr = document.documentElement.getAttribute("dark");
@@ -141,6 +170,7 @@ const DIALOG_STYLES = `
     width: 22px;
     height: 22px;
     flex-shrink: 0;
+    user-select: none;
   }
 
   #title {
@@ -160,6 +190,7 @@ const DIALOG_STYLES = `
     cursor: pointer;
     padding: 0 4px;
     line-height: 1;
+    user-select: none;
   }
 
   #cta-btn {
@@ -280,6 +311,10 @@ const DARK_DIALOG_STYLES = `
   strong {
     color: #e0e0e0;
   }
+
+  em, u {
+    color: inherit;
+  }
 `;
 
 const LIGHT_DIALOG_STYLES = `
@@ -328,20 +363,28 @@ const LIGHT_DIALOG_STYLES = `
   strong {
     color: #333333;
   }
+
+  em, u {
+    color: inherit;
+  }
 `;
 
 /**
- * Parses text for <strong>bold</strong> markers and appends text nodes / elements.
- * Follows the same convention as host/adblock i18n rendering.
+ * Parses text for `<strong>`, `<em>`, and `<u>` markers and appends text
+ * nodes / elements. Tags are flat — no nesting is supported.
+ *
+ * Uses `document.createElement` + `textContent` throughout so no raw HTML
+ * is ever inserted; the tag syntax is parsed but the tag text itself
+ * never reaches the DOM.
  */
 function appendRichText(parent: HTMLElement, text: string): void {
-  const parts = text.split(/(<strong>.*?<\/strong>)/g);
+  const parts = text.split(/(<(?:strong|em|u)>.*?<\/(?:strong|em|u)>)/g);
   for (const part of parts) {
-    const match = /^<strong>(.*?)<\/strong>$/.exec(part);
+    const match = /^<(strong|em|u)>(.*?)<\/\1>$/.exec(part);
     if (match) {
-      const strong = document.createElement("strong");
-      strong.textContent = match[1];
-      parent.appendChild(strong);
+      const el = document.createElement(match[1]);
+      el.textContent = match[2];
+      parent.appendChild(el);
     } else if (part) {
       parent.appendChild(document.createTextNode(part));
     }
@@ -349,13 +392,12 @@ function appendRichText(parent: HTMLElement, text: string): void {
 }
 
 /**
- * Renders a single body line as an HTML element with a class-based style.
+ * Renders a single body line as a styled paragraph.
  *
- * Uses the `style` field to determine visual treatment. All text is
- * already resolved by the service worker.
- *
- * @param line - The body line with resolved text and style
- * @returns A styled HTML element
+ * Text is already localized and variable-substituted by the service
+ * worker — the content script has no access to `browser.i18n` for OPD
+ * copy and does not do any substitution of its own. The `style` field
+ * picks one of three class-based treatments defined in CSS.
  */
 function renderBodyLine(line: BodyLine): HTMLElement {
   if (line.style === "heading") {
@@ -385,7 +427,10 @@ function renderBodyLine(line: BodyLine): HTMLElement {
 }
 
 /**
- * Removes the dialog container from the DOM and clears the module reference.
+ * Removes the dialog from the DOM and sets `dialogRemoved = true`
+ * permanently. The flag is sticky (never reset) so a late-arriving
+ * `renderDialog` from the service worker — e.g. after a broadcast
+ * dismiss raced this tab's own click handler — does not re-render.
  */
 function removeDialog(): void {
   dialogRemoved = true;
@@ -405,7 +450,8 @@ function removeDialog(): void {
 
 /**
  * Starts (or restarts) the auto-dismiss timer using the stored duration.
- * No-op if no duration is set.
+ * Stopping and restarting on hover / focus gives users with assistive
+ * tech time to read the dialog instead of having it disappear.
  */
 function startAutoDismissTimer(): void {
   if (autoDismissMs === null) {
@@ -415,17 +461,16 @@ function startAutoDismissTimer(): void {
   const touchPointStep = currentTouchPointStep;
   autoDismissTimer = setTimeout(() => {
     removeDialog();
-    void browser.runtime.sendMessage({
-      type: DIALOG_ACTION_MESSAGE_TYPE,
-      touchPointStep,
-      action: "auto-dismiss",
-      silent: true,
-    });
+    if (touchPointStep !== null) {
+      sendDialogAction(touchPointStep, DialogAction.AUTO_DISMISS);
+    }
   }, autoDismissMs);
 }
 
 /**
- * Clears the auto-dismiss timer without removing the dialog.
+ * Cancels the pending auto-dismiss without removing the dialog. Called
+ * on `pointerenter` / `focusin` so the dialog stays visible while the
+ * user is engaging with it.
  */
 function stopAutoDismissTimer(): void {
   if (autoDismissTimer !== null) {
@@ -438,13 +483,10 @@ function stopAutoDismissTimer(): void {
  * Builds the dialog DOM tree inside a closed Shadow DOM, positioned in
  * the top-right corner to match existing OPD placement.
  *
- * The dialog includes:
- * - A header row with logo and title
- * - Body content (paragraphs, headings, list items)
- * - A CTA button that opens the target URL (if non-empty) and dismisses
- *
- * No element IDs are added outside the shadow root to the page to avoid
- * extension detection.
+ * The content script is deliberately action-type unaware: for every click
+ * it sends the element's `key` (or a built-in uppercase default) back to
+ * the service worker as the `action`. The service worker resolves the key
+ * to its configured `StepAction` and owns step advancement / dismissal.
  *
  * @param payload - The dialog content and configuration from the service worker
  * @returns The host element containing the Shadow DOM dialog
@@ -461,7 +503,6 @@ function buildDialog(payload: DialogPayload): HTMLElement {
   const dialog = document.createElement("div");
   dialog.id = "dialog";
 
-  // Header row: logo + title
   const header = document.createElement("div");
   header.id = "header";
 
@@ -479,120 +520,74 @@ function buildDialog(payload: DialogPayload): HTMLElement {
 
   dialog.appendChild(header);
 
-  const closeBtn = document.createElement("button");
-  closeBtn.id = "close-btn";
-  closeBtn.textContent = "\u00d7";
-  closeBtn.addEventListener("click", () => {
-    void browser.runtime.sendMessage({
-      type: DIALOG_ACTION_MESSAGE_TYPE,
-      touchPointStep: payload.touchPointStep,
-      action: "close",
+  if (payload.showCloseButton) {
+    const closeBtn = document.createElement("button");
+    closeBtn.id = "close-btn";
+    closeBtn.textContent = "\u00d7";
+    closeBtn.addEventListener("click", () => {
+      sendDialogAction(payload.touchPointStep, DialogAction.CLOSE);
+      removeDialog();
     });
-    removeDialog();
-  });
-  dialog.appendChild(closeBtn);
+    dialog.appendChild(closeBtn);
+  }
 
-  // Body content
   for (const line of payload.body) {
     dialog.appendChild(renderBodyLine(line));
   }
 
-  // CTA button
-  if (payload.button) {
+  if (payload.ctaButton) {
     const ctaBtn = document.createElement("button");
     ctaBtn.id = "cta-btn";
-    ctaBtn.textContent = payload.button;
+    ctaBtn.textContent = payload.ctaButton.text;
+    const ctaButton = payload.ctaButton;
     ctaBtn.addEventListener("click", () => {
-      if (payload.target) {
-        window.open(payload.target, "_blank");
+      if (ctaButton.url) {
+        window.open(ctaButton.url, "_blank");
+      } else {
+        removeDialog();
       }
-      void browser.runtime.sendMessage({
-        type: DIALOG_ACTION_MESSAGE_TYPE,
-        touchPointStep: payload.touchPointStep,
-        action: payload.target ? "cta" : "close",
-      });
-      removeDialog();
+      sendDialogAction(payload.touchPointStep, ctaButton.key);
     });
     dialog.appendChild(ctaBtn);
   }
 
-  const linkDefs: HTMLElement[] = [];
-
-  if (payload.learnMore) {
-    const learnMore = document.createElement("a");
-    learnMore.href = payload.learnMore.url;
-    learnMore.target = "_blank";
-    learnMore.textContent = payload.learnMore.text;
-    learnMore.addEventListener("click", () => {
-      void browser.runtime.sendMessage({
-        type: DIALOG_ACTION_MESSAGE_TYPE,
-        touchPointStep: payload.touchPointStep,
-        action: "cta",
-      });
-    });
-    linkDefs.push(learnMore);
-  }
-
-  if (payload.dismiss) {
-    const dismiss = document.createElement("a");
-    dismiss.href = "#";
-    dismiss.textContent = payload.dismiss.text;
-    dismiss.addEventListener("click", (e) => {
-      e.preventDefault();
-      void browser.runtime.sendMessage({
-        type: DIALOG_ACTION_MESSAGE_TYPE,
-        touchPointStep: payload.touchPointStep,
-        action: "close",
-      });
-      removeDialog();
-    });
-    linkDefs.push(dismiss);
-  }
-
-  if (payload.optOut) {
-    const optOut = document.createElement("a");
-    optOut.href = "#";
-    optOut.textContent = payload.optOut.text;
-    optOut.addEventListener("click", (e) => {
-      e.preventDefault();
-      void browser.runtime.sendMessage({
-        type: OPT_OUT_MESSAGE_TYPE,
-        touchPointStep: payload.touchPointStep,
-      });
-      removeDialog();
-    });
-    linkDefs.push(optOut);
-  }
-
-  if (payload.feedback) {
-    const feedback = document.createElement("a");
-    feedback.href = payload.feedback.url;
-    feedback.target = "_blank";
-    feedback.textContent = payload.feedback.text;
-    feedback.addEventListener("click", () => {
-      void browser.runtime.sendMessage({
-        type: FEEDBACK_MESSAGE_TYPE,
-        touchPointStep: payload.touchPointStep,
-      });
-    });
-    linkDefs.push(feedback);
-  }
-
-  if (linkDefs.length > 0) {
+  const links = payload.links ?? [];
+  if (links.length > 0) {
     const linksRow = document.createElement("div");
     linksRow.id = "links-row";
-    if (!payload.button) {
+    if (!payload.ctaButton) {
       linksRow.classList.add("no-cta");
     }
-    for (let i = 0; i < linkDefs.length; i++) {
-      linksRow.appendChild(linkDefs[i]);
-      if (i < linkDefs.length - 1) {
+
+    for (let i = 0; i < links.length; i++) {
+      const link = links[i];
+      const el = document.createElement("a");
+      el.textContent = link.text;
+      if (link.url) {
+        el.href = link.url;
+        el.target = "_blank";
+      } else {
+        el.href = "#";
+      }
+
+      el.addEventListener("click", (e) => {
+        if (!link.url) {
+          e.preventDefault();
+          removeDialog();
+        }
+        sendDialogAction(payload.touchPointStep, link.key);
+      });
+
+      linksRow.appendChild(el);
+
+      if (i < links.length - 1) {
         const sep = document.createElement("span");
         sep.className = "links-separator";
         sep.textContent = "\u2022";
         linksRow.appendChild(sep);
       }
     }
+
     dialog.appendChild(linksRow);
   }
 
@@ -662,16 +657,18 @@ export async function start(): Promise<void> {
     }
   });
 
-  // Must not be async: returning undefined (not a Promise) for unhandled message
-  // types is required to signal to the browser that this listener did not handle
-  // those messages. Making it async would always return a Promise.
+  // Must not be async: returning `undefined` (not a Promise) for
+  // unhandled message types is how the listener signals "I did not
+  // handle this message", so other listeners get their turn. Making
+  // this function async would always return a Promise and break that.
   // eslint-disable-next-line @typescript-eslint/promise-function-async
   browser.runtime.onMessage.addListener(function dismissListener(message) {
-    if ((message as { type?: string })?.type === DISMISS_DIALOG_MESSAGE_TYPE) {
-      removeDialog();
-      browser.runtime.onMessage.removeListener(dismissListener);
-      return Promise.resolve();
+    if ((message as { type?: string })?.type !== DISMISS_DIALOG_MESSAGE_TYPE) {
+      return undefined;
     }
+    removeDialog();
+    browser.runtime.onMessage.removeListener(dismissListener);
+    return Promise.resolve();
   });
 
   const ytPremium = await detectYouTubePremium();

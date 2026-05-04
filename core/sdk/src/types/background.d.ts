@@ -694,6 +694,15 @@ export interface AddonInfo {
      */
     bearer?: string;
   };
+  /**
+   * Default value for Lightning Snippets (zero-delay filter caching).
+   * Defaults to `false` when omitted. Acts as the lowest-priority value
+   * in the `lightningSnippets` namespace precedence chain — runtime
+   * calls to `ewe.lightningSnippets.enable()` / `disable()` override
+   * it, and premium users are enabled when no runtime opinion has been
+   * set.
+   */
+  lightningSnippets?: boolean;
 }
 
 /**
@@ -1020,6 +1029,11 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      */
     const clearFlagOverrides: () => Promise<void>;
     /**
+     * Clears a single feature flag override, restoring it to the
+     * remote-configured value.
+     */
+    const clearFlagOverride: (flagId: string) => Promise<void>;
+    /**
      * Returns the assignments for the user
      */
     const getAssignments: () => Promise<Record<string, string>>;
@@ -1050,6 +1064,32 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * Emitted when experiment data has changed
      */
     const onChanged: EventDispatcher<(experiments: Experiment[]) => unknown>;
+  }
+
+  namespace lightningSnippets {
+    /**
+     * Enables Lightning Snippets (zero-delay filter caching).
+     * Overrides premium status and the default. Persists across SDK
+     * restarts until `clear()` is called.
+     */
+    const enable: () => Promise<void>;
+    /**
+     * Disables Lightning Snippets. Overrides premium status and the
+     * default — a premium user disabled here stays disabled until
+     * `clear()` is called.
+     */
+    const disable: () => Promise<void>;
+    /**
+     * Removes the caller opinion, letting resolution fall through to
+     * premium status, then the default.
+     */
+    const clear: () => Promise<void>;
+    /**
+     * Resolves whether Lightning Snippets is enabled. Precedence
+     * (highest to lowest): caller opinion (`enable`/`disable`),
+     * premium status, default (`addonInfo.lightningSnippets`).
+     */
+    const isEnabled: () => Promise<boolean>;
   }
 
   namespace notifications {

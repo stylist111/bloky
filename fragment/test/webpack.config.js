@@ -27,7 +27,6 @@ const baseManifest = {
   name: "Fragments Test Extension",
   version: "1.0.0",
   description: "Extension for testing fragments",
-  default_locale: "en_US",
   permissions: [
     "alarms",
     "contextMenus",
@@ -49,7 +48,7 @@ const baseManifest = {
     },
     {
       matches: ["*://*.youtube.com/*"],
-      js: ["ytWallDetectionPreload.js", "reverseTrialPreload.js"],
+      js: ["ytWallDetectionPreload.js"],
       run_at: "document_start",
     },
   ],
@@ -95,7 +94,6 @@ export default (env = {}) => {
       background: "./test-extension/src/background.js",
       examplePreload: "@eyeo-fragments/example/content",
       ytWallDetectionPreload: "@eyeo-fragments/yt-wall-detection/content",
-      reverseTrialPreload: "@eyeo-fragments/reverse-trial/content",
       options: "./test-extension/src/options.js",
     },
     output: {
@@ -117,10 +115,6 @@ export default (env = {}) => {
           { from: "test-extension/src/options.html", to: "options.html" },
           { from: "test-extension/src/options.js", to: "options.js" },
           { from: "test-extension/src/popup.html", to: "popup.html" },
-          {
-            from: "../reverse-trial/locales",
-            to: "_locales",
-          },
           {
             from: "../../host/adblock/icons/adblock-20.svg",
             to: "icons/adblock-20.svg",

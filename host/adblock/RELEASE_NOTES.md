@@ -3,6 +3,9 @@
 - Fixed: close-tab feature did not work on `myaccount.getadblock.com` and the
   `*.dev.getadblock.com` staging hostnames because trusted origins were
   registered as wildcard match patterns instead of exact origins.
+- Reverse-trial messaging is now driven by remote experiment configuration,
+  enabling copy, timing, and flow variations to roll out without an
+  extension release
 
 # 6.40.1 - 2026-04-28
 

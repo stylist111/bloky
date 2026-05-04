@@ -864,6 +864,46 @@ describe("Split Experiments", function() {
       await expectTestEvents("experiments.updated", [[[]], [[]]]);
     });
 
+    it("can clear a single flag override", async function() {
+      await EWE.experiments.overrideFlag("flag_a", "value_a");
+      await EWE.experiments.overrideFlag("flag_b", "value_b");
+
+      await EWE.experiments.clearFlagOverride("flag_a");
+
+      expect(await EWE.experiments.getFlag("flag_a")).toBeNull();
+      expect(await EWE.experiments.getFlag("flag_b")).toBe("value_b");
+    });
+
+    it("restores remote flag value after clearing override", async function() {
+      const config = oneVariantConfig("remote_value");
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
+
+      await EWE.experiments.overrideFlag(EXPERIMENT_FLAG, "local_override");
+      expect(await EWE.experiments.getFlag(EXPERIMENT_FLAG)).toBe("local_override");
+
+      await EWE.experiments.clearFlagOverride(EXPERIMENT_FLAG);
+      expect(await EWE.experiments.getFlag(EXPERIMENT_FLAG)).toBe("remote_value");
+    });
+
+    it("fires an onChanged event when a single flag override is cleared", async function() {
+      await EWE.experiments.overrideFlag(EXPERIMENT_FLAG, "potato");
+      await clearTestEvents("experiments.updated");
+
+      await EWE.experiments.clearFlagOverride(EXPERIMENT_FLAG);
+      await expectTestEvents("experiments.updated", [[[]]]);
+    });
+
+    it("does not fire an onChanged event when clearing a non-existent override", async function() {
+      await expectTestEvents("experiments.updated", []);
+
+      await EWE.experiments.clearFlagOverride("non_existent_flag");
+      await expectTestEvents("experiments.updated", []);
+    });
+
     it("does not fire an onChanged event for flag override functions when there is no change", async function() {
       await expectTestEvents("experiments.updated", []);
 
