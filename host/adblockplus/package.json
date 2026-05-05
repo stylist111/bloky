@@ -116,7 +116,7 @@
     "gulp-gzip": "1.4.2",
     "gulp-tar": "3.1.0",
     "gulp-vinyl-zip": "2.2.1",
-    "handlebars": "4.7.8",
+    "handlebars": "4.7.9",
     "hyperhtml-element": "3.15.2",
     "merge-stream": "2.0.0",
     "merge2": "1.4.1",
