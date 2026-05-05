@@ -6,6 +6,7 @@
 - Reverse-trial messaging is now driven by remote experiment configuration,
   enabling copy, timing, and flow variations to roll out without an
   extension release
+- Updated snippets to 2.10.1
 
 # 6.40.1 - 2026-04-28
 
