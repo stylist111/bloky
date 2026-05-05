@@ -1,5 +1,9 @@
 # Unreleased
 
+# 6.41.0 - 2026-05-05
+
+This release contains bugfixes and under-the-hood changes.
+
 - Fixed: close-tab feature did not work on `myaccount.getadblock.com` and the
   `*.dev.getadblock.com` staging hostnames because trusted origins were
   registered as wildcard match patterns instead of exact origins.
