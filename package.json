@@ -49,5 +49,15 @@
     "rollup": "4.32.0",
     "selenium-webdriver": "4.23.0",
     "typescript": "5.5.4"
+  },
+  "overrides": {
+    "lerna": {
+      "nx": {
+        "axios": "1.15.2"
+      }
+    },
+    "mocha": {
+      "serialize-javascript": "7.0.5"
+    }
   }
 }
