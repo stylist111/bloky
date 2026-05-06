@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { getStatus } from "~/background/api-handlers/status-api";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 

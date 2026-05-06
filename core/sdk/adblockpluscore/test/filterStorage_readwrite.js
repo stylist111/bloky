@@ -34,13 +34,11 @@ describe("Filter storage read/write", function() {
   beforeEach(function() {
     // Sandbox is required here to get the stub io module.
     let sandboxedRequire = createSandbox();
-    (
-      {FilterStorage} = sandboxedRequire(LIB_FOLDER + "/filterStorage"),
-      {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses"),
-      {IO} = sandboxedRequire("./stub-modules/io"),
-      {Prefs} = sandboxedRequire("./stub-modules/prefs"),
-      {SpecialSubscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses")
-    );
+    ({FilterStorage} = sandboxedRequire(LIB_FOLDER + "/filterStorage"));
+    ({Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses"));
+    ({IO} = sandboxedRequire("./stub-modules/io"));
+    ({Prefs} = sandboxedRequire("./stub-modules/prefs"));
+    ({SpecialSubscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"));
 
     filterStorage = new FilterStorage();
     filterStorage.addFilter(Filter.fromText("foobar"));

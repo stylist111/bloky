@@ -47,16 +47,14 @@ describe("Synchronizer", function() {
     let globals = Object.assign({}, setupTimerAndFetch.call(runner), setupRandomResult.call(runner));
     let FilterStorage;
     let sandboxedRequire = createSandbox({globals});
-    (
-      {MILLIS_IN_SECOND, MILLIS_IN_HOUR} = sandboxedRequire(LIB_FOLDER + "/time"),
-      {filterNotifier} = sandboxedRequire(LIB_FOLDER + "/filterNotifier"),
-      {FilterStorage} = sandboxedRequire(LIB_FOLDER + "/filterStorage"),
-      {Prefs} = sandboxedRequire("./stub-modules/prefs"),
-      {manifestVersion} = sandboxedRequire("./stub-modules/info"),
-      {Subscription, CountableSubscription, FullUpdatableSubscription} =
-        sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"),
-      {setRecommendations} = sandboxedRequire(LIB_FOLDER + "/recommendations")
-    );
+    ({MILLIS_IN_SECOND, MILLIS_IN_HOUR} = sandboxedRequire(LIB_FOLDER + "/time"));
+    ({filterNotifier} = sandboxedRequire(LIB_FOLDER + "/filterNotifier"));
+    ({FilterStorage} = sandboxedRequire(LIB_FOLDER + "/filterStorage"));
+    ({Prefs} = sandboxedRequire("./stub-modules/prefs"));
+    ({manifestVersion} = sandboxedRequire("./stub-modules/info"));
+    ({Subscription, CountableSubscription, FullUpdatableSubscription} =
+      sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"));
+    ({setRecommendations} = sandboxedRequire(LIB_FOLDER + "/recommendations"));
 
     filterStorage = new FilterStorage();
     ({synchronizer} = filterStorage);

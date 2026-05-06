@@ -363,11 +363,6 @@ let URLRequest =
  */
 exports.URLRequest = class URLRequest {
   /**
-   * @private
-   */
-  constructor() {}
-
-  /**
    * The URL of the request.
    * @type {string}
    */

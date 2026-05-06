@@ -130,7 +130,7 @@ async function runBrowserTests(processes) {
   }
 
   if (errors.length > 0) {
-    throw `Browser tests failed: ${errors.join(", ")}`;
+    throw new Error(`Browser tests failed: ${errors.join(", ")}`);
   }
 }
 

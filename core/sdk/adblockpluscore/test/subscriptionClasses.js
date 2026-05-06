@@ -53,12 +53,10 @@ describe("Subscription classes", function() {
     // Sandbox required because subscriptions are remembered between tests, and
     // setRecommendations modifies global state.
     let sandboxedRequire = createSandbox();
-    (
-      {Subscription, SpecialSubscription, RegularSubscription,
-       FullUpdatableSubscription, DiffUpdatableSubscription} =
-         sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"),
-      {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses")
-    );
+    ({Subscription, SpecialSubscription, RegularSubscription,
+      FullUpdatableSubscription, DiffUpdatableSubscription} =
+        sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"));
+    ({Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses"));
   });
 
   function compareSubscriptionFilters(subscription, expected) {
@@ -279,11 +277,9 @@ describe("DNR mode", function() {
     // Sandbox required because subscriptions are remembered between tests, and
     // setRecommendations modifies global state.
     let sandboxedRequire = createSandbox();
-    (
-      {Subscription, RegularSubscription, FullUpdatableSubscription} =
-        sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"),
-      {setRecommendations} = sandboxedRequire(LIB_FOLDER + "/recommendations")
-    );
+    ({Subscription, RegularSubscription, FullUpdatableSubscription} =
+      sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"));
+    ({setRecommendations} = sandboxedRequire(LIB_FOLDER + "/recommendations"));
 
     Subscription.dnr = true;
     let recommendations = require("./data/v3_index.json");

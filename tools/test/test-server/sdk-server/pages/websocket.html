@@ -1,3 +1,5 @@
 <script>
-  const _ws = new WebSocket("ws://localhost:3001");
+  // The constructor has the side effect of creating a websocket connection.
+  // eslint-disable-next-line no-new
+  new WebSocket("ws://localhost:3001");
 </script>

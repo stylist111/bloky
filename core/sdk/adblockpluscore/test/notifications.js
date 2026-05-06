@@ -42,10 +42,8 @@ describe("Notifications", function() {
     // Sandbox is required here to get the stub Prefs, and to handle all the
     // time mocking.
     let sandboxedRequire = createSandbox({globals});
-    (
-      {Prefs} = sandboxedRequire("./stub-modules/prefs"),
-      {notifications} = sandboxedRequire(LIB_FOLDER + "/notifications")
-    );
+    ({Prefs} = sandboxedRequire("./stub-modules/prefs"));
+    ({notifications} = sandboxedRequire(LIB_FOLDER + "/notifications"));
 
     notifications.start();
   });

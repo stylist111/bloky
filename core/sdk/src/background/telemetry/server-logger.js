@@ -264,10 +264,6 @@ export function serverLogValidatedEvent(
  * @param {string} module The module that this logger is for.
  */
 export class ServerLogger extends AbstractLogger {
-  constructor(module) {
-    super(module);
-  }
-
   _validatedLog(logTime, level, event, data, keySuffix) {
     serverLogValidatedEvent(
       logTime, this._module, level, event, data, keySuffix

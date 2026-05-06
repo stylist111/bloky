@@ -244,14 +244,6 @@ let CommentFilter =
  * @extends module:filterClasses.Filter
  */
 exports.CommentFilter = class CommentFilter extends Filter {
-  /**
-   * @param {string} text see {@link module:filterClasses.Filter Filter()}
-   * @private
-   */
-  constructor(text) {
-    super(text);
-  }
-
   get type() {
     return "comment";
   }
@@ -1076,19 +1068,6 @@ let ElemHideFilter =
  * @extends module:filterClasses.ElemHideBase
  */
 exports.ElemHideFilter = class ElemHideFilter extends ElemHideBase {
-  /**
-   * @param {string} text see {@link module:filterClasses.Filter Filter()}
-   * @param {string} [domains]  see
-   *   {@link module:filterClasses.ElemHideBase ElemHideBase()}
-   * @param {string} selector see
-   *   {@link module:filterClasses.ElemHideBase ElemHideBase()}
-   *
-   * @private
-   */
-  constructor(text, domains, selector) {
-    super(text, domains, selector);
-  }
-
   get type() {
     return "elemhide";
   }
@@ -1100,19 +1079,6 @@ let ElemHideException =
  * @extends module:filterClasses.ElemHideBase
  */
 exports.ElemHideException = class ElemHideException extends ElemHideBase {
-  /**
-   * @param {string} text see {@link module:filterClasses.Filter Filter()}
-   * @param {string} [domains]  see
-   *   {@link module:filterClasses.ElemHideBase ElemHideBase()}
-   * @param {string} selector see
-   *   {@link module:filterClasses.ElemHideBase ElemHideBase()}
-   *
-   * @private
-   */
-  constructor(text, domains, selector) {
-    super(text, domains, selector);
-  }
-
   get type() {
     return "elemhideexception";
   }

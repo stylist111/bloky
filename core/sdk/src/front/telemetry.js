@@ -28,10 +28,6 @@ import {AbstractLogger} from "../all/telemetry.js";
  * @param {string} module The module that this logger is for.
  */
 class ServerLogger extends AbstractLogger {
-  constructor(module) {
-    super(module);
-  }
-
   _validatedLog(logTime, level, event, data) {
     void ignoreNoConnectionError(
       browser.runtime.sendMessage({

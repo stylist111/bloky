@@ -17,6 +17,7 @@
  */
 import { start } from "../../src/content/index.js";
 import { imageCountEvent } from "../../src/shared/constants.js";
+import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 
 describe("Hello World fragment content script", () => {
   beforeEach(() => {

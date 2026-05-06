@@ -27,10 +27,8 @@ describe("analytics", function() {
   beforeEach(function() {
     // Sandbox is required here to get the stub Prefs.
     let sandboxedRequire = createSandbox();
-    (
-      {analytics} = sandboxedRequire(LIB_FOLDER + "/analytics"),
-      {Prefs} = sandboxedRequire("./stub-modules/prefs")
-    );
+    ({analytics} = sandboxedRequire(LIB_FOLDER + "/analytics"));
+    ({Prefs} = sandboxedRequire("./stub-modules/prefs"));
   });
 
   describe("#isTrusted()", function() {

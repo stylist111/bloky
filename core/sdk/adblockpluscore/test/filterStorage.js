@@ -32,11 +32,9 @@ describe("Filter storage", function() {
     // filterNotifier is a global singleton..
     let sandboxedRequire = createSandbox();
 
-    (
-      {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses"),
-      {filterNotifier} = sandboxedRequire(LIB_FOLDER + "/filterNotifier"),
-      {Subscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses")
-    );
+    ({Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses"));
+    ({filterNotifier} = sandboxedRequire(LIB_FOLDER + "/filterNotifier"));
+    ({Subscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"));
 
     const {FilterEngine} = sandboxedRequire(LIB_FOLDER + "/filterEngine");
     filterEngine = new FilterEngine();

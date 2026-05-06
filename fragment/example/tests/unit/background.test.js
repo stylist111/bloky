@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { describe, expect, vi } from "vitest";
+import { describe, expect, vi, beforeEach, afterEach, it } from "vitest";
 import { start } from "../../src/background/index.js";
 import { imageCountEvent } from "../../src/shared/constants.js";
 

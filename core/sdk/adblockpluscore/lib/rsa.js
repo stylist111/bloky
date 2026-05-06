@@ -140,7 +140,7 @@ function readASN1(data, templ) {
     if (len & 0x80) {
       let cnt = len & 0x7F;
       if (cnt > 2 || cnt == 0) {
-        throw "Unsupported length";
+        throw new Error("Unsupported length");
       }
 
       len = 0;
@@ -156,11 +156,11 @@ function readASN1(data, templ) {
     let type = next();
     let len = readLength();
     if ("type" in curTempl && curTempl.type != type) {
-      throw "Unexpected type";
+      throw new Error("Unexpected type");
     }
     if ("content" in curTempl &&
         curTempl.content != data.substring(pos, pos + len)) {
-      throw "Unexpected content";
+      throw new Error("Unexpected content");
     }
     if ("out" in curTempl) {
       out[curTempl.out] = new BigInteger(data.substring(pos, pos + len), 256);
@@ -170,20 +170,20 @@ function readASN1(data, templ) {
       let end;
       for (i = 0, end = pos + len; pos < end; i++) {
         if (i >= curTempl.children.length) {
-          throw "Too many children";
+          throw new Error("Too many children");
         }
         readNode(curTempl.children[i]);
       }
       if (i < curTempl.children.length) {
-        throw "Too few children";
+        throw new Error("Too few children");
       }
       if (pos > end) {
-        throw "Children too large";
+        throw new Error("Children too large");
       }
     }
     else if ("encapsulates" in curTempl) {
       if (next() != 0) {
-        throw "Encapsulation expected";
+        throw new Error("Encapsulation expected");
       }
       readNode(curTempl.encapsulates);
     }
@@ -195,7 +195,7 @@ function readASN1(data, templ) {
   let out = {};
   readNode(templ);
   if (pos != data.length) {
-    throw "Too much data";
+    throw new Error("Too much data");
   }
   return out;
 }
@@ -256,11 +256,11 @@ function verifySignatureSync(key, signature, data) {
 
     // Skip padding, see http://tools.ietf.org/html/rfc3447#section-9.2 step 5
     if (next() != 1) {
-      throw "Wrong padding in signature digest";
+      throw new Error("Wrong padding in signature digest");
     }
     while (next() == 255) {}
     if (digest.charCodeAt(pos - 1) != 0) {
-      throw "Wrong padding in signature digest";
+      throw new Error("Wrong padding in signature digest");
     }
 
     // Rest is an ASN.1 structure, get the SHA1 hash from it and compare to

@@ -152,7 +152,6 @@ async function run() {
       return { host };
     });
 
-    const versions = [];
     for (const spec of args.packageSpecs) {
       spec.version = await input({
         message: `What is the new version number for ${hostNames[spec.host]}?`,

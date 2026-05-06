@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
-/* global ewe */
 
 import { expect } from "expect";
 import { By, until } from "selenium-webdriver";

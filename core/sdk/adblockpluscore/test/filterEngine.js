@@ -69,12 +69,10 @@ describe("Filter Engine setup", function() {
   beforeEach(function() {
     // Sandbox is required here to get the stub io module.
     let sandboxedRequire = createSandbox();
-    (
-      {Features} = sandboxedRequire(LIB_FOLDER + "/features.js"),
-      {FilterEngine} = sandboxedRequire(LIB_FOLDER + "/filterEngine.js"),
-      {Subscription, RegularSubscription, FullUpdatableSubscription} =
-        sandboxedRequire(LIB_FOLDER + "/subscriptionClasses.js")
-    );
+    ({Features} = sandboxedRequire(LIB_FOLDER + "/features.js"));
+    ({FilterEngine} = sandboxedRequire(LIB_FOLDER + "/filterEngine.js"));
+    ({Subscription, RegularSubscription, FullUpdatableSubscription} =
+      sandboxedRequire(LIB_FOLDER + "/subscriptionClasses.js"));
   });
 
   afterEach(function() {
@@ -163,10 +161,8 @@ describe("Running the filterEngine", function() {
   beforeEach(function() {
     // Sandbox is required here to get the stub io module.
     let sandboxedRequire = createSandbox();
-    (
-      {contentTypes} = sandboxedRequire(LIB_FOLDER + "/contentTypes.js"),
-      {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses.js")
-    );
+    ({contentTypes} = sandboxedRequire(LIB_FOLDER + "/contentTypes.js"));
+    ({Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses.js"));
     const {FilterEngine} = sandboxedRequire(LIB_FOLDER + "/filterEngine.js");
     filterEngine = new FilterEngine();
   });

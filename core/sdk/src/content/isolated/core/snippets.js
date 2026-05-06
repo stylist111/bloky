@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* global cloneInto */
-
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
 import snippetsCallback from "@eyeo/snippets/isolated";
@@ -70,6 +68,9 @@ function isCorsFrame() {
   }
 
   try {
+    // Accessing the parent frame's href has the side effect of throwing an
+    // exception for cross-origin iframes.
+    // eslint-disable-next-line no-unused-expressions
     window.parent.location.href;
     return false;
   }

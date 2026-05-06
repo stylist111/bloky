@@ -1374,17 +1374,6 @@ let FullUpdatableSubscription =
  */
 exports.FullUpdatableSubscription =
 class FullUpdatableSubscription extends CountableSubscription {
-  /** Construct a new FullUpdatableSubscription
-   *
-   * @param {string} url The URL of the subscription.
-   * @param {string} [title] The title of the subscription.
-   *
-   * @private
-   */
-  constructor(url, title) {
-    super(url, title);
-  }
-
   /**
    * Whether the subscription is downloadable.
    * @type {boolean}

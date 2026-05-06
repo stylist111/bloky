@@ -28,10 +28,8 @@ describe("filterState", function() {
   beforeEach(function() {
     // Sandbox is required here because the filterNotifier is a global singleton.
     let sandboxedRequire = createSandbox();
-    (
-      {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses"),
-      {filterNotifier} = sandboxedRequire(LIB_FOLDER + "/filterNotifier")
-    );
+    ({Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses"));
+    ({filterNotifier} = sandboxedRequire(LIB_FOLDER + "/filterNotifier"));
     const {FilterState} = sandboxedRequire(LIB_FOLDER + "/filterState");
     filterState = new FilterState();
   });
@@ -41,6 +39,20 @@ describe("filterState", function() {
     filterState = null;
     Filter.useFilterState(null);
   });
+
+  /**
+   * Serializes filter state for the given filter text and converts the results
+   * into an array.
+   *
+   * Usable in tests that want to assert on the lack of side effects from
+   * serializing.
+   *
+   * @param {string} text - Filter text to serialize.
+   * @returns {Array<string>}
+   */
+  function serializeFilterState(text) {
+    return Array.from(filterState.serialize(text));
+  }
 
   describe("filterState.isEnabled() without subscription", function() {
     context("No state", function() {
@@ -197,21 +209,21 @@ describe("filterState", function() {
       });
 
       it("should return true after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         assert.strictEqual(filterState.isEnabled("||example.com^"), true);
       });
 
       it("should return false after filter is disabled and filter state is serialized", function() {
         filterState.setEnabled("||example.com^", false);
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         assert.strictEqual(filterState.isEnabled("||example.com^"), false);
       });
 
       it("should return true after filter state is serialized and filter is re-enabled", function() {
         filterState.setEnabled("||example.com^", false);
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
         filterState.setEnabled("||example.com^", true);
 
         assert.strictEqual(filterState.isEnabled("||example.com^"), true);
@@ -376,21 +388,21 @@ describe("filterState", function() {
       });
 
       it("should return false after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         assert.strictEqual(filterState.isEnabled("||example.com^"), false);
       });
 
       it("should return true after filter is enabled and filter state is serialized", function() {
         filterState.setEnabled("||example.com^", true);
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         assert.strictEqual(filterState.isEnabled("||example.com^"), true);
       });
 
       it("should return false after filter state is serialized and filter is re-disabled", function() {
         filterState.setEnabled("||example.com^", true);
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
         filterState.setEnabled("||example.com^", false);
 
         assert.strictEqual(filterState.isEnabled("||example.com^"), false);
@@ -645,7 +657,7 @@ describe("filterState", function() {
       });
 
       it("should emit filterState.enabled when filter is disabled after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         checkEvents(() => filterState.setEnabled("||example.com^", false),
                     [["||example.com^", false, true]]);
@@ -747,7 +759,7 @@ describe("filterState", function() {
       });
 
       it("should emit filterState.enabled when filter is enabled after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         checkEvents(() => filterState.setEnabled("||example.com^", true),
                     [["||example.com^", true, false]]);
@@ -990,7 +1002,7 @@ describe("filterState", function() {
       });
 
       it("should emit filterState.enabled when filter's enabled state is toggled after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         checkEvents(() => filterState.toggleEnabled("||example.com^"),
                     [["||example.com^", false, true]]);
@@ -1078,7 +1090,7 @@ describe("filterState", function() {
       });
 
       it("should emit filterState.enabled when filter's enabled state is toggled after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         checkEvents(() => filterState.toggleEnabled("||example.com^"),
                     [["||example.com^", true, false]]);
@@ -1180,7 +1192,7 @@ describe("filterState", function() {
       });
 
       it("should not emit filterState.enabled when filter's enabled state is reset after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         checkEvents(() => filterState.resetEnabled("||example.com^"), []);
       });
@@ -1263,7 +1275,7 @@ describe("filterState", function() {
       });
 
       it("should emit filterState.enabled when filter's enabled state is reset after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         checkEvents(() => filterState.resetEnabled("||example.com^"),
                     [["||example.com^", true, false]]);
@@ -1426,21 +1438,21 @@ describe("filterState", function() {
       });
 
       it("should return 0 after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         assert.strictEqual(filterState.getHitCount("||example.com^"), 0);
       });
 
       it("should return 1 after filter's hit count is set to 1 and filter state is serialized", function() {
         filterState.setHitCount("||example.com^", 1);
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         assert.strictEqual(filterState.getHitCount("||example.com^"), 1);
       });
 
       it("should return 0 after filter state is serialized and filter's hit count is re-set to 0", function() {
         filterState.setHitCount("||example.com^", 1);
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
         filterState.setHitCount("||example.com^", 0);
 
         assert.strictEqual(filterState.getHitCount("||example.com^"), 0);
@@ -1605,21 +1617,21 @@ describe("filterState", function() {
       });
 
       it("should return 1 after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         assert.strictEqual(filterState.getHitCount("||example.com^"), 1);
       });
 
       it("should return 0 after filter's hit count is set to 0 and filter state is serialized", function() {
         filterState.setHitCount("||example.com^", 0);
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         assert.strictEqual(filterState.getHitCount("||example.com^"), 0);
       });
 
       it("should return 1 after filter state is serialized and filter's hit count is re-set to 1", function() {
         filterState.setHitCount("||example.com^", 0);
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
         filterState.setHitCount("||example.com^", 1);
 
         assert.strictEqual(filterState.getHitCount("||example.com^"), 1);
@@ -1730,7 +1742,7 @@ describe("filterState", function() {
       });
 
       it("should emit filterState.hitCount when filter's hit count is set to 1 after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         checkEvents(() => filterState.setHitCount("||example.com^", 1),
                     [["||example.com^", 1, 0]]);
@@ -1827,7 +1839,7 @@ describe("filterState", function() {
       });
 
       it("should emit filterState.hitCount when filter's hit count is set to 0 after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         checkEvents(() => filterState.setHitCount("||example.com^", 0),
                     [["||example.com^", 0, 1]]);
@@ -1931,7 +1943,7 @@ describe("filterState", function() {
       });
 
       it("should emit filterState.hitCount when filter's hit count is reset from 1 after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
         filterState.setHitCount("||example.com^", 1);
 
         checkEvents(() => filterState.resetHitCount("||example.com^"),
@@ -2010,7 +2022,7 @@ describe("filterState", function() {
       });
 
       it("should emit filterState.hitCount when filter's hit count is reset after filter state is serialized", function() {
-        [...filterState.serialize("||example.com^")];
+        serializeFilterState("||example.com^");
 
         checkEvents(() => filterState.resetHitCount("||example.com^"),
                     [["||example.com^", 0, 1]]);

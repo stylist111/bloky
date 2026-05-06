@@ -96,11 +96,9 @@ describe("Filter listener", function() {
   beforeEach(function() {
     // Sandbox is required here to get the stub io module.
     sandboxedRequire = createSandbox();
-    (
-      {FilterStorage} = sandboxedRequire(LIB_FOLDER + "/filterStorage"),
-      {IO} = sandboxedRequire("./stub-modules/io"),
-      {filterNotifier} = sandboxedRequire(LIB_FOLDER + "/filterNotifier")
-    );
+    ({FilterStorage} = sandboxedRequire(LIB_FOLDER + "/filterStorage"));
+    ({IO} = sandboxedRequire("./stub-modules/io"));
+    ({filterNotifier} = sandboxedRequire(LIB_FOLDER + "/filterNotifier"));
 
     const {FilterEngine} = sandboxedRequire(LIB_FOLDER + "/filterEngine");
     filterEngine = new FilterEngine();
@@ -171,12 +169,10 @@ describe("Filter listener", function() {
     beforeEach(async function() {
       await filterEngine.initialize();
 
-      (
-        {filterStorage} = filterEngine,
-        {Subscription, SpecialSubscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"),
-        {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses"),
-        recommendations = sandboxedRequire("../data/subscriptions.json")
-      );
+      ({filterStorage} = filterEngine);
+      ({Subscription, SpecialSubscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"));
+      ({Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses"));
+      recommendations = sandboxedRequire("../data/subscriptions.json");
 
       // Disable the synchronizer for downloadable subscription
       const {FullUpdatableSubscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses");

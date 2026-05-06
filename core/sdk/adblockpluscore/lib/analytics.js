@@ -108,12 +108,6 @@ function isFreshInstall() {
  */
 class Analytics {
   /**
-   * @hideconstructor
-   */
-  constructor() {
-  }
-
-  /**
    * Checks whether the given URL is trusted for analytics purposes based on
    * the value of the `analytics.trustedHosts` preference.
    *

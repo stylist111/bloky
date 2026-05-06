@@ -17,6 +17,25 @@
 
 import browser from "./browser.js";
 
+/**
+ * The Error type for if a file fails to load from browser.storage.local.
+ *
+ * @property {string} type Error code. "NoSuchFile" when the file does not exist
+ * in storage.
+ */
+class IOStorageError extends Error {
+  /** Construct an IOStorageError
+   * @constructor
+   * @param {string} message The error message.
+   * @param {string} type Error code. "NoSuchFile" when the file does not exist
+   * in storage.
+   */
+  constructor(message, type) {
+    super(message);
+    this.type = type;
+  }
+}
+
 const KEY_PREFIX = "ewe:file:";
 
 function fileToKey(fileName) {
@@ -30,7 +49,7 @@ async function loadFile(fileName) {
   if (entry) {
     return entry;
   }
-  throw {type: "NoSuchFile"};
+  throw new IOStorageError("File not found", "NoSuchFile");
 }
 
 function saveFile(fileName, data) {
