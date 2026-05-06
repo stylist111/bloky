@@ -17,15 +17,15 @@
 
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
-import snippetsCallback from "@eyeo/snippets/isolated";
+import snippetsCallback from "@eyeo/snippets/isolated/lite";
 import {parseScript} from "#adblockpluscore/lib/snippets.js";
 import {ignoreNoConnectionError} from "../../../all/errors.js";
 import {
   CACHED_FILTERS_CONFIG_KEY,
   COMMS_CHANNEL_DATASET_KEY,
-  DEBUG_CSS_PROPERTIES,
   HANDSHAKE_EVENT_NAME
 } from "../../shared/constants.js";
+import {DEBUG_CSS_PROPERTIES} from "../../../all/snippets.js";
 import {claimCommsChannel} from "../../shared/helpers.js";
 import {default as sentry} from "./sentry.js";
 import {default as telemetry} from "../../../front/telemetry.js";

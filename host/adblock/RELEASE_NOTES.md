@@ -1,5 +1,7 @@
 # Unreleased
 
+- Moved heavy snippets out of the content script into the background worker, reducing the size of the code we need to inject to each frame.
+
 # 6.41.0 - 2026-05-05
 
 This release contains bugfixes and under-the-hood changes.

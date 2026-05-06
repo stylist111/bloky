@@ -19,6 +19,7 @@ import browser from "./browser.js";
 
 import {createStyleSheet} from "#adblockpluscore/lib/elemHide.js";
 import {contentTypes} from "#adblockpluscore/lib/contentTypes.js";
+import {parseScript} from "#adblockpluscore/lib/snippets.js";
 
 import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
@@ -28,6 +29,88 @@ import {arraysDiff} from "./set-operations.js";
 import {shouldNotifyActive} from "./cdp/index.js";
 import {patchSender as patchHistoryApi} from "./safari-history.js";
 import {isSafari} from "./info.js";
+import dependencySnippets from "@eyeo/snippets/isolated/heavy";
+import {DEBUG_CSS_PROPERTIES} from "../all/snippets.js";
+
+
+// Normally snippets are injected in the content script but some of them are
+// very large and only needed very rarely. Injecting them in the background 
+// worker instead of the content script saves us from injecting ~350 KB
+// per frame unconditionally. This function injects them only if they are used.
+// This also means that these snippets might run after the page scripts.
+// That is acceptable for the snippets in the isolated/heavy artifact. 
+async function injectHeavySnippets(tabId, frameId, hostname) {
+  const snippetFilters = filterEngine.snippets.getFilters(hostname);
+  const isolated = [];
+  const dependencies = new Set();
+  for (const {body} of snippetFilters) {
+    for (const script of parseScript(body)) {
+      if (dependencySnippets.has(script[0])) {
+        isolated.push(script);
+        const dep = dependencySnippets.get(script[0]);
+        if (dep) {
+          dependencies.add(dep);
+        }
+      }
+    }
+  }
+
+  // Only inject the script if there is a filter that requires the dependency.
+  // The helper snippets such as debug; and profile; exist in the artifact.
+  // They only exist to help debug the heavy snippet.
+  // We don't want to inject the heavy snippet if only helper snippets are used.
+  // That's why we don't look at the isolated.length here but look at the
+  // dependencies.size instead.
+  if (!dependencies.size) {
+    return;
+  }
+
+  // Telemetry events are not supported for heavy snippets for now.
+  const environment = {};
+  if (debugOptions.elemHide) {
+    environment.debugCSSProperties = DEBUG_CSS_PROPERTIES;
+  }
+
+  try {
+    if (browser.scripting && browser.scripting.executeScript) {
+      const target = {tabId, frameIds: [frameId]};
+      await Promise.all([...dependencies].map(dep =>
+        browser.scripting.executeScript({
+          target,
+          world: "ISOLATED",
+          func: dep
+        })
+      ));
+      await browser.scripting.executeScript({
+        target,
+        world: "ISOLATED",
+        func: dependencySnippets,
+        args: [environment, ...isolated]
+      });
+    }
+    else if (browser.tabs && browser.tabs.executeScript) {
+      const args = JSON.stringify([environment, ...isolated]);
+      let code = "";
+      for (const dep of dependencies) {
+        code += `(${dep})();`;
+      }
+      code += `(${dependencySnippets}).apply(null,${args})`;
+      await browser.tabs.executeScript(
+        tabId,
+        {
+          frameId,
+          code,
+          matchAboutBlank: true,
+          runAt: "document_start"
+        }
+      );
+    }
+  }
+  catch (e) {
+    // Frame may have navigated away; don't let injection failures break
+    // the rest of applyContentFilters.
+  }
+}
 
 function calculateSelectorsDiff(previousStylesheet, styleSheet) {
   let diff = arraysDiff(previousStylesheet.selectors, styleSheet.selectors);
@@ -108,11 +191,15 @@ export async function applyContentFilters(
 
     if (
       !skipSnippets &&
-      !(frame.allowlisted & contentTypes.DOCUMENT) &&
-      isSafari()
+      !(frame.allowlisted & contentTypes.DOCUMENT)
     ) {
-      console.warn("Patching history API sender");
-      patchHistoryApi({tabId, frameIds: [frameId]});
+      if (isSafari()) {
+        console.warn("Patching history API sender");
+        patchHistoryApi({tabId, frameIds: [frameId]});
+      }
+
+      // Not awaiting here as we don't need to block the CSS injection.
+      injectHeavySnippets(tabId, frameId, frame.hostname);
     }
 
     if (!(frame.allowlisted & contentTypes.DOCUMENT) &&

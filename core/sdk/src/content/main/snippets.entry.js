@@ -21,9 +21,9 @@ import {v4 as uuidv4} from "uuid";
 import snippetsCallback from "@eyeo/snippets/main";
 import {
   CACHED_FILTERS_CONFIG_KEY,
-  DEBUG_CSS_PROPERTIES,
   HANDSHAKE_EVENT_NAME
 } from "../shared/constants.js";
+import {DEBUG_CSS_PROPERTIES} from "../../all/snippets.js";
 import {shimStorage} from "./shims/storage.js";
 import {claimCommsChannel} from "../shared/helpers.js";
 import {toSerializableError} from "../../all/errors.js";
