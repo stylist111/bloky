@@ -68,7 +68,7 @@ export default function webpack({
                 }
               },
               {
-                test: /\.ts$/,
+                test: /\.(cjs|js|mjs|ts)$/,
                 use: [
                   {
                     loader: "ts-loader",
