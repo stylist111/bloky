@@ -28,10 +28,12 @@ vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
     getFlag: vi.fn(),
   },
   telemetry: {
-    ServerLogger: vi.fn().mockImplementation(() => ({
-      info: mockLoggerInfo,
-      debug: vi.fn(),
-    })),
+    ServerLogger: vi.fn().mockImplementation(function () {
+      return {
+        info: mockLoggerInfo,
+        debug: vi.fn(),
+      };
+    }),
   },
 }));
 

@@ -143,22 +143,17 @@ const defaultMV3Permissions = {
 
 describe("pretty print debug data", () => {
   beforeEach(() => {
-    const mockGetAllPermissions = vi.fn().mockImplementation(() => {
-      return Promise.resolve(defaultMV3Permissions);
+    chrome.permissions.getAll.mockImplementation((callback) => {
+      callback(defaultMV3Permissions);
     });
-    vi.spyOn(browser.permissions, "getAll").mockImplementation(
-      mockGetAllPermissions,
-    );
 
-    const mockGetAll = vi.fn().mockImplementation(() => {
-      return Promise.resolve(defaultAlarmResponse);
+    chrome.alarms.getAll.mockImplementation((callback) => {
+      callback(defaultAlarmResponse);
     });
-    vi.spyOn(browser.alarms, "getAll").mockImplementation(mockGetAll);
 
-    const mockStorageGet = vi.fn().mockImplementation(async (key) => {
-      return Promise.resolve({ [key]: `key_value_${key}` });
+    chrome.storage.local.get.mockImplementation((key, callback) => {
+      callback({ [key]: `key_value_${key}` });
     });
-    vi.spyOn(browser.storage.local, "get").mockImplementation(mockStorageGet);
   });
 
   afterEach(() => {
@@ -280,17 +275,13 @@ describe("pretty print debug data", () => {
       licenseInformation: {},
     };
 
-    const mockGetAllPermissions = vi.fn().mockImplementation(() => {
-      return Promise.resolve(undefined);
+    chrome.permissions.getAll.mockImplementation((callback) => {
+      callback(undefined);
     });
-    vi.spyOn(browser.permissions, "getAll").mockImplementation(
-      mockGetAllPermissions,
-    );
 
-    const mockGetAll = vi.fn().mockImplementation(() => {
-      return Promise.resolve([]);
+    chrome.alarms.getAll.mockImplementation((callback) => {
+      callback([]);
     });
-    vi.spyOn(browser.alarms, "getAll").mockImplementation(mockGetAll);
 
     const mockGetUserFilters = vi.fn().mockImplementation(() => {
       return Promise.resolve([]);

@@ -3,6 +3,7 @@ import path from "path";
 
 export default defineConfig({
   test: {
+    clearMocks: true,
     globals: true,
     environment: "jsdom",
     setupFiles: "./test/unit/setup.js",

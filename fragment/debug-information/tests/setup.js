@@ -28,11 +28,17 @@ chrome.runtime.id = "unit-testing-extension";
 const mockStorage = {
   data: {},
   local: {
-    get: vi.fn().mockImplementation(async (key) => {
-      return Promise.resolve({ [key]: mockStorage.data[key] || 0 });
+    get: vi.fn().mockImplementation((key, callback) => {
+      const result = { [key]: mockStorage.data[key] || 0 };
+      if (callback) {
+        callback(result);
+      }
     }),
-    set: vi.fn(async (obj) => {
+    set: vi.fn().mockImplementation((obj, callback) => {
       Object.assign(mockStorage.data, obj);
+      if (callback) {
+        callback();
+      }
     }),
   },
 };
@@ -59,12 +65,12 @@ chrome.runtime.getManifest.mockImplementation(() => {
   return { short_name: "AdBlock", version: "1.2.3.4", manifest_version: 3 };
 });
 
-chrome.alarms.getAll.mockImplementation(() => {
-  return Promise.resolve(defaultAlarmResponse);
+chrome.alarms.getAll.mockImplementation((callback) => {
+  callback(defaultAlarmResponse);
 });
 
-chrome.permissions.getAll.mockImplementation(() => {
-  return Promise.resolve({
+chrome.permissions.getAll.mockImplementation((callback) => {
+  callback({
     permissions: ["alarms", "contextMenus", "devtools", "idle"],
     origins: ["<all_urls>", "http://*/*", "https://*/*"],
   });

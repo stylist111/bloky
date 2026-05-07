@@ -14,9 +14,7 @@
     "test": "vitest run --reporter=verbose"
   },
   "peerDependencies": {
+    "vitest": "4.1.5",
     "webextension-polyfill": "*"
-  },
-  "devDependencies": {
-    "vitest": "3.0.9"
   }
 }

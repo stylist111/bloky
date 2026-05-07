@@ -47,7 +47,11 @@
     "lerna": "9.0.7",
     "prettier": "3.3.3",
     "selenium-webdriver": "4.23.0",
-    "typescript": "5.5.4"
+    "typescript": "5.5.4",
+    "vite": "6.4.2",
+    "vitest": "4.1.5",
+    "vitest-chrome": "0.1.0",
+    "vitest-mock-extended": "2.0.2"
   },
   "overrides": {
     "lerna": {

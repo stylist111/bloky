@@ -30,14 +30,12 @@
   "peerDependencies": {
     "@eyeo/webext-ad-filtering-solution": "*",
     "typescript": "5.5.4",
+    "vitest": "4.1.5",
+    "vitest-chrome": "0.1.0",
+    "vitest-mock-extended": "2.0.2",
     "webextension-polyfill": "*"
   },
   "dependencies": {
     "@eyeo/polyfills": "*"
-  },
-  "devDependencies": {
-    "vitest": "3.0.9",
-    "vitest-chrome": "0.1.0",
-    "vitest-mock-extended": "2.0.2"
   }
 }

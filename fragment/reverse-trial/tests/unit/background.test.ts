@@ -68,10 +68,12 @@ vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
     clear: vi.fn().mockResolvedValue(undefined),
   },
   telemetry: {
-    ServerLogger: vi.fn().mockImplementation(() => ({
-      info: mockLoggerInfo,
-      debug: mockLoggerDebug,
-    })),
+    ServerLogger: vi.fn().mockImplementation(function () {
+      return {
+        info: mockLoggerInfo,
+        debug: mockLoggerDebug,
+      };
+    }),
     getRotatingClientId: vi.fn().mockResolvedValue("mock-rcid"),
   },
   remoteConfig: {
