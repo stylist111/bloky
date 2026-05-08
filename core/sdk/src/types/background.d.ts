@@ -646,10 +646,6 @@ export interface AddonInfo {
    * Feature flags for the addon/extension.
    */
   featureFlags?: {
-    /**
-     * Enable inline CSS in element hiding and element hiding emulation filters.
-     */
-    inlineCss?: boolean;
   };
   /**
    * Settings for CDP.

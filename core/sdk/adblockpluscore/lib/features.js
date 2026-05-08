@@ -43,7 +43,6 @@ exports.resetFeatureFlags = function() {
   // Add new feature flags here!
 
   featureFlags.example = false;  // example feature used by tests
-  featureFlags.inlineCss = false;
 };
 
 resetFeatureFlags();

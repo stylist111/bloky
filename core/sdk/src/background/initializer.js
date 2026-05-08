@@ -25,8 +25,6 @@ import * as cdp from "./cdp/index.js";
 import {isSafari} from "./info.js";
 import {patchForSafari} from "./safari-polyfill.js";
 import {log, printLog} from "./safari-logs.js";
-import experiments from "./experiments.js";
-import {setFeatureFlags} from "#adblockpluscore/lib/features.js";
 
 let startupPromise;
 
@@ -58,10 +56,6 @@ export default {
         await io.initialize();
         await debugging.start();
         await initPrefs();
-        const inlineCssFlag = await experiments.getFlag("inline-css-filters");
-        if (inlineCssFlag) {
-          setFeatureFlags({inlineCss: true});
-        }
         await filterEngine.initialize();
         await frameState.start();
         await initDNRFilters();

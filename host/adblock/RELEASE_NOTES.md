@@ -1,6 +1,10 @@
 # Unreleased
 
 - Moved heavy snippets out of the content script into the background worker, reducing the size of the code we need to inject to each frame.
+- Added support for inline CSS styles in element hiding and element hiding
+  emulation filters. This allows setting custom styling rather than just hiding
+  or removing the element.
+  For example: `example.com##.aside { margin: 0; background: none }`
 
 # 6.41.0 - 2026-05-05
 

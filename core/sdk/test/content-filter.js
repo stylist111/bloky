@@ -32,8 +32,8 @@ import {
   from "./utils.js";
 import {subTestCustom1, subAntiCVLocal} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
-import {addFilter, addFilters, EWE, setFeatureFlags} from "./messaging.js";
-import {isFuzzingServiceWorker, suspendServiceWorker} from "./mocha/mocha-runner.js";
+import {addFilter, addFilters, EWE} from "./messaging.js";
+import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 import {CACHED_FILTERS_CONFIG_KEY} from "../src/content/shared/constants.js";
 import {restartWithTestArgs as restartWithTelemetryTestArgs} from "./fixtures/telemetry-server-logger.js";
 
@@ -377,17 +377,7 @@ describe("Element Hiding", function() {
       await expectElemHideRemoved({elemId});
     });
 
-    it("rejects inline CSS filters until the experiment is turned on", async function() {
-      await setFeatureFlags({inlineCss: false});
-
-      await expect(
-        EWE.filters.add(`${TEST_PAGES_DOMAIN}#?##inline-css-div {margin-bottom: 0px; margin-top: 0px}`)
-      ).rejects.toThrow("FilterError");
-    });
-
     it("applies inline CSS to element", async function() {
-      await setFeatureFlags({inlineCss: true});
-
       const elemId = "inline-css-div";
 
       await expectElementToHaveInlineStyle(elemId, "");
@@ -397,29 +387,6 @@ describe("Element Hiding", function() {
 
       await expectElementToHaveInlineStyle(elemId, "margin-bottom: 0px !important; margin-top: 0px !important;");
       await expectElementToHaveInlineStyle("inline-css-div-2", "");
-    });
-
-    it("enables inline CSS when experiment flag is set after restart [mv3-only]", async function () {
-      const filter = `${TEST_PAGES_DOMAIN}###some-id {margin-bottom: 0px}`;
-
-      await expect(
-        EWE.filters.add(filter)
-      ).rejects.toThrow("FilterError");
-
-      await EWE.experiments.overrideFlag("inline-css-filters", true);
-
-      await expect(
-        EWE.filters.add(filter)
-      ).rejects.toThrow("FilterError");
-
-      // In MV3 the filter engine can be restarted by restarting the service
-      // worker. In MV2, this would mean the browser restarting or the extension
-      // being updated.
-      await suspendServiceWorker(this);
-
-      await expect(
-        EWE.filters.add(filter)
-      ).resolves.toBeDefined();
     });
 
     it("does not remove a DOM element with a {remove: true;} filter if it is allowlisted", async function() {

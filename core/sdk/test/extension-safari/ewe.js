@@ -42,9 +42,6 @@ let startupInfo = {};
 
 startupInfo.bundledSubscriptionsPath = "subscriptions";
 startupInfo.bundledSubscriptions = subscriptions;
-startupInfo.featureFlags = {
-  inlineCss: true
-};
 
 /**
  * Entry point

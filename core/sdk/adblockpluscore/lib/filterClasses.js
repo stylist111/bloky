@@ -30,7 +30,6 @@ const {CONTENT_FILTER, parse, FilterParsingError} = require("./filters");
 const {Pattern} = require("./patterns");
 const {parseDomains, domainSuffixes, isValidDomainWildcard,
        hasWildcard, matchesWildcards} = require("./url");
-const {isFeatureEnabled} = require("./features.js");
 const {verifyCSSProperties} = require("./filters/inlineCssValidation");
 
 const {resources} = require("../data/resources.js");
@@ -955,7 +954,7 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
   let css = null;
   let remove = false;
 
-  if (selector.startsWith("@") && isFeatureEnabled("inlineCss")) {
+  if (selector.startsWith("@")) {
     return new InvalidFilter(text, "filter_elemhide_invalid_selector");
   }
 
@@ -966,9 +965,6 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
     remove = propertiesList.includes("remove:true;");
 
     if (!remove) {
-      if (!isFeatureEnabled("inlineCss")) {
-        return new InvalidFilter(text, "filter_unknown_option");
-      }
       css = extractCSSProperties(propertiesList);
       if (!verifyCSSProperties(css)) {
         return new InvalidFilter(text, "filter_elemhide_invalid_inline_css");

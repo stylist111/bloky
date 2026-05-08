@@ -303,8 +303,6 @@ async function onInstalled(details) {
  *   dynamically enabled or disabled. If any features are set here which are
  *   not known features, a warning will be added to the `warnings` property
  *   of the returned `FirstRunInfo`.
- * @param {boolean?} [addonInfo.featureFlags.inlineCss] Enable inline CSS in
- *   element hiding and element hiding emulation filters.
  * @param {boolean?} [addonInfo.lightningSnippets] Default value for
  *   Lightning Snippets (zero-delay filter caching). Defaults to `false`
  *   when omitted. Acts as the lowest-priority value in the

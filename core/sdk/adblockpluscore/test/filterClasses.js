@@ -26,7 +26,6 @@ const {Filter, InvalidFilter, CommentFilter, ActiveFilter, URLFilter,
        ElemHideFilter, ElemHideException, ElemHideEmulationFilter,
        SnippetFilter, isActiveFilter} = require(LIB_FOLDER + "/filterClasses");
 const {FilterState} = require(LIB_FOLDER + "/filterState");
-const {setFeatureFlags} = require(LIB_FOLDER + "/features.js");
 
 describe("Filter classes", function() {
   beforeEach(function() {
@@ -520,8 +519,6 @@ describe("Filter classes", function() {
   });
 
   it("Inline CSS filters", function() {
-    setFeatureFlags({inlineCss: true});
-
     compareFilter(
       "foo.com#?##banner {margin:0}", [
         "type=elemhideemulation",

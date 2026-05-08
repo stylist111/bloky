@@ -26,7 +26,7 @@ import {Page, Popup, setMinTimeout, waitForAssertion, isMV3, isEdge,
 import {wait} from "./polling.js";
 import {EWE, addFilter, runInBackgroundPage, getTestEvents, clearTestEvents,
         addOnBlockableListener, removeOnBlockableListener,
-        waitForServiceWorkerInitialization, setFeatureFlags}
+        waitForServiceWorkerInitialization}
   from "./messaging.js";
 import {VALID_FILTER_TEXT, subTestCustom1} from "./fixtures/subscriptions.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
@@ -1247,8 +1247,6 @@ describe("Reporting", function() {
     });
 
     it("logs element hiding filter with inline CSS filters", async function() {
-      await setFeatureFlags({inlineCss: true});
-
       await checkLogging(
         ["###inline-css-div {color:#0000bb;}"],
         "elemhideEventOptions",
@@ -1273,6 +1271,15 @@ describe("Reporting", function() {
         "element-hiding.html",
         [{
           filter: expectedElemhideFilter("###elem-hide"),
+          matchInfo: elemhideMatchInfo,
+          request: expectedRequestRelativeUrl("element-hiding.html")
+        },
+        {
+          filter: {
+            ...expectedElemhideFilter("localhost#?##inline-css-div {margin-bottom:0px;}"),
+            type: "elemhideemulation",
+            css: {"margin-bottom": "0px"}
+          },
           matchInfo: elemhideMatchInfo,
           request: expectedRequestRelativeUrl("element-hiding.html")
         }]

@@ -41,6 +41,7 @@
   Detection events from iframes now report the page domain the user
   is visiting instead of the iframe domain. Events from the main
   frame pass through unchanged.
+- Inline CSS filters are now enabled.
 
 ## Fixes
 
