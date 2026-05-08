@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-env node */
-
 import fs from "fs";
 import crypto from "crypto";
 import onHeaders from "on-headers";

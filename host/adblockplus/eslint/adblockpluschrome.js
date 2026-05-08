@@ -1,5 +1,3 @@
-/* eslint-env node */
-
 "use strict";
 
 /**
@@ -37,6 +35,12 @@ module.exports = {
       files: ["*.cjs"],
       parserOptions: {
         sourceType: "script"
+      }
+    },
+    {
+      files: ["lib/serviceworkerInit.js"],
+      env: {
+        serviceworker: true
       }
     }
   ]

@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-env node */
-
 import path from "path";
 import {fileURLToPath} from "url";
 import {promisify} from "util";

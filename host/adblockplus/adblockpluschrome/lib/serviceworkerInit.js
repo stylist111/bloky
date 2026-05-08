@@ -15,6 +15,4 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-env serviceworker */
-
 if (typeof importScripts !== "undefined") importScripts("polyfill.js");

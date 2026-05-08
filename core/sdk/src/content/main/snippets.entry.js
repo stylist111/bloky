@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* global chrome browser */
-
 import {v4 as uuidv4} from "uuid";
 import snippetsCallback from "@eyeo/snippets/main";
 import {

@@ -15,7 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-env node */
 /* eslint-disable no-console */
 
 import {By, until} from "selenium-webdriver";

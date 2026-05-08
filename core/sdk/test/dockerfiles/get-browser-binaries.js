@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
-/* eslint-env node */
+
 import {BROWSERS} from "@eyeo/get-browser-binary";
 import yargs from "yargs";
 

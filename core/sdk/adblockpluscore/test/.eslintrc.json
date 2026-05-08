@@ -7,5 +7,14 @@
     "max-len": "off",
     "no-console": "off",
     "no-undefined": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["browser/**/*.js"],
+      "globals": {
+        "Mocha": "readonly",
+        "chai": "readonly"
+      }
+    }
+  ]
 }

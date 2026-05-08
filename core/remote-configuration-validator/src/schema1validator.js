@@ -14,8 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
-/* For ESLint: List any global identifiers used in this file below */
-/* global console */
+
 import { Rule } from "json-rules-engine";
 import { Validator } from "jsonschema";
 import { remoteConfigSchema } from "../schema/remoteConfigSchema.js";

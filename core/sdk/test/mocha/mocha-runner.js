@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* global Mocha */
-
 import {EventEmitter} from "#adblockpluscore/lib/events.js";
 import {MILLIS_IN_SECOND} from "#adblockpluscore/lib/time.js";
 

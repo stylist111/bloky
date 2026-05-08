@@ -6,5 +6,13 @@
   },
   "globals": {
     "EWE": "readonly"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["mocha/*.js"],
+      "globals": {
+        "Mocha": "readonly"
+      }
+    }
+  ]
 }

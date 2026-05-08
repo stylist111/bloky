@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-env node */
-
 import {runCommand} from "../utils.js";
 
 export async function run() {

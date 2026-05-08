@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* global Mocha */
-
 /* eslint-disable mocha/no-top-level-hooks */
 
 import {TEST_PAGES_URL} from "@eyeo/test-utils/sdk-urls";

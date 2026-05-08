@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-env node */
-
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
 import {runSDKTestServer, killSDKTestServer} from "@eyeo/test-utils/test-server-manager";

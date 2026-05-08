@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* global global */
-
 // test environment: all the globals are mocked to have control in the tests
 
 // trivial in-memory implementation of `StorageArea`

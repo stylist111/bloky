@@ -17,8 +17,6 @@
 
 /** @module */
 
-/* global environment */
-
 "use strict";
 
 let snippets = {};

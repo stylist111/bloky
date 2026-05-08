@@ -112,5 +112,16 @@ module.exports = {
       files: ["tools/test/e2e-runner/**/*.js"],
       globals: { driver: true, extension: true },
     },
+    {
+      files: [
+        "tools/test/helper-extension/background.js",
+        "core/sdk/test/extension-functional/background.js",
+        "core/sdk/test/extension-performance/background.js",
+      ],
+      env: {
+        webextensions: true,
+        serviceworker: true,
+      },
+    },
   ],
 };

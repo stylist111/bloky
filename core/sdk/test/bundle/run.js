@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-env node */
-
 import {exec} from "child_process";
 import {promisify} from "util";
 import path from "path";

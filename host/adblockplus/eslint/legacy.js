@@ -1,5 +1,3 @@
-/* eslint-env node */
-
 "use strict";
 
 /**
@@ -50,6 +48,12 @@ module.exports = {
       files: ["*.js", "*.cjs"],
       parserOptions: {
         sourceType: "script"
+      }
+    },
+    {
+      files: [".eslintrc.js"],
+      env: {
+        node: true
       }
     }
   ],

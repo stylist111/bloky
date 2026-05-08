@@ -1,5 +1,3 @@
-/* eslint-env node */
-
 const path = require("path");
 
 module.exports = {
@@ -169,6 +167,12 @@ module.exports = {
       files: ["*.jsx"],
       rules: {
         strict: "off", // Disable 'strict' rule for JSX files
+      },
+    },
+    {
+      files: [".eslintrc.js"],
+      env: {
+        node: true,
       },
     },
   ],

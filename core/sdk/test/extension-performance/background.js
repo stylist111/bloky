@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-env webextensions, serviceworker */
-
 "use strict";
 
 function isMV3() {

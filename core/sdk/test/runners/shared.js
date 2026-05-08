@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-env node */
-
 import path from "path";
 
 export const screenshotsPath = path.join(process.cwd(), "test", "screenshots");
