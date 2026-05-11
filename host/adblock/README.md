@@ -5,6 +5,10 @@
 [AdBlock](https://getadblock.com/) is a popular ad blocking extension for Chrome,
 Edge and Firefox.
 
+## Monitoring
+
+The current extension health dashboard is available [here](https://eu.hex.tech/eyeo/app/Eyeo-Extension-Health-032QfyuottjWQzBZuQBKLm/latest).
+
 ## Requirements
 
 This project requires [node.js](https://nodejs.org) and `npm` (which comes bundled with `node.js`).

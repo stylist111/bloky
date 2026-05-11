@@ -24,6 +24,10 @@ Adblock Plus is an open source project licensed under [GPLv3][gpl3] and subject
 to its [Terms of Use][eyeo-terms]. [eyeo GmbH][eyeo] is the parent company of
 Adblock Plus.
 
+## Monitoring
+
+The current extension health dashboard is available [here](https://eu.hex.tech/eyeo/app/Eyeo-Extension-Health-032QfyuottjWQzBZuQBKLm/latest).
+
 ## Running scripts
 
 Please note that all scripts should be run from the root of the repository, not
