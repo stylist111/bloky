@@ -823,16 +823,6 @@ browser.runtime.onInstalled.addListener(async (details) => {
 
     await Prefs.untilLoaded;
     await Prefs.set("installDate", now);
-  } else if (details.reason === "update") {
-    // TODO: remove this migration after clients upgrade to newer versions
-    await Prefs.untilLoaded;
-    const installDate = await Prefs.get("installDate");
-    if (!installDate) {
-      const { blockage_stats } = await browser.storage.local.get("blockage_stats");
-
-      const start = blockage_stats && blockage_stats.start ? blockage_stats.start : Date.now();
-      await Prefs.set("installDate", start);
-    }
   }
 });
 

@@ -17,41 +17,6 @@
 
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 
-interface EngineAnalytics {
-  data?: {
-    currentVersion?: string;
-    firstVersion?: string;
-  };
-  trustedHosts?: string[];
-}
-
-interface StorageEngineAnalyticsValue {
-  "abp:pref:analytics"?: EngineAnalytics;
-}
-
-/**
- * Approximates the installation date based on the engine analytics data.
- *
- * @return {number} The approximate installation date
- */
-async function approximateInstallDate(): Promise<number> {
-  const { "abp:pref:analytics": analytics } = (await browser.storage.local.get(
-    "abp:pref:analytics"
-  )) as StorageEngineAnalyticsValue;
-
-  const version = analytics?.data?.firstVersion;
-
-  if (!version || version === "0") {
-    return Date.now();
-  }
-
-  const year = version.substring(0, 4);
-  const month = version.substring(4, 6);
-  const date = version.substring(6, 8);
-
-  return new Date(`${year}-${month}-${date}`).getTime();
-}
-
 /**
  * Sets the installation date in the prefs.
  *
@@ -61,15 +26,6 @@ async function setInstallDate(installReason: string): Promise<void> {
   if (installReason === "install") {
     await Prefs.untilLoaded;
     await Prefs.set("installDate", Date.now());
-  } else if (installReason === "update") {
-    // TODO: remove this migration after clients upgrade
-    await Prefs.untilLoaded;
-    const installDate = await Prefs.get("installDate");
-    if (!installDate) {
-      // Set a default install date for older extensions
-      const timestamp = await approximateInstallDate();
-      await Prefs.set("installDate", timestamp);
-    }
   }
 }
 
