@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.38.1 - 2026-05-12
+
 - Moved heavy snippets out of the content script into the background worker, reducing the size of the code we need to inject to each frame.
 - Fixed: Options page failed to load on Firefox 68 and Chrome 79 due to incompatible JavaScript syntax introduced in 4.38.0
 - Added support for inline CSS styles in element hiding and element hiding
