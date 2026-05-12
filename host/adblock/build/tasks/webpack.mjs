@@ -26,6 +26,16 @@ import named from "vinyl-named";
 
 const require = createRequire(import.meta.url);
 
+// gulp v5 defaults to `encoding: true`, treating files as UTF-8, which causes
+// problems with binary files, so we need to explicitly set `encoding: false`
+// to restore the expected behavior
+{
+  const src = gulp.src.bind(gulp);
+  gulp.src = (globs, opts = {}) => src(globs, { encoding: false, ...opts });
+  const dest = gulp.dest.bind(gulp);
+  gulp.dest = (folder, opts = {}) => dest(folder, { encoding: false, ...opts });
+}
+
 export default function webpack({ webpackInfo, addonName, addonVersion, sourceMapType }) {
   // merge2 will merge these streams keeping their existing order. This is
   // important, because if the order changes webpack can give results that are
