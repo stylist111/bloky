@@ -666,6 +666,24 @@ describe("Filter classes", function() {
 
     // 'logger' — not a log-if-* snippet — still rejected
     compareFilter("#$#logger 'x'", ["type=invalid", "reason=filter_snippet_nodomain"]);
+
+    // race wrapping only log-if-* snippets: accepted without domain
+    compareFilter(
+      "#$#race start; log-if-script-loads foo.js label; race stop",
+      ["type=snippet", "script=race start; log-if-script-loads foo.js label; race stop"]
+    );
+
+    // race wrapping multiple log-if-* snippets: accepted without domain
+    compareFilter(
+      "#$#race start; log-if-script-loads foo.js label; log-if-selector-exists .ad; race end",
+      ["type=snippet", "script=race start; log-if-script-loads foo.js label; log-if-selector-exists .ad; race end"]
+    );
+
+    // race containing a non-monitoring snippet: rejected
+    compareFilter(
+      "#$#race start; log-if-script-loads foo.js label; hide-if-contains text; race stop",
+      ["type=invalid", "reason=filter_snippet_nodomain"]
+    );
   });
 
   it("Wildcard log-if snippet isActiveOnDomain", function() {

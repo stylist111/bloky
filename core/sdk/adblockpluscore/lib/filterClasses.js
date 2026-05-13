@@ -31,6 +31,7 @@ const {Pattern} = require("./patterns");
 const {parseDomains, domainSuffixes, isValidDomainWildcard,
        hasWildcard, matchesWildcards} = require("./url");
 const {verifyCSSProperties} = require("./filters/inlineCssValidation");
+const {parseScript} = require("./snippets");
 
 const {resources} = require("../data/resources.js");
 
@@ -905,6 +906,19 @@ exports.ContentFilter = class ContentFilter extends ActiveFilter {
 };
 
 /**
+ * Returns true if every command in a snippet script is a "log-if-*" monitoring
+ * snippet or the "race" control structure, making the script safe to use
+ * without a domain restriction.
+ * @param {string} script The snippet script body.
+ * @returns {boolean}
+ */
+function isMonitoringOnlyScript(script) {
+  let commands = parseScript(script);
+  return commands.length > 0 &&
+    commands.every(([name]) => name.startsWith("log-if-") || name === "race");
+}
+
+/**
  * Creates a content filter from a pre-parsed text representation
  *
  * @param {string} text         same as in Filter()
@@ -939,11 +953,11 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
   if (type == "$") {
     // Element hiding emulation and snippet filters are inefficient so we need
     // to make sure that they're only applied if they specify active domains.
-    // Exception: "log-if-*" monitoring snippets are allowed without a domain.
+    // Exception: scripts consisting only of "log-if-*" monitoring snippets are
+    // allowed without a domain, including when wrapped in a race block.
 
     let snippetFilter = new SnippetFilter(text, domains, body);
-    if (!restrictedByDomain &&
-        !snippetFilter.script.startsWith("log-if-")) {
+    if (!restrictedByDomain && !isMonitoringOnlyScript(snippetFilter.script)) {
       return new InvalidFilter(text, "filter_snippet_nodomain");
     }
     return snippetFilter;
