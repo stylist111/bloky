@@ -269,7 +269,7 @@ export class Channels {
     let exactTypeMatchListings = [];
     if (rangeLimitedListings.length > 0) {
       const randomIndex = Math.floor(Math.random() * rangeLimitedListings.length);
-      const theListing = Object.assign({}, rangeLimitedListings[randomIndex]);
+      const theListing = { ...rangeLimitedListings[randomIndex] };
       theListing.listingHeight = theListing.height;
       theListing.listingWidth = theListing.width;
       if (opts.height !== theListing.height && opts.width !== theListing.width) {
@@ -291,7 +291,7 @@ export class Channels {
     });
     if (exactTypeMatchListings.length > 0) {
       const randomIndex = Math.floor(Math.random() * exactTypeMatchListings.length);
-      const theListing = Object.assign({}, exactTypeMatchListings[randomIndex]);
+      const theListing = { ...exactTypeMatchListings[randomIndex] };
       theListing.listingHeight = theListing.height;
       theListing.listingWidth = theListing.width;
       return theListing;

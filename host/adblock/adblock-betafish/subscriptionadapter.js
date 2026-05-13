@@ -37,7 +37,7 @@ const v3URLCheck =
 // Also adds the 'language' and 'hidden' properties
 const SubscriptionAdapter = (function getSubscriptionAdapter() {
   const addAdBlockProperties = function (sub) {
-    let subscription = Object.assign({}, sub);
+    let subscription = { ...sub };
     const { url } = subscription;
     if (abRecommendationData[url]) {
       subscription = Object.assign(subscription, abRecommendationData[url]);
@@ -214,7 +214,7 @@ const SubscriptionAdapter = (function getSubscriptionAdapter() {
       }
     }
     for (const url in abRecommendationData) {
-      let sub = Object.assign({}, abRecommendationData[url]);
+      let sub = { ...abRecommendationData[url] };
       sub.url = url;
       sub = addAdBlockProperties(sub);
       const { adblockId } = sub;

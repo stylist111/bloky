@@ -19,8 +19,8 @@
 /* global ewe */
 import { FilterOrigin } from "../../../src/filters/shared";
 
-const allowListingFiltersRegex = new RegExp(/^allowing$/);
-const allFilterTypesRegex = new RegExp(/.*/);
+const allowListingFiltersRegex = /^allowing$/;
+const allFilterTypesRegex = /.*/;
 
 /**
  * Returns the number of currently active filters that match the parameters

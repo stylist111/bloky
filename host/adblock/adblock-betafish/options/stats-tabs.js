@@ -1053,7 +1053,7 @@ const getBarChartConfig = async function (chartType, filterName) {
 
 // process or reprocess the raw chart data for initial display
 // or after the user clicks a menu item
-const updateChart = async function (chartType = "line", filterName, labelName) {
+const updateChart = async function (chartType, filterName, labelName) {
   showOrHideNoDataMsgIfNeeded();
   let theChartConfig = {};
   let filteredDomainData = {};
@@ -1167,7 +1167,7 @@ const initializeStatsTabContent = async function () {
     }
 
     loadUserDataFromStorage().then(async () => {
-      await updateChart();
+      await updateChart("line");
       $("#stats-menu-parent-panel").fadeIn();
     });
   }

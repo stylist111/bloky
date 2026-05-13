@@ -34,7 +34,7 @@
     "@typescript-eslint/parser": "7.18.0",
     "babel-loader": "8.4.1",
     "eslint": "8.57.1",
-    "eslint-config-airbnb-base": "13.1.0",
+    "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-eyeo": "3.2.0",
     "eslint-config-love": "44.0.0",
     "eslint-config-prettier": "9.1.0",

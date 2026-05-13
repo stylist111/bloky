@@ -121,6 +121,8 @@ module.exports = {
       },
     ],
     "import/no-unresolved": "off",
+    "max-classes-per-file": "off",
+    "no-async-promise-executor": "off",
     /**
      * These rules are disabled, because they're no longer expected to apply
      * after we switch from Airbnb to Standard
