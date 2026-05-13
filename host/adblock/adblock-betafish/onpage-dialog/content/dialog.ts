@@ -19,7 +19,7 @@
 /* global setLangAndDirAttributes */
 
 import * as browser from "webextension-polyfill";
-import * as DOMPurify from "dompurify";
+import DOMPurify from "dompurify";
 import latoRegular from "../../fonts/lato.woff?uri";
 import latoExtRegular from "../../fonts/lato-ext-regular.woff?uri";
 import latoExtItalic from "../../fonts/lato-ext-italic.woff?uri";

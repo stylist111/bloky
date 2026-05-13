@@ -87,7 +87,6 @@ const emitPageBroadcast = (function emitBroadcast() {
       allFrames: false,
       include: [
         "jquery-3.5.1.min.js",
-        "purify.min.js",
         "globals-front.js",
         "adblock-uiscripts-load_wizard_resources.js",
         "adblock-uiscripts-blacklisting-overlay.js",

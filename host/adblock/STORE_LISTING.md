@@ -49,9 +49,6 @@ loaded in development mode for testing.
 
 ## Third Party Libraries in AdBlock:
 
-DomPurify (version 2.2.6)
-https://github.com/cure53/DOMPurify/releases/tag/2.2.6
-
 ChartJS (version 2.9.4)
 https://github.com/chartjs/Chart.js/releases/tag/v2.9.4
 

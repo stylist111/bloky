@@ -52,7 +52,6 @@
         "fonts/font-face.css",
         "icons/MaterialIcons-Regular.woff2",
         "icons/adblock-icons.woff2",
-        "purify.min.js",
         "adblock-deny-push-notifications-requests.js"
       ],
       "matches": ["http://*/*", "https://*/*"],

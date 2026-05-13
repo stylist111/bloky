@@ -1,8 +1,5 @@
 Bundled Library versions:
 
-DomPurify
-https://github.com/cure53/DOMPurify/releases/tag/3.0.11
-
 ChartJS
 https://github.com/chartjs/Chart.js/releases/tag/v2.9.4
 

@@ -15,9 +15,11 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution/ui";
+import DOMPurify from "dompurify";
+
 import * as messaging from "../../core/messaging/front";
 import * as filters from "../../filters/shared";
-import * as ewe from "@eyeo/webext-ad-filtering-solution/ui";
 
 /**
  * Initializes functionality for exposing modules as globals
@@ -29,6 +31,7 @@ function start(): void {
 
   self.modulesAsGlobal = { messaging, filters, ewe };
   Object.assign(self, {
+    DOMPurify,
     ewe,
   });
 }
