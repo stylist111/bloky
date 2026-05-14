@@ -294,15 +294,6 @@ async function onInstalled(details) {
  *   to CDP.
  * @param {string} [addonInfo.cdp.bearer] The Bearer token accompanying CDP API
  *   calls.
- * @param {Object?} [addonInfo.featureFlags] Boolean flags for enabling and
- *   disabling features. If a flag is not set here, the default value will be
- *   used. The default value is the correct state for the flag according to the
- *   SDK at time of release, so under normal circumstances these flags do not
- *   need to be set. Options may be removed from this object without it being
- *   considered a breaking change as features stabilize and can no longer by
- *   dynamically enabled or disabled. If any features are set here which are
- *   not known features, a warning will be added to the `warnings` property
- *   of the returned `FirstRunInfo`.
  * @param {boolean?} [addonInfo.lightningSnippets] Default value for
  *   Lightning Snippets (zero-delay filter caching). Defaults to `false`
  *   when omitted. Acts as the lowest-priority value in the

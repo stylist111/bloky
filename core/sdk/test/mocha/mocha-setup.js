@@ -20,7 +20,7 @@
 import {TEST_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 import {Page, Popup, setMinTimeout, isIncognito} from "../utils.js";
 import {runInBackgroundPage, getLastError, clearAllTestEvents,
-        resetFeatureFlags, MAX_API_CALL_DURATION} from "../messaging.js";
+        MAX_API_CALL_DURATION} from "../messaging.js";
 
 import "./mocha-setup-minimal.js";
 
@@ -95,7 +95,6 @@ before(async function() {
 
   await clearFilters();
   await clearStorage();
-  await resetFeatureFlags();
 
   // The incognito CI job would sometimes fail the first test case for no
   // apparent reason. Sleeping should allow more time for the test extension
@@ -141,7 +140,6 @@ afterEach(async function() {
   // runInBackgroundPage, otherwise the mocha timeout may hide the real failure
   setMinTimeout(this, MAX_API_CALL_DURATION + 7000);
   await clearFilters();
-  await resetFeatureFlags();
   await clearExperimentFlagOverrides();
   await clearFrameState();
   await clearAllTestEvents();

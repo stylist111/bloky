@@ -26,8 +26,8 @@ import {subTestCustom2, subTestUpdatable1} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {runInBackgroundPage, waitForServiceWorkerInitialization, EWE,
-        setFeatureFlags, clearAllTestEvents, getTestEvents, triggerTestEvent,
-        clearTestEvents} from "./messaging.js";
+        clearAllTestEvents, getTestEvents, triggerTestEvent, clearTestEvents}
+  from "./messaging.js";
 
 const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
 const SECOND_VALID_FILTER_TEXT = "another-filter";
@@ -183,47 +183,6 @@ describe("Testing Mechanisms", function() {
           expect(getTestEvents("test-event")).toEqual([[i + 1]]);
         });
       }
-    });
-  });
-
-  describe("Feature flags", function() {
-    const FEATURE = "example";
-    const INVALID_FEATURE = "thisFeatureDoesNotExist";
-
-    it("uses the overridden value if it is overridden in a test", async function() {
-      await setFeatureFlags({[FEATURE]: true});
-      expect(await EWE.testing._isFeatureEnabled(FEATURE))
-        .toBe(true);
-    });
-
-    it("uses the default value if nothing is set", async function() {
-      // By being after the previous test, this is also checking that the
-      // experiment values are reset between tests.
-      expect(await EWE.testing._isFeatureEnabled(FEATURE))
-        .toBe(false);
-    });
-
-    it("retains the overridden value when the service worker is stopped [mv3-only]", async function() {
-      await setFeatureFlags({[FEATURE]: true});
-      expect(await EWE.testing._isFeatureEnabled(FEATURE))
-        .toBe(true);
-
-      await suspendServiceWorker(this);
-
-      expect(await EWE.testing._isFeatureEnabled(FEATURE))
-        .toBe(true);
-    });
-
-    it("throws an error if you try to set an experiment which is not defined in a test", async function() {
-      await expect(setFeatureFlags({[INVALID_FEATURE]: true}))
-        .rejects
-        .toThrow(`Error: Unknown feature flags: ${INVALID_FEATURE}`);
-    });
-
-    it("throws an error if you try to get an experiment which is not defined", async function() {
-      await expect(EWE.testing._isFeatureEnabled(INVALID_FEATURE))
-        .rejects
-        .toThrow(`Error: Unknown feature flag: ${INVALID_FEATURE}`);
     });
   });
 

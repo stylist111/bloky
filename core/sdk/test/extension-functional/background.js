@@ -159,39 +159,6 @@ async function tabsUpdatedListener(tabId, changeInfo, tab) {
   statusToIsAllowlisted.set(changeInfo.status, isAllowlisted);
 }
 
-const FEATURE_FLAGS_KEY = "ewe-test:featureFlags";
-
-async function restoreFeatureFlags() {
-  // This is required for maintaining the feature flags set by tests when the
-  // MV3 service worker restarts. The feature flags don't need any persistence
-  // in normal use, because their values should be hard coded into the extension
-  // and passed into EWE.start.
-  if (chrome.storage.session) {
-    let loadResults = await chrome.storage.session.get(FEATURE_FLAGS_KEY);
-    if (loadResults && loadResults[FEATURE_FLAGS_KEY]) {
-      EWE.testing._setFeatureFlags(loadResults[FEATURE_FLAGS_KEY]);
-    }
-  }
-}
-
-async function setFeatureFlags(featureFlags) {
-  if (chrome.storage.session) {
-    await chrome.storage.session.set({
-      [FEATURE_FLAGS_KEY]: featureFlags
-    });
-  }
-
-  await EWE.testing._setFeatureFlags(featureFlags);
-}
-
-async function resetFeatureFlags() {
-  if (chrome.storage.session) {
-    await chrome.storage.session.remove(FEATURE_FLAGS_KEY);
-  }
-
-  return EWE.testing._resetFeatureFlags();
-}
-
 let messages = [];
 let migrationErrorsOnStart;
 
@@ -242,22 +209,6 @@ function handleTestMessage(request, sender, sendResponse) {
 
     case "ewe-test:getState": {
       sendResponse(state);
-      return true;
-    }
-
-    case "ewe-test:setFeatureFlags": {
-      setFeatureFlags(request.featureFlags).then(
-        res => sendResponse({result: toStringIfError(res)}),
-        err => sendResponse({error: toStringIfError(err)})
-      );
-      return true;
-    }
-
-    case "ewe-test:resetFeatureFlags": {
-      resetFeatureFlags().then(
-        res => sendResponse({result: toStringIfError(res)}),
-        err => sendResponse({error: toStringIfError(err)})
-      );
       return true;
     }
 
@@ -533,12 +484,6 @@ startupInfo.cdp = {
   bearer: "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg=="
 };
 
-// This line is here to be overridden in the update tests, which tests that when
-// we pass a different value here it's actually set. Generally, our test
-// extension should use our SDK's default features when running tests unless the
-// specific test changes the value, so this should be left empty.
-startupInfo.featureFlags = {};
-
 let state = "starting";
 
 EWE.start(startupInfo).then(async firstRun => {
@@ -577,8 +522,6 @@ EWE.start(startupInfo).then(async firstRun => {
     });
   }
 });
-
-restoreFeatureFlags();
 
 let oneClickAllowlistingPublicKeys = [
   "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAorAkyGHnzZkVE0TGcU7Sl6/LlH9j3udDNvHv/fSzplLMdqkw0HZNV9zaBFQ0Rw73AJ7MQ8JQm2hex9DEss3xsrlpHEi/nC7C1authg1rt5Xo4K0P5Bo+j6y41UtgQoL9xKJ6RlYGBq4uBHaq/xRyp/7zUxOiViTdnVZRhSkmyBCIQ+5l8/mTk5yyMLfH7QM0KFKdJbnnTU8HEGzHaFi33vAwWPpJjCohYUzYxgXOgSZYV6xNPycQj4U/D4k+7UT+d4zzrj7fSz08/ijfHLB8G6dr1nx7+Pydt3ijhKEX2mKaAWgKtyM2wTgFXys4rnAbdr340FpQaVebNF0bwGsqluBNdvZ6fPgN9dLlpVDQKXlOKdfOyc64Yw82/jHKdYC7NO1bg13hqo7JWM10Gklt2FY5ekfDBZagPbYCH780C8w0aMceBs3NBTI6SAPI8xhyu7LwL7vw/vMwz8kfIsKOCPFqf0qPlvJCaryIAA7Ca6SHfBqaTzyivEEqn6tWphCpYSODfPRO4Udg+l/o/PCJuly41b4QF2x8H+LvJnr7HFknmFYwisbIofC/2ucO2sfJDP4EOHKeDV9mexHSJIfjyFYV0f0ALj1eKl9Viz37qLefzXFhTG4wzoK5F/QM1ZhIWjN+0DBn6GTQxuWc4eAuASoh07JG4M+i2rWcUTYvgOECAwEAAQ==",

@@ -18,7 +18,6 @@
 import browser from "./browser.js";
 
 import {setRecommendations} from "#adblockpluscore/lib/recommendations.js";
-import * as features from "#adblockpluscore/lib/features.js";
 
 export let addonName;
 export let addonVersion;
@@ -155,15 +154,6 @@ export function setAddonInfo(addonInfo) {
   if (addonBundledSubscriptions &&
       addonBundledSubscriptions.length > 0) {
     setRecommendations(addonBundledSubscriptions);
-  }
-
-  if (addonInfo.featureFlags) {
-    try {
-      features.setFeatureFlags(addonInfo.featureFlags);
-    }
-    catch (e) {
-      warnings.push(e.message);
-    }
   }
 
   return {warnings};

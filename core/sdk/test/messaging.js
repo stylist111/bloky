@@ -269,14 +269,3 @@ export async function waitForServiceWorkerInitialization() {
 export async function getLastError() {
   return await runInBackgroundPage([{op: "getLastError"}], false);
 }
-
-export async function setFeatureFlags(featureFlags) {
-  return waitForSendMessageResult({
-    type: "ewe-test:setFeatureFlags",
-    featureFlags
-  });
-}
-
-export async function resetFeatureFlags() {
-  return waitForSendMessageResult({type: "ewe-test:resetFeatureFlags"});
-}

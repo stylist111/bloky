@@ -48,6 +48,15 @@
 - Fixed a bug in the addheader filter where the frame structure is
   not available.
 
+## Breaking Changes
+
+- Removed feature flags. This functionality has been superseded by
+  experiments. `EWE.start(addonInfo)` no longer accepts a `featureFlags`
+  property on `addonInfo`. In `resetFeatureFlags`, `setFeatureFlags`, and
+  `isFeatureEnabled` in
+  `@eyeo/webext-ad-filtering-solution/adblockpluscore/lib/features.js` have been
+  removed.
+
 # 4.0.0 - 2026-03-02
 
 - Updated snippets to 2.6.0

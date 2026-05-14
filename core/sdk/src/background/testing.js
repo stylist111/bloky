@@ -21,8 +21,6 @@ import {Subscription, _clean as _cleanSubscriptionClassesCache}
 import {setRecommendations, recommendations}
   from "#adblockpluscore/lib/recommendations.js";
 import {notifications} from "#adblockpluscore/lib/notifications.js";
-import {isFeatureEnabled, setFeatureFlags, resetFeatureFlags}
-  from "#adblockpluscore/lib/features.js";
 import {clearKnownFiltersCache} from "#adblockpluscore/lib/filterClasses.js";
 
 import {filterEngine} from "./core.js";
@@ -166,34 +164,11 @@ export default {
 
   /**
    * @ignore
-   */
-  _setFeatureFlags: setFeatureFlags,
-
-  /**
-   * @ignore
-   */
-  _resetFeatureFlags: resetFeatureFlags,
-
-  /**
-   * @ignore
    * Clears known filters cache. This is necessary when filter generation is
    * non-deterministic (e.g. if the exact same filter text leads to a different
    * filter object depending on whether a feature flags is set).
    */
   clearKnownFiltersCache,
-
-  /**
-   * @ignore
-   * @param {string} feature
-   */
-  async _isFeatureEnabled(feature) {
-    // The overrides set in tests might only have finished loading from session
-    // storage after the call to initializer.start is complete. The values set
-    // by an extension when calling EWE.start are available as soon as the
-    // addonInfo is set (first step of EWE.start).
-    await initializer.start();
-    return isFeatureEnabled(feature);
-  },
 
   /**
    * @ignore
