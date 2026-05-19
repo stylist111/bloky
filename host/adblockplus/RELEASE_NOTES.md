@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.38.2 - 2026-05-19
+
+This release contains bugfixes and under-the-hood changes.
+
 # 4.38.1 - 2026-05-12
 
 - Moved heavy snippets out of the content script into the background worker, reducing the size of the code we need to inject to each frame.
