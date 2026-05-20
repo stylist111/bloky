@@ -281,10 +281,10 @@
       },
       {
         "metric": "speed-index",
-        "min": 4262,
-        "max": 14082,
-        "average": 6851,
-        "median": 4712.5
+        "min": 13362,
+        "max": 18235,
+        "average": 15910,
+        "median": 15160.5
       },
       {
         "metric": "bootup-time",
