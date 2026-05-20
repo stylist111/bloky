@@ -165,11 +165,14 @@ const complexExperimentAndCohortData = {
 
 describe("Cohort Data Validation", function () {
   async function expectErrors(data, expectedErrors) {
-    expect(validateRemoteConfig(data)).toEqual(expectedErrors);
+    expect(validateRemoteConfig(data).errors).toEqual(expectedErrors);
   }
 
   it("marks a more complex config as valid", async function () {
-    expect(validateRemoteConfig(complexExperimentData)).toEqual([]);
+    expect(validateRemoteConfig(complexExperimentData)).toEqual({
+      errors: [],
+      warnings: [],
+    });
   });
 
   it("marks a simple config with cohorts as valid", async function () {
@@ -178,11 +181,14 @@ describe("Cohort Data Validation", function () {
       experiments: [],
       cohorts: [],
     };
-    expect(validateRemoteConfig(data)).toEqual([]);
+    expect(validateRemoteConfig(data)).toEqual({ errors: [], warnings: [] });
   });
 
   it("marks a more complex config with cohorts as valid", async function () {
-    expect(validateRemoteConfig(complexExperimentAndCohortData)).toEqual([]);
+    expect(validateRemoteConfig(complexExperimentAndCohortData)).toEqual({
+      errors: [],
+      warnings: [],
+    });
   });
 
   it("reports missing cohorts array", async function () {
@@ -326,57 +332,59 @@ describe("Cohort Data Validation", function () {
     );
   });
 
-  it("reports a bad fact", async function () {
-    await expectErrors(
-      {
-        schemaId: SCHEMA_ID,
-        experiments: complexExperiment,
-        cohorts: [
-          {
-            name: "MAU Top 20 countries, free users, with install date older than 9 days and not an admin install type",
-            conditions: {
-              all: [
-                {
-                  fact: "countyCode",
-                  operator: "multiple",
-                  value: ["US"],
-                },
-              ],
-            },
-            event: {
-              type: "top20_free_9d",
-            },
+  it("reports a bad fact as a warning", async function () {
+    const data = {
+      schemaId: SCHEMA_ID,
+      experiments: complexExperiment,
+      cohorts: [
+        {
+          name: "MAU Top 20 countries, free users, with install date older than 9 days and not an admin install type",
+          conditions: {
+            all: [
+              {
+                fact: "countyCode",
+                operator: "multiple",
+                value: ["US"],
+              },
+            ],
           },
-        ],
-      },
-      ["`countyCode` not a known fact"],
-    );
+          event: {
+            type: "top20_free_9d",
+          },
+        },
+      ],
+    };
+    const result = validateRemoteConfig(data);
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toEqual(["`countyCode` not a known fact"]);
   });
 
-  it("reports a bad operator for fact", async function () {
-    await expectErrors(
-      {
-        schemaId: SCHEMA_ID,
-        experiments: complexExperiment,
-        cohorts: [
-          {
-            name: "MAU Top 20 countries, free users, with install date older than 9 days and not an admin install type",
-            conditions: {
-              all: [
-                {
-                  fact: "countryCode",
-                  operator: "multiple",
-                  value: ["US", "DE", "RO"],
-                },
-              ],
-            },
-            event: {
-              type: "top20_free_9d",
-            },
+  it("reports a bad operator for fact as a warning", async function () {
+    const data = {
+      schemaId: SCHEMA_ID,
+      experiments: complexExperiment,
+      cohorts: [
+        {
+          name: "MAU Top 20 countries, free users, with install date older than 9 days and not an admin install type",
+          conditions: {
+            all: [
+              {
+                fact: "countryCode",
+                operator: "multiple",
+                value: ["US", "DE", "RO"],
+              },
+            ],
           },
-        ],
-      },
-      ["`invalid operator multiple for fact: countryCode`"],
-    );
+          event: {
+            type: "top20_free_9d",
+          },
+        },
+      ],
+    };
+    const result = validateRemoteConfig(data);
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toEqual([
+      "`invalid operator multiple for fact: countryCode`",
+    ]);
   });
 });

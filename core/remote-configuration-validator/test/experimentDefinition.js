@@ -22,7 +22,7 @@ const SCHEMA_ID = "1";
 
 describe("Experiment Data Validation", function () {
   async function expectErrors(data, expectedErrors) {
-    expect(validateRemoteConfig(data)).toEqual(expectedErrors);
+    expect(validateRemoteConfig(data).errors).toEqual(expectedErrors);
   }
 
   it("marks a more complex config as valid", async function () {
@@ -64,7 +64,7 @@ describe("Experiment Data Validation", function () {
         },
       ],
     };
-    expect(validateRemoteConfig(data)).toEqual([]);
+    expect(validateRemoteConfig(data)).toEqual({ errors: [], warnings: [] });
   });
 
   it("reports missing experiments array", async function () {
@@ -456,7 +456,7 @@ describe("Experiment Data Validation", function () {
           },
         ],
       };
-      expect(validateRemoteConfig(data)).toEqual([]);
+      expect(validateRemoteConfig(data)).toEqual({ errors: [], warnings: [] });
     });
 
     it("reports a variant ipmCommand with missing required field", async function () {
@@ -541,67 +541,69 @@ describe("Experiment Data Validation", function () {
           },
         ],
       };
-      expect(validateRemoteConfig(data)).toEqual([]);
+      expect(validateRemoteConfig(data)).toEqual({ errors: [], warnings: [] });
     });
 
-    it("reports unknown fact in experiment conditions", async function () {
-      await expectErrors(
-        {
-          schemaId: SCHEMA_ID,
-          experiments: [
-            {
-              experimentId: "test1",
-              conditions: {
-                all: [
-                  {
-                    fact: "unknownFact",
-                    operator: "equal",
-                    value: true,
-                  },
-                ],
-              },
-              variants: [
+    it("reports unknown fact in experiment conditions as a warning", async function () {
+      const data = {
+        schemaId: SCHEMA_ID,
+        experiments: [
+          {
+            experimentId: "test1",
+            conditions: {
+              all: [
                 {
-                  variantId: "variant1",
-                  flags: {},
-                  mods: [0, 500],
+                  fact: "unknownFact",
+                  operator: "equal",
+                  value: true,
                 },
               ],
             },
-          ],
-        },
-        ["`unknownFact` not a known fact"],
-      );
+            variants: [
+              {
+                variantId: "variant1",
+                flags: {},
+                mods: [0, 500],
+              },
+            ],
+          },
+        ],
+      };
+      const result = validateRemoteConfig(data);
+      expect(result.errors).toEqual([]);
+      expect(result.warnings).toEqual(["`unknownFact` not a known fact"]);
     });
 
-    it("reports invalid operator for fact in experiment conditions", async function () {
-      await expectErrors(
-        {
-          schemaId: SCHEMA_ID,
-          experiments: [
-            {
-              experimentId: "test1",
-              conditions: {
-                all: [
-                  {
-                    fact: "hasPremium",
-                    operator: "greaterThan",
-                    value: true,
-                  },
-                ],
-              },
-              variants: [
+    it("reports invalid operator for fact in experiment conditions as a warning", async function () {
+      const data = {
+        schemaId: SCHEMA_ID,
+        experiments: [
+          {
+            experimentId: "test1",
+            conditions: {
+              all: [
                 {
-                  variantId: "variant1",
-                  flags: {},
-                  mods: [0, 500],
+                  fact: "hasPremium",
+                  operator: "greaterThan",
+                  value: true,
                 },
               ],
             },
-          ],
-        },
-        ["`invalid operator greaterThan for fact: hasPremium`"],
-      );
+            variants: [
+              {
+                variantId: "variant1",
+                flags: {},
+                mods: [0, 500],
+              },
+            ],
+          },
+        ],
+      };
+      const result = validateRemoteConfig(data);
+      expect(result.errors).toEqual([]);
+      expect(result.warnings).toEqual([
+        "`invalid operator greaterThan for fact: hasPremium`",
+      ]);
     });
 
     it("validates conditions with 'any' operator", async function () {
@@ -634,7 +636,7 @@ describe("Experiment Data Validation", function () {
           },
         ],
       };
-      expect(validateRemoteConfig(data)).toEqual([]);
+      expect(validateRemoteConfig(data)).toEqual({ errors: [], warnings: [] });
     });
 
     it("validates conditions with 'all' operator", async function () {
@@ -667,7 +669,7 @@ describe("Experiment Data Validation", function () {
           },
         ],
       };
-      expect(validateRemoteConfig(data)).toEqual([]);
+      expect(validateRemoteConfig(data)).toEqual({ errors: [], warnings: [] });
     });
 
     it("validates conditions with 'not' operator", async function () {
@@ -693,7 +695,7 @@ describe("Experiment Data Validation", function () {
           },
         ],
       };
-      expect(validateRemoteConfig(data)).toEqual([]);
+      expect(validateRemoteConfig(data)).toEqual({ errors: [], warnings: [] });
     });
   });
 });

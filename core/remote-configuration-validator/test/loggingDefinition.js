@@ -26,7 +26,7 @@ describe("Logging Data Validation", function () {
       schemaId: SCHEMA_ID,
       experiments: [],
     };
-    expect(validateRemoteConfig(data)).toEqual([]);
+    expect(validateRemoteConfig(data)).toEqual({ errors: [], warnings: [] });
   });
 
   it("marks a valid config as valid", function () {
@@ -42,7 +42,7 @@ describe("Logging Data Validation", function () {
         mods: [0, 10],
       },
     };
-    expect(validateRemoteConfig(data)).toEqual([]);
+    expect(validateRemoteConfig(data)).toEqual({ errors: [], warnings: [] });
   });
 
   it("allows the global level to be optional", function () {
@@ -57,7 +57,7 @@ describe("Logging Data Validation", function () {
         mods: [0, 10],
       },
     };
-    expect(validateRemoteConfig(data)).toEqual([]);
+    expect(validateRemoteConfig(data)).toEqual({ errors: [], warnings: [] });
   });
 
   it("allows the byModule to be optional", function () {
@@ -69,7 +69,7 @@ describe("Logging Data Validation", function () {
         mods: [0, 10],
       },
     };
-    expect(validateRemoteConfig(data)).toEqual([]);
+    expect(validateRemoteConfig(data)).toEqual({ errors: [], warnings: [] });
   });
 
   it("reports missing mods", function () {
@@ -80,9 +80,10 @@ describe("Logging Data Validation", function () {
         global: "warn",
       },
     };
-    expect(validateRemoteConfig(data)).toEqual([
-      'instance.loggingLevels requires property "mods"',
-    ]);
+    expect(validateRemoteConfig(data)).toEqual({
+      errors: ['instance.loggingLevels requires property "mods"'],
+      warnings: [],
+    });
   });
 
   it("reports invalid mods", function () {
@@ -94,10 +95,13 @@ describe("Logging Data Validation", function () {
         mods: [0.5, 9000],
       },
     };
-    expect(validateRemoteConfig(data)).toEqual([
-      "instance.loggingLevels.mods[0] is not of a type(s) integer",
-      "instance.loggingLevels.mods[1] must be less than or equal to 1000",
-    ]);
+    expect(validateRemoteConfig(data)).toEqual({
+      errors: [
+        "instance.loggingLevels.mods[0] is not of a type(s) integer",
+        "instance.loggingLevels.mods[1] must be less than or equal to 1000",
+      ],
+      warnings: [],
+    });
   });
 
   it("reports invalid global level", function () {
@@ -109,9 +113,12 @@ describe("Logging Data Validation", function () {
         mods: [0, 1000],
       },
     };
-    expect(validateRemoteConfig(data)).toEqual([
-      "instance.loggingLevels.global is not one of enum values: debug,info,behavior,warn,off",
-    ]);
+    expect(validateRemoteConfig(data)).toEqual({
+      errors: [
+        "instance.loggingLevels.global is not one of enum values: debug,info,behavior,warn,off",
+      ],
+      warnings: [],
+    });
   });
 
   it("reports invalid byModule level", function () {
@@ -126,10 +133,13 @@ describe("Logging Data Validation", function () {
         mods: [0, 10],
       },
     };
-    expect(validateRemoteConfig(data)).toEqual([
-      "instance.loggingLevels.byModule.module1 is not of a type(s) string",
-      "instance.loggingLevels.byModule.module1 is not one of enum values: debug,info,behavior,warn,off",
-      "instance.loggingLevels.byModule.module2 is not one of enum values: debug,info,behavior,warn,off",
-    ]);
+    expect(validateRemoteConfig(data)).toEqual({
+      errors: [
+        "instance.loggingLevels.byModule.module1 is not of a type(s) string",
+        "instance.loggingLevels.byModule.module1 is not one of enum values: debug,info,behavior,warn,off",
+        "instance.loggingLevels.byModule.module2 is not one of enum values: debug,info,behavior,warn,off",
+      ],
+      warnings: [],
+    });
   });
 });

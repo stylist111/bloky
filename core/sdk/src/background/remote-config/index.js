@@ -23,6 +23,7 @@ import {EventDispatcher} from "../types.js";
 import * as experiments from "../experiments.js";
 import * as cohorts from "../cohorts/index.js";
 import * as serverLogConfig from "../telemetry/server-log-config.js";
+import {ServerLogger} from "../telemetry/server-logger.js";
 import {
   getCohortsConfig,
   getConfig,
@@ -38,6 +39,7 @@ import {
 import {hashString} from "../../all/hashing.js";
 
 const emitter = new EventEmitter();
+const logger = new ServerLogger("remote_config");
 let configUrl;
 let scheduler;
 
@@ -140,9 +142,14 @@ async function sync() {
   // update the ETag
   state.etag = etag;
 
-  const errors = validateRemoteConfig(data);
+  const {errors, warnings} = validateRemoteConfig(data);
 
-  if (errors && errors.length > 0) {
+  if (warnings.length > 0) {
+    logger.warn("invalid_condition", warnings);
+  }
+
+  if (errors.length > 0) {
+    logger.warn("validation_error", errors);
     state.errors = errors;
     await remoteConfigState.save();
     return;

@@ -84,20 +84,20 @@ function isValidModValue(value) {
   return typeof value === "number" && value >= 0 && value <= 1000;
 }
 
-function isValidCondition(conditions, errors) {
+function isValidCondition(conditions, warnings) {
   if (!conditions) {
     return;
   }
   conditions.forEach((condition, index) => {
     if (condition.fact && !validOperatorsByFact[condition.fact]) {
-      errors.push(`\`${condition.fact}\` not a known fact`);
+      warnings.push(`\`${condition.fact}\` not a known fact`);
       return;
     }
     if (
       condition.fact &&
       !validOperatorsByFact[condition.fact].includes(condition.operator)
     ) {
-      errors.push(
+      warnings.push(
         `\`invalid operator ${condition.operator} for fact: ${condition.fact}\``,
       );
     }
@@ -106,6 +106,7 @@ function isValidCondition(conditions, errors) {
 
 function getErrorsForExperiments(data) {
   const errors = [];
+  const warnings = [];
   const encounteredExperimentIds = new Set();
   const flagExperiments = new Map();
 
@@ -126,13 +127,13 @@ function getErrorsForExperiments(data) {
     if (experiment.conditions) {
       const { conditions } = experiment;
       if (conditions.all) {
-        isValidCondition(conditions.all, errors);
+        isValidCondition(conditions.all, warnings);
       }
       if (conditions.any) {
-        isValidCondition(conditions.any, errors);
+        isValidCondition(conditions.any, warnings);
       }
       if (conditions.not) {
-        isValidCondition([conditions.not], errors);
+        isValidCondition([conditions.not], warnings);
       }
     }
 
@@ -198,11 +199,12 @@ function getErrorsForExperiments(data) {
       }
     });
   });
-  return errors;
+  return { errors, warnings };
 }
 
 function getErrorsForCohorts(data) {
   const errors = [];
+  const warnings = [];
   if (data.cohorts) {
     data.cohorts.forEach((rule, cohortIndex) => {
       const ruleRef = `cohort[${cohortIndex}]`;
@@ -211,11 +213,11 @@ function getErrorsForCohorts(data) {
         const ruleObj = new Rule(rule);
         if (ruleObj && ruleObj.conditions) {
           if (ruleObj.conditions.all) {
-            isValidCondition(ruleObj.conditions.all, errors);
+            isValidCondition(ruleObj.conditions.all, warnings);
           } else if (ruleObj.conditions.any) {
-            isValidCondition(ruleObj.conditions.any, errors);
+            isValidCondition(ruleObj.conditions.any, warnings);
           } else if (ruleObj.conditions.not) {
-            isValidCondition(ruleObj.conditions.not, errors);
+            isValidCondition([ruleObj.conditions.not], warnings);
           } else {
             errors.push(`Invalid rule, no conditions found '${ruleRef}'`);
           }
@@ -226,7 +228,7 @@ function getErrorsForCohorts(data) {
       }
     });
   }
-  return errors;
+  return { errors, warnings };
 }
 
 function getErrorsForIpmCommands(data) {
@@ -251,27 +253,35 @@ function getErrorsForIpmCommands(data) {
       }
     });
   }
-  return errors;
+  return { errors, warnings: [] };
 }
 
 function getErrors(data) {
   const errors = [];
+  const warnings = [];
 
   if (typeof data !== "object") {
     errors.push("root data is not an object");
-    return errors;
+    return { errors, warnings };
   }
 
   if (data.schemaId !== SCHEMA_ID) {
     errors.push(`This system only supports a schemaId of '${SCHEMA_ID}'`);
-    return errors;
+    return { errors, warnings };
   }
 
-  errors.push(...getErrorsForExperiments(data));
-  errors.push(...getErrorsForCohorts(data));
-  errors.push(...getErrorsForIpmCommands(data));
+  const expResult = getErrorsForExperiments(data);
+  errors.push(...expResult.errors);
+  warnings.push(...expResult.warnings);
 
-  return errors;
+  const cohortResult = getErrorsForCohorts(data);
+  errors.push(...cohortResult.errors);
+  warnings.push(...cohortResult.warnings);
+
+  const ipmResult = getErrorsForIpmCommands(data);
+  errors.push(...ipmResult.errors);
+
+  return { errors, warnings };
 }
 
 export function validate(data) {
@@ -287,14 +297,14 @@ export function validate(data) {
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error(err.message);
-    return [err.message];
+    return { errors: [err.message], warnings: [] };
   }
 
   if (validateResult && validateResult.errors && validateResult.errors.length) {
     // Filter out a lot of the validation error object,
     // the 'stack' property contains the most relevant information
     const errorStack = validateResult.errors.map((error) => error.stack);
-    return errorStack;
+    return { errors: errorStack, warnings: [] };
   }
 
   return getErrors(data);

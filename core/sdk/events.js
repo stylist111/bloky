@@ -1324,5 +1324,27 @@ export default {
         }
       }
     }
+  },
+  remote_config: {
+    validation_error: {
+      description: "The remote config failed validation and was not applied.",
+      data: {
+        description: "The error messages from the validator.",
+        type: "array",
+        items: {
+          type: "string"
+        }
+      }
+    },
+    invalid_condition: {
+      description: "The remote config contained conditions referencing facts or operators not recognized by this client version. The config was applied; affected conditions should be skipped at evaluation time.",
+      data: {
+        description: "The warning messages from the validator for each unrecognized fact or operator.",
+        type: "array",
+        items: {
+          type: "string"
+        }
+      }
+    }
   }
 };

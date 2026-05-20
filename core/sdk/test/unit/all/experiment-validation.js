@@ -22,7 +22,7 @@ const SCHEMA_ID = "1";
 
 describe("Experiment Data Validation", function() {
   async function expectErrors(data, expectedErrors) {
-    expect(validateRemoteConfig(data)).toEqual(expectedErrors);
+    expect(validateRemoteConfig(data).errors).toEqual(expectedErrors);
   }
 
   it("marks a simple config as valid", async function() {
@@ -30,7 +30,7 @@ describe("Experiment Data Validation", function() {
       schemaId: SCHEMA_ID,
       experiments: []
     };
-    expect(validateRemoteConfig(data)).toEqual([]);
+    expect(validateRemoteConfig(data)).toEqual({errors: [], warnings: []});
   });
 
   it("marks a more complex config as valid", async function() {
@@ -72,7 +72,7 @@ describe("Experiment Data Validation", function() {
         }
       ]
     };
-    expect(validateRemoteConfig(data)).toEqual([]);
+    expect(validateRemoteConfig(data)).toEqual({errors: [], warnings: []});
   });
 
   it("reports missing experiments array", async function() {

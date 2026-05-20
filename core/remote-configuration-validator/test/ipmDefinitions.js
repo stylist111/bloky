@@ -45,7 +45,7 @@ function expectErrorsWithCohorts(commands, cohortIds, expectedErrors) {
   if (commands) {
     data.ipmCommands = commands;
   }
-  expect(validateRemoteConfig(data)).toEqual(expectedErrors);
+  expect(validateRemoteConfig(data).errors).toEqual(expectedErrors);
 }
 
 function getBaseCommand(commandName) {

@@ -22,7 +22,7 @@ const SCHEMA_ID = "1";
 
 describe("General Schema Validation", function () {
   async function expectErrors(data, expectedErrors) {
-    expect(validateRemoteConfig(data)).toEqual(expectedErrors);
+    expect(validateRemoteConfig(data).errors).toEqual(expectedErrors);
   }
 
   it("marks a simple config as valid", async function () {
@@ -30,7 +30,7 @@ describe("General Schema Validation", function () {
       schemaId: SCHEMA_ID,
       experiments: [],
     };
-    expect(validateRemoteConfig(data)).toEqual([]);
+    expect(validateRemoteConfig(data)).toEqual({ errors: [], warnings: [] });
   });
 
   it("reports when root data is not an object", async function () {

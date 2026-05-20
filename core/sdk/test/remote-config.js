@@ -444,4 +444,123 @@ describe("Remote config", function() {
       });
     });
   });
+
+  describe("Unknown facts", function() {
+    it("skips cohorts with unrecognised facts rather than discarding the entire config", async function() {
+      // A config arrives with one valid cohort and one using a fact this client
+      // does not know yet. The valid cohort must still be assigned, the unknown
+      // one is silently skipped.
+      await EWE.testing.mockFacts({
+        installDate: Date.now() - 10 * MILLIS_IN_DAY
+      });
+      await setConfig({
+        schemaId: SCHEMA_ID,
+        experiments: [],
+        cohorts: [
+          ...DEFAULT_CONFIG.cohorts,
+          {
+            name: "Cohort added by a future server update, using a fact this client does not yet know about",
+            conditions: {
+              all: [
+                {fact: "notYetKnownFact", operator: "equal", value: true}
+              ]
+            },
+            event: {type: "future-server-cohort"}
+          }
+        ]
+      });
+      await EWE.remoteConfig.sync();
+
+      expect(await EWE.remoteConfig.getSyncStatus()).toEqual({
+        lastDownloaded: expect.stringMatching(ISO_DATE_REGEX),
+        errors: []
+      });
+      expect(await EWE.cohorts.getAll()).toContain("my-first-cohort");
+      expect(await EWE.cohorts.getAll()).not.toContain("future-server-cohort");
+    });
+
+    it("preserves experiments with unrecognised facts rather than discarding the entire config", async function() {
+      // A config arrives with one valid experiment and one whose eligibility
+      // condition uses a fact this client does not know yet. Both experiments
+      // are stored in the raw config. The unknown one never matches, so it has
+      // no effect — but it is not discarded.
+      //
+      // The condition uses equal OR notEqual so it would always match if
+      // evaluated. A null flag proves the experiment never matched, not just
+      // that the condition happened to be false.
+      const futureExperiment = {
+        experimentId: "experiment-added-by-a-future-server-update",
+        conditions: {
+          any: [
+            {fact: "notYetKnownFact", operator: "equal", value: true},
+            {fact: "notYetKnownFact", operator: "notEqual", value: true}
+          ]
+        },
+        variants: [
+          {
+            variantId: "control",
+            flags: {future_flag: "a"},
+            mods: [0, 1000]
+          }
+        ]
+      };
+      await setConfig({
+        schemaId: SCHEMA_ID,
+        experiments: [
+          ...DEFAULT_CONFIG.experiments,
+          futureExperiment
+        ],
+        cohorts: []
+      });
+      await EWE.remoteConfig.sync();
+
+      expect(await EWE.remoteConfig.getSyncStatus()).toEqual({
+        lastDownloaded: expect.stringMatching(ISO_DATE_REGEX),
+        errors: []
+      });
+      expect(await EWE.remoteConfig.getExperimentsConfig()).toContainEqual(
+        DEFAULT_CONFIG.experiments[0]
+      );
+      expect(await EWE.remoteConfig.getExperimentsConfig()).toContainEqual(
+        futureExperiment
+      );
+      expect(await EWE.experiments.getFlag("future_flag")).toBeNull();
+    });
+
+    it("preserves ipm commands that reference a cohort using an unrecognised fact", async function() {
+      // A config arrives with a cohort that uses an unknown fact, and an ipm
+      // command gated on that cohort. The ipm command is structurally valid -
+      // it references a real cohort in the config. It must be stored and
+      // accessible even though the cohort it depends on cannot be evaluated 
+      // yet.
+      const futureServerCohort = {
+        name: "Cohort added by a future server update, using a fact this client does not yet know about",
+        conditions: {
+          all: [{fact: "notYetKnownFact", operator: "equal", value: true}]
+        },
+        event: {type: "future-server-cohort"}
+      };
+      await setConfig({
+        schemaId: SCHEMA_ID,
+        experiments: [],
+        cohorts: [futureServerCohort],
+        ipmCommands: [
+          {
+            command_name: "create_tab",
+            ipm_id: "future-ipm",
+            version: 1,
+            url: "https://example.com/",
+            cohort: "future-server-cohort"
+          }
+        ]
+      });
+      await EWE.remoteConfig.sync();
+
+      expect(await EWE.remoteConfig.getSyncStatus()).toEqual({
+        lastDownloaded: expect.stringMatching(ISO_DATE_REGEX),
+        errors: []
+      });
+      expect(await EWE.remoteConfig.getIpmCommands()).toHaveLength(1);
+    });
+  });
 });

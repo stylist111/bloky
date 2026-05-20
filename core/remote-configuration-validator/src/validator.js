@@ -23,11 +23,14 @@ const schemaValidatorLookup = {
 
 export function validateRemoteConfig(data) {
   if (typeof data !== "object") {
-    return ["root data is not an object"];
+    return { errors: ["root data is not an object"], warnings: [] };
   }
   const schemaId = data.schemaId;
   if (!schemaValidatorLookup[schemaId]) {
-    return [`This system does not support a schemaId of '${schemaId}'`];
+    return {
+      errors: [`This system does not support a schemaId of '${schemaId}'`],
+      warnings: [],
+    };
   }
   return schemaValidatorLookup[schemaId](data);
 }
