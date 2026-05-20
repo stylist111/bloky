@@ -55,7 +55,7 @@ export default async function sourceDistribution(filename) {
   });
 
   return gulp
-    .src(sourceFiles, { base: repoRootPath, resolveSymlinks: false })
+    .src(sourceFiles, { base: repoRootPath })
     .pipe(addReadmeHeader)
     .pipe(tar(`${filename}.tar`))
     .pipe(gzip())

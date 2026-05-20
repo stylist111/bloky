@@ -37,7 +37,7 @@ default:
 
 stages:
   - build
-  - checkfilesizes
+  - check-source
   - compliance
   - end-to-end
 
@@ -69,17 +69,24 @@ buildfromsource:
       - host/adblock/dist/source/adblock-firefox-*-mv2.xpi
 
 ################################################################################
-# Check filesizes
+# Check source archive files
 ################################################################################
 
-.checkfilesizes:
+.check-source-files:
   image: alpine:latest
-  stage: checkfilesizes
+  stage: check-source
   needs:
     - !reference [.needs-parent-build-release, needs]
   script:
     - unzip -d unpacked-extension/ host/adblock/dist/release/$EXTENSION
     - cd unpacked-extension/
+    # Verify that source archive contains no symlinks
+    - if find . -type l | grep -q .; then
+      echo "Source archive contains symlinks:" &&
+      find . -type l &&
+      exit 1;
+      fi
+    # Verify that source archive contains no large files
     - if [ $(find . -type f -name '*.js' -size +4000k | wc -l) -gt 0 ]; then
       echo 'Some extension files are bigger than 4 MB:' &&
       find . -type f -name '*.js' -size +4000k -exec ls -lh {} \; &&
@@ -89,27 +96,27 @@ buildfromsource:
       exit 0;
       fi
 
-checkfilesizes:chrome_mv2:
-  extends: .checkfilesizes
+check-source:files:MV2:chrome:
+  extends: .check-source-files
   variables:
     EXTENSION: adblock-chrome-*-mv2.zip
 
-checkfilesizes:chrome_mv3:
-  extends: .checkfilesizes
+check-source:files:MV3:chrome:
+  extends: .check-source-files
   variables:
     EXTENSION: adblock-chrome-*-mv3.zip
 
-checkfilesizes:firefox_mv2:
-  extends: .checkfilesizes
+check-source:files:MV2:firefox:
+  extends: .check-source-files
   variables:
     EXTENSION: adblock-firefox-*-mv2.xpi
 
-# ################################################################################
-# Check build sizes
-# ################################################################################
+################################################################################
+# Check source archive builds
+################################################################################
 
-.checkbuildsizes:
-  stage: checkfilesizes
+.check-source-builds:
+  stage: check-source
   needs:
     - !reference [.needs-parent-build-release, needs]
     - "buildfromsource"
@@ -119,6 +126,7 @@ checkfilesizes:firefox_mv2:
       exit 1;
       fi
   script:
+    # Verify that source archive build is similar to actual build
     - if((`stat -c%s $REPOSITORY_BUILD`!=`stat -c%s $SOURCE_BUILD`)); then
       echo "Build from source archive and build from the repository are not the same size" &&
       ls -l $REPOSITORY_BUILD &&
@@ -129,20 +137,20 @@ checkfilesizes:firefox_mv2:
       exit 0;
       fi
 
-checkbuildsizes:MV3:chrome:
-  extends: .checkbuildsizes
+check-source:builds:MV3:chrome:
+  extends: .check-source-builds
   variables:
     REPOSITORY_BUILD: host/adblock/dist/release/adblock-chrome-*-mv3.zip
     SOURCE_BUILD: host/adblock/dist/source/adblock-chrome-*-mv3.zip
 
-checkbuildsizes:MV2:chrome:
-  extends: .checkbuildsizes
+check-source:builds:MV2:chrome:
+  extends: .check-source-builds
   variables:
     REPOSITORY_BUILD: host/adblock/dist/release/adblock-chrome-*-mv2.zip
     SOURCE_BUILD: host/adblock/dist/source/adblock-chrome-*-mv2.zip
 
-checkbuildsizes:MV2:firefox:
-  extends: .checkbuildsizes
+check-source:builds:MV2:firefox:
+  extends: .check-source-builds
   variables:
     REPOSITORY_BUILD: host/adblock/dist/release/adblock-firefox-*-mv2.xpi
     SOURCE_BUILD: host/adblock/dist/source/adblock-firefox-*-mv2.xpi
