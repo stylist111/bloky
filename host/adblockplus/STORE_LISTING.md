@@ -1,4 +1,68 @@
-# Firefox AMO notes for reviewers
+# Extension store listing
+
+## Single purpose
+
+```
+Blocking ads everywhere
+```
+
+## Permission justification
+
+### Required permissions
+
+```
+# alarms
+Allow this extension to reliably and periodically perform recurring tasks.
+
+# contextMenus
+Providing users with quick access to blocking specific elements on the page.
+
+# declarativeNetRequestWithHostAccess
+- Blocking network requests that are related to ads
+- Blocking network requests based on users' custom rules and other user settings
+
+# notifications
+Drawing users' attention to messages that would otherwise go unnoticed if shown in the extension UI.
+
+# scripting
+Injecting (user) style-sheets into pages and providing contextual information, both required to block ads effectively
+
+# storage
+Storing user settings (incl. rules necessary for blocking ads).
+
+# tabs
+Injecting (user) style-sheets into pages and providing contextual information, both required to block ads effectively
+
+# unlimitedStorage
+Storing thousands of rules necessary for blocking ads.
+
+# webNavigation
+Observing the frame structure (for contextual content blocking) and discovering ad popups
+
+# webRequest
+* Preventing requests from being sent that are loading ads.
+* Inject Content-Security-Policy on some websites that attempt to circumvent ad blocking.
+* Observing requests for diagnostics in the devtools panel.
+```
+
+### Optional permissions
+
+```
+# contentSettings
+Optional permission, requested when submitting issue reports to include additional, relevant information.
+
+# management
+Optional permission, requested when submitting issue reports to include additional, relevant information.
+```
+
+### Host permission
+
+```
+* Blocking ads from any URL on any website.
+* Detecting specific links on websites to make it easier for users to add additional rules.
+```
+
+## Firefox AMO notes for reviewers
 
 ```md
 On Debian or Ubuntu: Run the following commands using Node 24.14.1 and npm 11.11.0:
@@ -35,7 +99,7 @@ Fork: /vendor/webextension-polyfill/src/browser-polyfill.js
 Merge request: https://github.com/mozilla/webextension-polyfill/pull/719
 ```
 
-# Opera notes for reviewers
+## Opera notes for reviewers
 
 ```md
 On Debian or Ubuntu: Run the following commands using Node 24.14.1 and npm 11.11.0:

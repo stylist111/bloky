@@ -1,4 +1,64 @@
-# Firefox AMO notes for reviewers
+# Extension store listing
+
+## Single purpose
+
+```
+To block ads on all sites
+```
+
+## Permission justification
+
+### Required permissions
+
+```
+# alarms
+To allow AdBlock to reliably and periodically perform recurring tasks
+
+# contextMenus
+To allow users to interact with various settings and features of AdBlock
+
+# declarativeNetRequestWithHostAccess
+To allow AdBlock users to interact with features of AdBlock
+
+# idle
+To allow AdBlock to detect the current status of the browser which allows AdBlock to schedule tasks appropriately
+
+# notifications
+To allow AdBlock to inform users of various status updates
+
+# scripting
+To allow users to interact with various features of AdBlock
+
+# storage
+Data that is utilized by AdBlock to block and hide ads is downloaded periodically and saved to storage
+
+# tabs
+Injecting style-sheets into pages and providing contextual information, both required to block ads effectively
+
+# unlimitedStorage
+Large amounts of data is downloaded and saved to storage
+
+# webNavigation
+Discovering the usage of subdocuments on sites and discovering ad popups.  To capture history state changes on YouTube for the YouTube channel whitelisting feature
+
+# webRequest
+To prevent requests that load ads from being sent, capturing data / requests for the user opt in filter list data collection, and for redirecting requests for the 'local CDN' feature
+```
+
+### Optional permissions
+
+```
+# management
+This is an optional permission that AdBlock requests when gathering debug information.
+```
+
+### Host permission
+
+```
+To block ads on all sites
+```
+
+## Firefox AMO notes for reviewers
 
 ```md
 # AdBlock
@@ -63,7 +123,7 @@ Fork: /vendor/webextension-polyfill/src/browser-polyfill.js
 Merge request: https://github.com/mozilla/webextension-polyfill/pull/719
 ```
 
-# Opera notes for reviewers
+## Opera notes for reviewers
 
 ```md
 On Debian or Ubuntu: Run the following commands using Node 24.14.1 and npm 11.11.0:
