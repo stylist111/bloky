@@ -23,8 +23,7 @@ import {
   screenshotsHook,
   setupBrowserHook,
 } from "@eyeo/test-utils/hooks";
-import defineTestSuites from "./suites/index.js";
-import { describe } from "mocha";
+import defineTestSuites from "../suites/index.js";
 
 import { runnerConfig } from "./config.js";
 

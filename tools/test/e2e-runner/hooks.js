@@ -118,21 +118,18 @@ async function startBrowser(extensionPath, retry = 0) {
  * Hook to set up the browser before the tests
  *
  * @param {string} buildsDirPath - The path to the directory containing the extension builds
- * @param {string} unpackedDirPath - The path to the directory to extract the extension to
+ * @param {string} unpackedDirPath - The path to the directory to extract the extension to.
+ *   If !buildsDirPath then unpackedDirPath is expected to contain two subfolders
+ *   "mv2" and "mv3" with the extensions already unpacked
  * @returns {Promise<void>}
  */
 export async function setupBrowserHook(buildsDirPath, unpackedDirPath) {
   let extensionPath;
-  // buildsDirPath is not used when running Fragments tests
   if (buildsDirPath) {
     extensionPath = await extractExtension(buildsDirPath, unpackedDirPath);
   } else {
     const { manifestVersion } = global.config;
-    if (manifestVersion === "3") {
-      extensionPath = path.join(unpackedDirPath, "mv3");
-    } else {
-      extensionPath = path.join(unpackedDirPath, "mv2");
-    }
+    extensionPath = path.join(unpackedDirPath, `mv${manifestVersion}`);
   }
 
   const mockServer = await startMockServer();

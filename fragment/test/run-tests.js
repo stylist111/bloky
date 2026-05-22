@@ -18,7 +18,7 @@
 
 import { runE2ETests } from "@eyeo/test-utils";
 
-import { runnerConfig } from "./config.js";
+import { runnerConfig } from "./runner/config.js";
 
 runE2ETests(runnerConfig).catch((error) => {
   console.error("Error running tests:", error);

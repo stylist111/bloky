@@ -1,5 +1,5 @@
 {
-  "name": "fragments-test",
+  "name": "fragments-functional-tests",
   "version": "1.0.0",
   "description": "Test Framework for Fragments",
   "type": "module",

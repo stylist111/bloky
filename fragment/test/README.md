@@ -1,60 +1,60 @@
-## Fragments Tests
+# Fragment functional tests
 
-### **Testing Instructions**
+Functional tests for fragments. Tests run in a real browser against a minimal
+browser extension (the "fragment test extension") that integrates all testable
+fragments.
 
-1. **Setup the environment**
+## Directory structure
 
-   - Run the following commands from the monorepo root:
-     ```sh
-     npm i
-     npm run build
-     ```
+```plaintext
+fragment/test
+├── suites/       # Test suites, one file per fragment
+├── extension/    # Fragment test extension source
+│   ├── api/      # Message API handlers (ewe.*, testing.*)
+│   └── modules/  # Fragment init helpers
+└── runner/       # Runner configuration and setup
+```
 
-2. **Run Fragments Tests Locally**
+## Fragment test extension
 
-   - Execute the following command from the monorepo root:
-     ```sh
-     BROWSER=chromium MANIFEST_VERSION=3 FORCE_HEADFUL=false npm run --workspace fragment/test test:fragments-local
-     ```
-   - You can try different combinations of browsers (`chromium`, `firefox`, `edge`) and manifest versions (`2`, `3`).
+The test extension is a minimal browser extension that integrates every fragment
+under test. Its background script starts each fragment and exposes an
+`ewe.*` / `testing.*` message API so test suites can drive fragment
+behavior from Selenium via `browser.runtime.sendMessage`.
 
-   **Expected Output**
+To add a new fragment:
 
-   ```
-   > fragments-test-extension@1.0.0 test:fragments-local
-   > node run-tests.js
+1. Add it as a dependency in `package.json`.
+2. Import and call its `start()` in `extension/background.js`.
+3. Add a suite file under `suites/` and register it in `suites/index.js`.
 
-   Helper extension built to .../monorepo/extensions/fragment/test/dist/devenv/helper-extension
-   Host pages server listening at http://localhost:3005
-   Host IPM server listening at http://localhost:3007
-   Host license server listening at http://localhost:3006
+## Running tests
 
-     Fragments Tests
-   Installed chromium 134.0.6998.89 ...
-   Browser: chrome 134.0.6998.0
-   Extension: Fragments Test Extension 1.0.0 MV3
-       Sample Test
-         ✔ should always pass 1
+### Prerequisites
 
-     1 passing (11s)
+Build fragments and the test extension first:
 
-   Stopping test server...
-   Test pages server stopped
-   License server closed
-   IPM server closed
-   ```
+```sh
+npm run build -- --scope="@eyeo-fragments/*" --scope="fragments-functional-tests"
+```
 
-3. **Screenshots for Failing Tests**
-   - Screenshots are saved in:
-     ```sh
-     fragment/test/screenshots
-     ```
+### Local run
 
-### **Troubleshooting**
+To run the functional tests locally:
 
-- Ensure dependencies are installed by running `npm i` before executing the tests.
-- If tests fail unexpectedly, try running in headful mode by setting:
-  ```sh
-  FORCE_HEADFUL=true
-  ```
-- Check browser compatibility and ensure the correct version is installed.
+```sh
+npm run test:fragments -- --scope=fragments-functional-tests -- {chromium|chrome|edge|firefox} {2|3}
+```
+
+Set `FORCE_HEADFUL=true` to run with a visible browser window.
+
+### Docker run
+
+```sh
+docker build -t fragments -f fragment/test/Dockerfile .
+docker run --shm-size=2g -it -e BROWSER={chromium|chrome|firefox|edge} -e MANIFEST_VERSION={2|3} fragments
+```
+
+### Troubleshooting
+
+- Screenshots for failing tests are saved to `fragment/test/screenshots/`.

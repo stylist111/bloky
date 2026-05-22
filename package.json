@@ -10,7 +10,6 @@
     "core/*",
     "core/sdk/adblockpluscore",
     "fragment/*",
-    "fragment/test/test-extension",
     "host/*",
     "public/*",
     "tools/*",

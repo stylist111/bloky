@@ -20,17 +20,16 @@ default:
     - !reference [.needs-parent-build, needs]
 
 stages:
-  - fragments-tests
+  - test
 
-.fragments-tests:
-  stage: fragments-tests
+.functional:
+  stage: test
   extends: .docker
   script:
-    - echo "EYEOMETRY_BEARER=\"$ADBLOCK_EYEOMETRY_BEARER\"" >> fragment/.env
-    - docker build -t fragments-tests -f fragment/test/Dockerfile .
-    - docker run --shm-size=2g -t -e BROWSER -e BROWSER_VERSION -e MANIFEST_VERSION -e CI fragments-tests
+    - docker build -t fragments -f fragment/test/Dockerfile .
+    - docker run --shm-size=2g -t -e BROWSER -e BROWSER_VERSION -e MANIFEST_VERSION -e CI fragments
   after_script:
-    - IMAGE_ID=$(docker ps -aqf ancestor=fragments-tests)
+    - IMAGE_ID=$(docker ps -aqf ancestor=fragments)
     - docker cp $IMAGE_ID:/extensions/fragment/test/screenshots fragment/ 2> /dev/null
   artifacts:
     paths:
@@ -38,49 +37,49 @@ stages:
     when: on_failure
     expire_in: 1 mo
 
-.fragments-tests-n-times:
-  extends: .fragments-tests
+.functional-n-times:
+  extends: .functional
   parallel: $[[ inputs.job_runs ]]
 
-fragments-tests:MV2:firefox:latest:
-  extends: .fragments-tests-n-times
+functional:MV2:firefox:latest:
+  extends: .functional-n-times
   variables:
     BROWSER: firefox
     MANIFEST_VERSION: 2
 
-fragments-tests:MV2:edge:latest:
-  extends: .fragments-tests-n-times
+functional:MV2:edge:latest:
+  extends: .functional-n-times
   variables:
     BROWSER: edge
     MANIFEST_VERSION: 2
 
-fragments-tests:MV3:chrome:latest:
-  extends: .fragments-tests-n-times
+functional:MV3:chrome:latest:
+  extends: .functional-n-times
   variables:
     BROWSER: chrome
     MANIFEST_VERSION: 3
 
 # Fragments tests - nightly run
-.fragments-tests-nightly:
-  extends: .fragments-tests
+.functional-nightly:
+  extends: .functional
   rules:
     - !reference [.nightly-run, rules]
 
 end-to-end:MV3:edge:latest:
-  extends: .fragments-tests-nightly
+  extends: .functional-nightly
   variables:
     BROWSER: edge
     MANIFEST_VERSION: 3
 
-fragments-tests:MV2:firefox:beta:
-  extends: .fragments-tests-nightly
+functional:MV2:firefox:beta:
+  extends: .functional-nightly
   variables:
     MANIFEST_VERSION: 2
     BROWSER: firefox
     BROWSER_VERSION: beta
 
-fragments-tests:MV3:chrome:beta:
-  extends: .fragments-tests-nightly
+functional:MV3:chrome:beta:
+  extends: .functional-nightly
   variables:
     MANIFEST_VERSION: 3
     BROWSER: chrome

@@ -52,7 +52,7 @@ build:
       - core/sdk/dist/
       - host/adblock/dist/devenv/
       - host/adblockplus/dist/devenv/
-      - fragment/test/test-extension/dist/
+      - fragment/test/dist/
       - tools/rules/dist/
     expire_in: 1 month
 

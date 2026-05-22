@@ -18,4 +18,4 @@ WORKDIR extensions/
 
 ENV MANIFEST_VERSION=3
 ENV BROWSER=chromium
-ENTRYPOINT npm run test:fragments -- --scope=fragments-test -- $BROWSER $MANIFEST_VERSION
+ENTRYPOINT npm run test:fragments -- --scope=fragments-functional-tests -- $BROWSER $MANIFEST_VERSION

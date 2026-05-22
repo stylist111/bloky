@@ -22,6 +22,8 @@ import GenerateJsonPlugin from "generate-json-webpack-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const srcPath = path.resolve(dirname, "extension");
+const outPath = path.resolve(dirname, "dist", "fragments-extension");
 
 const baseManifest = {
   name: "Fragments Test Extension",
@@ -72,9 +74,6 @@ export default (env = {}) => {
       ? [...baseManifest.permissions, "declarativeNetRequestWithHostAccess"]
       : [...baseManifest.permissions, "<all_urls>"],
     optional_permissions: isManifestV3 ? ["management"] : undefined,
-    web_accessible_resources: isManifestV3
-      ? [{ resources: ["icons/*"], matches: ["<all_urls>"] }]
-      : ["icons/*"],
     ...(isManifestV3
       ? {
           action: {
@@ -91,18 +90,13 @@ export default (env = {}) => {
   return {
     mode: "development",
     entry: {
-      background: "./test-extension/src/background.js",
+      background: path.resolve(srcPath, "background.js"),
       examplePreload: "@eyeo-fragments/example/content",
       ytWallDetectionPreload: "@eyeo-fragments/yt-wall-detection/content",
-      options: "./test-extension/src/options.js",
+      options: path.resolve(srcPath, "options.js"),
     },
     output: {
-      path: path.resolve(
-        dirname,
-        "test-extension",
-        "dist",
-        isManifestV3 ? "mv3" : "mv2",
-      ),
+      path: path.resolve(outPath, isManifestV3 ? "mv3" : "mv2"),
       filename: "[name].js",
       clean: true,
       chunkFormat: "module",
@@ -112,13 +106,9 @@ export default (env = {}) => {
       new GenerateJsonPlugin("manifest.json", manifest, null, 2),
       new CopyWebpackPlugin({
         patterns: [
-          { from: "test-extension/src/options.html", to: "options.html" },
-          { from: "test-extension/src/options.js", to: "options.js" },
-          { from: "test-extension/src/popup.html", to: "popup.html" },
-          {
-            from: "../../host/adblock/icons/adblock-20.svg",
-            to: "icons/adblock-20.svg",
-          },
+          { from: path.resolve(srcPath, "options.html"), to: "options.html" },
+          { from: path.resolve(srcPath, "options.js"), to: "options.js" },
+          { from: path.resolve(srcPath, "popup.html"), to: "popup.html" },
         ],
       }),
     ],

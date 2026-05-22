@@ -18,20 +18,19 @@
 
 import path from "path";
 
-// Path to end-to-end test code
-const endToEndPath = process.cwd();
-
 export const runnerConfig = {
   // The browser name to use for the tests
   browserName: process.env.BROWSER,
   // The manifest version passed as command line argument
   manifestVersion: process.env.MANIFEST_VERSION,
   // Screenshots folder path
-  screenshotsPath: path.join(endToEndPath, "screenshots"),
+  screenshotsPath: path.join(process.cwd(), "screenshots"),
   // Runners path
-  runnersPath: path.join(endToEndPath, "runner.js"),
+  runnersPath: path.join(process.cwd(), "runner", "runner.js"),
   // Path to build the helper extension
-  helperExtensionPath: path.join(process.cwd(), "dist/devenv/helper-extension"),
-  // Path to the unpacked extension
-  unpackedDirPath: path.join(process.cwd(), "test-extension/dist"),
+  helperExtensionPath: path.join(process.cwd(), "dist", "helper-extension"),
+  // Path to the unpacked extension. Assumes "mv2" and "mv3" folders inside
+  unpackedDirPath: path.join(process.cwd(), "dist", "fragments-extension"),
+  // The fragment extension is already unpacked
+  buildsDirPath: null,
 };
