@@ -1,4 +1,5 @@
-chrome >= 79
-edge >= 79
-firefox >= 68
-opera >= 66
+Chrome >= 124
+Edge >= 79
+Firefox >= 68
+FirefoxAndroid >= 68
+Opera >= 112

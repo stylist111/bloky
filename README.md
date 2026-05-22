@@ -263,20 +263,6 @@ The status of the runners can be checked [here](https://gitlab.com/eyeo/browser-
 in the `Group runners` section. Access to GCP resources like the GCloud console
 may be granted by devops.
 
-## Supported Browsers
-
-Table below contains minimum supported version of the browser extension (or engine)
-will work on.
-
-| Manifest | Browser | Adblock Plus  | AdBlock       | webext SDK |
-| -------- | ------- | ------------- | ------------- | ---------- |
-| MV2      | firefox | 68.0          | 75.0          | 68.0       |
-| MV2      | chrome  | not supported | not supported | 79.0       |
-| MV2      | edge    | 79.0          | 79.0          | 79.0       |
-| MV2      | opera   | 66.0          | not supported | 66.0       |
-| MV3      | yandex  | 124.0         | 124.0         | 124.0      |
-| MV3      | chrome  | 124.0         | 124.0         | 124.0      |
-
 ## Contributing
 
 Please see [contributing](CONTRIBUTING.md)
