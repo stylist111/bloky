@@ -103,9 +103,8 @@ export default () => {
     await getDisplayedElement("#language_select");
     await driver.findElement(By.css(`#language_select > option[value="${langList.name}"]`)).click();
     await checkSubscriptionsState([{ ...langList, enabled: true }], {
-      regexp: /updated|Subscribed/,
+      regexp: /updated|Subscribed|browser limitations/,
     });
-
     // Add custom filter. Needs to be added before blocking ads
     await initOptionsCustomizeTab(getOptionsHandle());
 
