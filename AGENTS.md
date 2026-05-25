@@ -64,6 +64,14 @@ npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- 3 chromium --gr
 - Prefer real behavior over mocks — don't mock important elements.
 - Never suppress or ignore linting errors or test failures.
 
+## Accepted divergences
+
+Some structural differences between packages are intentional and not scheduled for unification. Reviewers (human or automated) should not flag these as drift, inconsistency, or tech debt:
+
+- **AdBlock vs Adblock Plus test infrastructure.** `host/adblock/` and `host/adblockplus/` use different unit-test runners, fixture layouts, and E2E setups. Convergence is known tech debt and not on the near-term roadmap. A test added only on one side is not drift — unless the feature itself exists on both packages and is genuinely missing coverage on the other.
+
+Add to this list only when a divergence is explicitly off-roadmap, not just "we haven't gotten to it yet."
+
 ## Code Changes
 
 - Verify file paths and function/API signatures by reading the actual source — never assert they exist without confirming.
