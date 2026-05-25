@@ -171,9 +171,15 @@ export class TabSessionStorage extends EventEmitter {
 async function clearStorage(tabId, reason) {
   // Provide stored data to listeners before removing it
   const session = await sessionByTabId.get(tabId);
-  if (session && reason === clearStorageReason.tabRemoval) {
-    for (const tabStorage of tabStorages) {
-      await tabStorage.emit("tab-removed", tabId);
+  if (session) {
+    let eventName = null;
+    if (reason === clearStorageReason.tabRemoval) eventName = "tab-removed";
+    else if (reason === clearStorageReason.startup) eventName = "tab-navigated";
+
+    if (eventName) {
+      for (const tabStorage of tabStorages) {
+        await tabStorage.emit(eventName, tabId);
+      }
     }
   }
 

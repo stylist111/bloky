@@ -48,3 +48,9 @@ export enum ShowOnpageDialogResult {
    */
   error
 }
+
+/**
+ * Cause of OPD display termination, used in the dialog_display_duration
+ * telemetry event
+ */
+export type TerminationCause = "tab_navigated" | "tab_removed";

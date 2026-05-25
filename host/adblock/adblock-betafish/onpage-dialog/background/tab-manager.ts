@@ -46,6 +46,7 @@ import {
   TabPage,
   coolDownPeriodKey,
   lastShownKey,
+  type TerminationCause,
 } from "./tab-manager.types";
 import { shouldBeDismissed, shouldBeShown, start as setupTimings } from "./timing";
 
@@ -77,6 +78,29 @@ const serverLogger = new ewe.telemetry.ServerLogger("onpage_dialog");
  * Server logger instance for events related to the on-page dialog UI
  */
 const uiServerLogger = new ewe.telemetry.ServerLogger("onpage_dialog_ui");
+
+/**
+ * Emits the dialog_display_duration telemetry event for a terminating dialog.
+ * Inject time is read from stats.lastDisplayTime, which is set when the dialog
+ * is assigned to a tab and persists across service worker suspension.
+ *
+ * @param dialog - Dialog that is terminating
+ * @param cause - Reason for the termination
+ */
+function logDisplayDuration(dialog: Dialog, cause: TerminationCause): void {
+  const { lastDisplayTime } = getStats(dialog.id);
+  if (lastDisplayTime === 0) {
+    return;
+  }
+
+  const durationMs = Date.now() - lastDisplayTime;
+
+  uiServerLogger.debug("dialog_display_duration", {
+    terminationCause: cause,
+    durationMs,
+    ipmId: dialog.ipmId,
+  });
+}
 
 /**
  * Compares two dialogs to see which has the higher priority.
@@ -341,8 +365,26 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
     return;
   }
 
+  logDisplayDuration(dialog, "tab_removed");
   void removeDialog(tabId, dialog);
   uiServerLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
+}
+
+/**
+ * Handles "tab-navigated" tab session storage event, fired when the tab
+ * navigates to a new URL (e.g. user click, redirect). The session entry has
+ * not yet been cleared at this point; the event payload carries the dialog.
+ *
+ * @param data - Event data
+ */
+function handleTabNavigatedEvent(data: TabRemovedEventData): void {
+  const { value: dialog } = data;
+
+  if (!isDialog(dialog)) {
+    return;
+  }
+
+  logDisplayDuration(dialog, "tab_navigated");
 }
 
 /**
@@ -480,6 +522,7 @@ export async function showOnpageDialog(
   }
 
   const now = Date.now();
+
   setStats(dialog.id, {
     displayCount: stats.displayCount + 1,
     lastDisplayTime: now,
@@ -698,6 +741,9 @@ export async function start(): Promise<void> {
 
   // Dismiss dialog when tab used for storing session data gets closed
   assignedDialogs.on("tab-removed", handleTabRemovedEvent);
+
+  // Log display duration when tab navigates while a dialog is assigned
+  assignedDialogs.on("tab-navigated", handleTabNavigatedEvent);
 
   // Dismiss detection of cookie banner when tab gets closed
   ext.pages.onRemoved.addListener((tabId: number) => {

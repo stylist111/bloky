@@ -1161,6 +1161,27 @@ export default {
         description: "IPM command ID",
         type: "string"
       }
+    },
+    dialog_display_duration: {
+      description: "How long the dialog was visible in MS before it was dismissed",
+      data: {
+        description: "Information about the dismissal",
+        type: "object",
+        properties: {
+          terminationCause: {
+            description: "Termination reason closed: tab_navigated or tab_removed",
+            type: "string"
+          },
+          durationMs: {
+            description: "How long the OPD was displayed",
+            type: "number"
+          },
+          ipmId: {
+            description: "The ID of the IPM OPD campaign",
+            type: "string"
+          }
+        }
+      }
     }
   },
   test_ewe_background: {

@@ -38,7 +38,8 @@ export interface FilterMetadata {
 }
 
 /**
- * Temporary interface for "tab-removed" event data from TabSessionStorage
+ * Temporary interface for "tab-removed" and "tab-navigated" event data from
+ * TabSessionStorage
  */
 export interface TabRemovedEventData {
   /**
