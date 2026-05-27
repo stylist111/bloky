@@ -72,7 +72,7 @@ export default (env = {}) => {
     host_permissions: isManifestV3 ? ["<all_urls>"] : undefined,
     permissions: isManifestV3
       ? [...baseManifest.permissions, "declarativeNetRequestWithHostAccess"]
-      : [...baseManifest.permissions, "<all_urls>"],
+      : [...baseManifest.permissions, "webRequestBlocking", "<all_urls>"],
     optional_permissions: isManifestV3 ? ["management"] : undefined,
     ...(isManifestV3
       ? {

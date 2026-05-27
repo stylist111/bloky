@@ -18,6 +18,7 @@
 
 import browser from "webextension-polyfill";
 import { start as exampleFragmentStart } from "@eyeo-fragments/example";
+import { start as filterExperimentsStart } from "@eyeo-fragments/filter-experiments/background";
 import { startEwe } from "./modules/ewe-init.js";
 import { startYtWallFragment } from "./modules/yt-wall-init.js";
 import apiHandlersFactory from "./api/index.js";
@@ -28,6 +29,7 @@ import apiHandlersFactory from "./api/index.js";
 
   // Initialize Fragments
   exampleFragmentStart();
+  await filterExperimentsStart();
   const { port } = startYtWallFragment();
 
   // Initialize API handlers
@@ -63,7 +65,7 @@ import apiHandlersFactory from "./api/index.js";
         ) {
           return await handler.bind(null, port)(args, sender);
         }
-        return await handler(args, sender);
+        return await handler(...args);
       } catch (error) {
         return { error: `Handler execution failed: ${error.message}` };
       }

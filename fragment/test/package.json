@@ -38,6 +38,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "@eyeo-fragments/example": "*",
+    "@eyeo-fragments/filter-experiments": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/webext-ad-filtering-solution": "*",
     "npm-dollar": "2.2.1"

@@ -7,6 +7,7 @@
     "./sdk-driver": "./sdk-runner/driver.js",
     "./lighthouse": "./extension-benchmark/lighthouse.js",
     "./extension": "./e2e-runner/extension.js",
+    "./sdk-extension": "./sdk-runner/extension.js",
     "./account": "./e2e-runner/account.js",
     "./hooks": "./e2e-runner/hooks.js",
     "./public-api": "./e2e-runner/public-api.js",

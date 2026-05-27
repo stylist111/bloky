@@ -17,7 +17,9 @@
  */
 
 import youtubeAutoAllowlist from "./youtube-auto-allowlist.js";
+import filterExperiments from "./filter-experiments.js";
 
 export default () => {
   describe("YouTube auto-allowlist", youtubeAutoAllowlist);
+  describe("Filter experiments", filterExperiments);
 };

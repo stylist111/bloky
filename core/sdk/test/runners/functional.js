@@ -25,6 +25,7 @@ import webdriver from "selenium-webdriver";
 import {BROWSERS, getMajorVersion} from "@eyeo/get-browser-binary";
 import {runSDKTestServer, killSDKTestServer} from "@eyeo/test-utils/test-server-manager";
 import {getHandle, switchToHandle, getNewDriver, writeScreenshot, setMinDriverTimeout, quitDriver} from "@eyeo/test-utils/sdk-driver";
+import {reloadExtension} from "@eyeo/test-utils/sdk-extension";
 
 import {screenshotsPath} from "./shared.js";
 import {isMain} from "../../scripts/utils.js";
@@ -330,7 +331,7 @@ async function updateWebExtension(commands) {
   }
 }
 
-async function pollMessages(driver, handle, isMV3) {
+async function pollMessages(driver, handle) {
   let result;
   let webdriverEvents = [];
   let log = [];
@@ -555,35 +556,6 @@ async function suspendServiceWorker(driver, handle) {
       await driver.close();
       await driver.switchTo().window(handle);
     }
-  );
-}
-
-export async function reloadExtension(driver, currentHandle) {
-  // Extension pages will be closed during reload,
-  // create a new tab to avoid the "target window already closed" error
-  await driver.switchTo().newWindow("tab");
-  const safeHandle = await driver.getWindowHandle();
-
-  await driver.switchTo().window(currentHandle);
-  await driver.executeScript(() => {
-    // Unloading the extension leads to an ECONNREFUSED error, so in order to
-    // ensure that we have enough time to switch to a safe window handle,
-    // we're delaying the triggering of the reload
-    // https://eyeo.atlassian.net/browse/EXT-153
-    setTimeout(() => chrome.runtime.reload(), 1000);
-  });
-  // Workaround for `target window already closed`
-  await driver.switchTo().window(safeHandle);
-
-  // Wait until the current page closes, otherwise we might switch back to it
-  // thinking that the reload is complete.
-  await driver.wait(
-    async() => {
-      const handlers = await driver.getAllWindowHandles();
-      return !handlers.includes(currentHandle);
-    },
-    5000,
-    "The extension page not closed in time"
   );
 }
 

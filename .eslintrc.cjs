@@ -91,9 +91,9 @@ module.exports = {
       globals: { manifest: true },
     },
     {
-      files: ["fragment/test/**/*.js"],
-      env: { mocha: true },
-      globals: { driver: true },
+      files: ["fragment/test/**/*.js", "fragment/test/**/*.spec.ts"],
+      env: { mocha: true, node: true },
+      globals: { driver: true, extension: true, browserDetails: true },
     },
     {
       files: [

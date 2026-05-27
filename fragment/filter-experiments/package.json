@@ -1,0 +1,32 @@
+{
+  "name": "@eyeo-fragments/filter-experiments",
+  "type": "module",
+  "license": "GPL-3.0",
+  "private": true,
+  "typesVersions": {
+    "*": {
+      "background": [
+        "./dist/background/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "./dist/"
+  ],
+  "exports": {
+    "./background": "./dist/background/index.js"
+  },
+  "scripts": {
+    "build:types": "tsc --project tsconfig.json --emitDeclarationOnly",
+    "build": "tsc --project tsconfig.json",
+    "build:release": "tsc --project tsconfig.json",
+    "test": "vitest run --reporter=verbose"
+  },
+  "peerDependencies": {
+    "@eyeo/webext-ad-filtering-solution": "*",
+    "typescript": "5.5.4",
+    "vitest": "4.1.5",
+    "vitest-mock-extended": "2.0.2",
+    "webextension-polyfill": "*"
+  }
+}

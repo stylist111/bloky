@@ -901,6 +901,12 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * @returns A promise that resolves when the filter has been added.
      */
     const add: (text: string | string[], metadata?: FilterMetadata) => Promise<void>;
+    /**
+     * Validates a filter.
+     * @param text - Filter text to be validated.
+     * @returns `null` if the filter is valid, otherwise a `FilterError` describing why it is not.
+     */
+    const validate: (text: string) => FilterError | null;
   }
 
   namespace account {
