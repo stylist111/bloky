@@ -1599,10 +1599,6 @@
     "message": "Tarkastele [[lähdekoodiamme]]",
     "description": "Link to the source code of AdBlock on the Support tab"
   },
-  "contributors": {
-    "message": "Lue lisää [[tiimistämme]]",
-    "description": "Link to the contributors page on the Support tab"
-  },
   "debuginfo": {
     "message": "Onko tiimimme pyytänyt virheenkorjaustietoja? [[Lataa virheenkorjaustiedot]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
@@ -1958,26 +1954,6 @@
   "myadblock_picreplacement_exlained": {
     "message": "Valitse alla olevista kategorioista, niin AdBlock korvaa mainoksia ajoittain korkealaatuisilla kuvilla piristäen päivääsi.",
     "description": "The label text for the switch on the MyAdBlock Options page"
-  },
-  "feedback_title": {
-    "message": "Palaute",
-    "description": "Title for feedback call to action."
-  },
-  "feedback_info": {
-    "message": "Onko sinulla meille kommenteja tai kehitysehdotuksia? Kuulisimme ne mielellämme!",
-    "description": "Text describing the MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_title": {
-    "message": "Haluaisimme kuulla palautettasi!",
-    "description": "Title for MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_info": {
-    "message": "Jos sinulla on meille palautetta tai kehitysehdotuksia, käytä palautesivuamme.",
-    "description": "Text describing the MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_button": {
-    "message": "Lähetä palautetta",
-    "description": "Text on the MyAdBlock feedback button"
   },
   "error_msg_header": {
     "message": "Hups!",

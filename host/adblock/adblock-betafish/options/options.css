@@ -876,8 +876,8 @@ h2[i18n="debuginfo"] {
   max-width: 440px;
 }
 
-.feedback-button {
-  border: 1px solid var(--mab-feedback-button-border);
+.copy-button {
+  border: 1px solid var(--help-icon-color);
   min-width: 150px;
   font-size: 15px;
   font-weight: 500;
@@ -887,7 +887,7 @@ h2[i18n="debuginfo"] {
   padding: 0 7px;
 }
 
-.feedback-button:hover {
+.copy-button:hover {
   box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.15);
 }
 

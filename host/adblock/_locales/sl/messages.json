@@ -1571,10 +1571,6 @@
     "message": "MyAdBlock",
     "description": "The text of the header the MyAdBlock Options page"
   },
-  "myadblock_feedback_button": {
-    "message": "Pošlji povratne informacije",
-    "description": "Text on the MyAdBlock feedback button"
-  },
   "generaloptions2": {
     "message": "Splošne nastavitve",
     "description": "Title of one of the Options page tabs"

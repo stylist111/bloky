@@ -1767,18 +1767,6 @@
     "message": "Оберіть з категорій нижче і AdBlock інколи замінюватиме рекламу високоякісними зображеннями, щоб прикрасити ваш день.",
     "description": "The label text for the switch on the MyAdBlock Options page"
   },
-  "myadblock_feedback_title": {
-    "message": "Нам важлива Ваша думка!",
-    "description": "Title for MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_info": {
-    "message": "Якщо у вас є відгуки або побажання, будь ласка, використайте нашу сторінку зворотнього зв'язку.",
-    "description": "Text describing the MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_button": {
-    "message": "Надіслати відгук",
-    "description": "Text on the MyAdBlock feedback button"
-  },
   "error_msg_header": {
     "message": "Ой!",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"

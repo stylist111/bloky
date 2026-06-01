@@ -16,7 +16,7 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global browser, License, localizePage, determineUserLanguage, getStorageCookie, setStorageCookie,
+/* global browser, License, localizePage, getStorageCookie, setStorageCookie,
    THIRTY_MINUTES_IN_MILLISECONDS, setLangAndDirAttributes, storageSet, storageGet, ewe,
    initializeProxies, sendTypeMessage, settings:true, */
 
@@ -144,31 +144,6 @@ function activateTab(tabHref) {
   checkPFNewIcon(tabID);
 }
 
-// displayMABFeedbackCTA checks if the user has set their language to english and
-// displays the feedback call to action on Premium related options pages:
-//
-// Premium
-// Premium - Themes
-// Premium - Image Swap
-// Premium - Sync
-const displayMABFeedbackCTA = function () {
-  const lang = determineUserLanguage();
-  if (lang === "en" || lang.startsWith("en")) {
-    $("footer.myadblock_feedback_footer").css("display", "flex");
-    const $feedbackButton = $(".mab-feedback-button, #support-feedback-button");
-    $feedbackButton.on("click", async (e) => {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      let url = "https://portal.productboard.com/getadblock/4-adblock-extension";
-      if (await License.isActiveLicense()) {
-        url = "https://portal.productboard.com/getadblock/5-adblock-extension-premium";
-      }
-      browser.tabs.create({ url });
-      $feedbackButton.trigger("blur");
-    });
-  }
-};
-
 const hideAdvancedOptionsWhenNeeded = function () {
   if (!settings.show_advanced_options) {
     $(".advanced").hide();
@@ -221,7 +196,6 @@ function loadTabPanelsHTML() {
       if (tabsLoaded >= $tabPanels.length) {
         // all tabs have been loaded and localized - call
         // any post processing handlers here.
-        displayMABFeedbackCTA();
         shouldShowDCNewIcon();
         hideAdvancedOptionsWhenNeeded();
         displayUserAccountLoginCTA();
@@ -286,8 +260,4 @@ $(async () => {
     tab: tabNameMap.get(openedTabName),
     action: "opened",
   });
-
-  // 5. Display CTA - a future library update will support
-  // automatically injecting the CTA HTML as well.
-  displayMABFeedbackCTA();
 });

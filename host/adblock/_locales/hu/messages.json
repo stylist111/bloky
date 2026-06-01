@@ -1852,18 +1852,6 @@
     "message": "Válaszz a lenti kategóriákból és az AdBlock automatikusan kicseréli a reklámokat kiváló minőségű képekkel hogy felvillanyozza a napod.",
     "description": "The label text for the switch on the MyAdBlock Options page"
   },
-  "myadblock_feedback_title": {
-    "message": "Örömmel várjuk visszajelzését!",
-    "description": "Title for MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_info": {
-    "message": "Ha bármilyen visszajelzése vagy szolgáltatás iránti igénye van ránk, kérjük, használja a visszajelzési oldalt.",
-    "description": "Text describing the MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_button": {
-    "message": "Visszajelzés Küldése",
-    "description": "Text on the MyAdBlock feedback button"
-  },
   "error_msg_header": {
     "message": "Hoppá!",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"

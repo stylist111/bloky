@@ -1763,18 +1763,6 @@
     "message": "Seleccione das categorías a continuación e AdBlock ocasionalmente substituirá anuncios con imaxes de alta calidade para alegrar o seu día.",
     "description": "The label text for the switch on the MyAdBlock Options page"
   },
-  "myadblock_feedback_title": {
-    "message": "Encantaríanos saber de vostede!",
-    "description": "Title for MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_info": {
-    "message": "Se ten algún comentario ou solicitude de características para nós, utilice a nosa páxina de comentarios.",
-    "description": "Text describing the MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_button": {
-    "message": "Enviar suxestións",
-    "description": "Text on the MyAdBlock feedback button"
-  },
   "generaloptions2": {
     "message": "Opcións xerais",
     "description": "Title of one of the Options page tabs"

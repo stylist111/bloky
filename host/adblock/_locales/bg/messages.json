@@ -1759,18 +1759,6 @@
     "message": "Избери от категориите по-долу и AdBlock евентуално ще смени рекламите с висококачествени снимки, за да развесели вашия ден.",
     "description": "The label text for the switch on the MyAdBlock Options page"
   },
-  "myadblock_feedback_title": {
-    "message": "Ще се радваме да ни пишете!",
-    "description": "Title for MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_info": {
-    "message": "Ако искате да споделите нещо или да предложите подобрение, моля използвайте страницата за обратна връзка.",
-    "description": "Text describing the MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_button": {
-    "message": "Изпрати Съобщение",
-    "description": "Text on the MyAdBlock feedback button"
-  },
   "generaloptions2": {
     "message": "Общи Настройки",
     "description": "Title of one of the Options page tabs"

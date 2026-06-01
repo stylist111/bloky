@@ -1919,26 +1919,6 @@
     "message": "اختار واحد من الخيارات بالأسفل و AdBlock سوف يستبدل الإعلانات بصور عالية الدقة لجعل يومك أكثر إشراقا.",
     "description": "The label text for the switch on the MyAdBlock Options page"
   },
-  "feedback_title": {
-    "message": "الملاحظات",
-    "description": "Title for feedback call to action."
-  },
-  "feedback_info": {
-    "message": "هل لديك تعليق أو طلب ميزة لنا؟ يسعدنا أن نسمع منك!",
-    "description": "Text describing the MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_title": {
-    "message": "نحن نحب أن نسمع منكم!",
-    "description": "Title for MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_info": {
-    "message": "إذا كان لديك أي ملاحظات أو طلبات ميزة منا، يرجى استخدام صفحة الملاحظات الخاصة بنا.",
-    "description": "Text describing the MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_button": {
-    "message": "إرسال الملاحظات",
-    "description": "Text on the MyAdBlock feedback button"
-  },
   "error_msg_header": {
     "message": "المعذرة!",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"

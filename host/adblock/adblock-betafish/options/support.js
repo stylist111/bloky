@@ -171,7 +171,7 @@ $(async () => {
 
       const copyButton = document.createElement("button");
       copyButton.type = "button";
-      copyButton.className = "feedback-button btn";
+      copyButton.className = "copy-button btn";
       copyButton.textContent = "Copy";
       copyButton.addEventListener("click", async () => {
         const lines = [...totals.map(([key, value]) => `${key}\t${value}`), ""];

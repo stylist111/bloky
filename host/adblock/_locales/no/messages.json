@@ -1775,14 +1775,6 @@
     "message": "Velg fra kategorien under og AdBlock vill fra tid til annen bytte ut reklamer med bilder av høy kvalitet for å lyse opp dagen din.",
     "description": "The label text for the switch on the MyAdBlock Options page"
   },
-  "myadblock_feedback_title": {
-    "message": "Vi vil gjerne høre fra deg!",
-    "description": "Title for MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_button": {
-    "message": "Send inn tilbakemelding",
-    "description": "Text on the MyAdBlock feedback button"
-  },
   "error_msg_header": {
     "message": "Oi!",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"

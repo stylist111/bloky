@@ -1607,10 +1607,6 @@
     "message": "Посмотреть наш [[исходный код]]",
     "description": "Link to the source code of AdBlock on the Support tab"
   },
-  "contributors": {
-    "message": "Узнать больше: [[наша команда]]",
-    "description": "Link to the contributors page on the Support tab"
-  },
   "debuginfo": {
     "message": "Наша команда запросила от вас отладочную информацию? [[Скачать данные отладки]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
@@ -1966,26 +1962,6 @@
   "myadblock_picreplacement_exlained": {
     "message": "Выберите категорию из списка ниже, и периодически AdBlock будет заменять рекламу на HD-изображения и поднимать вам настроение.",
     "description": "The label text for the switch on the MyAdBlock Options page"
-  },
-  "feedback_title": {
-    "message": "Обратная связь",
-    "description": "Title for feedback call to action."
-  },
-  "feedback_info": {
-    "message": "Хотите оставить отзыв или у вас есть предложение? Мы рады пообщаться с вами!",
-    "description": "Text describing the MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_title": {
-    "message": "Поделитесь впечатлениями!",
-    "description": "Title for MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_info": {
-    "message": "Воспользуйтесь формой для обратной связи, если хотите поделиться с нами своим мнением или о чем-то спросить.",
-    "description": "Text describing the MyAdBlock feedback call to action."
-  },
-  "myadblock_feedback_button": {
-    "message": "Отправить сообщение",
-    "description": "Text on the MyAdBlock feedback button"
   },
   "error_msg_header": {
     "message": "Ой!",
