@@ -387,7 +387,7 @@ export default () => {
     );
 
     // The user then tries to re-add the same filter, which is a no-op because
-    // it already exists (added previously by the experient).
+    // it already exists (added previously by the experiment).
     // A second user filter is used to detect when the user-side add has been
     // processed.
     await addUserFilters([sharedFilter, userMarker]);

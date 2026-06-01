@@ -51,6 +51,9 @@ function checkOnlyOneVersion(name) {
     const output = execSync(`npm explain --package-lock-only --json ${name}`, {
       encoding: "utf8",
       cwd: path.dirname(path.resolve(packageLockPath)),
+      // The JSON dependency tree for widely-depended-on packages can exceed
+      // execSync's default 1 MB stdout buffer, which would throw ENOBUFS.
+      maxBuffer: 5 * 1024 * 1024,
     });
     explanations = JSON.parse(output);
   } catch (e) {

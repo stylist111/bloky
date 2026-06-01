@@ -2852,6 +2852,10 @@
     "message": "Filtre non valide",
     "description": "Generic error shown when the user tries to add an invalid filter rule to their custom filters"
   },
+  "filter_experiment_conflict": {
+    "message": "Ce filtre est déjà actif dans le cadre d'une expérience et ne peut pas être ajouté en tant que filtre personnalisé",
+    "description": "Error shown when the user tries to add a filter that is already active as an experiment filter to their custom filters"
+  },
   "love_adblock": {
     "message": "Vous aimez AdBlock ?",
     "description": "Text in a button that asks users to rate us."

@@ -27,6 +27,7 @@ import uninstall from "./smoke/uninstall.js";
 import optionsPageAA from "./options-page/acceptable-ads.js";
 import optionsPageFL from "./options-page/filter-lists.js";
 import optionsPageExtensionState from "./options-page/extension-state.js";
+import filterExperiments from "./options-page/filter-experiments.js";
 import popupElements from "./popup-page/popup-elements.js";
 import freeUserOptions from "./premium/free-user-options.js";
 import freeUserPopup from "./premium/free-user-popup.js";
@@ -72,6 +73,7 @@ export default () => {
       describe("Acceptable Ads", optionsPageAA);
       describe("Filter Lists", optionsPageFL);
       describe("Extension State", optionsPageExtensionState);
+      describe("Filter Experiments", filterExperiments);
     });
 
     describe("Data Collection", function () {

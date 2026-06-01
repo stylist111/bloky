@@ -17,7 +17,7 @@
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
-const ORIGIN_ID = "experiment";
+import { ORIGIN_ID } from "../shared/index.js";
 
 function isStringArray(value: unknown): value is string[] {
   return (

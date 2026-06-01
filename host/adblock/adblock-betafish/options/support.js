@@ -149,9 +149,13 @@ $(async () => {
         return table;
       };
 
+      const userFiltersValue =
+        state.experimentFiltersCount > 0
+          ? `${state.userFiltersCount.toLocaleString()} (experimental: ${state.experimentFiltersCount.toLocaleString()})`
+          : state.userFiltersCount.toLocaleString();
       const totals = [
         ["Filters", totalFilters.toLocaleString()],
-        ["User Filters", state.userFiltersCount.toLocaleString()],
+        ["User Filters", userFiltersValue],
       ];
       if (isMV3) {
         const totalRules = subscriptions.reduce((sum, sub) => sum + (sub.ruleCount ?? 0), 0);

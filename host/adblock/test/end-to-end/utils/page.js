@@ -105,6 +105,19 @@ export async function initOptionsSupportTab(optionsHandle) {
   await getDisplayedElement("#extension-state", { timeout: 5000 });
 }
 
+export async function waitForExtensionStateLoaded() {
+  await wait(
+    async () => {
+      const text = await driver.executeScript(
+        () => document.querySelector("#extension-state")?.textContent,
+      );
+      return text && !text.includes("Loading");
+    },
+    8000,
+    "Extension state did not finish loading",
+  );
+}
+
 export async function initOptionsGeneralTab(optionsHandle) {
   await loadOptionsTab(optionsHandle, "general");
   await waitForNotNullProperty("#acceptable_ads", "checked", { timeout: 2000 });

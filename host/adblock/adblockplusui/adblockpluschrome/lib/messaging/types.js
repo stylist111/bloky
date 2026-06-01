@@ -44,7 +44,7 @@ export function toPlainBlockableItem({ filter, matchInfo, request }) {
 
 export function toPlainFilter(filter) {
   let obj = toPlainObject(
-    ["isAddHeader", "csp", "enabled", "selector", "slow", "text", "type"],
+    ["isAddHeader", "csp", "enabled", "metadata", "selector", "slow", "text", "type"],
     filter,
   );
 

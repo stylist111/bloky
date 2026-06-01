@@ -7,6 +7,9 @@
     "*": {
       "background": [
         "./dist/background/index.d.ts"
+      ],
+      "shared": [
+        "./dist/shared/index.d.ts"
       ]
     }
   },
@@ -14,7 +17,8 @@
     "./dist/"
   ],
   "exports": {
-    "./background": "./dist/background/index.js"
+    "./background": "./dist/background/index.js",
+    "./shared": "./dist/shared/index.js"
   },
   "scripts": {
     "build:types": "tsc --project tsconfig.json --emitDeclarationOnly",

@@ -535,7 +535,12 @@ export async function wait(condition, timeout = 0, message, pollTimeout = 200) {
   return fullStacktraceOnError(driver.wait(condition, timeout, message, pollTimeout));
 }
 
-export async function waitForAssertion(assertion, timeout = 1000, pollTimeout = 200) {
+export async function waitForAssertion(
+  assertion,
+  timeout = 1000,
+  pollTimeout = 200,
+  { forceRefresh = false } = {},
+) {
   let lastError = null;
   function throwLastError() {
     throw lastError;
@@ -548,6 +553,9 @@ export async function waitForAssertion(assertion, timeout = 1000, pollTimeout = 
         return true;
       } catch (e) {
         lastError = e;
+        if (forceRefresh) {
+          await driver.navigate().refresh();
+        }
         return false;
       }
     },

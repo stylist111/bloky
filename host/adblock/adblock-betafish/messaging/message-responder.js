@@ -24,6 +24,7 @@
 */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import { ORIGIN_ID as EXPERIMENT_FILTER_ORIGIN } from "@eyeo-fragments/filter-experiments/shared";
 import rulesIndex from "@eyeo/rules-utils/adblock/index/adblock.json";
 import { toPlainFilterError } from "../../adblockplusui/adblockpluschrome/lib/messaging/types";
 import { getDebugInfo } from "../debug/background/index";
@@ -242,6 +243,9 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
             ewe.subscriptions.getFilters(sub.url).then((filters) => filters.length),
           ),
         );
+        const experimentFiltersCount = userFilters.filter(
+          (filter) => filter.metadata && filter.metadata.origin === EXPERIMENT_FILTER_ORIGIN,
+        ).length;
         return {
           manifestVersion,
           subscriptions: subscriptions.map((sub, index) => {
@@ -254,6 +258,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
             };
           }),
           userFiltersCount: userFilters.length,
+          experimentFiltersCount,
           dnrDynamicRulesCount: dynamicRules.length,
           maxEnabledRulesets: isMV3
             ? browser.declarativeNetRequest.MAX_NUMBER_OF_ENABLED_STATIC_RULESETS

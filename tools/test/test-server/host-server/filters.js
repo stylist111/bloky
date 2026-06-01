@@ -30,3 +30,8 @@ export const customFilters = [
   "testpages.eyeo.com###test-element-id-custom",
   "testpages.eyeo.com##.test-element-class-custom",
 ];
+// Important - experiment filters must be different from custom filters.
+export const experimentFilters = [
+  "testpages.eyeo.com###experiment-filter-id",
+  "testpages.eyeo.com##.experiment-filter-class",
+];

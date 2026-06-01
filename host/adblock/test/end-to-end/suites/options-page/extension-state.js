@@ -17,23 +17,10 @@
 
 import { expect } from "expect";
 import { By } from "selenium-webdriver";
-import { getDisplayedElement, wait } from "@eyeo/test-utils/driver";
+import { getDisplayedElement } from "@eyeo/test-utils/driver";
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
 
-import { initOptionsSupportTab } from "../../utils/page.js";
-
-async function waitForExtensionStateLoaded() {
-  await wait(
-    async () => {
-      const text = await driver.executeScript(
-        () => document.querySelector("#extension-state")?.textContent,
-      );
-      return text && !text.includes("Loading");
-    },
-    8000,
-    "Extension state did not finish loading",
-  );
-}
+import { initOptionsSupportTab, waitForExtensionStateLoaded } from "../../utils/page.js";
 
 export default () => {
   it("displays extension state with subscriptions", async function () {

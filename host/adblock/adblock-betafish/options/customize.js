@@ -23,7 +23,11 @@
 let originalCustomFilters = [];
 
 async function cleanCustomFilter(filtersArg) {
-  let filters = filtersArg;
+  let filters = filtersArg.filter(
+    (element) =>
+      !element.metadata ||
+      element.metadata.origin !== modulesAsGlobal.filters.FilterOrigin.experiment,
+  );
   // Remove the global pause white-list item if adblock is paused
   const isPaused = await send("adblockIsPaused");
   if (isPaused) {
@@ -168,6 +172,17 @@ $(async () => {
     const uniqCustomFilters = customFiltersArray.filter(
       (item, inx) => customFiltersArray.indexOf(item) === inx,
     );
+    // Filters owned by an experiment are hidden from this list and can't be
+    // added as custom filters, so flag them as a conflict rather than silently
+    // dropping them.
+    const userFilters = (await FiltersProxy.getUserFilters()) || [];
+    const experimentFilterTexts = userFilters
+      .filter(
+        (filter) =>
+          filter.metadata &&
+          filter.metadata.origin === modulesAsGlobal.filters.FilterOrigin.experiment,
+      )
+      .map((filter) => filter.text);
     const newFiltersToAdd = [];
     // only add 'new' filters
     for (let i = 0; i < uniqCustomFilters.length && !filterErrorMessage; i++) {
@@ -175,7 +190,16 @@ $(async () => {
       // eslint-disable-next-line no-await-in-loop
       filterToAdd = await FiltersProxy.normalize(filterToAdd);
       if (!originalCustomFilters.includes(filterToAdd) && filterToAdd) {
-        if (filterToAdd && isSelectorFilter(filterToAdd) && !hasValidQueryString(filterToAdd)) {
+        if (experimentFilterTexts.includes(filterToAdd)) {
+          filterErrorMessage = translate("customfilterserrormessage", [
+            filterToAdd,
+            translate("filter_experiment_conflict"),
+          ]);
+        } else if (
+          filterToAdd &&
+          isSelectorFilter(filterToAdd) &&
+          !hasValidQueryString(filterToAdd)
+        ) {
           filterErrorMessage = translate("customfilterserrormessage", [
             filterToAdd,
             translate("filter_invalid_css"),

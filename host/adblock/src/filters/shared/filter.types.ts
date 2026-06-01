@@ -15,6 +15,8 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ORIGIN_ID as EXPERIMENT_FILTER_ORIGIN } from "@eyeo-fragments/filter-experiments/shared";
+
 export enum FilterOrigin {
   popup = "popup",
   web = "web",
@@ -23,4 +25,5 @@ export enum FilterOrigin {
   youtube = "youtube",
   customize = "customize",
   context = "context",
+  experiment = EXPERIMENT_FILTER_ORIGIN,
 }

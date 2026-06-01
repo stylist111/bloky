@@ -2852,6 +2852,10 @@
     "message": "Недопустимый фильтр",
     "description": "Generic error shown when the user tries to add an invalid filter rule to their custom filters"
   },
+  "filter_experiment_conflict": {
+    "message": "Этот фильтр уже активен в рамках эксперимента и не может быть добавлен как пользовательский фильтр",
+    "description": "Error shown when the user tries to add a filter that is already active as an experiment filter to their custom filters"
+  },
   "love_adblock": {
     "message": "Вам нравится AdBlock?",
     "description": "Text in a button that asks users to rate us."
