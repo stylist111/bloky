@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.11.0
+
 # 4.38.3 - 2026-05-26
 
 This release contains bugfixes and under-the-hood changes.
