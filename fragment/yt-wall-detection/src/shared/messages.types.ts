@@ -35,8 +35,6 @@ export enum ErrorType {
   SWW_ERROR = "sww_error",
 }
 
-export const ytErrorLoggingFlag = "yt-uncaught-exception-logging";
-
 export const ytHavenEmbedFreeFlag = "yt-haven-embed-free";
 export const ytHavenEmbedPremiumFlag = "yt-haven-embed-premium";
 export const ytHavenDefaultEnabledFlag = "yt-haven-default-enabled";

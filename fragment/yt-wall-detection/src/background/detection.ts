@@ -60,7 +60,6 @@ import {
   adShownEvent,
   errorEvent,
   ErrorType,
-  ytErrorLoggingFlag,
 } from "../shared/index.js";
 
 /**
@@ -221,10 +220,9 @@ export function start(parameters: StartInfo): void {
       const stack = parsedUrl.searchParams.get("stack");
       const type = parsedUrl.searchParams.get("type");
 
-      const [isAllowlisted, isPremium, loggingEnabled] = await Promise.all([
+      const [isAllowlisted, isPremium] = await Promise.all([
         hasAllowlistedFilter(tabId),
         parameters.isPremiumActive(),
-        ewe.experiments.getFlag(ytErrorLoggingFlag),
       ]);
 
       if (
@@ -237,10 +235,6 @@ export function start(parameters: StartInfo): void {
           p: isPremium,
         });
       } else {
-        if (!loggingEnabled) {
-          return;
-        }
-
         sendAdWallEvents(errorEvent, {
           isAllowListed: isAllowlisted ? "1" : "0",
           p: isPremium,
