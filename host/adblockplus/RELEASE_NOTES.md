@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.39.0 - 2026-06-02
+
 - Updated snippets to 2.11.0
 
 # 4.38.3 - 2026-05-26
