@@ -39,6 +39,25 @@ const userAvatarSelector = "button#avatar-btn";
 const toastSelector =
   ".yt-notification-action-renderer a[href*='check_ad_blockers']";
 
+// CSS selector to identify the new YT toast text
+const toastTextSelector = "tp-yt-paper-toast yt-formatted-string#text";
+
+// Texts inside of the buffering toast notification in different languages.
+// Not all languages are covered so this can be expanded if needed.
+const toastTexts = [
+  "Experiencing interruptions?", // English
+  "Kommt es zu Unterbrechungen?", // German
+  "¿El vídeo se interrumpe?", // Spanish
+  "La lecture de votre vidéo se bloque", // French
+  "O vídeo está a ter interrupções?", // Portuguese
+  "Возникли неполадки?", // Russian
+  "Hai riscontrato interruzioni?", // Italian
+  "Oplever du afbrydelser?", // Danish
+  "Kesinti mi yaşıyorsunuz?", // Turkish
+  "中断", // Chinese
+  "interru", // Fallback text if exact wording changes
+];
+
 // Flag to indicate whether the wall has been detected
 let wallDetected = false;
 
@@ -149,7 +168,12 @@ function handleMutations(mutations: MutationRecord[]): void {
         node,
         ...Array.from(
           node.querySelectorAll(
-            [adWallSelector, toastSelector, ...playerErrorSelectors].join(","),
+            [
+              adWallSelector,
+              toastSelector,
+              toastTextSelector,
+              ...playerErrorSelectors,
+            ].join(","),
           ),
         ),
       ];
@@ -160,6 +184,12 @@ function handleMutations(mutations: MutationRecord[]): void {
           void adWallSelectorFound(hasDismiss);
           wallDetected = true;
         } else if (elem.tagName === "A" && elem.matches(toastSelector)) {
+          void handleToastNotification(elem);
+        } else if (
+          elem.tagName === "YT-FORMATTED-STRING" &&
+          elem.matches(toastTextSelector) &&
+          toastTexts.some((toastText) => elem.textContent?.includes(toastText))
+        ) {
           void handleToastNotification(elem);
         } else if (
           elem.tagName === "DIV" &&
