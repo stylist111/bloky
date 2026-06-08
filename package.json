@@ -56,7 +56,7 @@
   "overrides": {
     "lerna": {
       "nx": {
-        "axios": "1.15.2"
+        "axios": "1.16.1"
       }
     },
     "mocha": {
