@@ -199,6 +199,18 @@ function handleMutations(mutations: MutationRecord[]): void {
         }
       }
     }
+    // Case 2: existing #text element repopulated.
+    // Only the YT-FORMATTED-STRING toast needs this.
+    // The node is reused, so addedNodes misses it.
+    const target = mutation.target;
+    if (
+      isElement(target) &&
+      target.tagName === "YT-FORMATTED-STRING" &&
+      target.matches(toastTextSelector) &&
+      toastTexts.some((t) => target.textContent?.includes(t))
+    ) {
+      void handleToastNotification(target);
+    }
   }
 }
 
