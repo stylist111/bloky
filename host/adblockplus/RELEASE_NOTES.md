@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.39.1 - 2026-06-09
+
+This release contains only minor updates and under-the-hood changes.
+
 # 4.39.0 - 2026-06-02
 
 - Updated snippets to 2.11.0
