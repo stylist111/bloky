@@ -52,5 +52,8 @@
   },
   "filter_action_failed": {
     "message": "Wystąpił błąd. Spróbuj ponownie."
+  },
+  "filter_experiment_conflict": {
+    "message": "Ten filtr jest już aktywny jako część eksperymentu i nie można go dodać jako filtr niestandardowy"
   }
 }

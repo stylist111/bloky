@@ -52,5 +52,8 @@
   },
   "filter_action_failed": {
     "message": "Er is iets fout gegaan. Probeer het opnieuw."
+  },
+  "filter_experiment_conflict": {
+    "message": "Dit filter is al actief als onderdeel van een experiment en kan niet worden toegevoegd als aangepast filter"
   }
 }

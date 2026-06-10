@@ -23,6 +23,8 @@
 let originalCustomFilters = [];
 
 async function cleanCustomFilter(filtersArg) {
+  // Experiment filters are managed automatically and must not be shown to or
+  // editable by the user, so we keep them out of the custom filters list.
   let filters = filtersArg.filter(
     (element) =>
       !element.metadata ||

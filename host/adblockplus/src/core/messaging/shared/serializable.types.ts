@@ -15,6 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type * as ewe from "@eyeo/webext-ad-filtering-solution";
+
 /**
  * Serializable object of BlockableItem
  */
@@ -58,6 +60,12 @@ export interface SerializableFilter {
    * default. For comment filters this property is not set.
    */
   disabled?: boolean;
+  /**
+   * Metadata associated with the filter. Used to identify filters that should
+   * be hidden from the user, such as experiment filters. Not set when the
+   * filter has no associated metadata.
+   */
+  metadata?: ewe.FilterMetadata;
   /**
    * CSS selector for the HTML elements that will be hidden.
    */

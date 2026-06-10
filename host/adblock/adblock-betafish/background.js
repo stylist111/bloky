@@ -23,7 +23,6 @@ import { getPerformanceTimings } from "@eyeo/webext-ad-filtering-solution/all/pr
 
 import * as info from "info";
 import { start as startConflictDetection } from "@eyeo-fragments/conflict-detection/background";
-import { start as startFilterExperiments } from "@eyeo-fragments/filter-experiments/background";
 import { start as startYtWallDetection } from "@eyeo-fragments/yt-wall-detection/background";
 import { start as startReverseTrial } from "@eyeo-fragments/reverse-trial/background";
 import { start as startPublicAPI } from "@eyeo-fragments/public-api";
@@ -766,7 +765,6 @@ initialize
       hasPremium: License.isActiveLicense,
     });
     addAllowlistingListeners();
-    void startFilterExperiments();
     await startConflictDetection({
       logger,
       prefs: Prefs,

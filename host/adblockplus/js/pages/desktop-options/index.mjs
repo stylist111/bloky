@@ -448,6 +448,13 @@ function updateSubscription(subscription) {
 }
 
 function updateFilter(filter) {
+  // Experiment filters are managed automatically and must not be shown to or
+  // editable by the user, so we keep them out of the custom filters list.
+  // This also means they are not tracked in filtersMap.
+  if (filter.metadata?.origin === FilterOrigin.experiment) {
+    return;
+  }
+
   let allowlistTitle = null;
 
   const domainMatch = filter.text.match(allowlistedDomainRegexp);
@@ -1323,6 +1330,9 @@ function onFilterMessage(action, filter) {
       break;
     case "removed":
       const knownFilter = filtersMap[filter.text];
+      if (!knownFilter) {
+        break;
+      }
       if (
         allowlistedDomainRegexp.test(knownFilter.text) ||
         allowlistedPageRegexp.test(knownFilter.text)
@@ -1800,9 +1810,13 @@ async function startTabHelp() {
         return table;
       };
 
+      const userFiltersValue =
+        state.experimentFiltersCount > 0
+          ? `${state.userFiltersCount.toLocaleString()} (experimental: ${state.experimentFiltersCount.toLocaleString()})`
+          : state.userFiltersCount.toLocaleString();
       const totals = [
         ["Filters", totalFilters.toLocaleString()],
-        ["User Filters", state.userFiltersCount.toLocaleString()]
+        ["User Filters", userFiltersValue]
       ];
       if (isMV3) {
         const totalRules = subscriptions.reduce(

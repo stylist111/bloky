@@ -52,5 +52,8 @@
   },
   "filter_action_failed": {
     "message": "Algo no ha funcionado. Por favor, inténtalo de nuevo."
+  },
+  "filter_experiment_conflict": {
+    "message": "Este filtro ya está activo como parte de un experimento y no se puede añadir como filtro personalizado"
   }
 }

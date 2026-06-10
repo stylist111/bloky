@@ -81,8 +81,11 @@ export function toSerializableBlockableItem(
  * @returns serializable filter object
  */
 
-export function toSerializableFilter(filter: ewe.Filter): SerializableFilter {
-  const { isAddHeader, csp, enabled, selector, slow, text, type } = filter;
+export function toSerializableFilter(
+  filter: ewe.FilterWithMetadata
+): SerializableFilter {
+  const { isAddHeader, csp, enabled, metadata, selector, slow, text, type } =
+    filter;
 
   const serializable: SerializableFilter = {
     isAddHeader,
@@ -92,6 +95,10 @@ export function toSerializableFilter(filter: ewe.Filter): SerializableFilter {
     text,
     type
   };
+
+  if (typeof metadata !== "undefined") {
+    serializable.metadata = metadata;
+  }
 
   // For the time being, we are renaming the enabled property to
   // make the UI compatible with EWE without having to rename it

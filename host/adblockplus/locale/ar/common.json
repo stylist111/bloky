@@ -52,5 +52,8 @@
   },
   "filter_action_failed": {
     "message": "حدث خطأ ما. الرجاء المحاولة مرة أخرى."
+  },
+  "filter_experiment_conflict": {
+    "message": "هذا الفلتر نشط بالفعل كجزء من تجربة ولا يمكن إضافته كفلتر مخصص"
   }
 }

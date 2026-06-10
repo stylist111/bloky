@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added support for experimental filters delivered via experiment flags. When an experiment flag whose ID ends in `:filters` is active, the filters it carries are applied as user filters and cleaned up automatically when the flag changes or is removed.
+
 # 4.39.1 - 2026-06-09
 
 This release contains only minor updates and under-the-hood changes.

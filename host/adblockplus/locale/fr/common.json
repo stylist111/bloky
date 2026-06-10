@@ -52,5 +52,8 @@
   },
   "filter_action_failed": {
     "message": "Une erreur est survenue. Veuillez recommencer."
+  },
+  "filter_experiment_conflict": {
+    "message": "Ce filtre est déjà actif dans le cadre d’une expérience et ne peut pas être ajouté en tant que filtre personnalisé"
   }
 }

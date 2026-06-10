@@ -18,6 +18,7 @@
 import * as info from "info";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { start as startCookieBannerDetection } from "@eyeo-fragments/cookie-banner-detection/background";
+import { start as startFilterExperiments } from "@eyeo-fragments/filter-experiments/background";
 
 import { Prefs } from "~/alias/prefs";
 import { start as startSettings } from "~/prefs/background";
@@ -41,6 +42,7 @@ async function bootstrapAsync(): Promise<void> {
     startTestingEwe();
 
     await Promise.all([
+      startFilterExperiments(),
       startInProductMessaging(),
       startNewTab(),
       startOnPageDialog(),

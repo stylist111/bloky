@@ -15,4 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./remote-config";
+import { start as startRemoteConfig } from "./remote-config";
+import { start as startFilters } from "./filters";
+
+export function start(): void {
+  startRemoteConfig();
+  startFilters();
+}

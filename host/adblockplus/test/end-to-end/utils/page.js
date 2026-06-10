@@ -362,7 +362,7 @@ export async function getCustomFilters({ switchToAdvancedTab = false } = {}) {
 
 export async function addCustomFilters(
   filters,
-  { switchToAdvancedTab = false } = {}
+  { switchToAdvancedTab = false, checkFilterIsShown = true } = {}
 ) {
   if (switchToAdvancedTab) {
     await initOptionsAdvancedTab(getOptionsHandle());
@@ -374,11 +374,13 @@ export async function addCustomFilters(
     await waitForNotDisplayed("#custom-filters button[disabled]");
     await clickOnDisplayedElement("#custom-filters button");
 
-    await wait(
-      async () => (await getCustomFilters()).includes(filter),
-      5000,
-      `The filter "${filter}" was not shown after being added`
-    );
+    if (checkFilterIsShown) {
+      await wait(
+        async () => (await getCustomFilters()).includes(filter),
+        5000,
+        `The filter "${filter}" was not shown after being added`
+      );
+    }
   }
 }
 

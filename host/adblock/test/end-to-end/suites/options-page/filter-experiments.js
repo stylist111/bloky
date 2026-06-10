@@ -115,18 +115,18 @@ export default () => {
     // Whilst most custom filters today have metadata attached, the default state is without any metadata.
     // This test asserts that adding a filter directly via ewe.filters.add with no metadata still
     // appears in the Customize tab.
-    const legacyFilter = "testpages.eyeo.com##.legacy-no-metadata-filter";
+    const noMetaDataFilter = "testpages.eyeo.com##.no-metadata-filter";
 
     await sendExtMessage(initOptionsGeneralTab, {
       type: "testing.addFilter",
-      text: legacyFilter,
+      text: noMetaDataFilter,
     });
 
     await waitForAssertion(
       async () => {
         await initOptionsCustomizeTab(getOptionsHandle());
         const currentFilters = await getCustomFilters();
-        expect(currentFilters).toContain(legacyFilter);
+        expect(currentFilters).toContain(noMetaDataFilter);
       },
       5000,
       500,
@@ -140,9 +140,14 @@ export default () => {
     await setCustomFilters([experimentFilters[0], hostCustomFilters[0]]);
 
     const errorElem = await getDisplayedElement("#messagecustom", { timeout: 5000 });
-    expect(await errorElem.getText()).toContain("already active as part of an experiment");
 
-    await getDisplayedElement("#btnSaveAdvancedFilters");
+    try {
+      expect(await errorElem.getText()).toContain("already active as part of an experiment");
+      await getDisplayedElement("#btnSaveAdvancedFilters");
+    } finally {
+      // refreshing customize tab to remove the user visible error after the test.
+      await driver.navigate().refresh();
+    }
   });
 
   it("shows correct User Filters count in the support tab", async function () {
@@ -152,11 +157,10 @@ export default () => {
     await waitForAssertion(
       async () => {
         const userFiltersCell = await getCountForLabel("User Filters");
+        const state = await getAdFilteringState();
 
-        // Format: "<total> (experiment: <experimentCount>)" once experiment
-        // filters exist; falls back to just "<total>" when there are none.
-        expect(userFiltersCell).toMatch(
-          new RegExp(`^\\d+ \\(experimental: ${experimentFilters.length}\\)$`),
+        expect(userFiltersCell).toEqual(
+          `${state?.userFiltersCount} (experimental: ${experimentFilters.length})`,
         );
       },
       10000,

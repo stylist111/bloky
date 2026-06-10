@@ -68,5 +68,9 @@
   "filter_action_failed": {
     "description": "One or more filters could not be saved or updated.",
     "message": "Something went wrong. Please try again."
+  },
+  "filter_experiment_conflict": {
+    "description": "Error shown when a user tries to add a custom filter that is already active as an experiment filter.",
+    "message": "This filter is already active as part of an experiment and can't be added as a custom filter"
   }
 }

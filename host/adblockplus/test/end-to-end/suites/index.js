@@ -27,6 +27,7 @@ import optionsPageAA from "./options-page/acceptable-ads.js";
 import optionsPageFL from "./options-page/filter-lists.js";
 import optionsPageDataCollection from "./options-page/data-collection.js";
 import extensionState from "./options-page/extension-state.js";
+import filterExperiments from "./options-page/filter-experiments.js";
 import popupPage from "./popup-page.js";
 import uninstallDefault from "./smoke/uninstall-default.js";
 import freeUser from "./premium/free-user.js";
@@ -69,6 +70,7 @@ export default () => {
       describe("Filter Lists", optionsPageFL);
       describe("Data Collection", optionsPageDataCollection);
       describe("Extension State", extensionState);
+      describe("Filter Experiments", filterExperiments);
     });
 
     describe("Eyeometry", eyeometry);

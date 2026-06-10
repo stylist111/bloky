@@ -52,5 +52,8 @@
   },
   "filter_action_failed": {
     "message": "出错了。请再试一次。"
+  },
+  "filter_experiment_conflict": {
+    "message": "此过滤器已作为实验的一部分处于活动状态，无法添加为自定义过滤器"
   }
 }

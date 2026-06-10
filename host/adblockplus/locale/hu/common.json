@@ -52,5 +52,8 @@
   },
   "filter_action_failed": {
     "message": "Valami hiba történt. Kérlek, próbáld újra."
+  },
+  "filter_experiment_conflict": {
+    "message": "Ez a szűrő egy kísérlet részeként már aktív, és nem adható hozzá egyéni szűrőként"
   }
 }

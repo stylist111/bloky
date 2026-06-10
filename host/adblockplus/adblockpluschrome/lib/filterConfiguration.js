@@ -16,6 +16,7 @@
  */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import { ORIGIN_ID as EXPERIMENT_FILTER_ORIGIN } from "@eyeo-fragments/filter-experiments/shared";
 
 import { showOptions } from "../../lib/pages/options.js";
 import {
@@ -231,6 +232,21 @@ export function start() {
     let [filterTexts, errors] = filtersValidate(message.text);
     const metadata = { created: Date.now() };
     if (message.origin) metadata.origin = message.origin;
+
+    if (errors.length == 0) {
+      // Filters owned by an experiment are hidden from the custom filters list
+      // and must not be taken on as custom filters, so flag a user facing error.
+      const userFilters = await ewe.filters.getUserFilters();
+      const experimentFilters = new Set(
+        userFilters
+          .filter(
+            (filter) => filter.metadata?.origin === EXPERIMENT_FILTER_ORIGIN
+          )
+          .map((filter) => filter.text)
+      );
+      if (filterTexts.some((text) => experimentFilters.has(text)))
+        errors.push({ type: "filter_experiment_conflict" });
+    }
 
     if (errors.length == 0) {
       try {
@@ -481,7 +497,13 @@ export function start() {
   });
 
   installHandler("filters", "added", (emit) => {
-    const onAdded = (filter) => emit(toSerializableFilter(filter));
+    // The added event doesn't carry the filter's metadata, so we look it up to
+    // expose its origin. This lets the UI keep experiment filters out of the
+    // custom filters list when they are added while the page is open.
+    const onAdded = async (filter) => {
+      const metadata = await ewe.filters.getMetadata(filter.text);
+      emit(toSerializableFilter({ ...filter, metadata }));
+    };
     ewe.filters.onAdded.addListener(onAdded);
     return () => ewe.filters.onAdded.removeListener(onAdded);
   });

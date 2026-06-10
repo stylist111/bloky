@@ -46,5 +46,8 @@
   },
   "filter_action_failed": {
     "message": "何らかの問題が発生しました。再度お試しください。"
+  },
+  "filter_experiment_conflict": {
+    "message": "このフィルターは実験の一部としてすでに有効になっているため、カスタムフィルターとして追加できません"
   }
 }

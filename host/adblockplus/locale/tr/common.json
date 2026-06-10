@@ -52,5 +52,8 @@
   },
   "filter_action_failed": {
     "message": "Bir hata oluştu. Lütfen tekrar deneyin."
+  },
+  "filter_experiment_conflict": {
+    "message": "Bu filtre zaten bir deneyin parçası olarak etkin ve özel filtre olarak eklenemez"
   }
 }
