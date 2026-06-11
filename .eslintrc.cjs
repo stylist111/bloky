@@ -76,7 +76,7 @@ module.exports = {
       },
     },
     {
-      files: ["fragment/in-product-messaging/mocks/**/*.js"],
+      files: ["fragment/fragments/in-product-messaging/mocks/**/*.js"],
       env: { jest: true },
     },
     {
@@ -86,7 +86,7 @@ module.exports = {
       globals: { cloneInto: true },
     },
     {
-      files: ["fragment/public-api/tests/**/*.js"],
+      files: ["fragment/fragments/public-api/tests/**/*.js"],
       // manifest is assigned in a global test setup for public-api
       globals: { manifest: true },
     },

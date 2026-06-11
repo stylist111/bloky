@@ -9,7 +9,8 @@
   "workspaces": [
     "core/*",
     "core/sdk/adblockpluscore",
-    "fragment/*",
+    "fragment/fragments/*",
+    "fragment/test",
     "host/*",
     "public/*",
     "tools/*",

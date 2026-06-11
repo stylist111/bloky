@@ -35,7 +35,7 @@ To add a new fragment:
 Build fragments and the test extension first:
 
 ```sh
-npm run build -- --scope="@eyeo-fragments/*" --scope="fragments-functional-tests"
+npm run build -- --scope="fragments-functional-tests"
 ```
 
 ### Local run

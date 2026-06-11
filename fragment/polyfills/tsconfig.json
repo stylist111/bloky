@@ -1,4 +1,0 @@
-{
-  "extends": "../../core/configs/tsconfig",
-  "include": ["index.d.ts"]
-}

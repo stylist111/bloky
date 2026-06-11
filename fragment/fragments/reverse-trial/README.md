@@ -14,7 +14,7 @@ fragment.
 ## Directory structure
 
 ```plaintext
-fragment/reverse-trial
+reverse-trial
 ├── src
 │   ├── background        # Service-worker logic
 │   │   ├── reverse-trial.ts     # Entry point + message handlers
