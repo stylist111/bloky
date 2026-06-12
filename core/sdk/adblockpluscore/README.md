@@ -69,7 +69,7 @@ If you want to disable headless mode on the browser tests, set the
 
 Linting is run from the root of the monorepo.
 
-`npm run lint`.
+`npm run -w adblockpluscore lint`.
 
 ## Documentation
 

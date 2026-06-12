@@ -1,10 +1,8 @@
 # debug-information fragment
 
-## Intro
-
 This fragment gathers and returns common debug information about the host extension, including device, extension, and platform details, as well as error and migration information.
 
-**Key Functionality:**
+## Key Functionality
 
 Returns the following information in human readable JSON object that can be 'stringified':
 
@@ -19,15 +17,24 @@ Returns the following information in human readable JSON object that can be 'str
 - Migration Errors: Retrieves errors related to migration of filters and subscriptions, if available.
 - Alarm Information: Retrieves all active browser alarms and their scheduled times.
 
-**Usage:**
+## Usage
 
-**`getDebugInformation`**
+### `getDebugInformation`
+
 The single function `getDebugInformation(parameters)` is asynchronous and returns an object containing all the collected debug data, suitable for diagnostics, testing or support purposes.
 
 The `getDebugInformation` parameters will be included in the response object in the `hostSpecificInformation` key. These parameters should be JSON-serializable objects since they will be passed to other contexts of the host extension via messaging.
 
-### Unit testing
+## Testing
 
-The `./test/unit` folder contains various unit tests files
-For `.ts` files we have unit tests that can be run via
-`npm run test`.
+### Unit tests
+
+Unit tests are contained in files in `tests/unit/`.
+
+```bash
+npm test -- --scope @eyeo-fragments/debug-information
+```
+
+### Functional tests
+
+Functional / end-to-end tests are handled at the host level.

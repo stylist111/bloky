@@ -1,7 +1,5 @@
 # AdBlock
 
-## Intro
-
 [AdBlock](https://getadblock.com/) is a popular ad blocking extension for Chrome,
 Edge and Firefox.
 
@@ -52,6 +50,11 @@ If testing Sentry reporting locally, ensure that
 
 ## Testing
 
+### Unit tests
+
+The `.test/unit` folder contains various mocha unit tests files.
+For `.ts` files we have jest unit tests. Those can be run together via `npm test -- --scope adblock`
+
 ### Compliance tests
 
 Compliance tests run on a local version of [testpages](https://abptestpages.org)
@@ -91,6 +94,7 @@ Notes:
   browsers in order to test with locally served pages and AA-related filter
   rules.
 - Eyeometry tests require eyeometry credentials filled in `.env`.
+- Extension functionality meant exclusively for testing is located in ./src/testing/.
 
 #### Local run
 

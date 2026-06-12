@@ -53,3 +53,21 @@ graph TD;
   class rules-abp data
   class rules-dnr dist
 ```
+
+## Testing
+
+### Unit tests
+
+Unit tests are contained in `src/**/*.spec.js` files.
+
+```bash
+npm test -- --scope @eyeo/rules-utils
+```
+
+### End-to-end tests
+
+End-to-end tests are contained in `test/end-to-end/`.
+
+```bash
+npm test:end-to-end -- --scope @eyeo/rules-utils
+```

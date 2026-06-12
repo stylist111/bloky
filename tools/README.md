@@ -1,7 +1,5 @@
 # Tools
 
-## What is this folder?
-
 This is a space for tooling used in the Extensions repository. Things that can be run.
 
 - release - scripts used for releasing, and bumping versions, etc.

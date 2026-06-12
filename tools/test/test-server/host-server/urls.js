@@ -28,3 +28,4 @@ export const experimentFiltersTestPageUrl = `http://testpages.eyeo.com:${testPag
 export const localTestPageUrl = `http://localhost:${testPagesPort}/test.html`;
 export const adWallTestPageUrl = `http://localhost:${testPagesPort}/ad-wall/ad-wall-test.html`;
 export const snippetHitEventTestPageUrl = `http://localhost:${testPagesPort}/snippet-hit-event.html`;
+export const fragmentExampleTestPageUrl = `http://localhost:${testPagesPort}/fragment-example.html`;

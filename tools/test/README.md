@@ -1,4 +1,4 @@
-# test-utils
+# @eyeo/test-utils
 
 Tools used for testing and running the tests. See `index.js` and `package.json`
 for exports details.

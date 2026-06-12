@@ -1,5 +1,8 @@
 # Public API fragment
 
+A fragment that allows web pages to interact with the host by injecting a
+`window.sendExtCommand()` function.
+
 ## API Reference
 
 `sendExtCommand({ method, targetExt, params, timeoutMs = 3000 })`
@@ -306,12 +309,14 @@ type ExperimentAssignmentsResponse = Array<{
 
 ## Testing
 
-### Unit testing
+### Unit tests
 
-The `./test/unit` folder contains various unit tests files
-For `.ts` files we have unit tests that can be run via
-`npm run ...`.
+Unit tests are contained in files in `tests/`.
 
-### End-to-end testing
+```bash
+npm test -- --scope @eyeo-fragments/public-api
+```
 
-TBD
+### Functional tests
+
+Functional / end-to-end tests are handled at the host level.

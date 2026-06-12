@@ -43,7 +43,7 @@ const baseManifest = {
   ],
   content_scripts: [
     {
-      matches: ["https://*/*"],
+      matches: ["https://*/*", "http://*/*"],
       js: ["examplePreload.js"],
       run_at: "document_end",
       all_frames: false,

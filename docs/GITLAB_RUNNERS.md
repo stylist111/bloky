@@ -51,9 +51,9 @@ of concurrent jobs in the runner process. For details, please check the
 Notes:
 
 - On macOS, `/srv` needs to be changed to `/Users/Shared`. The same applies
-to the commands below.
+  to the commands below.
 - On Apple Silicon architectures, the `--platform linux/amd64` option should
-be added.
+  be added.
 - These notes apply to the next steps as well.
 
 **Step 2**. Register a docker-in-docker (dind) runner:
@@ -185,10 +185,10 @@ setup, including the following properties:
 
 - `gitlab_worker_instance_type` sets the kind of machine that will be created.
 - `gitlab_runner_concurrency` holds the number of gitlab-runner worker machines
-that will be created.
+  that will be created.
 - `gitlab_runner_version` holds the gitlab-runner version.
 - `gitlab_worker_idle_time` sets the idle time (in seconds) before runners are
-stopped and removed.
+  stopped and removed.
 
 GCloud provides a set of [general-purpose-machines](https://cloud.google.com/compute/docs/general-purpose-machines#e2_machine_types_table),
 for instance `e2-standard-2`. Custom machines can also be defined, as explained

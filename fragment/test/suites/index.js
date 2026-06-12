@@ -16,10 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import youtubeAutoAllowlist from "./youtube-auto-allowlist.js";
+import { beforeEachTasks } from "@eyeo/test-utils/hooks";
+
+import example from "./example.js";
 import filterExperiments from "./filter-experiments.js";
+import youtubeAutoAllowlist from "./youtube-auto-allowlist.js";
 
 export default () => {
-  describe("YouTube auto-allowlist", youtubeAutoAllowlist);
-  describe("Filter experiments", filterExperiments);
+  beforeEach(async function () {
+    await beforeEachTasks();
+  });
+
+  describe("@eyeo-fragments/example", example);
+  describe("@eyeo-fragments/filter-experiments", filterExperiments);
+  describe("@eyeo-fragments/yt-wall-detection", youtubeAutoAllowlist);
 };

@@ -37,10 +37,9 @@ export default () => {
       `'${eventName}' handler was not registered in time`,
     );
 
-    const ytHandle = await openNewTab(ytAllowlistUrl);
+    await openNewTab(ytAllowlistUrl);
     const ytTabId = await getTabId(getOptionsHandle());
 
-    await driver.switchTo().window(ytHandle);
     await driver.executeScript(() => {
       function appendElement() {
         const el = document.createElement("ytd-enforcement-message-view-model");
@@ -96,9 +95,5 @@ export default () => {
         }),
       ]),
     );
-
-    await driver.switchTo().window(ytHandle);
-    await driver.close();
-    await driver.switchTo().window(getOptionsHandle());
   });
 };

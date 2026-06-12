@@ -18,7 +18,6 @@ Examples:
 ## Testing
 
 Almost all code contributions should contain appropriate automated tests to ensure the reliability and maintainability of our codebase. Whether you're fixing a bug, adding a new feature, or refactoring existing code, appropriate unit and/or integration tests are expected to be added or updated. This practice helps catch potential issues early and ensures that changes do not inadvertently break existing functionality.
-If creating tests is not easy or you encounter any problems doing it, please create a Jira ticket describing the issue in the EXT project or reach out to the Extensions Host team on Slack.
 
 ## Release notes
 

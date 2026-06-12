@@ -14,7 +14,7 @@ fragment/
 
 ```sh
 # Build all fragments
-npm run build -- --scope="@eyeo-fragments/*"
+npm run build -- --scope @eyeo-fragments/*
 ```
 
 ## Testing
@@ -23,10 +23,10 @@ npm run build -- --scope="@eyeo-fragments/*"
 
 ```sh
 # All fragment unit tests
-npm test -- --scope="@eyeo-fragments/*"
+npm test -- --scope @eyeo-fragments/*
 
 # Single fragment
-npm test -- --scope=@eyeo-fragments/filter-experiments
+npm test -- --scope @eyeo-fragments/filter-experiments
 ```
 
 ### Functional tests
@@ -34,6 +34,6 @@ npm test -- --scope=@eyeo-fragments/filter-experiments
 Functional tests run in a real browser against the test extension in `fragment/test/`. See [fragment/test/README.md](test/README.md) for full instructions.
 
 ```sh
-npm run build -- --scope="fragments-functional-tests"
-npm run test:fragments -- --scope=fragments-functional-tests -- chromium 3
+npm run build -- --scope fragments-functional-tests
+npm run test:fragments -- -- chromium 3
 ```

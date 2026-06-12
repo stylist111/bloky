@@ -129,8 +129,9 @@ environment using a local web server. This should be run from the root of the
 monorepo.
 
 ```sh
-npm run build:local
-npm start --workspace host/adblockplus
+npm run build
+npm run -w adblockplus build:local
+npm start -w adblockplus
 ```
 
 After running `npm start --workspace host/adblockplus`, you can access the HTML
@@ -142,13 +143,13 @@ Various aspects of the pages can be tested by setting parameters in the URL (see
 **Note**: You need to [create the bundles](#bundling-the-ui) for the UI page(s)
 that you want to test.
 
-### Unit testing
+### Unit tests
 
 The `./test/unit` folder contains various mocha unit tests files
 which can be run via `npm run $ test.unit.legacy --workspace host/adblockplus`.
 For `.ts` files we have jest unit tests that can be run via
 `npm run $ test.unit.love --workspace host/adblockplus`. Those can be run
-together via `npm test -- --scope=adblockplus`.
+together via `npm test -- --scope adblockplus`.
 
 ### End-to-end tests
 
@@ -167,6 +168,7 @@ Notes:
   browsers in order to test with locally served pages and AA-related filter
   rules.
 - Eyeometry tests require eyeometry credentials filled in `.env`.
+- Extension functionality meant exclusively for testing is located in ./src/testing/.
 
 #### Local run
 

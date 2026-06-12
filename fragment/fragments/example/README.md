@@ -1,7 +1,5 @@
 # Example fragment
 
-## Intro
-
 The purpose of this fragment is to provide a template on how fragments should be structured and
 implemented, but also to be used as a playground for understanding how to test fragments in isolation.
 
@@ -103,3 +101,22 @@ Add this line to your dependencies in `package.json`.
      "run_at": "document_end"
    }
    ```
+
+## Testing
+
+### Unit tests
+
+Unit tests are contained in files in `tests/unit/`.
+
+```bash
+npm test -- --scope @eyeo-fragments/example
+```
+
+### Functional tests
+
+Functional tests run in a real browser against the test extension in `fragment/test/`. See [fragment/test/README.md](test/README.md) for full instructions.
+
+```sh
+npm run build -- --scope fragments-functional-tests
+npm run test:fragments -- -- chromium 3
+```

@@ -1,4 +1,17 @@
-# Eyeo Web Extensions Monorepo
+# eyeo Web Extensions Monorepo
+
+This monorepo contains the AdBlock and Adblock Plus web extensions, alongside
+eyeo's web extensions SDK and related components.
+
+- [The Monorepo Architecture](#the-monorepo-architecture)
+- [Prerequisites](#prerequisites)
+- [Running scripts in the monorepo](#running-scripts-in-the-monorepo)
+- [Building](#building)
+- [Testing](#testing)
+- [Code Style](#code-style)
+- [CI pipeline](#ci-pipeline)
+- [Contributing](#contributing)
+- [Troubleshooting](#troubleshooting)
 
 ## The Monorepo Architecture
 
@@ -13,20 +26,22 @@ collaboration more efficient.
 
 Read more about the architecture [here](./docs/ARCHITECTURE.md).
 
-## Using this repository
+### Dependency management
 
-### Prerequisites
+The `package-lock.json` file and the `node_modules` folder are in the
+root of this repository. Any subfolder with a `package.json` might still have a
+local `node_modules` folder when different versions of the same dependency are
+used.
+
+## Prerequisites
 
 - node >= 24
 - npm >= 11
 
-### Building on Windows
-
 On Windows, you need a [Linux environment running on
-WSL](https://docs.microsoft.com/windows/wsl/install-win10). Then install the
-above requirements and run the commands below from within Bash.
+WSL](https://docs.microsoft.com/windows/wsl/install-win10).
 
-### Working in this repository
+## Running scripts in the monorepo
 
 All npm scripts in this sections are run from the root of this repository, and
 assume that dependencies have been installed using `npm install`.
@@ -40,121 +55,7 @@ npm install
 Rerun the above commands when the dependencies might have changed, e.g. after
 checking out a new revision.
 
-#### Dependency management
-
-The `package-lock.json` file and the `node_modules` folder are in the
-root of this repository. Any subfolder with a `package.json` might still have a
-local `node_modules` folder when different versions of the same dependency are
-used.
-
-#### Building the extensions in development mode
-
-The root package in the repository has scripts for building the extensions in the
-workspace. These should be preferred over calling the scripts in the individual
-packages, since it is aware of the dependencies between packages, and has the
-ability to cache build results.
-
-```sh
-# Builds everything
-npm run build
-```
-
-- By default, packages with a build step will put their build output in a
-  `dist/` subdirectory.
-- Extensions put their unpacked development builds in a `dist/devenv/`
-  subdirectory. You can load the directory as an unpacked extension under
-  `chrome://extensions` in Chromium-based browsers, and under `about:debugging`
-  in Firefox.
-
-#### Building the extensions in release mode
-
-```sh
-# Creates release builds
-npm run build:release
-
-# Creates the source tarballs for use in store submission
-npm run build:source
-```
-
-- Extensions put their release builds in a `dist/release/` subdirectory.
-
-#### Building for specific browser configurations
-
-You can also build for only a specific browser configuration. These examples
-only work together with a `--scope` argument that limits the CLI parameters to a
-package that accepts them (adblock and adblockplus).
-
-```sh
-# Builds MV2 firefox extension for Adblock Plus
-npm run build -- --scope=adblockplus -- firefox 2
-# Builds MV3 chrome extension for AdBlock
-npm run build -- --scope=adblock -- chrome 3
-# Builds MV2 chrome extension for both hosts in release mode
-npm run build:release -- --scope=adblockplus --scope=adblock -- chrome 2
-```
-
-Lerna's package filtering commands can also be used here. Two notable filters
-are [`--scope`](https://lerna.js.org/docs/api-reference/commands#--scope-glob)
-which will filter the script to a specific package and its dependencies, and
-[`--since`](https://lerna.js.org/docs/api-reference/commands#--since-ref), which
-can filter to target packages which can be affected by the changes on your
-git branch.
-
-```sh
-# Builds AdBlock in release mode
-npm run build:release -- --scope adblock
-
-# Builds anything that has changes on your branch
-npm run build -- --since origin/main
-```
-
-#### A note on passing CLI arguments to scripts through Lerna
-
-The various building and testing npm scripts at the root of the monorepo use
-Lerna. There are a few different programs here that all might accept CLI
-arguments, separated by double dashes (`--`).
-
-```sh
-npm run build <npm arguments> -- <lerna arguments> -- <script arguments>
-```
-
-There are two areas where this is unintuitive.
-
-Firstly, if you don't have any arguments to pass to Lerna, but do have arguments
-to pass to the test script, then you still need to list two sets of double
-dashes.
-
-```sh
-npm test -- -- --grep=foo
-```
-
-The second unintuitive aspect is that many packages accept different
-arguments. For example, only the hosts accept the browser and manifest version
-as arguments to their build scripts. Usually, this means that you must use these
-script arguments together with Lerna's `--scope` argument.
-
-```sh
-npm run build -- --scope=adblock -- chrome 3
-```
-
-#### Running all unit tests
-
-```sh
-npm test
-```
-
-#### Running a script that is specific to a single workspace
-
-The `--workspace` parameter to `npm run` can be used to target scripts in a
-specific workspace.
-
-```sh
-npm run --workspace host/adblockplus start
-```
-
-See the package-specific README.md files for instructions on these scripts.
-
-#### Significant npm scripts
+### Significant npm scripts
 
 When adding a new package, consider adding the following npm scripts. This will
 make your new package work out of the box in our CI configuration, and will have
@@ -178,10 +79,133 @@ All of these scripts are optional.
 The orchestration of these tasks, for example having the `lint` script run
 `build:types`, is defined in [nx.json](./nx.json).
 
+### A note on passing CLI arguments to scripts through Lerna
+
+The various building and testing npm scripts at the root of the monorepo use
+Lerna. There are a few different programs here that all might accept CLI
+arguments, separated by double dashes (`--`).
+
+```sh
+npm run build <npm arguments> -- <lerna arguments> -- <script arguments>
+```
+
+There are two areas where this is unintuitive.
+
+Firstly, if you don't have any arguments to pass to Lerna, but do have arguments
+to pass to the test script, then you still need to list two sets of double
+dashes.
+
+```sh
+npm test -- -- --grep foo
+```
+
+The second unintuitive aspect is that many packages accept different
+arguments. For example, only the hosts accept the browser and manifest version
+as arguments to their build scripts. Usually, this means that you must use these
+script arguments together with Lerna's `--scope` argument.
+
+```sh
+npm run build -- --scope adblock -- chrome 3
+```
+
+### Running a script that is specific to a single workspace
+
+The `--workspace` parameter to `npm run` can be used to target scripts in a
+specific workspace.
+
+```sh
+npm run --workspace adblockplus start
+```
+
+See the package-specific README.md files for instructions on these scripts.
+
+## Building
+
+### Building the extensions in development mode
+
+The root package in the repository has scripts for building the extensions in the
+workspace. These should be preferred over calling the scripts in the individual
+packages, since it is aware of the dependencies between packages, and has the
+ability to cache build results.
+
+```sh
+# Builds everything
+npm run build
+```
+
+- By default, packages with a build step will put their build output in a
+  `dist/` subdirectory.
+- Extensions put their unpacked development builds in a `dist/devenv/`
+  subdirectory. You can load the directory as an unpacked extension under
+  `chrome://extensions` in Chromium-based browsers, and under `about:debugging`
+  in Firefox.
+
+### Building the extensions in release mode
+
+```sh
+# Creates release builds
+npm run build:release
+
+# Creates the source tarballs for use in store submission
+npm run build:source
+```
+
+- Extensions put their release builds in a `dist/release/` subdirectory.
+
+### Building for specific browser configurations
+
+You can also build for only a specific browser configuration. These examples
+only work together with a `--scope` argument that limits the CLI parameters to a
+package that accepts them (adblock and adblockplus).
+
+```sh
+# Builds MV2 firefox extension for Adblock Plus
+npm run build -- --scope adblockplus -- firefox 2
+# Builds MV3 chrome extension for AdBlock
+npm run build -- --scope adblock -- chrome 3
+# Builds MV2 chrome extension for both hosts in release mode
+npm run build:release -- --scope adblockplus --scope adblock -- chrome 2
+```
+
+Lerna's package filtering commands can also be used here. Two notable filters
+are [`--scope`](https://lerna.js.org/docs/api-reference/commands#--scope-glob)
+which will filter the script to a specific package and its dependencies, and
+[`--since`](https://lerna.js.org/docs/api-reference/commands#--since-ref), which
+can filter to target packages which can be affected by the changes on your
+git branch.
+
+```sh
+# Builds AdBlock in release mode
+npm run build:release -- --scope adblock
+
+# Builds anything that has changes on your branch
+npm run build -- --since origin/main
+```
+
+## Testing
+
+Each package may provide unit tests and end-to-end tests. These can be run for
+the whole monorepo at once.
+
+```sh
+# Runs unit tests
+npm test
+
+# Runs end-to-end tests
+npm test:end-to-end
+```
+
+Further information about specific packages can be found in their respective
+README.md files.
+
+The monorepo contains tooling for implementing and running tests for
+[fragments functional tests](./fragment/test/README.md) and
+[hosts end-to-end tests](./tools/test/README.md).
+
 ## Code Style
 
 The monorepo has a root level eslint and prettier config. Each package may
-choose to define define its own additional linting tasks. These are run for the
+choose to define its own additional linting tasks. These are run for the
 whole monorepo at once.
 
 ```sh
@@ -193,39 +217,6 @@ Some style issues can be automatically fixed by running the `lint-fix` command.
 ```sh
 npm run lint-fix
 ```
-
-## Troubleshooting
-
-### `node-gyp` error?
-
-If you're using an apple machine with apple silicon (arm64 CPU), you may
-encounter an error where `node-gyp` fails to build during `npm install`. In that
-case you need to run `arch -x86_64 zsh` before any other commands, and make sure
-you are not using `nvm` to run the node version.
-
-Another possible cause is that `node-gyp` cannot find the binary online,
-then tries to build the binary locally and fails because of Python 3.12 being
-installed, [which does not work with some versions of `node-gyp`](https://github.com/nodejs/node-gyp/issues/2869).
-That could be solved by installing Python 3.11 locally, and
-[`pyenv`](https://github.com/pyenv/pyenv) could be used for that.
-
-### Windows Powershell errors
-
-From Node 22, there are some issues that need to be worked around if you're
-using Windows Powershell.
-
-- When calling NPM scripts, "--" is frequently used to separate the NPM
-  invocation from the arguments meant for the script. However, since NPM 10,
-  Powershell sometimes misinterprets the -- as being part of a Powershell
-  command (see [this Node issue](https://github.com/npm/cli/issues/7375)). A
-  simple workaround is to quote the --, for example
-  `npm run build "--" --scope=adblock`
-- When running NPM in the context of a `Start-Process` command, you must use the
-  command `npm.cmd`, rather than just `npm` (see [this Node
-  issue](https://github.com/npm/cli/issues/7375)).
-
-As an alternative to these workarounds, it is recommended to use Windows
-Subsystem for Linux rather than Powershell.
 
 ## CI pipeline
 
@@ -263,6 +254,30 @@ The status of the runners can be checked [here](https://gitlab.com/eyeo/browser-
 in the `Group runners` section. Access to GCP resources like the GCloud console
 may be granted by devops.
 
+See also [GitLab runners documentation](docs/GITLAB_RUNNERS.md) for instructions
+on how to set up GitLab runners on a private machine.
+
 ## Contributing
 
-Please see [contributing](CONTRIBUTING.md)
+Please have a look at our [contribution guidelines](CONTRIBUTING.md) if you want
+to make some changes to this repository.
+
+## Troubleshooting
+
+### Windows Powershell errors
+
+From Node 22, there are some issues that need to be worked around if you're
+using Windows Powershell.
+
+- When calling NPM scripts, "--" is frequently used to separate the NPM
+  invocation from the arguments meant for the script. However, since NPM 10,
+  Powershell sometimes misinterprets the -- as being part of a Powershell
+  command (see [this Node issue](https://github.com/npm/cli/issues/7375)). A
+  simple workaround is to quote the --, for example
+  `npm run build "--" --scope=adblock`
+- When running NPM in the context of a `Start-Process` command, you must use the
+  command `npm.cmd`, rather than just `npm` (see [this Node
+  issue](https://github.com/npm/cli/issues/7375)).
+
+As an alternative to these workarounds, it is recommended to use Windows
+Subsystem for Linux rather than Powershell.

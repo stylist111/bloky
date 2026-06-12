@@ -1,7 +1,5 @@
 # YouTube Ad Wall Detection fragment
 
-## Intro
-
 This fragment contains the content and background page (service worker) scripts needed to allowlist YouTube when the YouTube ad wall is detected.
 
 ## Running scripts
@@ -17,12 +15,21 @@ extensions.
 
 ## Testing
 
-### Unit testing
+### Unit tests
 
-The `./test/unit` folder contains various unit tests files
-For `.ts` files we have unit tests that can be run via
-`npm run ...`.
+Unit tests are contained in files in `tests/unit/`.
 
-### End-to-end testing
+```bash
+npm test -- --scope @eyeo-fragments/yt-wall-detection
+```
 
-End to end test are out of scope of this fragment because of the need for browser and an host extension to execute such tests.
+### Functional tests
+
+Functional tests run in a real browser against the test extension in `fragment/test/`. See [fragment/test/README.md](test/README.md) for full instructions.
+
+```sh
+npm run build -- --scope fragments-functional-tests
+npm run test:fragments -- -- chromium 3
+```
+
+Additional functional / end-to-end tests are handled at the host level.

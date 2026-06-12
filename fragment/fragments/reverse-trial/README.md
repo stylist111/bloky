@@ -94,16 +94,27 @@ The fragment reads two experiment flags via EWE:
 
 Without a valid config in the flag, no dialog is ever shown.
 
-## Testing
-
-```bash
-npm run test        # run from the repo root — runs vitest for this fragment
-```
-
-Unit tests live in `tests/unit/`. Functional / end-to-end tests are
-handled at the host level, not in this fragment.
-
 ## Building
 
 See the [readme at the root of the monorepo](../../README.md) for
-general build and dependency instructions.
+general build, dependency management, how to build the
+extensions.
+
+## Testing
+
+### Unit tests
+
+Unit tests are contained in files in `tests/unit/`.
+
+```bash
+npm test -- --scope @eyeo-fragments/reverse-trial
+```
+
+### Functional tests
+
+Functional / end-to-end tests are handled at the host level.
+
+Additional information can be found under the following internal links:
+
+- [Reverse-Trial OPD — Testing Guide](https://eyeo.atlassian.net/wiki/spaces/B2C/pages/1946517506/Reverse-Trial+OPD+Testing+Guide)
+- [Reverse-Trial OPD — Test Tracker](https://eyeo.atlassian.net/wiki/spaces/B2C/pages/1946419202/Reverse-Trial+OPD+Test+Tracker)

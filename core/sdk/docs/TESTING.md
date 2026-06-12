@@ -13,6 +13,8 @@ environment.
 All test kinds run on the CI pipeline. They can also be executed on a local
 development environment.
 
+A list of common test commands can be found in the [cheat sheet](./TESTING_CHEAT_SHEET.md).
+
 ## Pipelines structure
 
 The CI pipeline has the following stages:

@@ -1,7 +1,5 @@
 # Cookie banner detection fragment
 
-## Intro
-
 This fragment contains the background page (service worker) scripts needed to detect cookie banner dialogs, currently, in all the pages that make use of the [TCF API](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework).
 
 ## Running scripts
@@ -17,10 +15,14 @@ extensions.
 
 ## Testing
 
-### Unit testing
+### Unit tests
 
-Unit tests can be found in the same directory of the related modules (`./src`) contained in `.spec.ts` files. They can be run via `npm run test`.
+Unit tests are contained in `src/**/*.spec.ts` files.
 
-### End-to-end testing
+```bash
+npm test -- --scope @eyeo-fragments/cookie-banner-detection
+```
 
-End to end test are out of scope of this fragment because of the need for browser and an host extension to execute such tests.
+### Functional tests
+
+Functional / end-to-end tests are handled at the host level.

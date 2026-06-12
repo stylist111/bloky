@@ -1,7 +1,5 @@
 # Conflict Detection fragment
 
-## Intro
-
 This fragment contains the background page (service worker) scripts needed to detect:
 
 - all of our extensions
@@ -20,12 +18,14 @@ extensions.
 
 ## Testing
 
-### Unit testing
+### Unit tests
 
-The `./test/unit` folder contains various unit tests files
-For `.ts` files we have unit tests that can be run via
-`npm run test`.
+Unit tests are contained in files in `tests/unit/`.
 
-### End-to-end testing
+```bash
+npm test -- --scope @eyeo-fragments/conflict-detection
+```
 
-End to end test are out of scope of this fragment because of the need for browser and an host extension to execute such tests.
+### Functional tests
+
+Functional / end-to-end tests are handled at the host level.
