@@ -16,21 +16,13 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global browser, channels, replacedCounts, BigInt */
+/* global browser */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import { chromeStorageSetHelper } from "~/utilities/background/bg-functions";
-import {
-  getWebAllowlistingFilterCount,
-  getPopupAllowlistingFilterCount,
-  getCustomizedFilterCount,
-  getWizardFilterCount,
-  getMissingFilterCount,
-} from "./custom-rule";
 
 import { Prefs } from "~/alias/prefs";
-import { getSettings, settings } from "~/prefs/background";
 import SubscriptionAdapter from "~/subscriptionadapter";
 import { getUserId } from "~/id/background/index";
 import { determineUserLanguage, storageSet, getUserAgentInfo } from "~/utilities/background/index";
@@ -110,18 +102,21 @@ class TelemetryBase {
     storageSet(this.nextRequestTimeStorageKey);
   }
 
-  async getTelemetryData() {
+  // Returns the total number of pings sent so far. Used to throttle the ping
+  // frequency for very high-count clients (see Telemetry.pingNow). Previously
+  // this was read from the ping payload's `pc` field; it is now read directly
+  // so it no longer needs to be sent to the server.
+  async getTotalPings() {
     const response = await browser.storage.local.get(this.totalRequestsStorageKey);
+    return response[this.totalRequestsStorageKey] || 0;
+  }
+
+  async getTelemetryData() {
+    // AdBlock ping compliance: only the fields required for Monthly Active
+    // Client (billing) counting are sent. Diagnostic / UI / feature-flag
+    // parameters were removed — the diagnostic data product relied on now
+    // flows through the compliant eyeometry events instead.
     let data = {};
-    await settings.onload();
-    const settingsObj = getSettings();
-    const totalPings = response[this.totalRequestsStorageKey] || 0;
-    const themeOptionsPage = settingsObj.color_themes.options_page.replace("_theme", "");
-    const themePopupMenu = settingsObj.color_themes.popup_menu.replace("_theme", "");
-    let subsStr = "-1";
-    if (typeof BigInt === "function") {
-      subsStr = BigInt(`0b${await SubscriptionAdapter.getSubscriptionsChecksum()}`).toString();
-    }
     await Prefs.untilLoaded;
 
     data = {
@@ -129,40 +124,9 @@ class TelemetryBase {
       v: this.version,
       f: this.flavor,
       o: this.os,
-      bv: this.browserVersion,
-      ov: this.osVersion,
-      ad: settingsObj.show_advanced_options ? "1" : "0",
       l: determineUserLanguage(),
-      pc: totalPings,
-      dcv2: settingsObj.data_collection_v2 ? "1" : "0",
-      ldc: settingsObj.local_data_collection ? "1" : "0",
-      rc: await replacedCounts.getTotalAdsReplaced(),
-      to: themeOptionsPage,
-      tm: themePopupMenu,
-      ir: channels.isAnyEnabled() ? "1" : "0",
-      cir: channels.channelGuide[channels.getIdByName("CustomChannel")].enabled ? "1" : "0",
-      sup: settingsObj.suppress_update_page ? "1" : "0",
-      ss: settingsObj.suppress_surveys ? "1" : "0",
-      sfrp: settingsObj.suppress_first_run_page ? "1" : "0",
-      opm: settingsObj.onpageMessages ? "1" : "0",
-      sendadwallmessages: Prefs.send_ad_wall_messages ? "1" : "0",
-      subs: subsStr,
-      customfc: await getCustomizedFilterCount(),
-      missingfc: await getMissingFilterCount(),
-      popfc: await getPopupAllowlistingFilterCount(),
-      wafc: await getWebAllowlistingFilterCount(),
-      wizardfc: await getWizardFilterCount(),
-      filterMigrationErrorCount: (await ewe.filters.getMigrationErrors()).length,
-      subscriptionMigrationErrorCount: (await ewe.subscriptions.getMigrationErrors()).length,
     };
 
-    // only on Chrome, Edge, or Firefox
-    if (
-      (this.flavor === "E" || this.flavor === "CM" || this.flavor === "F") &&
-      Prefs.blocked_total
-    ) {
-      data.b = Prefs.blocked_total;
-    }
     if (browser.runtime.id) {
       data.extid = browser.runtime.id;
     }
@@ -171,42 +135,6 @@ class TelemetryBase {
       data.aa = aaStatus;
     }
 
-    data.crctotal = 0;
-    data.crcsnippet = 0;
-    data.crcelemhideemulation = 0;
-    data.crcelemhideexception = 0;
-    data.crcelemhide = 0;
-    data.crcallowing = 0;
-    data.crcblocking = 0;
-    data.crccomment = 0;
-    data.crcinvalid = 0;
-
-    const userFilters = await ewe.filters.getUserFilters();
-    for (let j = 0; j < userFilters.length; j++) {
-      const filter = userFilters[j];
-      data[`crc${filter.type}`] += 1;
-      data.crctotal += 1;
-    }
-
-    data.numberOfPartnerExt = Prefs.get("partnerExtensionFound").extesnionsIdsFound.length;
-    // Detected in the last 7 days
-    data.hasUBO = Date.now() - Prefs.get("uboDetected") < 7 * 24 * 60 * 60 * 1000 ? "1" : "0";
-    // Detection was last run in the last 7 days
-    data.uboDetectionWasActive =
-      Date.now() - Prefs.get("uboDetectionLastRun") < 7 * 24 * 60 * 60 * 1000 ? "1" : "0";
-    data.dc = this.dataCorrupt ? "1" : "0";
-    data.isPinned = "-1";
-    const userSettings = browser.action.getUserSettings && (await browser.action.getUserSettings());
-    if (userSettings) {
-      data.isPinned = userSettings.isOnToolbar ? "1" : "0";
-    }
-    if (browser.permissions && browser.permissions.getAll) {
-      const allPermissions = await browser.permissions.getAll();
-      data.dhp =
-        allPermissions.origins && allPermissions.origins.includes("<all_urls>") ? "1" : "0";
-    } else {
-      data.dhp = "1";
-    }
     return data;
   }
 

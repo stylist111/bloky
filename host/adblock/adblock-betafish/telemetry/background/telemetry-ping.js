@@ -134,20 +134,19 @@ class Telemetry extends TelemetryBase {
     // attempt to stop users that are pinging us 'a lot'
     // by checking the current ping count,
     // if the ping count is above a theshold,
-    // then only ping 'occasionally'
-    if (pingData.pc > 5000) {
-      if (pingData.pc > 5000 && pingData.pc < 100000 && pingData.pc % 5000 !== 0) {
+    // then only ping 'occasionally'.
+    // The ping count is read locally rather than from the payload, since it is
+    // no longer sent to the server (AdBlock ping compliance).
+    const totalPings = await this.getTotalPings();
+    if (totalPings > 5000) {
+      if (totalPings > 5000 && totalPings < 100000 && totalPings % 5000 !== 0) {
         return pingData;
       }
-      if (pingData.pc >= 100000 && pingData.pc % 50000 !== 0) {
+      if (totalPings >= 100000 && totalPings % 50000 !== 0) {
         return pingData;
       }
     }
     pingData.cmd = "ping";
-    if (browser.management && browser.management.getSelf) {
-      const info = await browser.management.getSelf();
-      pingData.it = info.installType.charAt(0);
-    }
     void this.sendPingData(pingData);
     return pingData;
   }
