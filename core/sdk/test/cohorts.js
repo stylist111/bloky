@@ -19,7 +19,7 @@ import expect from "expect";
 import sinon from "sinon/pkg/sinon.js";
 import {clearTestEvents, EWE, expectTestEvents} from "./messaging.js";
 import {ISO_DATE_REGEX, waitForAssertion} from "./utils.js";
-import {defaultFacts, cohortsConfig, cohort1Config, cohort2Config} from "./fixtures/cohorts.js";
+import {defaultFacts, cohortsConfig, cohort1Config, cohort2Config, filterListsCohortConfig, filterListsExcludeCohortConfig, filterListsHash} from "./fixtures/cohorts.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {DEFAULT_CONFIG, setConfig} from "./fixtures/remote-config.js";
 
@@ -144,6 +144,34 @@ describe("Cohorts", function() {
     expect(cohorts).toEqual([cohort2Config.event.type]);
   });
 
+  it("assigns cohort when filterLists contains the expected hash", async function() {
+    await EWE.testing.mockFacts({
+      ...defaultFacts, filterLists: [filterListsHash]
+    });
+    await EWE.testing.mockRemoteConfig({
+      ...DEFAULT_CONFIG,
+      cohorts: [filterListsCohortConfig]
+    }, countryCode);
+    await EWE.cohorts.sync();
+
+    const cohorts = await EWE.cohorts.getAll();
+    expect(cohorts).toEqual([filterListsCohortConfig.event.type]);
+  });
+
+  it("assigns cohort when filterLists doesNotContain the expected hash", async function() {
+    await EWE.testing.mockFacts({
+      ...defaultFacts, filterLists: ["000000000000"]
+    });
+    await EWE.testing.mockRemoteConfig({
+      ...DEFAULT_CONFIG,
+      cohorts: [filterListsExcludeCohortConfig]
+    }, countryCode);
+    await EWE.cohorts.sync();
+
+    const cohorts = await EWE.cohorts.getAll();
+    expect(cohorts).toEqual([filterListsExcludeCohortConfig.event.type]);
+  });
+
   it("clears old cohorts when new config is empty", async function() {
     await EWE.testing.mockRemoteConfig({
       ...DEFAULT_CONFIG,
@@ -237,7 +265,10 @@ describe("Cohorts", function() {
       countryCode: expect.stringMatching(/^[A-Z]{2}$/),
       extName: expect.any(String),
       extVersion: expect.stringMatching(/\d+\.\d+\.\d+/),
-      installType: "development"
+      installType: "development",
+      dynamicRuleCount: expect.any(Number),
+      staticRuleCount: expect.any(Number),
+      filterLists: expect.any(Array)
     };
 
     beforeEach(async function() {

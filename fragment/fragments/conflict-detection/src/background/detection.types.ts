@@ -102,6 +102,27 @@ export const uboDetectedKey = "uboDetected";
  */
 export const uboDetectionLastRunKey = "uboDetectionLastRun";
 
+export const DetectionEvents = {
+  BT_LOADER_BLOCKED: "bt_loader_blocked",
+  BT_LOADER_SUCCESS: "bt_loader_success",
+  AA_BAIT1_BLOCKED: "aa_bait1_blocked",
+  AA_BAIT1_SUCCESS: "aa_bait1_success",
+  AA_BAIT2_BLOCKED: "aa_bait2_blocked",
+  AA_BAIT2_SUCCESS: "aa_bait2_success",
+  AA_OTHER_BLOCKED: "aa_other_blocked",
+  AA_OTHER_SUCCESS: "aa_other_success",
+} as const;
+
+/**
+ * The name for the Prefs storage key that stores when the blockthrough tag was last seen.
+ */
+export const lastBlockthroughTagDateKey = "lastBlockthroughTagDate";
+
+/**
+ * The name for the Prefs storage key that stores when a bait request was last blocked.
+ */
+export const lastBaitBlockedDateKey = "lastBaitBlockedDate";
+
 /**
  * The name for the Prefs storage key that contains the partner extension IDs of Chromium based browsers.
  */

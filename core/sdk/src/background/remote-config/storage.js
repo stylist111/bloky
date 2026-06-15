@@ -17,14 +17,16 @@
 
 import browser from "webextension-polyfill";
 import {PersistentState} from "../persistence.js";
-import {hasAcceptableAdsEnabled} from "../subscriptions.js";
+import {hasAcceptableAdsEnabled, getSubscriptions} from "../subscriptions.js";
 import * as info from "../info.js";
 import initializer from "../initializer.js";
 import {getTrialDaysLeft, getPreferences} from "../account/storage.js";
 import experiments from "../experiments.js";
+import {sha256Prefix} from "../../all/hashing.js";
 
 const UNKNOWN_COUNTRY_CODE = "unknown";
 let _getFacts = async() => ({});
+let _rulesIndex = null;
 export const remoteConfigState = new PersistentState("ewe:remote_config", browser.storage.local);
 
 /**
@@ -198,6 +200,35 @@ export function setFactsGetter(getFacts) {
 }
 
 /**
+ * Set the host-specific rules index for static rule count computation.
+ *
+ * @param {Array} rulesIndex
+ * @ignore
+ */
+export function setRulesIndex(rulesIndex) {
+  _rulesIndex = rulesIndex;
+}
+
+/**
+ * Computes the total static rule count for enabled subscriptions.
+ *
+ * @param {Array} subscriptions
+ * @param {Array} rulesIndex
+ * @returns {number}
+ */
+function computeStaticRuleCount(subscriptions, rulesIndex) {
+  const ruleCountByUrl = new Map(
+    rulesIndex.map(entry => [
+      entry.url,
+      entry.rule_count != null ? entry.rule_count : 0
+    ])
+  );
+  return subscriptions
+    .filter(sub => sub.enabled)
+    .reduce((sum, sub) => sum + (ruleCountByUrl.get(sub.url) || 0), 0);
+}
+
+/**
  * Get the default facts for condition evaluation. These are
  * facts derived from the extension's own state.
  *
@@ -208,11 +239,29 @@ async function getDefaultFacts() {
   const {installType} = await browser.management.getSelf();
   let {short_name: extName} = browser.runtime.getManifest();
   extName = extName ? extName.replace(/ /g, "").toLowerCase() : extName;
-  const [aaEnabled, trialDaysLeft, preferences] = await Promise.all([
+  const isMV3 = !!browser.declarativeNetRequest;
+  const allSubscriptions = getSubscriptions();
+  const activeFilterUrls = allSubscriptions.flatMap(
+    s => s.enabled && s.downloadCount > 0 && s.url ? [s.url] : []
+  );
+  const [
+    aaEnabled, trialDaysLeft, preferences, dynamicRules,
+    filterLists
+  ] = await Promise.all([
     hasAcceptableAdsEnabled(),
     getTrialDaysLeft(),
-    getPreferences()
+    getPreferences(),
+    isMV3 ?
+      browser.declarativeNetRequest.getDynamicRules() : Promise.resolve([]),
+    Promise.all(activeFilterUrls.slice(0, 10).map(sha256Prefix))
   ]);
+
+  let staticRuleCount;
+  if (_rulesIndex) {
+    staticRuleCount = isMV3
+      ? computeStaticRuleCount(allSubscriptions, _rulesIndex)
+      : 0;
+  }
 
   return {
     extName,
@@ -223,7 +272,10 @@ async function getDefaultFacts() {
     installType,
     isTrial: trialDaysLeft > 0,
     trialDaysLeft,
-    marketingConsent: !!preferences.marketingEmail
+    marketingConsent: !!preferences.marketingEmail,
+    dynamicRuleCount: dynamicRules.length,
+    filterLists,
+    staticRuleCount
   };
 }
 

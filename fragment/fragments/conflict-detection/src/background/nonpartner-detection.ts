@@ -22,6 +22,9 @@ import { prepareInlineScriptForInjection } from "@eyeo/webext-ad-filtering-solut
 import { detectionEvent } from "../shared/index.js";
 import {
   type StartInfo,
+  DetectionEvents,
+  lastBaitBlockedDateKey,
+  lastBlockthroughTagDateKey,
   uboDetectedKey,
   uboDetectionLastRunKey,
   uboExtensionIds,
@@ -52,15 +55,21 @@ async function getEventName(
 ): Promise<string | null> {
   const { url, type, tabId } = details;
   if (url.includes("btloader.com/tag")) {
-    return blocked ? "bt_loader_blocked" : "bt_loader_success";
+    return blocked
+      ? DetectionEvents.BT_LOADER_BLOCKED
+      : DetectionEvents.BT_LOADER_SUCCESS;
   }
 
   if (url.includes("ad-delivery.net/px.gif?ch=1")) {
-    return blocked ? "aa_bait1_blocked" : "aa_bait1_success";
+    return blocked
+      ? DetectionEvents.AA_BAIT1_BLOCKED
+      : DetectionEvents.AA_BAIT1_SUCCESS;
   }
 
   if (url.includes("ad-delivery.net/px.gif?ch=2")) {
-    return blocked ? "aa_bait2_blocked" : "aa_bait2_success";
+    return blocked
+      ? DetectionEvents.AA_BAIT2_BLOCKED
+      : DetectionEvents.AA_BAIT2_SUCCESS;
   }
 
   try {
@@ -94,7 +103,9 @@ async function getEventName(
       hostname.includes("amazon.");
 
     if (isYahooFilter || isMicrosoftFilter || isAmazonFilter) {
-      return blocked ? "aa_other_blocked" : "aa_other_success";
+      return blocked
+        ? DetectionEvents.AA_OTHER_BLOCKED
+        : DetectionEvents.AA_OTHER_SUCCESS;
     }
   } catch (error) {}
 
@@ -317,6 +328,14 @@ export function start(parameters: StartInfo): void {
         isPageAllowlisted: filters.length > 0,
         aaListsStatus,
       });
+
+      if (
+        (eventName === DetectionEvents.AA_OTHER_BLOCKED ||
+          eventName === DetectionEvents.BT_LOADER_BLOCKED) &&
+        aaListsStatus > 0
+      ) {
+        await saveResultInPrefs(prefs, lastBaitBlockedDateKey);
+      }
     },
     { urls: baitsURLs },
   );
@@ -338,6 +357,10 @@ export function start(parameters: StartInfo): void {
         isPageAllowlisted: filters.length > 0,
         aaListsStatus,
       });
+
+      if (eventName === DetectionEvents.BT_LOADER_SUCCESS) {
+        await saveResultInPrefs(prefs, lastBlockthroughTagDateKey);
+      }
     },
     { urls: baitsURLs },
   );

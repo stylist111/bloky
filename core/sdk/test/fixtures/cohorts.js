@@ -73,3 +73,37 @@ export const cohortsConfig = [
   cohort1Config,
   cohort2Config
 ];
+
+export const filterListsHash = "a3f9c2d1e4b5";
+
+export const filterListsCohortConfig = {
+  name: "Users with a specific filter list",
+  conditions: {
+    all: [
+      {
+        fact: "filterLists",
+        operator: "contains",
+        value: filterListsHash
+      }
+    ]
+  },
+  event: {
+    type: "has_filter_list"
+  }
+};
+
+export const filterListsExcludeCohortConfig = {
+  name: "Users without a specific filter list",
+  conditions: {
+    all: [
+      {
+        fact: "filterLists",
+        operator: "doesNotContain",
+        value: filterListsHash
+      }
+    ]
+  },
+  event: {
+    type: "does_not_have_filter_list"
+  }
+};

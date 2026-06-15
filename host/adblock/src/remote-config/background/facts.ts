@@ -27,12 +27,18 @@ import type { Facts } from "@eyeo/webext-ad-filtering-solution";
  */
 export async function getFacts(): Promise<Facts> {
   await Promise.all([Prefs.untilLoaded, License.ready()]);
+  const userFilters = await ewe.filters.getUserFilters();
 
   return {
     hasPremium: await License.isActiveLicense(),
     installDate: Prefs.get("installDate"),
     blockedCount: Prefs.get("blocked_total"),
     reverseTrialStartDate: Prefs.get("reverse_trial_start_date"),
+    lastBlockthroughTagDate: Prefs.get("lastBlockthroughTagDate"),
+    lastBaitBlockedDate: Prefs.get("lastBaitBlockedDate"),
+    partnerExtensionCoinstalled:
+      (Prefs.get("partnerExtensionFound")?.extesnionsIdsFound?.length ?? 0) > 0,
+    customFiltersCount: userFilters.filter((f) => f.enabled === true).length,
   };
 }
 
@@ -43,4 +49,9 @@ export async function getFacts(): Promise<Facts> {
 export function start(): void {
   License.licenseNotifier.on("license.status.changed", ewe.remoteConfig.updateFacts);
   Prefs.on("installDate", ewe.remoteConfig.updateFacts);
+  ewe.subscriptions.onAdded.addListener(ewe.remoteConfig.updateFacts);
+  ewe.subscriptions.onChanged.addListener(async () => {
+    await ewe.remoteConfig.updateFacts();
+  });
+  ewe.subscriptions.onRemoved.addListener(ewe.remoteConfig.updateFacts);
 }

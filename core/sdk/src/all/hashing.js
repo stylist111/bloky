@@ -55,3 +55,22 @@ export async function hashString(str) {
   const base64 = btoa(String.fromCharCode(...bytes));
   return base64.substring(0, 8);
 }
+
+/**
+ * Computes a SHA-256 digest of the given text and returns the first 12
+ * hexadecimal characters of the result. Suitable for compactly identifying
+ * well-known strings (e.g. filter list URLs) without transmitting them in full.
+ *
+ * @param {string} text - The text to hash.
+ * @returns {Promise<string>} The first 12 hex characters of the SHA-256 digest.
+ */
+export async function sha256Prefix(text) {
+  const buffer = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(text)
+  );
+  return Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 12);
+}

@@ -410,6 +410,20 @@ defaults.uboDetected = 0;
 defaults.uboDetectionLastRun = 0;
 
 /**
+ * A timestamp that indicates when the blockthrough tag was last seen
+ *
+ * @type {number}
+ */
+defaults.lastBlockthroughTagDate = 0;
+
+/**
+ * A timestamp that indicates when a bait request was last blocked
+ *
+ * @type {number}
+ */
+defaults.lastBaitBlockedDate = 0;
+
+/**
  * A timestamp that indicates when the extension was installed
  *
  * @type {number}

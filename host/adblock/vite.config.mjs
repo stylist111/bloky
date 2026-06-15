@@ -9,6 +9,7 @@ export default defineConfig({
     setupFiles: "./test/unit/setup.js",
     alias: {
       "~/alias/prefs": path.resolve(__dirname, "./adblock-betafish/alias/prefs"),
+      "~/picreplacement/check": path.resolve(__dirname, "./adblock-betafish/picreplacement/check"),
       info: path.resolve(__dirname, "./test/unit/mocks/info"),
     },
   },

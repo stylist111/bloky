@@ -387,4 +387,44 @@ describe("Cohort Data Validation", function () {
       "`invalid operator multiple for fact: countryCode`",
     ]);
   });
+
+  it("validates customFiltersCount, dynamicRuleCount, staticRuleCount and filterLists with valid operators", async function () {
+    await expectErrors(
+      {
+        schemaId: SCHEMA_ID,
+        experiments: complexExperiment,
+        cohorts: [
+          {
+            name: "filter count cohort",
+            conditions: {
+              all: [
+                {
+                  fact: "customFiltersCount",
+                  operator: "greaterThan",
+                  value: 0,
+                },
+                {
+                  fact: "dynamicRuleCount",
+                  operator: "lessThanInclusive",
+                  value: 100,
+                },
+                {
+                  fact: "staticRuleCount",
+                  operator: "equal",
+                  value: 3,
+                },
+                {
+                  fact: "filterLists",
+                  operator: "contains",
+                  value: "a3f9c2d1e4b5",
+                },
+              ],
+            },
+            event: { type: "filterCountCohort" },
+          },
+        ],
+      },
+      [],
+    );
+  });
 });

@@ -36,7 +36,8 @@ const addonInfo: AddonInfo = {
   version: info.addonVersion,
   remoteConfig: {
     url: "https://easylist-downloads.adblockplus.org/ab-testing/experiments.json",
-    getFacts
+    getFacts,
+    rulesIndex
   },
   account: {
     apiBaseUrl: "https://api.ua.eyeo.it/v1",

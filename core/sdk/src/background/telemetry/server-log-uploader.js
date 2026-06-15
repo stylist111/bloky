@@ -20,6 +20,7 @@ import {v4 as uuidv4} from "uuid";
 
 import {MILLIS_IN_SECOND, MILLIS_IN_MINUTE, MILLIS_IN_HOUR} from "#adblockpluscore/lib/time.js";
 import {getExtensionMetadata, postWithBearerToken} from "./eyeometry.js";
+import {buildClientAttributes} from "./client-attributes.js";
 import {onLogQueued, hasPendingLogs, startUploadTransaction,
         commitUploadTransaction, abortUploadTransaction}
   from "./server-logger.js";
@@ -161,6 +162,7 @@ async function sendServerLogs(debugTelemetry) {
   let metadata = await getExtensionMetadata();
   metadata.remote_config_revision = await remoteConfig.getRevisionId();
   metadata.cohorts = await cohorts.getAll();
+  metadata.client_attributes = await buildClientAttributes();
 
   const payload = {
     rotating_client_id: await serverLogConfig.getRotatingClientId(),

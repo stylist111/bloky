@@ -464,7 +464,7 @@ export async function updateSubscriptionInformation() {
   }
 }
 
-function getSubscriptions() {
+export function getSubscriptions() {
   let result = [];
 
   for (let subscription of filterEngine.filterStorage.subscriptions()) {

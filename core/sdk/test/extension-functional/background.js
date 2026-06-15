@@ -465,7 +465,8 @@ startupInfo.remoteConfig = {
     countryCode: "US",
     hasPremium: false,
     installDate: new Date("2023-10-01T00:00:00Z").getTime()
-  })
+  }),
+  rulesIndex: []
 };
 
 startupInfo.telemetry = {

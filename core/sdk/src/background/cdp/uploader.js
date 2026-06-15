@@ -37,6 +37,7 @@ import {isOptedOut, getDomainStats, clearData, EVENT_SESSION_START,
         EVENT_WALL_DETECTION}
   from "./index.js";
 import {premiumStatusCallback} from "./callbacks.js";
+import {buildClientAttributes} from "../telemetry/client-attributes.js";
 import {importRSAPublicKey, encryptRSA, AES_LENGTH,
         createAESKey, generateAESNonce, AESkeyToBinary, encryptAES}
   from "./encryption.js";
@@ -137,6 +138,8 @@ async function buildPayload(publicKey, keyId, stats, utid) {
     const premiumStatus = await premiumStatusCallback();
     payload.premium_status = premiumStatus ? "premium" : "free";
   }
+
+  payload.client_attributes = await buildClientAttributes();
 
   // the very first run is expected not to have `encrypted_data` and `last_ping`
   if (state.lastPing) {

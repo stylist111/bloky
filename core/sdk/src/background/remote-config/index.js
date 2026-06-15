@@ -34,7 +34,8 @@ import {
   getRevisionId,
   getSyncStatus,
   remoteConfigState,
-  setFactsGetter
+  setFactsGetter,
+  setRulesIndex
 } from "./storage.js";
 import {hashString} from "../../all/hashing.js";
 
@@ -199,6 +200,8 @@ async function syncSubmodules(cacheFresh = false) {
  *    e.g. cohorts and experiments configurations
  * @param {Function} [getFacts] - Function that returns facts to be used
  *    for experiments and cohorts.
+ * @param {Array} [rulesIndex] - Host-specific rules index mapping subscription
+ *    URLs to static rule counts, used to compute staticRuleCount in MV3.
  * @param {number} [syncInterval=600000] - Interval in milliseconds between
  *    syncs
  * @param {number} [errorRetryDelay=3600000] - Interval in milliseconds between
@@ -210,6 +213,7 @@ async function syncSubmodules(cacheFresh = false) {
 export async function start({
   url,
   getFacts = null,
+  rulesIndex = null,
   syncInterval = 10 * MILLIS_IN_MINUTE,
   errorRetryDelay = MILLIS_IN_HOUR,
   disableAutosync = false
@@ -223,6 +227,10 @@ export async function start({
   // update the facts getter (used by both cohorts and experiments)
   if (typeof getFacts === "function") {
     setFactsGetter(getFacts);
+  }
+
+  if (rulesIndex) {
+    setRulesIndex(rulesIndex);
   }
 
   // initialize the server log config when starting the service worker

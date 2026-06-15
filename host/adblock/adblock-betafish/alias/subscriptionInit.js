@@ -211,6 +211,7 @@ const start = async function () {
     remoteConfig: {
       url: "https://easylist-downloads.adblockplus.org/ab-testing/experiments.json",
       getFacts,
+      rulesIndex,
     },
     account: {
       apiBaseUrl: "https://api.ua.eyeo.it/v1",

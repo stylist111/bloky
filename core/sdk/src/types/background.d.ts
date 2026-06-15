@@ -508,6 +508,34 @@ export interface Facts {
    * The timestamp where the user started the reverse trial for zero delay snippets.
    */
   reverseTrialStartDate?: number;
+  /**
+   * The number of active custom (user-added) filters.
+   */
+  customFiltersCount?: number;
+  /**
+   * The number of active dynamic declarative net request rules (MV3 only).
+   */
+  dynamicRuleCount?: number;
+  /**
+   * The number of enabled static declarative net request rulesets (MV3 only).
+   */
+  staticRuleCount?: number;
+  /**
+   * 12-character SHA-256 hash prefixes of active filter list subscription URLs.
+   */
+  filterLists?: string[];
+  /**
+   * The timestamp when the blockthrough tag was last seen in milliseconds.
+   */
+  lastBlockthroughTagDate?: number;
+  /**
+   * The timestamp when a bait request was last blocked in milliseconds.
+   */
+  lastBaitBlockedDate?: number;
+  /**
+   * Whether an ABP or AB co-install has been detected.
+   */
+  partnerExtensionCoinstalled?: boolean;
 }
 
 /**
@@ -618,6 +646,11 @@ export interface AddonInfo {
     * A function that returns the facts object to be used in the cohorts and experiments modules.
     */
     getFacts?: () => Promise<Facts>;
+    /**
+     * Host-specific rules index mapping subscription URLs to static rule
+     * counts, used to compute staticRuleCount in MV3.
+     */
+    rulesIndex?: Array<{ url: string; rule_count?: number | null }>;
   };
 
   /**
