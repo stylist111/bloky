@@ -20,6 +20,7 @@ describe("syncFilters", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.mocked(ewe.filters.validate).mockImplementation((text: string) =>
       text === invalidFilter
         ? { type: "filter_invalid", option: null, reason: "" }
@@ -33,7 +34,6 @@ describe("syncFilters", () => {
     const staleFilter = "||stale.com/ads/*";
     const keepFilter = "||keep.com/ads/*";
     const newFilter = "||new.com/ads/*";
-    const duplicateFilter = keepFilter;
 
     vi.mocked(ewe.filters.getUserFilters).mockResolvedValue([
       {
@@ -46,7 +46,7 @@ describe("syncFilters", () => {
       },
     ] as unknown as FilterWithMetadata[]);
     vi.mocked(ewe.experiments.getFlags).mockResolvedValue({
-      "test:filters": [keepFilter, newFilter, invalidFilter, duplicateFilter],
+      "test:filters": [keepFilter, newFilter, invalidFilter],
     });
 
     await syncFilters();
@@ -56,5 +56,42 @@ describe("syncFilters", () => {
       [newFilter],
       expect.objectContaining({ origin: "experiment", flagId: "test:filters" }),
     );
+  });
+
+  it("warns when the experiment config contains duplicate filters", async () => {
+    const filter = "||example.com/ads/*";
+
+    vi.mocked(ewe.experiments.getFlags).mockResolvedValue({
+      "test:filters": [filter, filter],
+    });
+
+    await syncFilters();
+
+    expect(console.warn).toHaveBeenCalledWith(
+      expect.stringContaining(`Duplicate filter "${filter}"`),
+    );
+    expect(ewe.filters.add).toHaveBeenCalledWith(
+      [filter],
+      expect.objectContaining({ flagId: "test:filters" }),
+    );
+  });
+
+  it("does not warn when filters already exist in EWE on re-sync", async () => {
+    const filter = "||example.com/ads/*";
+
+    vi.mocked(ewe.filters.getUserFilters).mockResolvedValue([
+      {
+        text: filter,
+        metadata: { origin: "experiment", flagId: "test:filters" },
+      },
+    ] as unknown as FilterWithMetadata[]);
+    vi.mocked(ewe.experiments.getFlags).mockResolvedValue({
+      "test:filters": [filter],
+    });
+
+    await syncFilters();
+
+    expect(console.warn).not.toHaveBeenCalled();
+    expect(ewe.filters.add).not.toHaveBeenCalled();
   });
 });

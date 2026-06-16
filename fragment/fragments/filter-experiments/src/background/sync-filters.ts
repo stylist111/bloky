@@ -58,7 +58,20 @@ async function getExperimentFiltersByFlag(): Promise<Map<string, string[]>> {
     }
 
     if (isStringArray(value) && value.length > 0) {
-      filtersByFlag.set(flagId, value);
+      const filtersSet = new Set<string>();
+      const uniqueFilters: string[] = [];
+      for (const filter of value) {
+        if (filtersSet.has(filter)) {
+          console.warn(
+            `Duplicate filter "${filter}" in experiment config for flag "${flagId}"`,
+          );
+          continue;
+        }
+
+        filtersSet.add(filter);
+        uniqueFilters.push(filter);
+      }
+      filtersByFlag.set(flagId, uniqueFilters);
     }
   }
 
@@ -91,7 +104,6 @@ export async function syncFilters(): Promise<void> {
     const filtersToAdd = [];
     for (const filter of desiredFilters) {
       if (currentFilters.has(filter)) {
-        console.warn(`Skipping duplicated experiment filter "${filter}"`);
         continue;
       }
       const error = ewe.filters.validate(filter);
