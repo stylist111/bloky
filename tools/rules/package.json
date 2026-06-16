@@ -23,7 +23,7 @@
     "test:end-to-end": "vitest run --root test/end-to-end --reporter=verbose"
   },
   "dependencies": {
-    "@eyeo/filterlists": "1.0.84"
+    "@eyeo/filterlists": "1.0.85"
   },
   "peerDependencies": {
     "@eyeo/webext-ad-filtering-solution": "*",
