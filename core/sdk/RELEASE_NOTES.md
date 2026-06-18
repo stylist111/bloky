@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.1.0 - 2026-06-18
+
 - Updated snippets to 2.11.0
 - Snippets whose names start with `log-if-` are now exempt from the
   domain restriction in `ContentFilter.fromText`, allowing a single
