@@ -5,7 +5,7 @@ set -eu
 APP_NAME=testSafariApp
 BUNDLE_ID=org.adblockplus.testSafariApp
 IOS_DEVICE_NAME="iPhone 17 Pro"
-IOS_PLATFORM_VERSION="26.4"
+IOS_PLATFORM_VERSION="26.3"
 
 pushd $(dirname "$0")
 DIRNAME_PATH=$(pwd)

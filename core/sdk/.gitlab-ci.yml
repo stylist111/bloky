@@ -64,10 +64,11 @@ workflow:
     DOCKER_OPTIONS: --shm-size=2g -t
 
 .macos-image:
-  # https://docs.gitlab.com/ci/runners/hosted_runners/macos/
   image: macos-26-xcode-26
   tags:
-    - saas-macos-large-m2pro
+    - eyeo-macos-tart
+  before_script:
+    - nvm use 24.8.0
 
 stages:
   - build
@@ -97,6 +98,7 @@ build:safari:
   needs:
     - !reference [.needs-parent-build, needs]
   before_script:
+    - !reference [.macos-image, before_script]
     - npm install
   script:
     - npm run -w=@eyeo/webext-ad-filtering-solution build:safari
@@ -459,6 +461,7 @@ int:safari:
   stage: integration
   needs: ["build:safari"]
   before_script:
+    - !reference [.macos-image, before_script]
     # /etc/hosts edit based on https://gitlab.com/eyeo/network-filtering/nasapp-testing/-/blob/main/scripts/setup-host.sh
     - asdf install java openjdk-22
     - asdf global java openjdk-22
