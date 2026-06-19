@@ -58,7 +58,7 @@ describe("Element hiding", function() {
                       {specificOnly = false, expectedExceptions = []} = {}) {
     let normalizedExpectedSelectors = normalizeSelectors(expectedSelectors);
 
-    let {code, selectors, exceptions} =
+    let {code, selectors, exceptions, inlineCssRules} =
         elemHide.getStyleSheet(domain, specificOnly, true);
 
     assert.deepEqual(normalizeSelectors(selectors), normalizedExpectedSelectors);
@@ -68,7 +68,8 @@ describe("Element hiding", function() {
       elemHide.getStyleSheet(domain, specificOnly, false), {
         code,
         selectors,
-        exceptions: null
+        exceptions: null,
+        inlineCssRules
       }
     );
 
@@ -330,13 +331,119 @@ describe("Element hiding", function() {
     assert.equal(elemHide._filtersByDomain.size, 0);
   });
 
+  describe("Inline CSS filters", function() {
+    it("Domain-specific filter appears in inlineCssRules for its domain only", function() {
+      addFilter("foo.com###banner {margin:0}");
+
+      let result = elemHide.getStyleSheet("foo.com", false, false);
+      assert.deepEqual(result.inlineCssRules, [
+        {selector: "#banner", css: {margin: "0"}}
+      ]);
+      assert.deepEqual(result.selectors, []);
+      assert.equal(result.code, "#banner {margin: 0 !important;}\n");
+
+      let result2 = elemHide.getStyleSheet("bar.com", false, false);
+      assert.deepEqual(result2.inlineCssRules, []);
+      assert.equal(result2.code, "");
+    });
+
+    it("Generic filter applies to all domains and is excluded by specificOnly", function() {
+      addFilter("###generic {margin:0}");
+
+      let result = elemHide.getStyleSheet("foo.com", false, false);
+      assert.deepEqual(result.inlineCssRules, [
+        {selector: "#generic", css: {margin: "0"}}
+      ]);
+      assert.equal(result.code, "#generic {margin: 0 !important;}\n");
+
+      let resultSpecific = elemHide.getStyleSheet("foo.com", true, false);
+      assert.deepEqual(resultSpecific.inlineCssRules, []);
+      assert.equal(resultSpecific.code, "");
+    });
+
+    it("Multiple CSS properties generate a single rule with all declarations", function() {
+      addFilter("foo.com###banner {margin:0;background:#00ff00}");
+
+      let result = elemHide.getStyleSheet("foo.com", false, false);
+      assert.deepEqual(result.inlineCssRules, [{
+        selector: "#banner",
+        css: {margin: "0", background: "#00ff00"}
+      }]);
+      assert.equal(
+        result.code,
+        "#banner {margin: 0 !important; background: #00ff00 !important;}\n"
+      );
+    });
+
+    it("Unconditional rules are not duplicated when a known domain suffix exists", function() {
+      addFilter("##.unconditional");
+      addFilter("###banner {margin:0}");
+      addFilter("foo.com##.specific");
+
+      let result = elemHide.getStyleSheet("foo.com", false, false);
+      assert.equal(
+        result.code,
+        ".unconditional {display: none !important;}\n" +
+        "#banner {margin: 0 !important;}\n" +
+        ".specific {display: none !important;}\n"
+      );
+    });
+
+    it("Exception cancels a domain-specific inline CSS filter on its domain", function() {
+      addFilter("foo.com###banner {margin:0}");
+      addException("foo.com#@##banner");
+
+      let result = elemHide.getStyleSheet("foo.com", false, true);
+      assert.deepEqual(result.inlineCssRules, []);
+      assert.equal(result.code, "");
+      assert.deepEqual(result.exceptions.map(({text}) => text), [
+        "foo.com#@##banner"
+      ]);
+    });
+
+    it("Exception cancels a generic inline CSS filter on one domain but not others", function() {
+      addFilter("###banner {margin:0}");
+      addException("foo.com#@##banner");
+
+      let result = elemHide.getStyleSheet("foo.com", false, true);
+      assert.deepEqual(result.inlineCssRules, []);
+      assert.equal(result.code, "");
+      assert.deepEqual(result.exceptions.map(({text}) => text), [
+        "foo.com#@##banner"
+      ]);
+
+      let result2 = elemHide.getStyleSheet("bar.com", false, true);
+      assert.deepEqual(result2.inlineCssRules, [
+        {selector: "#banner", css: {margin: "0"}}
+      ]);
+      assert.equal(result2.code, "#banner {margin: 0 !important;}\n");
+      assert.deepEqual(result2.exceptions.map(({text}) => text), []);
+    });
+
+    it("Regular and inline CSS filters coexist without overlap", function() {
+      addFilter("foo.com##.hide-me");
+      addFilter("foo.com###banner {margin:0}");
+
+      let result = elemHide.getStyleSheet("foo.com", false, false);
+      assert.deepEqual(result.selectors, [".hide-me"]);
+      assert.deepEqual(result.inlineCssRules, [
+        {selector: "#banner", css: {margin: "0"}}
+      ]);
+      assert.equal(
+        result.code,
+        ".hide-me {display: none !important;}\n" +
+        "#banner {margin: 0 !important;}\n"
+      );
+    });
+  });
+
   describe("Create style sheet", function() {
     it("Basic creation", function() {
       assert.equal(
         createStyleSheet([
           "html", "#foo", ".bar", "#foo .bar", "#foo > .bar",
           "#foo[data-bar='bar']"
-        ]),
+        ], []),
         "html {display: none !important;}\n" +
           "#foo {display: none !important;}\n" +
           ".bar {display: none !important;}\n" +
@@ -351,14 +458,14 @@ describe("Element hiding", function() {
       let selectorCount = 50000;
       let selectors = new Array(selectorCount).fill().map((element, index) => ".s" + index);
 
-      assert.equal((createStyleSheet(selectors).match(/\n/g) || []).length, selectorCount, "Style sheet should have a separate rule for each selector");
+      assert.equal((createStyleSheet(selectors, []).match(/\n/g) || []).length, selectorCount, "Style sheet should have a separate rule for each selector");
     });
 
     it("Escaping", function() {
       assert.equal(
         createStyleSheet([
           "#foo[data-bar='{{foo: 1}}']"
-        ]),
+        ], []),
         "#foo[data-bar='\\7b \\7b foo: 1\\7d \\7d '] {display: none !important;}\n",
         "Braces should be escaped"
       );
@@ -369,7 +476,7 @@ describe("Element hiding", function() {
         createStyleSheet([
           "html", "#foo", ".bar", "#foo .bar", "#foo > .bar",
           "#foo[data-bar='bar']"
-        ], "{outline: 2px solid red;}"),
+        ], [], "{outline: 2px solid red;}"),
         "html {outline: 2px solid red;}\n" +
           "#foo {outline: 2px solid red;}\n" +
           ".bar {outline: 2px solid red;}\n" +

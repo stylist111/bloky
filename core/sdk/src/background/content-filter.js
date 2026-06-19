@@ -25,7 +25,7 @@ import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
 import {tracingEnabled} from "./diagnostics.js";
 import {debugOptions, trace, debug, warn} from "./debugging.js";
-import {arraysDiff} from "./set-operations.js";
+import {arraysDiff, objectArraysDiff} from "./set-operations.js";
 import {shouldNotifyActive} from "./cdp/index.js";
 import {patchSender as patchHistoryApi} from "./safari-history.js";
 import {isSafari} from "./info.js";
@@ -117,8 +117,21 @@ function calculateSelectorsDiff(previousStylesheet, styleSheet) {
   styleSheet.removedSelectors = diff.removed;
   styleSheet.addedSelectors = diff.added;
 
-  styleSheet.removedCode = createStyleSheet(styleSheet.removedSelectors);
-  styleSheet.addedCode = createStyleSheet(styleSheet.addedSelectors);
+  let inlineDiff = objectArraysDiff(
+    previousStylesheet.inlineCssRules,
+    styleSheet.inlineCssRules
+  );
+  styleSheet.removedInlineCssRules = inlineDiff.removed;
+  styleSheet.addedInlineCssRules = inlineDiff.added;
+
+  styleSheet.removedCode = createStyleSheet(
+    styleSheet.removedSelectors,
+    styleSheet.removedInlineCssRules
+  );
+  styleSheet.addedCode = createStyleSheet(
+    styleSheet.addedSelectors,
+    styleSheet.addedInlineCssRules
+  );
 }
 
 function generateStylesheet(tabId, previousFrame, frame) {
@@ -136,7 +149,8 @@ function generateStylesheet(tabId, previousFrame, frame) {
   }
   else {
     previousStylesheet = {
-      selectors: []
+      selectors: [],
+      inlineCssRules: []
     };
   }
 
@@ -150,7 +164,8 @@ function generateStylesheet(tabId, previousFrame, frame) {
   }
   else {
     styleSheet = {
-      selectors: []
+      selectors: [],
+      inlineCssRules: []
     };
   }
 
@@ -164,11 +179,20 @@ function generateStylesheet(tabId, previousFrame, frame) {
     declarationBlock += "}";
 
     styleSheet.code = createStyleSheet(
-      styleSheet.selectors, declarationBlock);
+      styleSheet.selectors,
+      styleSheet.inlineCssRules,
+      declarationBlock
+    );
     styleSheet.removedCode = createStyleSheet(
-      styleSheet.removedSelectors, declarationBlock);
+      styleSheet.removedSelectors,
+      styleSheet.removedInlineCssRules,
+      declarationBlock
+    );
     styleSheet.addedCode = createStyleSheet(
-      styleSheet.addedSelectors, declarationBlock);
+      styleSheet.addedSelectors,
+      styleSheet.addedInlineCssRules,
+      declarationBlock
+    );
   }
 
   return styleSheet;
@@ -215,6 +239,9 @@ export async function applyContentFilters(
         tracedSelectors = [];
         for (let selector of styleSheet.addedSelectors) {
           tracedSelectors.push([selector, null]);
+        }
+        for (let rule of styleSheet.addedInlineCssRules) {
+          tracedSelectors.push([rule.selector, null]);
         }
         for (let exception of styleSheet.exceptions) {
           tracedSelectors.push([exception.selector, exception.text]);

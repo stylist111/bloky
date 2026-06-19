@@ -133,8 +133,10 @@ export async function expectElemHideHidden({elemId = "elem-hide",
   );
 }
 
-export async function expectElementToHaveInlineStyle(elemId, expectedStyle) {
-  const tabId = await new Page("element-hiding.html").loaded;
+export async function expectElementToHaveInlineStyle(url,
+                                                     elemId,
+                                                     expectedStyle) {
+  const tabId = await new Page(url).loaded;
   await wait(
     async() => {
       const inlineStyle = await getInlineElementStyle(tabId, elemId);
@@ -142,6 +144,22 @@ export async function expectElementToHaveInlineStyle(elemId, expectedStyle) {
     },
     1500,
     `Inline style for element with ID ${elemId} doesn't match ${expectedStyle}.`
+  );
+}
+
+export async function expectElementToHaveComputedStyle(
+  url, elemId, propertyName, expectedValue) {
+  let tabId = await new Page(url).loaded;
+  await wait(
+    async() => {
+      const style = await executeScript(tabId, (id, property) => {
+        let elem = document.getElementById(id);
+        return window.getComputedStyle(elem)[property];
+      }, [elemId, propertyName]);
+      return style === expectedValue;
+    },
+    1500,
+    `Computed style for element with ID ${elemId} doesn't match ${propertyName}: ${expectedValue}.`
   );
 }
 

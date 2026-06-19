@@ -46,6 +46,51 @@ export function arraysDiff(from, to) {
 }
 
 /**
+ * Recursively rebuilds an object (or array) with all object keys sorted, so
+ * that JSON.stringify produces a stable string regardless of insertion order.
+ *
+ * @param {Object|Array} val
+ * @returns {Object|Array} the same object, but with keys sorted
+ */
+function deepSortKeys(val) {
+  if (Array.isArray(val)) {
+    return val.map(deepSortKeys);
+  }
+  if (val !== null && typeof val === "object") {
+    return Object.fromEntries(
+      Object.keys(val).sort().map(k => [k, deepSortKeys(val[k])])
+    );
+  }
+  return val;
+}
+
+/**
+ * Calculate the difference between two arrays of objects.
+ * Two objects are considered equal when they have the same keys and values at
+ * all levels, regardless of key insertion order.
+ *
+ * Duplicate objects in either array are ignored when calcualting the diffs.
+ *
+ * @param {Object[]} from The original array
+ * @param {Object[]} to The eventual array
+ * @returns {FilterDiffs}
+ */
+export function objectArraysDiff(from, to) {
+  const serialize = obj => JSON.stringify(deepSortKeys(obj));
+
+  const fromKeys = from.map(serialize);
+  const toKeys = to.map(serialize);
+
+  const fromSet = new Set(fromKeys);
+  const toSet = new Set(toKeys);
+
+  const removed = from.filter((_, i) => !toSet.has(fromKeys[i]));
+  const added = to.filter((_, i) => !fromSet.has(toKeys[i]));
+
+  return {added, removed};
+}
+
+/**
  * Calculate the filters update difference by removing the base
  * from the update.
  *

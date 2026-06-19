@@ -19,8 +19,13 @@
 /* eslint-disable array-bracket-spacing */
 
 import expect from "expect";
-import {arraysDiff, base64Encode, filtersUpdateDiff, mergeObjects}
-  from "../../../src/background/set-operations.js";
+import {
+  arraysDiff,
+  base64Encode,
+  filtersUpdateDiff,
+  mergeObjects,
+  objectArraysDiff
+} from "../../../src/background/set-operations.js";
 
 describe("Arrays diff", function() {
   it("returns empty", function() {
@@ -241,6 +246,120 @@ describe("Objects merging", function() {
       4: {
         5: [message2]
       }
+    });
+  });
+});
+
+describe("Object arrays diff", function() {
+  it("returns empty", function() {
+    expect(objectArraysDiff([], [])).toEqual({added: [], removed: []});
+  });
+
+  it("returns removed", function() {
+    const from = [{a: "1"}, {a: "2"}, {a: "3"}];
+    expect(objectArraysDiff(from, [])).toEqual({
+      added: [],
+      removed: [{a: "1"}, {a: "2"}, {a: "3"}]
+    });
+  });
+
+  it("returns added", function() {
+    const to = [{a: "1"}, {a: "2"}, {a: "3"}];
+    expect(objectArraysDiff([], to)).toEqual({
+      added: [{a: "1"}, {a: "2"}, {a: "3"}],
+      removed: []
+    });
+  });
+
+  it("returns added and removed", function() {
+    const from = [{a: "1"}, {a: "2"}, {a: "4"}, {a: "7"}];
+    const to =   [           {a: "2"}, {a: "4"}, {a: "5"}];
+    expect(objectArraysDiff(from, to)).toEqual({
+      added: [{a: "5"}],
+      removed: [{a: "1"}, {a: "7"}]
+    });
+  });
+
+  it("returns no difference", function() {
+    const noDiff = {added: [], removed: []};
+    expect(objectArraysDiff([{a: "1"}], [{a: "1"}])).toEqual(noDiff);
+    expect(objectArraysDiff(
+      [{a: "1", b: "2"}],
+      [{a: "1", b: "2"}]
+    )).toEqual(noDiff);
+  });
+
+  it("treats objects with different values as different", function() {
+    expect(objectArraysDiff([{a: "1"}], [{a: "2"}])).toEqual({
+      added: [{a: "2"}],
+      removed: [{a: "1"}]
+    });
+    expect(objectArraysDiff([{a: "1", b: "x"}], [{a: "1", b: "y"}])).toEqual({
+      added: [{a: "1", b: "y"}],
+      removed: [{a: "1", b: "x"}]
+    });
+  });
+
+  it("treats objects with different keys as different", function() {
+    expect(objectArraysDiff([{a: "1"}], [{b: "1"}])).toEqual({
+      added: [{b: "1"}],
+      removed: [{a: "1"}]
+    });
+  });
+
+  it("treats objects as equal regardless of key insertion order", function() {
+    const from = [{a: "1", b: "2"}];
+    const to =   [{b: "2", a: "1"}];
+    expect(objectArraysDiff(from, to)).toEqual({added: [], removed: []});
+  });
+
+  it("treats nested objects as equal regardless of key insertion order", function() {
+    const from = [{selector: "#a", css: {b: "2", a: "1"}}];
+    const to   = [{selector: "#a", css: {a: "1", b: "2"}}];
+    expect(objectArraysDiff(from, to)).toEqual({added: [], removed: []});
+  });
+
+  it("treats nested objects with different values as different", function() {
+    const from = [{selector: "#a", css: {margin: "0"}}];
+    const to   = [{selector: "#a", css: {margin: "5px"}}];
+    expect(objectArraysDiff(from, to)).toEqual({
+      added:   [{selector: "#a", css: {margin: "5px"}}],
+      removed: [{selector: "#a", css: {margin: "0"}}]
+    });
+  });
+
+  it("correctly matches objects across arrays when insertion order varies throughout", function() {
+    const from = [
+      {b: "2", a: "1"},
+      {a: "x", b: "y"}
+    ];
+    const to = [
+      {a: "1", b: "2"},  // same logical content as from[0], different insertion order
+      {b: "z", a: "w"}
+    ];
+    expect(objectArraysDiff(from, to)).toEqual({
+      added:   [{b: "z", a: "w"}],
+      removed: [{a: "x", b: "y"}]
+    });
+  });
+
+  it("ignores duplicates", function() {
+    expect(objectArraysDiff([{a: "1"}], [{a: "1"}, {a: "1"}])).toEqual({
+      added: [],
+      removed: []
+    });
+    expect(objectArraysDiff([{a: "1"}, {a: "1"}], [{a: "1"}])).toEqual({
+      added: [],
+      removed: []
+    });
+  });
+
+  it("handles objects with multiple properties", function() {
+    const from = [{type: "url", value: "example.com"}, {type: "css", value: "div"}];
+    const to =   [{type: "url", value: "example.com"}, {type: "css", value: "span"}];
+    expect(objectArraysDiff(from, to)).toEqual({
+      added: [{type: "css", value: "span"}],
+      removed: [{type: "css", value: "div"}]
     });
   });
 });

@@ -73,7 +73,7 @@ async function handleMessage(message, sender) {
       logHiddenElements(message.selectors, message.filters, sender);
       break;
     case "ewe:inject-css":
-      let styleSheet = createStyleSheet([message.selector]);
+      let styleSheet = createStyleSheet([message.selector], []);
       injectCSS(sender.tab.id, sender.frameId, styleSheet);
       break;
     case "ewe:allowlist-page":

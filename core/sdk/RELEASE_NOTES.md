@@ -1,5 +1,10 @@
 # Unreleased
 
+## General
+
+- Inline CSS filters are now applied using CSS stylesheets where possible
+  instead of element hiding emulation.
+
 # 4.1.0 - 2026-06-18
 
 - Updated snippets to 2.11.0

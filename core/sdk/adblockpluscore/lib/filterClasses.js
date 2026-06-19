@@ -986,8 +986,6 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
     }
   }
 
-
-
   if (type == "?") {
     if (!restrictedByDomain) {
       return new InvalidFilter(text, "filter_elemhideemulation_nodomain");
@@ -1005,18 +1003,14 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
     return new ElemHideException(text, domains, selector);
   }
 
-  if (remove || css) {
-    // Remove is only implemented for elemhide emulation filters, so if we want
-    // it to work on an elemhide filter then it needs to instantiate an elemhide
-    // emulation filter instead.
-    //
-    // Inline CSS is also currently only implemented for
-    // ElemHideEmulationFilter, but should be implemented for normal
-    // ElemHideFilter later.
-    return new ElemHideEmulationFilter(text, domains, selector, remove, css);
+  // Remove is only implemented for elemhide emulation filters, so if we want
+  // it to work on an elemhide filter then it needs to instantiate an elemhide
+  // emulation filter instead.
+  if (remove) {
+    return new ElemHideEmulationFilter(text, domains, selector, remove, null);
   }
 
-  return new ElemHideFilter(text, domains, selector);
+  return new ElemHideFilter(text, domains, selector, css);
 };
 
 function extractCSSProperties(propertiesList) {
@@ -1078,8 +1072,30 @@ let ElemHideFilter =
  * @extends module:filterClasses.ElemHideBase
  */
 exports.ElemHideFilter = class ElemHideFilter extends ElemHideBase {
+  /**
+   * @param {string} text see {@link module:filterClasses.Filter Filter()}
+   * @param {string} domains see
+   *   {@link module:filterClasses.ElemHideBase ElemHideBase()}
+   * @param {string} selector see
+   *   {@link module:filterClasses.ElemHideBase ElemHideBase()}
+   * @param {?Object} css Key-Value pairs of Inline CSS properties
+   *   to be applied to the element
+   * @constructor
+   * @extends module:filterClasses.ElemHideBase
+   *
+   * @private
+   */
+  constructor(text, domains, selector, css = null) {
+    super(text, domains, selector);
+    this._css = css;
+  }
+
   get type() {
     return "elemhide";
+  }
+
+  get css() {
+    return this._css;
   }
 };
 

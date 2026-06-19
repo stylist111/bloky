@@ -54,6 +54,19 @@ class ElemHide {
     this._filtersByDomain = new FiltersByDomain();
 
     /**
+     * Lookup table, active flag, by filter by domain, but only for inline CSS
+     * filters.
+     *
+     * (Only contains filters that aren't unconditionally matched for all
+     * domains.)
+     *
+     * @type {FiltersByDomain}
+     *
+     * @private
+     */
+    this._cssFiltersByDomain = new FiltersByDomain();
+
+    /**
      * Lookup table, filter by selector.
      *
      * (Only used for selectors that are unconditionally matched for all
@@ -66,13 +79,29 @@ class ElemHide {
     this._filterBySelector = new Map();
 
     /**
-     * This array caches the keys of
+     * Lookup table, filter by selector, but only for inline CSS filters.
+     *
+     * (Only used for selectors that are unconditionally matched for all
+     * domains.)
+     *
+     * @type {Map.<string, Filter>}
+     *
+     * @private
+     */
+    this._cssFilterBySelector = new Map();
+
+    /**
+     * Caches the unconditional selectors and inline CSS rules — those that
+     * apply on all domains — derived from
      * `{@link module:elemHide~ElemHide#_filterBySelector _filterBySelector}`
-     * (selectors which unconditionally apply on all domains).
+     * and
+     * `{@link module:elemHide~ElemHide#_cssFilterBySelector
+     *          _cssFilterBySelector}`.
      *
      * It will be `null` if the cache needs to be rebuilt.
      *
-     * @type {?Array.<string>}
+     * @type {?{selectors: Array.<string>,
+     *          inlineCssRules: Array.<{selector: string, css: Object}>}}
      *
      * @private
      */
@@ -136,7 +165,9 @@ class ElemHide {
     this._commonStyleSheet = null;
 
     for (let collection of [this._filtersByDomain,
+                            this._cssFiltersByDomain,
                             this._filterBySelector,
+                            this._cssFilterBySelector,
                             this._filters,
                             this._exceptionDomains,
                             this._exceptionDomainsWithWildcards]) {
@@ -158,9 +189,22 @@ class ElemHide {
 
     this._commonStyleSheet = null;
 
-    let {domains, selector} = filter;
+    let {domains, selector, css} = filter;
 
-    if (!(domains || this.elemHideExceptions.hasExceptions(selector))) {
+    const domainSpecific =
+      domains || this.elemHideExceptions.hasExceptions(selector);
+
+    if (css != null) {
+      if (!domainSpecific) {
+        this._cssFilterBySelector.set(selector, filter);
+        this._unconditionalSelectors = null;
+        this._defaultStyleSheet = null;
+      }
+      else {
+        this._cssFiltersByDomain.add(filter, domains);
+      }
+    }
+    else if (!domainSpecific) {
       // The new filter's selector is unconditionally applied to all domains
       this._filterBySelector.set(selector, filter);
       this._unconditionalSelectors = null;
@@ -185,10 +229,22 @@ class ElemHide {
 
     this._commonStyleSheet = null;
 
-    let {selector} = filter;
+    let {selector, css} = filter;
 
-    // Unconditially applied element hiding filters
-    if (this._filterBySelector.get(selector) == filter) {
+    if (css != null) {
+      // Unconditionally applied element hiding filters with inline CSS
+      if (this._cssFilterBySelector.get(selector) == filter) {
+        this._cssFilterBySelector.delete(selector);
+        this._unconditionalSelectors = null;
+        this._defaultStyleSheet = null;
+      }
+      // Conditionally applied element hiding filters with inline CSS
+      else {
+        this._cssFiltersByDomain.remove(filter);
+      }
+    }
+    // Unconditionally applied element hiding filters
+    else if (this._filterBySelector.get(selector) == filter) {
       this._filterBySelector.delete(selector);
       this._unconditionalSelectors = null;
       this._defaultStyleSheet = null;
@@ -215,6 +271,10 @@ class ElemHide {
    * @property {string} code CSS code.
    * @property {?Array.<string>} selectors List of selectors.
    * @property {?Array.<string>} exceptions List of exceptions.
+   * @property {?Array.<Object>} inlineCssRules List of selectors with inline
+   *   CSS bodies.
+   * @property {string} inlineCssRules.selector selector
+   * @property {Object} inlineCssRules.css CSS body
    */
 
   /**
@@ -235,39 +295,51 @@ class ElemHide {
     let code = null;
     let selectors = null;
     let exceptions = null;
+    let inlineCssRules = [];
 
     if (specificOnly) {
       if (includeExceptions) {
-        let selectorsAndExceptions =
-          this._getConditionalSelectorsWithExceptions(domain, true);
-
-        selectors = selectorsAndExceptions.selectors;
-        exceptions = selectorsAndExceptions.exceptions;
+        ({selectors, exceptions, inlineCssRules} =
+          this._getConditionalSelectorsWithExceptions(domain, true));
       }
       else {
-        selectors = this._getConditionalSelectors(domain, true);
+        ({selectors, inlineCssRules} =
+          this._getConditionalSelectors(domain, true));
       }
 
-      code = createStyleSheet(selectors);
+      code = createStyleSheet(selectors, inlineCssRules);
     }
     else {
       let knownSuffix = this._getKnownSuffix(domain);
+      let conditionalSelectors = null;
+      let conditionalCssRules = null;
+      if (includeExceptions) {
+        ({selectors: conditionalSelectors, exceptions,
+          inlineCssRules: conditionalCssRules} =
+          this._getConditionalSelectorsWithExceptions(knownSuffix, false));
+      }
+      else {
+        ({selectors: conditionalSelectors,
+          inlineCssRules: conditionalCssRules} =
+          this._getConditionalSelectors(knownSuffix, false));
+      }
+      let {selectors: unconditionalSelectors,
+           inlineCssRules: unconditionalCssRules} =
+        this._getUnconditionalSelectors();
 
-      let selectorsAndExceptions =
-        this._getConditionalSelectorsWithExceptions(knownSuffix, false);
-
-      selectors = selectorsAndExceptions.selectors;
-      exceptions = selectorsAndExceptions.exceptions;
       code = knownSuffix == "" ? this._getCommonStyleSheet() :
-        this._getDefaultStyleSheet() + createStyleSheet(selectors);
+        this._getDefaultStyleSheet() +
+        createStyleSheet(conditionalSelectors, conditionalCssRules);
 
-      selectors = this._getUnconditionalSelectors().concat(selectors);
+      selectors = unconditionalSelectors.concat(conditionalSelectors);
+      inlineCssRules = unconditionalCssRules.concat(conditionalCssRules);
     }
 
     return {
       code,
       selectors,
-      exceptions: includeExceptions ? exceptions : null
+      exceptions,
+      inlineCssRules
     };
   }
 
@@ -285,6 +357,7 @@ class ElemHide {
   _getKnownSuffix(domain) {
     for (let suffix of domainSuffixes(domain)) {
       if (this._filtersByDomain.has(suffix) ||
+          this._cssFiltersByDomain.has(suffix) ||
           this._exceptionDomains.has(suffix)) {
         return suffix;
       }
@@ -300,34 +373,51 @@ class ElemHide {
   }
 
   /**
-   * Returns a list of selectors that apply on each website unconditionally.
-   * @returns {string[]}
+   * Returns selectors and inline CSS rules that apply on each website
+   * unconditionally.
+   *
+   * @returns {{selectors: Array.<string>,
+   *            inlineCssRules: Array.<{selector: string, css: Object}>}}
    * @private
    */
   _getUnconditionalSelectors() {
     if (!this._unconditionalSelectors) {
-      this._unconditionalSelectors = [...this._filterBySelector.keys()];
+      let inlineCssRules = [];
+      for (let filter of this._cssFilterBySelector.values()) {
+        inlineCssRules.push({
+          selector: filter.selector,
+          css: filter.css
+        });
+      }
+      this._unconditionalSelectors = {
+        selectors: [...this._filterBySelector.keys()],
+        inlineCssRules
+      };
     }
 
     return this._unconditionalSelectors;
   }
 
   /**
-   * Returns the list of selectors that apply on a given domain from the subset
-   * of filters that do not apply unconditionally on all domains.
+   * Returns the list of selectors and inline CSS rules that apply on a given
+   * domain from the subset of filters that do not apply unconditionally on all
+   * domains.
    *
    * @param {string} domain The domain.
    * @param {boolean} specificOnly Whether selectors from generic filters should
    *   be included.
    *
-   * @returns {Array.<string>} The list of selectors.
+   * @returns {{selectors: Array.<string>,
+   *            inlineCssRules: Array.<{selector: string, css: Object}>}}
    *
    * @private
    */
   _getConditionalSelectors(domain, specificOnly) {
     let selectors = [];
+    let inlineCssRules = [];
 
     let excluded = new Set();
+    let cssExcluded = new Set();
 
     for (let currentDomain of domainSuffixes(domain, !specificOnly)) {
       let map = this._filtersByDomain.get(currentDomain);
@@ -346,31 +436,55 @@ class ElemHide {
           }
         }
       }
+
+      let cssMap = this._cssFiltersByDomain.get(currentDomain);
+      if (cssMap) {
+        for (let [filter, include] of (cssMap instanceof FilterMap ?
+            cssMap.entries() : [[cssMap, true]])) {
+          if (!include) {
+            cssExcluded.add(filter);
+          }
+          else {
+            let {selector, css} = filter;
+            if ((cssExcluded.size == 0 || !cssExcluded.has(filter)) &&
+                !this.elemHideExceptions.getException(selector, domain)) {
+              inlineCssRules.push({
+                selector,
+                css
+              });
+            }
+          }
+        }
+      }
     }
 
-    return selectors;
+    return {selectors, inlineCssRules};
   }
 
   /**
-   * Returns the list of selectors and the list of exceptions that apply on a
-   * given domain from the subset of filters that do not apply unconditionally
-   * on all domains.
+   * Returns the list of selectors, exceptions, and inline CSS rules that apply
+   * on a given domain from the subset of filters that do not apply
+   * unconditionally on all domains.
    *
    * @param {string} domain The domain.
    * @param {boolean} specificOnly Whether selectors from generic filters should
    *   be included.
    *
    * @returns {{selectors: Array.<string>,
-   *            exceptions: Array.<module:filterClasses.ElemHideException>}}
-   *   An object containing the lists of selectors and exceptions.
+   *            exceptions: Array.<module:filterClasses.ElemHideException>,
+   *            inlineCssRules: Array.<{selector: string, css: Object}>}}
+   *  An object containing all relevant selectors and exceptions, including
+   *  inline CSS rules.
    *
    * @private
    */
   _getConditionalSelectorsWithExceptions(domain, specificOnly) {
     let selectors = [];
     let exceptions = [];
+    let inlineCssRules = [];
 
     let excluded = new Set();
+    let cssExcluded = new Set();
 
     for (let currentDomain of domainSuffixes(domain, !specificOnly)) {
       let map = this._filtersByDomain.get(currentDomain);
@@ -394,9 +508,34 @@ class ElemHide {
           }
         }
       }
+
+      let cssMap = this._cssFiltersByDomain.get(currentDomain);
+      if (cssMap) {
+        for (let [filter, include] of (cssMap instanceof FilterMap ?
+            cssMap.entries() : [[cssMap, true]])) {
+          if (!include) {
+            cssExcluded.add(filter);
+          }
+          else if (cssExcluded.size == 0 || !cssExcluded.has(filter)) {
+            let {selector, css} = filter;
+            let exception =
+              this.elemHideExceptions.getException(selector, domain);
+
+            if (exception) {
+              exceptions.push(exception);
+            }
+            else {
+              inlineCssRules.push({
+                selector,
+                css
+              });
+            }
+          }
+        }
+      }
     }
 
-    return {selectors, exceptions};
+    return {selectors, exceptions, inlineCssRules};
   }
 
   /**
@@ -406,8 +545,8 @@ class ElemHide {
    */
   _getDefaultStyleSheet() {
     if (!this._defaultStyleSheet) {
-      this._defaultStyleSheet =
-        createStyleSheet(this._getUnconditionalSelectors());
+      let {selectors, inlineCssRules} = this._getUnconditionalSelectors();
+      this._defaultStyleSheet = createStyleSheet(selectors, inlineCssRules);
     }
 
     return this._defaultStyleSheet;
@@ -420,9 +559,10 @@ class ElemHide {
    */
   _getCommonStyleSheet() {
     if (!this._commonStyleSheet) {
+      let {selectors, inlineCssRules} = this._getConditionalSelectors("", false);
       this._commonStyleSheet =
         this._getDefaultStyleSheet() +
-        createStyleSheet(this._getConditionalSelectors("", false));
+        createStyleSheet(selectors, inlineCssRules);
     }
 
     return this._commonStyleSheet;
@@ -455,6 +595,15 @@ class ElemHide {
     if (unconditionalFilterForSelector) {
       this._filtersByDomain.add(unconditionalFilterForSelector);
       this._filterBySelector.delete(selector);
+      this._unconditionalSelectors = null;
+      this._defaultStyleSheet = null;
+    }
+
+    let unconditionalCssFilterForSelector =
+        this._cssFilterBySelector.get(selector);
+    if (unconditionalCssFilterForSelector) {
+      this._cssFiltersByDomain.add(unconditionalCssFilterForSelector);
+      this._cssFilterBySelector.delete(selector);
       this._unconditionalSelectors = null;
       this._defaultStyleSheet = null;
     }
@@ -500,6 +649,23 @@ function escapeSelector(selector) {
 }
 
 /**
+ * Creates an inline CSS rule for a given selector and CSS properties object.
+ *
+ * Each property value is suffixed with `!important`.
+ *
+ * @param {string} selector The CSS selector.
+ * @param {Object} css Key-value pairs of CSS property names and values.
+ *
+ * @returns {string} A CSS rule.
+ */
+function createInlineCSSRule(selector, css) {
+  let declarations = Object.entries(css)
+    .map(([k, v]) => `${k}: ${v} !important;`)
+    .join(" ");
+  return createRule(selector, `{${declarations}}`);
+}
+
+/**
  * Creates an element hiding CSS rule for a given list of selectors.
  *
  * @param {string} selector The CSS selector for the rule.
@@ -518,9 +684,13 @@ function createRule(
 
 let createStyleSheet =
 /**
- * Creates an element hiding CSS style sheet from a given list of selectors.
+ * Creates an element hiding CSS style sheet from a given list of selectors
+ * and inline CSS rules.
  *
  * @param {Array.<string>} selectors The list of selectors.
+ * @param {Array.<{selector: string, css: Object}>} inlineCssRules List of
+ *   inline CSS rules. Each entry produces a rule with per-property
+ *   `!important` declarations.
  * @param {string} [declarationBlock] Optional CSS code to use as the
  *   declaration block. By default, the code `{display: none !important;}` is
  *   used. If specified, the value is injected as-is into the style sheet.
@@ -528,11 +698,16 @@ let createStyleSheet =
  * @returns {string} A CSS style sheet.
  */
 exports.createStyleSheet = function createStyleSheet(selectors,
+                                                     inlineCssRules,
                                                      declarationBlock) {
   let styleSheet = "";
 
   for (let selector of selectors) {
     styleSheet += createRule(selector, declarationBlock);
+  }
+
+  for (let {selector, css} of inlineCssRules) {
+    styleSheet += createInlineCSSRule(selector, css);
   }
 
   return styleSheet;

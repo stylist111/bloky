@@ -108,6 +108,9 @@ describe("Filter classes", function() {
         result.push("selector=" + filter.selector);
         if (filter instanceof ElemHideEmulationFilter) {
           result.push("remove=" + filter.remove);
+        }
+        if (filter instanceof ElemHideEmulationFilter ||
+            filter instanceof ElemHideFilter) {
           if (filter.css) {
             let css = "{";
             for (let cssPropertyName in filter.css) {
@@ -178,9 +181,11 @@ describe("Filter classes", function() {
       addProperty("selectorDomains", "");
       addProperty("domains", "");
     }
+    if (type == "elemhide" || type == "elemhideemulation") {
+      addProperty("css", "null");
+    }
     if (type == "elemhideemulation") {
       addProperty("remove", "false");
-      addProperty("css", "null");
     }
     if (type == "snippet") {
       addProperty("scriptDomains", "");
@@ -626,6 +631,37 @@ describe("Filter classes", function() {
       "foo.com#?##banner {margin:0 0 auto invalid}", [
         "type=invalid",
         "reason=filter_elemhide_invalid_inline_css"
+      ]
+    );
+
+    compareFilter(
+      "foo.com###banner {margin:0}", [
+        "type=elemhide",
+        "selectorDomains=foo.com",
+        "selector=#banner",
+        "domains=foo.com",
+        "css={margin:0;}"
+      ]
+    );
+
+    compareFilter(
+      "foo.com##.ad {color:#ff0000;margin:0}", [
+        "type=elemhide",
+        "selectorDomains=foo.com",
+        "selector=.ad",
+        "domains=foo.com",
+        "css={color:#ff0000;margin:0;}"
+      ]
+    );
+
+    // ## with remove:true must stay as ElemHideEmulationFilter (CSS cannot remove elements)
+    compareFilter(
+      "foo.com##.ad {remove:true;}", [
+        "type=elemhideemulation",
+        "selectorDomains=foo.com",
+        "selector=.ad",
+        "domains=foo.com",
+        "remove=true"
       ]
     );
   });

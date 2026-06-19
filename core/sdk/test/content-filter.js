@@ -27,7 +27,8 @@ import {
   UNHIDDENTIMEOUT, HIDETIMEOUT, waitForHighlightedStyle, isEdge,
   edgeVersion, waitForSubscriptionsToDownload, chromiumVersion,
   isChromiumBased, setEndpointResponse, expectElemHideRemoved,
-  expectElementToHaveInlineStyle, checkElementsHidden, sleep
+  expectElementToHaveInlineStyle, expectElementToHaveComputedStyle,
+  checkElementsHidden, sleep
 }
   from "./utils.js";
 import {subTestCustom1, subAntiCVLocal} from "./fixtures/subscriptions.js";
@@ -377,16 +378,25 @@ describe("Element Hiding", function() {
       await expectElemHideRemoved({elemId});
     });
 
-    it("applies inline CSS to element", async function() {
+    it("applies inline CSS filters to element using element hiding filters", async function() {
       const elemId = "inline-css-div";
 
-      await expectElementToHaveInlineStyle(elemId, "");
-      await expectElementToHaveInlineStyle("inline-css-div-2", "");
+      await addFilter(`${TEST_PAGES_DOMAIN}###${elemId} {margin-bottom: 15px}`);
+
+      await expectElementToHaveInlineStyle("element-hiding.html", elemId, "");
+      await expectElementToHaveComputedStyle("element-hiding.html", elemId, "margin-bottom", "15px");
+    });
+
+    it("applies inline CSS filters to element using element hiding emulation filters", async function() {
+      const elemId = "inline-css-div";
+
+      await expectElementToHaveInlineStyle("element-hiding.html", elemId, "");
+      await expectElementToHaveInlineStyle("element-hiding.html", "inline-css-div-2", "");
 
       await addFilter(`${TEST_PAGES_DOMAIN}#?##${elemId} {margin-bottom: 0px; margin-top: 0px}`);
 
-      await expectElementToHaveInlineStyle(elemId, "margin-bottom: 0px !important; margin-top: 0px !important;");
-      await expectElementToHaveInlineStyle("inline-css-div-2", "");
+      await expectElementToHaveInlineStyle("element-hiding.html", elemId, "margin-bottom: 0px !important; margin-top: 0px !important;");
+      await expectElementToHaveInlineStyle("element-hiding.html", "inline-css-div-2", "");
     });
 
     it("does not remove a DOM element with a {remove: true;} filter if it is allowlisted", async function() {
@@ -452,6 +462,21 @@ describe("Element Hiding", function() {
         elemId: "elem-hide-emulation-props",
         timeout: 4 * HIDETIMEOUT
       });
+    });
+
+    it("applies inline CSS on history.pushState with previous URL allowlisted", async function() {
+      setMinTimeout(this, 6000);
+
+      const elemId = "elem-hide-emulation-props";
+      await addFilter(`@@|${TEST_PAGES_URL}/history.html^$document`);
+      await addFilter(`${TEST_PAGES_DOMAIN}###${elemId} {margin-bottom: 15px}`);
+
+      await expectElementToHaveComputedStyle(
+        "history.html",
+        elemId,
+        "margin-bottom",
+        "15px"
+      );
     });
 
     it("calculates the selectors diff within reasonable time [mv2-only]", async function() {

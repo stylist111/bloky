@@ -47,13 +47,39 @@ See also: [filter syntax spec](https://gitlab.com/eyeo/adblockplus/ad-filtering-
 - Validation happens in [`core/sdk/adblockpluscore/lib/filters/inlineCssValidation.js`](../core/sdk/adblockpluscore/lib/filters/inlineCssValidation.js).
 - If there are any validation issues, the filter is an `InvalidFilter` and
   doesn't do anything.
-- Currently, all inline CSS filters become `ElemHideEmulationFilter`. This is
-  only because there is not currently an implementation of inline CSS filters
-  using `ElemHideFilter`, but this could be added in the future.
 
 ## Execution pipeline
 
-Inline CSS filters are executed as element hiding emulation filters.
+Inline CSS filters are executed as either element hiding or element hiding
+emulation filters.
+
+### Element Hiding
+
+- When a page navigation is detected, `applyContentFilters()` in
+  [`core/sdk/src/background/content-filter.js`](../core/sdk/src/background/content-filter.js)
+  calls the `generateStylesheet` function.
+- `generateStylesheet` in turn calls `filterEngine.elemHide.getStyleSheet`, in
+  [`core/sdk/adblockpluscore/lib/elemHide.js`](../core/sdk/adblockpluscore/lib/elemHide.js),
+  which will return a CSS stylesheet and a list of the relevant filters.
+- The stylesheet and filters will be diffed against any previous state to allow
+  updating if a history API navigation has taken place.
+- The stylesheet is injected into the page using `browser.scripting.insertCSS`,
+  or `browser.tabs.insertCSS`, depending on which is available.
+- Whenever an element hiding filter is added to the filter engine, it is added
+  to indexes in
+  [`core/sdk/adblockpluscore/lib/elemHide.js`](../core/sdk/adblockpluscore/lib/elemHide.js).
+  These indexes are to enable fast generating of stylesheets that apply all
+  element hiding filters.
+- `getStyleSheet` considers stylesheet generation in two parts: the common
+  filters that applies to all sites and the specific filters that only applies
+  to the current site. This is because the common filters part can be cached for
+  use on many pages, and only the specific part needs to be recomputed.
+- For normal element hiding filters, the stylesheet will have an entry that says
+  `selector {display: none !important;}`. For inline CSS filters, the
+  `{display: none !important;}` is replaced with the inline CSS rules from the
+  filter.
+
+### Element Hiding Emulation
 
 - When a page navigation is detected, `applyContentFilters()` in
   [`core/sdk/src/background/content-filter.js`](../core/sdk/src/background/content-filter.js)

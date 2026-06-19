@@ -1254,6 +1254,23 @@ describe("Reporting", function() {
         [{
           filter: {
             ...expectedElemhideFilter("###inline-css-div {color:#0000bb;}"),
+            css: {color: "#0000bb"}
+          },
+          matchInfo: elemhideMatchInfo,
+          request: expectedRequestRelativeUrl("element-hiding.html")
+        }]
+      );
+    });
+
+    it("logs element hiding emulation filter with inline CSS filters", async function() {
+      let filterText = TEST_PAGES_DOMAIN + "#?##inline-css-div {color:#0000bb;}";
+      await checkLogging(
+        [filterText],
+        "elemhideEventOptions",
+        "element-hiding.html",
+        [{
+          filter: {
+            ...expectedElemhideFilter(filterText),
             type: "elemhideemulation",
             css: {color: "#0000bb"}
           },
