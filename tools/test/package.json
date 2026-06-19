@@ -24,7 +24,7 @@
     "lighthouse": "11.7.1",
     "mockttp": "4.1.0",
     "selenium-webdriver": "4.23.0",
-    "ws": "7.5.10",
+    "ws": "7.5.11",
     "yargs": "17.7.2"
   },
   "scripts": {
