@@ -31,7 +31,6 @@ import { Channels } from "./channels";
 import { setSetting } from "~/prefs/background";
 import { showIconBadgeCTA, NEW_BADGE_REASONS } from "~/alias/icon";
 import { Prefs } from "~/alias/prefs";
-import { initialize } from "~/alias/subscriptionInit";
 import * as logger from "~/utilities/background";
 import SubscriptionAdapter from "../subscriptionadapter";
 import {
@@ -394,29 +393,6 @@ export const replacedCounts = (function getReplacedCount() {
     adReplacedNotifier,
   };
 })();
-
-// for use in the premium enrollment process
-// de-coupled from the `License.ready().then` code below because the delay
-// prevents the addListener from being fired in a timely fashion.
-const onInstalledPromise = new Promise((resolve) => {
-  browser.runtime.onInstalled.addListener((details) => {
-    resolve(details);
-  });
-});
-
-// the order of Promises below dictacts the order of the data in the detailsArray
-Promise.all([onInstalledPromise, License.ready(), initialize]).then((detailsArray) => {
-  // Enroll existing users in Premium
-  if (detailsArray.length > 0 && detailsArray[0].reason) {
-    License.enrollUser();
-    if (detailsArray[0].reason === "install") {
-      // create an alarm that will fire in ~ 7 days to show the "New" badge text
-      browser.alarms.create(License.sevenDayAlarmName, { delayInMinutes: 60 * 24 * 7 });
-      License.addSevenDayAlarmStateListener();
-      browser.storage.local.set({ [License.sevenDayAlarmName]: true });
-    }
-  }
-});
 
 browser.runtime.onStartup.addListener(async () => {
   await License.ready();

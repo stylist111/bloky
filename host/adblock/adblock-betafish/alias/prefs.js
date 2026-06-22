@@ -431,13 +431,6 @@ defaults.lastBaitBlockedDate = 0;
 defaults.installDate = 0;
 
 /**
- * A flag indicating whether the cookie banner growth experiment has been run already.
- *
- * @type {boolean}
- */
-defaults.cookie_banner_experiment_run = false;
-
-/**
  * The last shown reverse trial touch point number (0 = none, 1 = start, 2 = midpoint, 3 = ended)
  *
  * @type {number}

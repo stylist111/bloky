@@ -91,12 +91,6 @@
       "run_at": "document_start"
     },
     {
-      "all_frames": true,
-      "js": ["polyfill.js", "growth-experiments.preload.js"],
-      "matches": ["https://stackoverflow.com/*"],
-      "run_at": "document_start"
-    },
-    {
       "js": ["polyfill.js", "close-tab.preload.js"],
       "matches": [
         "https://getadblock.com/*",
