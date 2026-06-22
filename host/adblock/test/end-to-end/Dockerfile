@@ -11,6 +11,8 @@ COPY core/sdk/*.json extensions/core/sdk/
 # scripts and adblockpluscore folders are used by the postinstall host scripts
 COPY core/sdk/scripts extensions/core/sdk/scripts
 COPY core/sdk/adblockpluscore extensions/core/sdk/adblockpluscore
+# .husky/install.mjs is invoked by the root postinstall script during `npm ci`
+COPY .husky extensions/.husky
 RUN cd extensions && npm ci
 
 COPY . extensions/

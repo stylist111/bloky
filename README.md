@@ -218,6 +218,23 @@ Some style issues can be automatically fixed by running the `lint-fix` command.
 npm run lint-fix
 ```
 
+### Pre-commit hook
+
+A [husky](https://typicode.github.io/husky/) pre-commit hook is installed automatically when you run `npm install`.
+On every `git commit` it runs [lint-staged](https://github.com/lint-staged/lint-staged), which lints and formats only your staged files (`eslint --fix` and `prettier --write`, see `.lintstagedrc.json`).
+
+Because the fixers run with `--fix`/`--write`, the hook may **modify your staged files and re-stage those fixes automatically**,
+so the committed result can differ slightly from what you staged. If a file can't be auto-fixed (e.g. an eslint error),
+the hook fails and the commit is aborted — fix the reported issues and commit again.
+
+To bypass the hook when you need to commit immediately and linting is irrelevant, use:
+
+```sh
+git commit --no-verify
+```
+
+The hook is skipped in CI (where the `CI` environment variable is set), so it only affects local commits.
+
 ## CI pipeline
 
 ### Adding CI config for a new package
