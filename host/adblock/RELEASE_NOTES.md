@@ -4,6 +4,7 @@
   instead of element hiding emulation. This results in a performance
   improvement, but does not otherwise affect functionality.
 - Updated snippets to 2.12.0
+- Fixed: Addressed certain errors that have the potential of causing CPU spikes for some users (OM-808).
 
 # 6.42.2 - 2026-06-16
 

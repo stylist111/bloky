@@ -53,6 +53,18 @@ const platformToStore: Readonly<Partial<PlatformToStore>> = {
 };
 
 /**
+ * Determines whether code is running as a content script
+ */
+function isContentScript(): boolean {
+  // By checking whether the protocols of the current URL and the extension's
+  // root URL are the same, we can determine whether the script is running in
+  // the context of a web page (i.e. content script) or in the context of the
+  // extension (i.e. background process, UI page, testing environment)
+  const extensionUrl = new URL(browser.runtime.getURL("/"));
+  return location.protocol !== extensionUrl.protocol;
+}
+
+/**
  * A collection of browser.runtime apis for app information.
  */
 export const app = {
@@ -303,9 +315,15 @@ const api = {
   stats,
 };
 
-/**
- * The browser.runtime port, is connected at runtime  by the connect function
- */
-connect();
+// Since we're not listening to any events from content scripts, we don't
+// connect from those in order to avoid problems related to bfcache
+// https://developer.chrome.com/blog/bfcache-extension-messaging-changes
+// https://eyeo.atlassian.net/browse/OM-808
+if (!isContentScript()) {
+  /**
+   * The browser.runtime port, is connected at runtime  by the connect function
+   */
+  connect();
+}
 
 export default api;

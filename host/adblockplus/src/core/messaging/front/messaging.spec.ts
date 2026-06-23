@@ -97,6 +97,28 @@ describe("Messaging functionality", () => {
     expect(browser.runtime.onMessage.addListener).toHaveBeenCalled();
   });
 
+  it("initializes without establishing long-lived connection when run as content script", async () => {
+    // Pretend to run in a content script by pretending to the script that it's
+    // running under a different protocol than the extension
+    jest.spyOn(browser.runtime, "getURL").mockImplementation((pathname) => {
+      const url = new URL(location.href);
+      url.pathname = pathname;
+      // The protocol setter doesn't accept the "extension:" protocol, so we
+      // need to replace it in the URL string ourselves
+      return url.href.replace(/^[^:]+:/, "extension:");
+    });
+    jest.spyOn(browser.runtime.onMessage, "addListener");
+
+    await import("./messaging");
+
+    /* eslint-disable-next-line @typescript-eslint/unbound-method */
+    expect(browser.runtime.connect).not.toHaveBeenCalled();
+    expect(mockAddDisconnectListener).not.toHaveBeenCalled();
+    expect(mockAddMessageListener).not.toHaveBeenCalled();
+    /* eslint-disable-next-line @typescript-eslint/unbound-method */
+    expect(browser.runtime.onMessage.addListener).toHaveBeenCalled();
+  });
+
   it("connect listener should be called", async () => {
     let disconnectPort = (port: Browser.Runtime.Port): void => {};
     mockPort.onDisconnect.addListener = (listener) => {

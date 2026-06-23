@@ -30,7 +30,6 @@ export default {
           "adblock-betafish/extension/bootstrap/serviceworkerInit.js",
           "src/bootstrap/background/bootstrap.entry.ts",
           "adblockplusui/adblockpluschrome/lib/devtools.js",
-          "adblockplusui/adblockpluschrome/lib/debug.js",
           "adblock-betafish/alias/subscriptionInit.js",
           "adblockplusui/adblockpluschrome/lib/messageResponder.js",
           "adblockplusui/adblockpluschrome/lib/filterConfiguration.js",

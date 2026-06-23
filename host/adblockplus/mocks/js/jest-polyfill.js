@@ -50,6 +50,11 @@ Object.assign(browser.runtime, {
         page: "options.html"
       }
     };
+  },
+  getURL(pathname) {
+    const url = new URL(location.href);
+    url.pathname = pathname;
+    return url.href;
   }
 });
 

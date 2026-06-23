@@ -203,6 +203,11 @@ async function persistSchedules(): Promise<void> {
 async function reviveSchedules(): Promise<void> {
   const storedSchedules = await storage.get(storageKey);
 
+  // At the beginning of each session, storage is empty
+  if (typeof storedSchedules === "undefined") {
+    return;
+  }
+
   if (Object.prototype.toString.call(storedSchedules) !== "[object Object]") {
     // Whatever it is, we can't work with it.
     warn("Could not restore stored schedules.");

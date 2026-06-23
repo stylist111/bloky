@@ -17,7 +17,6 @@
 
 import * as logger from "../../logger/background";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
-import { start as startDebug } from "../../../adblockpluschrome/lib/debug.js";
 import { start as startGetDebugInfo } from "../../debug/background";
 import { start as startDevTools } from "../../../adblockpluschrome/lib/devtools.js";
 import { start as startFilterConfiguration } from "../../../adblockpluschrome/lib/filterConfiguration.js";
@@ -126,7 +125,6 @@ async function bootstrap(): Promise<void> {
   startPages();
   startTabSessionStorage();
   startDevTools();
-  startDebug();
   startReadyState();
   startFilterConfiguration();
   startStats();
