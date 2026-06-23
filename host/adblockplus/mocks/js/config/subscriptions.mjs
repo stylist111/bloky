@@ -27,54 +27,69 @@ const URL_UNKNOWN = "https://www.example.com/filters.txt";
 
 export const USER_ID = "~user~786254";
 
-export const subscriptionDetails = {
-  [URL_BLOCKLIST]: {
+const subscriptions = [
+  {
+    url: URL_BLOCKLIST,
     title: "EasyList Germany+EasyList",
     filterText: ["-ad-banner.", "-ad-big.", "-ad-bottom-", "-ad-button-"],
     installed: true,
     updatable: true
   },
-  [URL_ALLOWLIST]: {
+  {
+    url: URL_ALLOWLIST,
     title: "Allow non-intrusive advertising",
     installed: true,
     updatable: true
   },
-  [URL_PREMIUM]: {
+  {
+    url: URL_PREMIUM,
     title: "AdBlock premium list",
     installed: params.premiumIsActive,
     updatable: true
   },
-  [URL_ALLOWLIST_PRIVACY]: {
+  {
+    url: URL_ALLOWLIST_PRIVACY,
     title: "Allow only nonintrusive ads that are privacy-friendly",
     updatable: true
   },
-  [`${URL_SUBSCRIPTION_BASE}/fanboy-social.txt`]: {
+  {
+    url: `${URL_SUBSCRIPTION_BASE}/fanboy-social.txt`,
     title: "Fanboy's Social Blocking List",
     installed: true,
     updatable: true
   },
-  [`${URL_SUBSCRIPTION_BASE}/abp-filters-anti-cv.txt`]: {
+  {
+    url: `${URL_SUBSCRIPTION_BASE}/abp-filters-anti-cv.txt`,
     title: "ABP Anti-Circumvention list",
     installed: true,
     updatable: true,
     disabled: false,
     recommended: "circumvention"
   },
-  [`${URL_SUBSCRIPTION_BASE}/antiadblockfilters.txt`]: {
+  {
+    url: `${URL_SUBSCRIPTION_BASE}/antiadblockfilters.txt`,
     title: "Adblock Warning Removal List",
     installed: true,
     updatable: true,
     disabled: true
   },
-  [URL_UNKNOWN]: {
+  {
+    url: URL_UNKNOWN,
     title: "Unknown filter list",
     installed: params.includeUnknownSubscription
   },
-  [USER_ID]: {
+  {
+    url: USER_ID,
     installed: true,
     updatable: false
   }
-};
+];
+
+export const subscriptionByUrl = new Map(
+  subscriptions.map((subscription) => {
+    return [subscription.url, subscription];
+  })
+);
 
 export const subscriptionUrls = {
   URL_DOCLINK_BASE,

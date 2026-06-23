@@ -74,6 +74,10 @@ export const getCurrent = () => Promise.resolve(activeTab);
 
 export const query = () => Promise.resolve(Array.from(tabs.values()));
 
+export const onActivated = {
+  addListener() {}
+};
+
 export const onUpdated = {
   addListener() {}
 };

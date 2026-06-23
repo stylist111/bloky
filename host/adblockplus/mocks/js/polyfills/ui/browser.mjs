@@ -32,4 +32,5 @@ export function start() {
     scripting,
     tabs
   };
+  window.chrome = browser;
 }

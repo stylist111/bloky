@@ -17,11 +17,13 @@
 
 import filterNotifier from "./filter-notifier.mjs";
 import { Subscription } from "./subscription-classes.mjs";
-import { subscriptionDetails, USER_ID } from "../config/subscriptions.mjs";
+import { subscriptionByUrl, USER_ID } from "../config/subscriptions.mjs";
 
 const knownSubscriptions = new Map();
-for (const url in subscriptionDetails) {
-  if (!subscriptionDetails[url].installed) continue;
+for (const url in subscriptionByUrl.keys()) {
+  if (!subscriptionByUrl.get(url).installed) {
+    continue;
+  }
 
   knownSubscriptions.set(url, Subscription.fromURL(url));
 }

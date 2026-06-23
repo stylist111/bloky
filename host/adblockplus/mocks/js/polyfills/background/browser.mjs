@@ -28,4 +28,5 @@ export function start() {
     },
     tabs
   };
+  window.chrome = browser;
 }

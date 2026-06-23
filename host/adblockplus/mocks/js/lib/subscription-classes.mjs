@@ -19,7 +19,7 @@ import { Filter } from "./filter-classes.mjs";
 import filterNotifier from "./filter-notifier.mjs";
 import { knownFilterText } from "../config/filters.mjs";
 import { params } from "../config/env.mjs";
-import { subscriptionDetails } from "../config/subscriptions.mjs";
+import { subscriptionByUrl } from "../config/subscriptions.mjs";
 
 export function Subscription(url) {
   this.updatable = true;
@@ -31,7 +31,7 @@ export function Subscription(url) {
   this.homepage = "https://easylist.adblockplus.org/";
   this.downloadStatus = params.downloadStatus;
 
-  const details = subscriptionDetails[this.url];
+  const details = subscriptionByUrl.get(this.url);
   if (details) {
     this._disabled = !!details.disabled;
     this.updatable = !!details.updatable;

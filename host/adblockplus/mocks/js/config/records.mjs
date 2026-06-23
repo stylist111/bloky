@@ -17,7 +17,7 @@
 
 import {
   USER_ID,
-  subscriptionDetails as subscriptions,
+  subscriptionByUrl,
   subscriptionUrls
 } from "./subscriptions.mjs";
 
@@ -35,7 +35,7 @@ const records = [
       text: "/ad_banner*$domain=example.com",
       type: "blocking"
     },
-    subscription: subscriptions[URL_BLOCKLIST]
+    subscription: subscriptionByUrl.get(URL_BLOCKLIST)
   },
   // allowlisted request
   {
@@ -48,7 +48,7 @@ const records = [
       text: "@@||example.com/looks_like_an_ad_but_isnt_one.html",
       type: "allowing"
     },
-    subscription: subscriptions[URL_BLOCKLIST]
+    subscription: subscriptionByUrl.get(URL_BLOCKLIST)
   },
   // request with long URL and no filter matches
   {
@@ -69,7 +69,7 @@ const records = [
       text: "example.com##.ad_banner",
       type: "elemhide"
     },
-    subscription: subscriptions[URL_BLOCKLIST]
+    subscription: subscriptionByUrl.get(URL_BLOCKLIST)
   },
   // user-defined filter
   {
@@ -82,7 +82,7 @@ const records = [
       text: "||example.com/some-annoying-popup$popup",
       type: "blocking"
     },
-    subscription: subscriptions[USER_ID]
+    subscription: subscriptionByUrl.get(USER_ID)
   },
   // rewrite
   {
@@ -96,7 +96,7 @@ const records = [
       text: "/(example\\.com\\/some-annoying-popup\\)$/$rewrite=$1?nopopup",
       type: "blocking"
     },
-    subscription: subscriptions[USER_ID]
+    subscription: subscriptionByUrl.get(USER_ID)
   },
   // long filter
   {
@@ -108,7 +108,7 @@ const records = [
       text: `example.com${",example.com".repeat(499)}##.ad_banner`,
       type: "elemhide"
     },
-    subscription: subscriptions[URL_BLOCKLIST]
+    subscription: subscriptionByUrl.get(URL_BLOCKLIST)
   },
   // snippet filter
   {
@@ -121,7 +121,7 @@ const records = [
       text: "example.com#$#dir-string",
       type: "snippet"
     },
-    subscription: subscriptions[URL_BLOCKLIST]
+    subscription: subscriptionByUrl.get(URL_BLOCKLIST)
   }
 ];
 

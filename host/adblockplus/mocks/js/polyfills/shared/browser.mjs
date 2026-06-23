@@ -69,6 +69,7 @@ export const mockBrowser = {
       return {
         manifest_version: manifestVersion
       };
-    }
+    },
+    id: "local"
   }
 };
