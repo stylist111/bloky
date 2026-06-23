@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { describe, it, expect, vi } from "vitest";
 import browser from "webextension-polyfill";
 import * as CookieBannerDetection from "./cookie-banner-detection";
 import { detectionEventName, detectionMessage } from "../shared";
@@ -23,7 +24,9 @@ import { detectionEventName, detectionMessage } from "../shared";
 describe("cookie-banner-detection", () => {
   describe("forwardDetectionEvent", () => {
     it("should send the correct message", () => {
-      jest.spyOn(browser.runtime, "sendMessage").mockImplementation();
+      vi.spyOn(browser.runtime, "sendMessage").mockImplementation(async () => {
+        await Promise.resolve();
+      });
       CookieBannerDetection.forwardDetectionEvent();
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(browser.runtime.sendMessage).toHaveBeenCalledTimes(1);
@@ -36,7 +39,7 @@ describe("cookie-banner-detection", () => {
 
   describe("start", () => {
     it("should add the correct event listener", () => {
-      jest.spyOn(document, "addEventListener").mockImplementation();
+      vi.spyOn(document, "addEventListener").mockImplementation(() => {});
       CookieBannerDetection.start();
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(document.addEventListener).toHaveBeenCalledTimes(1);

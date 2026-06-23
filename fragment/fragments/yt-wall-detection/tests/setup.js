@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { vi } from "vitest";
 import { chrome } from "vitest-chrome/lib/index.esm";
 
 // This ID needs to be set in order to make webextension-polyfill believe that it's running in an extension environment

@@ -24,7 +24,7 @@
     "build:types": "tsc --project tsconfig.json --emitDeclarationOnly",
     "build": "tsc --project tsconfig.json",
     "build:release": "tsc --project tsconfig.json",
-    "test": "vitest run --reporter=verbose"
+    "test": "vitest run"
   },
   "peerDependencies": {
     "@eyeo/webext-ad-filtering-solution": "*",

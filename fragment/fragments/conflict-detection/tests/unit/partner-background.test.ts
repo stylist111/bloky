@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { describe, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   alarmName,
   PartnerExtensionIds,
@@ -38,14 +38,12 @@ const setupMockOnMessageResponse = (returnTrueArray: string[]): void => {
   const listener = vi.fn();
   browser.runtime.onMessageExternal.addListener.mockImplementation(listener);
   // Mock responses for each extension ID
-  (browser.runtime.sendMessage as jest.Mock).mockImplementation(
-    (extensionId) => {
-      if (returnTrueArray.includes(extensionId)) {
-        return Promise.resolve({ pingResponse: true });
-      }
-      return Promise.reject(); // Simulate failure for other extensions
-    },
-  );
+  vi.mocked(browser.runtime.sendMessage).mockImplementation((extensionId) => {
+    if (returnTrueArray.includes(extensionId as string)) {
+      return Promise.resolve({ pingResponse: true });
+    }
+    return Promise.reject(); // Simulate failure for other extensions
+  });
 };
 
 describe("sendPingMessage", () => {
@@ -85,7 +83,7 @@ describe("sendPingMessage", () => {
 
   it("should return an empty array if no extensions respond successfully", async () => {
     // Mock all extensions to fail
-    (browser.runtime.sendMessage as jest.Mock).mockRejectedValue(
+    vi.mocked(browser.runtime.sendMessage).mockRejectedValue(
       new Error("Failed"),
     );
 

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { describe, it, expect, vi } from "vitest";
 import browser from "webextension-polyfill";
 import { type WebNavigation } from "webextension-polyfill";
 import * as CookeBannerDetection from "./cookie-banner-detection";
@@ -24,7 +25,7 @@ import * as ScriptInjector from "./script-injector";
 describe("cookie-banner-detection", () => {
   describe("injectDetectionScript", () => {
     it("should call executeFunction if the given frame is the top level frame", async () => {
-      jest.spyOn(ScriptInjector, "executeFunction");
+      vi.spyOn(ScriptInjector, "executeFunction");
       await CookeBannerDetection.injectDetectionScript({
         frameId: 0,
         tabId: 123,
@@ -32,7 +33,7 @@ describe("cookie-banner-detection", () => {
       expect(ScriptInjector.executeFunction).toHaveBeenCalledTimes(1);
     });
     it("should not do anything if the given frame is not the top level frame", async () => {
-      jest.spyOn(ScriptInjector, "executeFunction");
+      vi.spyOn(ScriptInjector, "executeFunction");
       await CookeBannerDetection.injectDetectionScript({
         frameId: 456,
         tabId: 123,
@@ -52,9 +53,10 @@ describe("cookie-banner-detection", () => {
     }
 
     it("should add the correct event listener", () => {
-      jest
-        .spyOn(browser.webNavigation.onCommitted, "addListener")
-        .mockImplementation();
+      vi.spyOn(
+        browser.webNavigation.onCommitted,
+        "addListener",
+      ).mockImplementation(() => {});
 
       CookeBannerDetection.start();
       expect(

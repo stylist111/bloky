@@ -15,8 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CommandName, type Command } from "./command-library.types";
 import * as commandStorage from "./command-storage";
+
+vi.mock("./start-info");
 
 const mockCommandIds = ["command_1", "command_2"];
 const mockCommandMap = {

@@ -16,19 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { defineConfig } from "vite";
+import { mergeConfig, defineConfig } from "vite";
 import path from "path";
+import base from "../../vitest.config.base.js";
 
-export default defineConfig({
-  test: {
-    globals: true,
-    environment: "jsdom",
-    setupFiles: "./tests/setup.js",
-    includeSource: ["src/**/*.{js,ts,jsx,tsx}"],
-  },
-  resolve: {
-    alias: {
-      "~": path.resolve(__dirname, "src"),
+export default mergeConfig(
+  base,
+  defineConfig({
+    test: {
+      setupFiles: "./tests/setup.js",
+      includeSource: ["src/**/*.{js,ts,jsx,tsx}"],
     },
-  },
-});
+    resolve: {
+      alias: {
+        "~": path.resolve(__dirname, "src"),
+      },
+    },
+  }),
+);

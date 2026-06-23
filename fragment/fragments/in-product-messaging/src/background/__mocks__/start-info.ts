@@ -15,15 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { getStartInfo } from "../../src/background/start-info.mocks";
+import { getStartInfo as createMock } from "../start-info.mocks";
+import { type StartInfo } from "../start-info.types";
 
-let mockStartInfo = getStartInfo();
+const mockStartInfo = createMock();
 
-jest.mock("../../src/background/start-info", () => {
-  return {
-    getStartInfo: () => mockStartInfo,
-    setStartInfo(startInfo) {
-      mockStartInfo = startInfo;
-    },
-  };
-});
+export function getStartInfo(): StartInfo {
+  return mockStartInfo;
+}
+
+export function setStartInfo(_startInfo: unknown): void {}

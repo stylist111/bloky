@@ -15,6 +15,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeAll,
+  afterAll,
+  beforeEach,
+} from "vitest";
 import browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import {
@@ -78,25 +87,25 @@ describe("command-library", () => {
     let createTabActor: CommandActor;
 
     beforeEach(() => {
-      jest
-        .spyOn(ewe.cohorts, "getAll")
-        .mockReturnValue(Promise.resolve([assignedCohort]));
-      jest
-        .spyOn(ewe.experiments, "getFlag")
-        .mockReturnValue(Promise.resolve(true));
+      vi.spyOn(ewe.cohorts, "getAll").mockReturnValue(
+        Promise.resolve([assignedCohort]),
+      );
+      vi.spyOn(ewe.experiments, "getFlag").mockReturnValue(
+        Promise.resolve(true),
+      );
 
       commandStorage.replaceAll({
         [commandBase.ipm_id]: commandBase,
       });
 
       createTabActor = {
-        clearCommands: jest.fn(),
-        handleCommand: jest.fn(),
-        onCommandsProcessed: jest.fn(),
-        getBehavior: jest.fn(),
-        getContent: jest.fn(),
+        clearCommands: vi.fn(),
+        handleCommand: vi.fn(),
+        onCommandsProcessed: vi.fn(),
+        getBehavior: vi.fn(),
+        getContent: vi.fn(),
         // Always validate the command
-        isValidCommand: jest.fn().mockReturnValue(true),
+        isValidCommand: vi.fn().mockReturnValue(true),
       };
       setCommandActor(CommandName.createTab, createTabActor);
     });
@@ -115,7 +124,7 @@ describe("command-library", () => {
         version: commandBase.version - 1,
       };
 
-      jest.spyOn(commandStorage, "remove").mockImplementation();
+      vi.spyOn(commandStorage, "remove").mockImplementation(() => {});
       commandStorage.replaceAll({
         [olderCommand.ipm_id]: olderCommand,
       });
@@ -132,7 +141,7 @@ describe("command-library", () => {
         version: commandBase.version + 1,
       };
 
-      jest.spyOn(commandStorage, "remove").mockImplementation();
+      vi.spyOn(commandStorage, "remove").mockImplementation(() => {});
       commandStorage.replaceAll({
         [newerCommand.ipm_id]: newerCommand,
       });
@@ -193,19 +202,19 @@ describe("command-library", () => {
       });
 
       createTabActor = {
-        clearCommands: jest.fn(),
-        handleCommand: jest.fn(),
-        onCommandsProcessed: jest.fn(),
-        getBehavior: jest.fn(),
+        clearCommands: vi.fn(),
+        handleCommand: vi.fn(),
+        onCommandsProcessed: vi.fn(),
+        getBehavior: vi.fn(),
         getContent: (command, content) => content,
         // Always validate the command
-        isValidCommand: jest.fn().mockReturnValue(true),
+        isValidCommand: vi.fn().mockReturnValue(true),
       };
       setCommandActor(CommandName.createOnPageDialog, createTabActor);
     });
 
     it("determine content based on user locale", () => {
-      jest.spyOn(browser.i18n, "getUILanguage").mockReturnValue("de-AT");
+      vi.spyOn(browser.i18n, "getUILanguage").mockReturnValue("de-AT");
 
       expect(getContent(commandBase.ipm_id)).toEqual(
         commandBase.content["de-AT"],
@@ -213,13 +222,13 @@ describe("command-library", () => {
     });
 
     it("determine content based on user language", () => {
-      jest.spyOn(browser.i18n, "getUILanguage").mockReturnValue("de-DE");
+      vi.spyOn(browser.i18n, "getUILanguage").mockReturnValue("de-DE");
 
       expect(getContent(commandBase.ipm_id)).toEqual(commandBase.content.de);
     });
 
     it("determine content based on default locale", () => {
-      jest.spyOn(browser.i18n, "getUILanguage").mockReturnValue("pt-BR");
+      vi.spyOn(browser.i18n, "getUILanguage").mockReturnValue("pt-BR");
 
       expect(getContent(commandBase.ipm_id)).toEqual(commandBase.content.en);
     });

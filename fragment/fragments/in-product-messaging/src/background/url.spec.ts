@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { getStartInfo } from "./start-info";
 import {
@@ -27,6 +28,8 @@ import {
   ExperimentSearchParameterKeys,
 } from "./url.types";
 
+vi.mock("./start-info");
+
 describe("url", () => {
   describe("createSafeOriginUrl", () => {
     const defaultOrigin = "https://origin.com";
@@ -34,8 +37,8 @@ describe("url", () => {
     const deps = getStartInfo();
 
     beforeEach(() => {
-      jest.spyOn(deps, "getDefaultOrigin").mockReturnValue(defaultOrigin);
-      jest.spyOn(deps, "getSafeOrigins").mockReturnValue(safeOrigins);
+      vi.spyOn(deps, "getDefaultOrigin").mockReturnValue(defaultOrigin);
+      vi.spyOn(deps, "getSafeOrigins").mockReturnValue(safeOrigins);
     });
 
     it("should return null for unknown origins", () => {
@@ -77,12 +80,12 @@ describe("url", () => {
     const revision = "__rev__";
 
     beforeEach(() => {
-      jest
-        .spyOn(ewe.experiments, "getEncodedExperiments")
-        .mockImplementation(async () => experiments);
-      jest
-        .spyOn(ewe.remoteConfig, "getRevisionId")
-        .mockImplementation(async () => revision);
+      vi.spyOn(ewe.experiments, "getEncodedExperiments").mockImplementation(
+        async () => experiments,
+      );
+      vi.spyOn(ewe.remoteConfig, "getRevisionId").mockImplementation(
+        async () => revision,
+      );
     });
 
     it("should return a string if a valid URL is given", async () => {
@@ -124,9 +127,9 @@ describe("url", () => {
     const cohortsEncoding = "__ca__";
 
     beforeEach(() => {
-      jest
-        .spyOn(ewe.cohorts, "getEncodedCohorts")
-        .mockImplementation(async () => cohortsEncoding);
+      vi.spyOn(ewe.cohorts, "getEncodedCohorts").mockImplementation(
+        async () => cohortsEncoding,
+      );
     });
 
     it("should return a string if a valid URL is given", async () => {

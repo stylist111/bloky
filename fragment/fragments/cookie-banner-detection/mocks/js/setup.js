@@ -16,13 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-"use strict";
-
-/**
- * This file is extending the browser object created by jest-webextension-mock.
- */
-
-// jest-webextension-mock doesn't set the extension ID, but it needs to be set
-// in order to make webextension-polyfill believe that it's running in an
-// extension environment
-browser.runtime.id = "unit-testing-extension";
+// Tests import browser from "webextension-polyfill" and access browser.webNavigation.
+// Aliasing browser to the vitest-chrome mock causes webextension-polyfill to
+// return the mock directly (with spyable mock functions) rather than wrapping it.
+Object.assign(global, { browser: chrome });

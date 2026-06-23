@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { describe, it, expect, vi } from "vitest";
 import {
   isNotEmpty,
   isNumeric,
@@ -24,6 +25,8 @@ import {
   isEmptyOrPositiveNumber,
 } from "./param-validator";
 import { getStartInfo } from "./start-info";
+
+vi.mock("./start-info");
 
 describe("param-validator", () => {
   describe("isNumeric", () => {
@@ -85,8 +88,8 @@ describe("param-validator", () => {
     it("returns true if the url is a an 'IPM safe' url", async () => {
       const ipmSafeOrigin = "https://adblock.org";
       const deps = getStartInfo();
-      jest.spyOn(deps, "getSafeOrigins").mockReturnValue([ipmSafeOrigin]);
-      jest.spyOn(deps, "getDefaultOrigin").mockReturnValue(ipmSafeOrigin);
+      vi.spyOn(deps, "getSafeOrigins").mockReturnValue([ipmSafeOrigin]);
+      vi.spyOn(deps, "getDefaultOrigin").mockReturnValue(ipmSafeOrigin);
 
       expect(isSafeUrl(`${ipmSafeOrigin}/en/welcome`)).toBe(true);
       expect(isSafeUrl(`${ipmSafeOrigin}/fr/foo/bar`)).toBe(true);
@@ -99,8 +102,8 @@ describe("param-validator", () => {
     it("returns false if the url is not an 'IPM safe' url", () => {
       const ipmSafeOrigin = "https://adblock.org";
       const deps = getStartInfo();
-      jest.spyOn(deps, "getSafeOrigins").mockReturnValue([ipmSafeOrigin]);
-      jest.spyOn(deps, "getDefaultOrigin").mockReturnValue(ipmSafeOrigin);
+      vi.spyOn(deps, "getSafeOrigins").mockReturnValue([ipmSafeOrigin]);
+      vi.spyOn(deps, "getDefaultOrigin").mockReturnValue(ipmSafeOrigin);
 
       expect(isSafeUrl(`https://welcome.adblock.org`)).toBe(false);
       expect(isSafeUrl(`https://google.com`)).toBe(false);

@@ -16,10 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { describe, expect, vi, expectTypeOf } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mockFn, mockReset } from "vitest-mock-extended";
-import { JestChrome } from "jest-chrome/types/jest-chrome";
-
 import {
   type addTrustedMessageTypesFunction,
   type StartInfo,
@@ -53,6 +51,7 @@ vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
   },
 }));
 
+// @ts-expect-error: UMD bundle lacks ES module markers; resolved at runtime via vi.mock
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { start } from "../../src/background/index";
 
@@ -75,6 +74,7 @@ const startInfo: StartInfo = {
   prefs,
   port,
   sendAdWallEvents: sendAdWallEventsFNMock,
+  isPremiumActive: vi.fn().mockResolvedValue(false),
 };
 
 const trustedEventNames = [
@@ -112,7 +112,7 @@ describe("Fragment / YT Ad Wall Detection", () => {
     mockReset(sendAdWallEventsFNMock);
     mockReset(startInfo.addTrustedMessageTypes);
     mockReset(startInfo.sendAdWallEvents);
-    chrome.runtime.onInstalled.clearListeners();
+    (chrome.runtime.onInstalled as any).clearListeners();
   });
 
   it("respond correctly to a YT navigation message", async () => {
@@ -120,12 +120,13 @@ describe("Fragment / YT Ad Wall Detection", () => {
       type: youTubeNavigation,
       userLoggedIn: "0",
       currentPlaybackTime: 0,
+      hasDismiss: false,
     };
 
     startInfo.port.on = function (arg1, arg2) {
       expect(trustedEventNames).toContain(arg1);
 
-      expectTypeOf(arg2).toBeFunction();
+      expect(typeof arg2).toBe("function");
 
       if (arg1 === youTubeNavigation) {
         arg2(message, { tab: {} });
@@ -150,16 +151,24 @@ describe("Fragment / YT Ad Wall Detection", () => {
 
     startInfo.port.on = function (arg1, arg2) {
       expect(trustedEventNames).toContain(arg1);
-      expectTypeOf(arg2).toBeFunction();
+      expect(typeof arg2).toBe("function");
 
       if (arg1 === youTubeWallDetected) {
         processYouTubeWallDetected = arg2;
-        let message: AdWallMessage = { userLoggedIn: "0" };
-        let sender: MessageSender = {
-          page: { id: 1, url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+        let message: AdWallMessage = {
+          type: youTubeWallDetected,
+          userLoggedIn: "0",
+          currentPlaybackTime: 0,
+          hasDismiss: false,
         };
+        let sender = {
+          page: {
+            id: 1,
+            url: new URL("https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
+          },
+        } as MessageSender;
 
-        const jestChrome = chrome as any as JestChrome;
+        const jestChrome = chrome as any;
         jestChrome.tabs.reload.mockImplementation((argumentOne: any) => {
           expect(argumentOne).toEqual(sender.page.id);
         });
@@ -194,19 +203,24 @@ describe("Fragment / YT Ad Wall Detection", () => {
 
     startInfo.port.on = function (arg1, arg2) {
       expect(trustedEventNames).toContain(arg1);
-      expectTypeOf(arg2).toBeFunction();
+      expect(typeof arg2).toBe("function");
 
       if (arg1 === youTubeWallDetected) {
         processYouTubeWallDetected = arg2;
         let message: AdWallMessage = {
+          type: youTubeWallDetected,
           userLoggedIn: "0",
           currentPlaybackTime: 50,
+          hasDismiss: false,
         };
-        let sender: MessageSender = {
-          page: { id: 1, url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
-        };
+        let sender = {
+          page: {
+            id: 1,
+            url: new URL("https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
+          },
+        } as MessageSender;
 
-        const jestChrome = chrome as any as JestChrome;
+        const jestChrome = chrome as any;
         jestChrome.tabs.update.mockImplementation(
           (argumentOne: any, argumentTwo: any) => {
             expect(argumentOne).toEqual(sender.page.id);
@@ -234,12 +248,19 @@ describe("Fragment / YT Ad Wall Detection", () => {
   });
 
   it("respond correctly to a YouTube ad wall message when the tab is already allowlisted", async () => {
-    let message: AdWallMessage = { userLoggedIn: "1" };
-    let sender: MessageSender = { page: { id: 2 } };
+    let message: AdWallMessage = {
+      type: youTubeWallDetected,
+      userLoggedIn: "1",
+      currentPlaybackTime: 0,
+      hasDismiss: false,
+    };
+    let sender = {
+      page: { id: 2, url: new URL("https://www.youtube.com/") },
+    } as MessageSender;
 
     startInfo.port.on = function (arg1, arg2) {
       expect(trustedEventNames).toContain(arg1);
-      expectTypeOf(arg2).toBeFunction();
+      expect(typeof arg2).toBe("function");
 
       if (arg1 === youTubeWallDetected) {
         arg2(message, sender);

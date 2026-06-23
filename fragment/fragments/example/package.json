@@ -12,7 +12,7 @@
     "build:types": "tsc --emitDeclarationOnly",
     "build": "npm run build:types",
     "build:release": "npm run build:types",
-    "test": "vitest run --reporter=verbose"
+    "test": "vitest run"
   },
   "peerDependencies": {
     "vite": "6.4.3",

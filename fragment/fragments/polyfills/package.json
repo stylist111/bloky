@@ -11,7 +11,7 @@
     }
   },
   "scripts": {
-    "test": "vitest run --reporter=verbose"
+    "test": "vitest run"
   },
   "peerDependencies": {
     "vitest": "4.1.5",

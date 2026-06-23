@@ -1,4 +1,4 @@
-import { describe, expect } from "vitest";
+import { describe, it, expect } from "vitest";
 import { AdWallMessage, Message, MessageSender } from "../index";
 import { Tabs } from "webextension-polyfill";
 
@@ -8,6 +8,7 @@ describe("Polyfill / AdWallMessage", () => {
       type: "TypeScript",
       userLoggedIn: "1",
       currentPlaybackTime: 50,
+      hasDismiss: false,
     };
     expect(msg.type).toEqual("TypeScript");
     expect(msg.userLoggedIn).toEqual("1");
