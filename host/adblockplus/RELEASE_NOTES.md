@@ -1,14 +1,16 @@
 # Unreleased
 
+# 4.41.0 - 2026-06-23
+
 - Inline CSS filters are now applied using CSS stylesheets where possible
   instead of element hiding emulation. This results in a performance
   improvement, but does not otherwise affect functionality.
 - Updated snippets to 2.12.0
+- Fixed: Addressed certain errors that have the potential of causing CPU spikes for some users (OM-808).
 
 # 4.40.0 - 2026-06-16
 
 - Added support for experimental filters delivered via experiment flags. When an experiment flag whose ID ends in `:filters` is active, the filters it carries are applied as user filters and cleaned up automatically when the flag changes or is removed.
-- Fixed: Addressed certain errors that have the potential of causing CPU spikes for some users (OM-808).
 
 # 4.39.1 - 2026-06-09
 
