@@ -132,8 +132,9 @@ async function handleMessage(message, sender) {
       const frame = getFrameInfo(sender.tab.id, sender.frameId);
       const topFrame = getFrameInfo(sender.tab.id, TOP_LEVEL_FRAME_ID);
       const hostname = frame.hostname;
-      const [experimentHosts, isEnabled] = await Promise.all([
+      const [experimentHosts, disabledHosts, isEnabled] = await Promise.all([
         experiments.getFlag("zero-delay-snippet-domains"),
+        experiments.getFlag("zero-delay-disabled-domains"),
         lightningSnippets.isEnabled()
       ]);
       const request = {
@@ -143,21 +144,39 @@ async function handleMessage(message, sender) {
       };
 
       // `useCache` activates Lightning Snippets (zero-delay filter caching)
-      // for this frame. It composes two independent sources:
+      // for this frame. It composes three sources:
       //   - lightningSnippets.isEnabled(): resolved global state from the
       //     caller-opinion / premium-status / host-default precedence
       //     chain (see the lightningSnippets namespace).
       //   - zero-delay-snippet-domains: a per-host activation list in the
       //     experiment config, independent of global state.
+      //   - zero-delay-disabled-domains: a kill-switch list in the experiment
+      //     config. If the hostname contains any listed entry as a substring,
+      //     caching is forced off regardless of the two activation sources
+      //     above.
+
+      // Note that the disabling logic matches wider than the enabling logic.
+      // This is because we mostly want to use this to fix broken sites.
+      // If example.com is breaking we probably want to disable zero delay
+      // snippets for both www.example.com and sub.example.com. As domainless
+      // monitoring snippets would be injected to every domain it would be very
+      // hard to disable it for every possible subdomain to fix the breakage.
+      // The consequence is if we have example.com in the experiment flag
+      // it would also match myexample.com as well so we need to be specific
+      // while preparing the experiment config. 
+      const cacheDisabledForHost = Boolean(
+        disabledHosts &&
+        disabledHosts.some(disabledHost => hostname.includes(disabledHost))
+      );
       const defaultFiltersConfig = {
         // If true, content scripts will mark visually the elements hidden
         debug: debugOptions.elemHide,
         // If true, content scripts will apply the filters from the local cache
         // first, and if there are changes will update the cache and refresh
         // the page.
-        useCache: isEnabled || Boolean(
+        useCache: !cacheDisabledForHost && (isEnabled || Boolean(
           experimentHosts && experimentHosts.includes(hostname)
-        ),
+        )),
         // If true, isolated snippets will fire
         // snippet_detection_event telemetry
         detectionEventEnabled: Boolean(

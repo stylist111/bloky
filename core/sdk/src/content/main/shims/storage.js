@@ -393,21 +393,58 @@ export function shimStorage(CACHED_FILTERS_CONFIG_KEY) {
     storageInstanceProxyConfig
   );
 
-  Object.defineProperty(window, "localStorage", {
-    value: localStorageProxy,
-    writable: false,
-    configurable: true,
-    enumerable: true
-  });
-
   sessionStorageProxy = new Proxy(
     window.sessionStorage,
     storageInstanceProxyConfig
   );
 
+  // Capture the native accessor getters before redefining.
+  const localStorageDesc =
+    Object.getOwnPropertyDescriptor(window, "localStorage");
+  const sessionStorageDesc =
+    Object.getOwnPropertyDescriptor(window, "sessionStorage");
+  const nativeLocalStorageGetter = localStorageDesc && localStorageDesc.get;
+  const nativeSessionStorageGetter =
+    sessionStorageDesc && sessionStorageDesc.get;
+
+  function localStorageGetter() {
+    return localStorageProxy;
+  }
+  function sessionStorageGetter() {
+    return sessionStorageProxy;
+  }
+
+  if (nativeLocalStorageGetter) {
+    $ReflectDefineProperty(localStorageGetter, "name", {
+      value: nativeLocalStorageGetter.name,
+      configurable: true
+    });
+    mapSet(
+      originalToStrings,
+      localStorageGetter,
+      nativeLocalStorageGetter.toString.bind(nativeLocalStorageGetter)
+    );
+  }
+  if (nativeSessionStorageGetter) {
+    $ReflectDefineProperty(sessionStorageGetter, "name", {
+      value: nativeSessionStorageGetter.name,
+      configurable: true
+    });
+    mapSet(
+      originalToStrings,
+      sessionStorageGetter,
+      nativeSessionStorageGetter.toString.bind(nativeSessionStorageGetter)
+    );
+  }
+
+  Object.defineProperty(window, "localStorage", {
+    get: localStorageGetter,
+    configurable: true,
+    enumerable: true
+  });
+
   Object.defineProperty(window, "sessionStorage", {
-    value: sessionStorageProxy,
-    writable: false,
+    get: sessionStorageGetter,
     configurable: true,
     enumerable: true
   });

@@ -1271,6 +1271,162 @@ describe("Snippets", function() {
       expect(result.spreadValue).toBe("website-value");
       expect(result.inOperator).toBe(true);
     });
+
+    it("exposes localStorage and sessionStorage as accessor properties on window", async function() {
+      const describeDescriptor = () => {
+        const shape = name => {
+          const desc = Object.getOwnPropertyDescriptor(window, name);
+          return {
+            hasGetter: typeof desc.get === "function",
+            hasValue: "value" in desc,
+            configurable: desc.configurable,
+            enumerable: desc.enumerable
+          };
+        };
+        return {
+          localStorage: shape("localStorage"),
+          sessionStorage: shape("sessionStorage")
+        };
+      };
+
+      const result = await executeScript(tabId, describeDescriptor, [], "MAIN");
+
+      // Regression guard: defining these as data properties (value/writable)
+      // strips the getter, so any consumer reading
+      // Object.getOwnPropertyDescriptor(window, "localStorage").get throws.
+      for (const name of ["localStorage", "sessionStorage"]) {
+        expect(result[name].hasGetter).toBe(true);
+        expect(result[name].hasValue).toBe(false);
+        expect(result[name].configurable).toBe(true);
+      }
+    });
+
+    it("allows invoking the storage descriptor getter without throwing", async function() {
+      const callGetters = (key, value) => {
+        const out = {};
+        for (const name of ["localStorage", "sessionStorage"]) {
+          const desc = Object.getOwnPropertyDescriptor(window, name);
+          // This is the exact call shape that broke the page:
+          // desc.get is undefined for a data property -> TypeError.
+          const storage = desc.get.call(window);
+          storage.setItem(key, value);
+          out[name] = storage.getItem(key);
+        }
+        return out;
+      };
+
+      const result = await executeScript(
+        tabId, callGetters, ["getter-probe-key", "getter-probe-value"], "MAIN"
+      );
+
+      expect(result.localStorage).toBe("getter-probe-value");
+      expect(result.sessionStorage).toBe("getter-probe-value");
+    });
+
+    it("has the same storage descriptor kind as the isolated world", async function() {
+      const descriptorKind = () => {
+        const kind = name => {
+          const desc = Object.getOwnPropertyDescriptor(window, name);
+          return typeof desc.get === "function" ? "accessor" : "data";
+        };
+        return {
+          localStorage: kind("localStorage"),
+          sessionStorage: kind("sessionStorage")
+        };
+      };
+
+      const mainResult = await executeScript(tabId, descriptorKind, [], "MAIN");
+      const isolatedResult = await executeScript(tabId, descriptorKind, [], "ISOLATED");
+
+      // The shimmed main world must keep the native accessor shape that the
+      // unshimmed isolated world has.
+      expect(mainResult.localStorage).toBe("accessor");
+      expect(mainResult.sessionStorage).toBe("accessor");
+      expect(mainResult).toEqual(isolatedResult);
+    });
+
+    it("does not expose the shim via the storage descriptor getter toString", async function() {
+      const getToString = () => {
+        const local =
+          Object.getOwnPropertyDescriptor(window, "localStorage").get;
+        const session =
+          Object.getOwnPropertyDescriptor(window, "sessionStorage").get;
+        return [
+          local.toString(),
+          Function.prototype.toString.call(local),
+          session.toString(),
+          Function.prototype.toString.call(session)
+        ];
+      };
+
+      const mainResults = await executeScript(tabId, getToString, [], "MAIN");
+      const isolatedResults =
+        await executeScript(tabId, getToString, [], "ISOLATED");
+
+      for (const result of mainResults) {
+        expect(result).toContain("[native code]");
+        expect(result).not.toContain("Proxy");
+        expect(result).not.toContain(CACHED_FILTERS_CONFIG_KEY);
+      }
+      // Unshimmed isolated world is the source of truth for native output.
+      expect(mainResults).toEqual(isolatedResults);
+    });
+
+    it("storage descriptor getter name matches the unshimmed world", async function() {
+      const getNames = () => ({
+        local: Object.getOwnPropertyDescriptor(window, "localStorage").get.name,
+        session:
+          Object.getOwnPropertyDescriptor(window, "sessionStorage").get.name
+      });
+
+      const mainResult = await executeScript(tabId, getNames, [], "MAIN");
+      const isolatedResult = await executeScript(tabId, getNames, [], "ISOLATED");
+
+      // The shim preserves the main-world native getter name, which for a
+      // WebIDL accessor is spec-named "get localStorage"/"get sessionStorage"
+      // (what the page actually observes). The isolated world reads the page's
+      // window through a Firefox Xray wrapper, which on older Firefox exposes
+      // the same getter with the "get " prefix stripped. Normalize that prefix
+      // so the comparison is realm-agnostic while still catching a leaked
+      // internal name (e.g. "localStorageGetter").
+      const stripGetPrefix = names => ({
+        local: names.local.replace(/^get /, ""),
+        session: names.session.replace(/^get /, "")
+      });
+
+      expect(stripGetPrefix(mainResult))
+        .toEqual(stripGetPrefix(isolatedResult));
+    });
+
+    it("calling the storage descriptor getter does not expose the snippets config", async function() {
+      const probe = key => {
+        const out = {};
+        for (const name of ["localStorage", "sessionStorage"]) {
+          const storage =
+            Object.getOwnPropertyDescriptor(window, name).get.call(window);
+          out[name] = {
+            getItem: storage.getItem(key),
+            bracket: storage[key],
+            inOperator: key in storage,
+            keys: Object.keys(storage),
+            spreadHasKey: key in {...storage}
+          };
+        }
+        return out;
+      };
+
+      const result = await executeScript(
+        tabId, probe, [CACHED_FILTERS_CONFIG_KEY], "MAIN"
+      );
+
+      for (const name of ["localStorage", "sessionStorage"]) {
+        expect(result[name].getItem).toBeNull();
+        expect(result[name].bracket).toBeNull();
+        expect(result[name].inOperator).toBe(false);
+        expect(result[name].keys).not.toContain(CACHED_FILTERS_CONFIG_KEY);
+        expect(result[name].spreadHasKey).toBe(false);
+      }
+    });
   });
 
   describe("Context Tampering", function() {
@@ -1381,6 +1537,37 @@ describe("Snippets", function() {
 
         expect(config).not.toBeNull();
         expect(config.detectionEventEnabled).toBe(false);
+      }
+    );
+
+    it("forces useCache off when the host is in zero-delay-disabled-domains",
+      async function() {
+        // Host is activated for zero-delay caching
+        await EWE.experiments.overrideFlag(
+          "zero-delay-snippet-domains", ["localhost"]
+        );
+        // But the kill-switch list must win and disable caching.
+        await EWE.experiments.overrideFlag(
+          "zero-delay-disabled-domains", ["localhost"]
+        );
+        await addFilter(
+          `${TEST_PAGES_DOMAIN}#$#json-prune` +
+          " 'data-expectedresult jsonprune aria-label'"
+        );
+
+        const tabId = await new Page(
+          "snippet-json-prune.html", forceBg
+        ).loaded;
+        await sleep(100);
+
+        // With useCache forced off, the filters config is never written to
+        // storage, so nothing is cached for the next page load.
+        const config = await executeScript(tabId, key => {
+          const raw = sessionStorage.getItem(key);
+          return raw ? JSON.parse(raw) : null;
+        }, [CACHED_FILTERS_CONFIG_KEY]);
+
+        expect(config).toBeNull();
       }
     );
   });

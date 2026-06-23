@@ -1,6 +1,8 @@
 # Unreleased
 
 - Updated snippets to 2.12.0
+- Added the `zero-delay-disabled-domains` experiment flag that can
+  be used to disable Lightning Snippets for given domains.
 
 ## General
 
