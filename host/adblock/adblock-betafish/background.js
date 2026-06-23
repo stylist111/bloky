@@ -689,7 +689,7 @@ function addAllowlistingListeners() {
   });
 }
 
-const initializationServerLogger = new ewe.telemetry.ServerLogger("initialization");
+const startupServerLogger = new ewe.telemetry.ServerLogger("startup");
 const youtubeServerLogger = new ewe.telemetry.ServerLogger("youtube");
 
 const migratedEvents = new Set([
@@ -779,29 +779,20 @@ initialize
       },
     });
   })
-  .then(async () => {
+  .then(() => {
     performance.measure("adblock.initialize", "adblock.initialize");
-
-    let availableStaticRuleCount = null;
-    if (browser.declarativeNetRequest) {
-      availableStaticRuleCount = await browser.declarativeNetRequest.getAvailableStaticRuleCount();
-    }
-
-    initializationServerLogger.debug("initialization_complete", {
-      availableStaticRuleCount,
-      subscriptionsCount: (await ewe.subscriptions.getSubscriptions()).length,
-      timings: getPerformanceTimings(),
-    });
   })
-  .catch((e) => {
+  .catch(async (e) => {
     performance.measure("adblock.initialize.error", "adblock.initialize");
     const hasInternalError = /internal error/i.test(e.message);
 
-    initializationServerLogger.debug("initialization_error", {
-      errorMsg: e.message,
-      hasInternalError,
-      timings: getPerformanceTimings(),
-    });
+    if (await ewe.experiments.getFlag("initialization_logs")) {
+      startupServerLogger.debug("startup_error", {
+        errorMsg: e.message,
+        hasInternalError,
+        timings: getPerformanceTimings(),
+      });
+    }
 
     throw e;
   });

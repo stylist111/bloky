@@ -60,7 +60,7 @@ import { start as startInProductMessaging } from "~/ipm/background";
 import { start as startEWE } from "~/ewe/background";
 import { start as startTestingEwe } from "~/testing/ewe/background";
 
-const serverLogger = new ewe.telemetry.ServerLogger("initialization");
+const serverLogger = new ewe.telemetry.ServerLogger("startup");
 
 /**
  * Runs initialization that can be done in parallel and doesn't have to be done
@@ -185,28 +185,16 @@ async function bootstrap(): Promise<void> {
   performance.measure("adblockplus.bootstrap", "adblockplus.bootstrap");
 }
 
-void bootstrap()
-  .then(async () => {
-    let availableStaticRuleCount = null;
-    if (browser.declarativeNetRequest) {
-      availableStaticRuleCount =
-        await browser.declarativeNetRequest.getAvailableStaticRuleCount();
-    }
+void bootstrap().catch(async (e) => {
+  performance.measure("adblockplus.bootstrap.error", "adblockplus.bootstrap");
 
-    serverLogger.debug("initialization_complete", {
-      availableStaticRuleCount,
-      subscriptionsCount: (await ewe.subscriptions.getSubscriptions()).length,
-      timings: getPerformanceTimings()
-    });
-  })
-  .catch((e) => {
-    performance.measure("adblockplus.bootstrap.error", "adblockplus.bootstrap");
-
-    serverLogger.debug("initialization_error", {
+  if (await ewe.experiments.getFlag("initialization_logs")) {
+    serverLogger.debug("startup_error", {
       errorMsg: e.message,
       hasInternalError: /internal error/i.test(e.message as string),
       timings: getPerformanceTimings()
     });
+  }
 
-    throw e;
-  });
+  throw e;
+});

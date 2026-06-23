@@ -34,7 +34,7 @@ let firstRun;
 let reinitialized = false;
 let dataCorrupted = false;
 
-const serverLogger = new ewe.telemetry.ServerLogger("initialization");
+const serverLogger = new ewe.telemetry.ServerLogger("startup");
 
 /**
  * If there aren't any filters, the default subscriptions are added.
@@ -173,7 +173,9 @@ async function addSubscriptions() {
       // send a message to the log server with debug metadata
       console.warn("Something is wrong with subscriptions, reset to defaults", params);
 
-      serverLogger.debug("zero_subs_reset", params);
+      if (await ewe.experiments.getFlag("initialization_logs")) {
+        serverLogger.debug("subscriptions_reset", params);
+      }
 
       // reset the reinitialized flag to be later used in communicating with the user
       reinitialized = true;

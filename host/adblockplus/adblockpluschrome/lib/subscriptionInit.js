@@ -30,7 +30,7 @@ import { start as startFacts } from "../../src/remote-config/background";
 import { start as startUnloadCleanup } from "../../src/unload-cleanup/background/index.ts";
 import * as logger from "../../src/logger/background";
 
-const serverLogger = new ewe.telemetry.ServerLogger("initialization");
+const serverLogger = new ewe.telemetry.ServerLogger("startup");
 
 let firstRun;
 let userNotificationCallback = null;
@@ -145,7 +145,8 @@ async function addSubscriptionsAndNotifyUser() {
         reinitialized,
         dataCorrupted
       });
-      serverLogger.debug("zero_subs_reset", params);
+      if (await ewe.experiments.getFlag("initialization_logs"))
+        serverLogger.debug("subscriptions_reset", params);
 
       // reset the reinitialized flag to be later used in communicating
       // with the user

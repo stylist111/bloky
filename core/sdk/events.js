@@ -905,69 +905,8 @@ export default {
       }
     }
   },
-  initialization: {
-    initialization_complete: {
-      description: "The extension has finished initializing without any errors",
-      data: {
-        description: "Data about the initialized system",
-        type: "object",
-        properties: {
-          subscriptionsCount: {
-            description: "The number of subscriptions the user has active",
-            type: "number"
-          },
-          availableStaticRuleCount: {
-            description: "The number of DNR static rules that the user has available, or null for MV2 extensions",
-            type: ["number", "null"]
-          },
-          timings: {
-            description: "Profiling information about startup performance",
-            type: "object",
-            properties: {
-              marks: {
-                type: "array",
-                description: "Specific points in time when something happened",
-                items: {
-                  type: "object",
-                  properties: {
-                    name: {
-                      description: "Name of the initialization step",
-                      type: "string"
-                    },
-                    startTime: {
-                      description: "Milliseconds elapsed since the service worker started",
-                      type: "number"
-                    }
-                  }
-                }
-              },
-              measures: {
-                type: "array",
-                description: "Measurements of how long steps took",
-                items: {
-                  type: "object",
-                  properties: {
-                    name: {
-                      description: "Name of the initialization step",
-                      type: "string"
-                    },
-                    startTime: {
-                      description: "When the measure started, in milliseconds elapsed since the service worker started",
-                      type: "number"
-                    },
-                    duration: {
-                      description: "Duration that the step took in milliseconds",
-                      type: "number"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    initialization_error: {
+  startup: {
+    startup_error: {
       description: "Errors recorded during the initialization of the extension",
       data: {
         description: "Data about the initializion error",
@@ -1028,7 +967,7 @@ export default {
         }
       }
     },
-    zero_subs_reset: {
+    subscriptions_reset: {
       description: "Event logged when subscriptions are reset to defaults due to zero enabled subscriptions",
       data: {
         description: "Debug metadata about the subscription reset",
