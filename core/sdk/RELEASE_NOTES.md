@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.12.0
+
 ## General
 
 - Inline CSS filters are now applied using CSS stylesheets where possible

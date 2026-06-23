@@ -3,6 +3,7 @@
 - Inline CSS filters are now applied using CSS stylesheets where possible
   instead of element hiding emulation. This results in a performance
   improvement, but does not otherwise affect functionality.
+- Updated snippets to 2.12.0
 
 # 6.42.2 - 2026-06-16
 
