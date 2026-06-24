@@ -422,22 +422,6 @@ async function handleCommand(ipmId: string): Promise<void> {
     return;
   }
 
-  // Don't open new tabs for users in experiments that disable new-tab
-  // campaigns. Flag names follow the prefix convention
-  // `disable-new-tab-campaigns-<experiment-id>` — each reverse-trial
-  // experiment appends its own id so the experiments framework accepts
-  // multiple concurrent variants. See the reverse-trial Confluence page
-  // for the naming convention.
-  const flags = await ewe.experiments.getFlags();
-  const disableNewTab = Object.keys(flags).some(
-    (name) => name.startsWith("disable-new-tab-campaigns-") && flags[name] === true,
-  );
-  if (disableNewTab) {
-    logger.debug("[new-tab]: New tab campaigns disabled by experiment flag");
-    dismissNewtabCommand(ipmId);
-    return;
-  }
-
   // Ignore and dismiss command if behavior is invalid
   logger.debug("[new-tab]:openNewtab");
   const behavior = getBehavior(ipmId);
