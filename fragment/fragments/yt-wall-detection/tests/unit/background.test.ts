@@ -27,16 +27,8 @@ import {
   youTubeAlreadyAllowListed,
   youTubeAutoAllowlisted,
   youTubeWallDetected,
-  ytHavenMetaTagFound,
-  ytHavenEmbeddedPlayerIssue,
   youTubeNavigation,
-  ytHavenNextVideoNotFound,
-  ytHavenNonEmbeddableFound,
-  ytHavenNonPlayableFound,
-  ytHavenShouldStart,
-  ytHavenToggleState,
-  ytHavenToggleStateUpdate,
-  ytHavenRecordEvent,
+  ytRecordEvent,
 } from "../../src/shared/index.js";
 import { type MessageSender, type AdWallMessage } from "@eyeo/polyfills/all";
 
@@ -80,15 +72,7 @@ const startInfo: StartInfo = {
 const trustedEventNames = [
   youTubeWallDetected,
   youTubeNavigation,
-  ytHavenShouldStart,
-  ytHavenNonEmbeddableFound,
-  ytHavenNonPlayableFound,
-  ytHavenEmbeddedPlayerIssue,
-  ytHavenMetaTagFound,
-  ytHavenNextVideoNotFound,
-  ytHavenToggleState,
-  ytHavenToggleStateUpdate,
-  ytHavenRecordEvent,
+  ytRecordEvent,
 ];
 
 /**

@@ -19,14 +19,11 @@
 import type Browser from "webextension-polyfill";
 import browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import { type Filter } from "@eyeo/webext-ad-filtering-solution";
 
 import {
   type MessageSender,
   type AdWallMessage,
-  type YTHavenPlayerErrorMessage,
-  type YTHavenToggleMessage,
-  type YTHavenRecordEvent,
+  type YTRecordEventMessage,
 } from "@eyeo/polyfills/all";
 import {
   noop,
@@ -39,23 +36,7 @@ import {
   youTubeAutoAllowlisted,
   youTubeWallDetected,
   youTubeNavigation,
-  matchingElementFoundKey,
-  ytHavenEmbeddedPlayerIssue,
-  ytHavenMetaTagFound,
-  ytHavenNextVideoNotFound,
-  ytHavenNonEmbeddableFound,
-  ytHavenNonPlayableFound,
-  ytHavenToggleState,
-  ytHavenDefaultEnabledFlag,
-  ytHavenToggleStateUpdate,
-  ytHavenToggleStatePrefsKey,
-  ytHavenShouldStart,
-  ytHavenEmbedFreeFlag,
-  ytHavenEmbedPremiumFlag,
-  ytHavenToggleStateEnabled,
-  ytHavenToggleStateDisabled,
-  ytHavenRecordEvent,
-  ytHavenAutoAllowlistVideo,
+  ytRecordEvent,
   contextTamperingEvent,
   adShownEvent,
   errorEvent,
@@ -125,23 +106,9 @@ const processYouTubeWallMessage = async (
 
   const senderURL = new URL(tabURL);
   const host = senderURL.hostname.replace(/^www\./, "");
-  const pathname = senderURL.pathname;
-  const videoId = senderURL.searchParams.get("v");
 
-  const isAllowlistVideo = await ewe.experiments.getFlag(
-    ytHavenAutoAllowlistVideo,
-  );
-  let allowlistUrl = host;
-
-  if (isAllowlistVideo) {
-    allowlistUrl = host + pathname;
-    // If the video is allowlisted, we need to use the video ID
-    if (videoId) {
-      allowlistUrl = `${allowlistUrl}?v=${videoId}`;
-    }
-  }
-
-  const allowlistDuration = isAllowlistVideo ? "video" : "tab";
+  const allowlistUrl = host;
+  const allowlistDuration = "tab";
   const filters = await ewe.filters.getAllowingFilters(tabId);
   const isAllowListed = filters.some((f) => f.includes(allowlistUrl));
 
@@ -154,11 +121,6 @@ const processYouTubeWallMessage = async (
     userLoggedIn: message.userLoggedIn ? "1" : "0",
     isAllowListed: isAllowListed ? "1" : "0",
     allowlistDuration,
-  });
-
-  // Store the allowlist in the local storage so that we know it on the second run
-  await browser.storage.local.set({
-    [matchingElementFoundKey]: true,
   });
 
   // Already allowlisted, no need to add the rule;
@@ -313,16 +275,6 @@ export function start(parameters: StartInfo): void {
     { urls: ["*://*.youtube.com/api/stats/qoe?*"] },
   );
 
-  // Remove the allowlisting state from storage when the filter is removed
-  ewe.filters.onRemoved.addListener(async (filter: Filter) => {
-    if (
-      filter.text.endsWith("youtube.com^$document") &&
-      filter.type === "allowing"
-    ) {
-      await browser.storage.local.remove(matchingElementFoundKey);
-    }
-  });
-
   const processYouTubeWallMessageWithParameters =
     processYouTubeWallMessage.bind(null, parameters);
   parameters.port.on(
@@ -339,44 +291,9 @@ export function start(parameters: StartInfo): void {
   );
 
   parameters.port.on(
-    ytHavenNonEmbeddableFound,
-    (message: YTHavenPlayerErrorMessage): void => {
-      sendAdWallEvents(ytHavenNonEmbeddableFound, {
-        errorCode: message.errorCode,
-      });
-    },
-  );
-
-  parameters.port.on(
-    ytHavenNonPlayableFound,
-    (message: YTHavenPlayerErrorMessage): void => {
-      sendAdWallEvents(ytHavenNonPlayableFound, {
-        errorCode: message.errorCode,
-      });
-    },
-  );
-
-  parameters.port.on(ytHavenNextVideoNotFound, (): void => {
-    sendAdWallEvents(ytHavenNextVideoNotFound);
-  });
-
-  parameters.port.on(ytHavenMetaTagFound, (): void => {
-    sendAdWallEvents(ytHavenMetaTagFound);
-  });
-
-  parameters.port.on(
-    ytHavenEmbeddedPlayerIssue,
-    (message: YTHavenPlayerErrorMessage): void => {
-      sendAdWallEvents(ytHavenEmbeddedPlayerIssue, {
-        errorCode: message.errorCode,
-      });
-    },
-  );
-
-  parameters.port.on(
-    ytHavenRecordEvent,
+    ytRecordEvent,
     async (
-      { eventName, eventPayload }: YTHavenRecordEvent,
+      { eventName, eventPayload }: YTRecordEventMessage,
       sender: MessageSender,
     ): Promise<void> => {
       const tabId = sender.tab?.id;
@@ -393,66 +310,10 @@ export function start(parameters: StartInfo): void {
     },
   );
 
-  // check if the user is in the YT Haven experiment
-  parameters.port.on(ytHavenShouldStart, async (): Promise<boolean> => {
-    const isPremium = await parameters.isPremiumActive();
-    const ytHavenFlags = await Promise.all([
-      ewe.experiments.getFlag(ytHavenEmbedFreeFlag),
-      ewe.experiments.getFlag(ytHavenEmbedPremiumFlag),
-    ]);
-    return (
-      (Boolean(ytHavenFlags[0]) && !isPremium) ||
-      (Boolean(ytHavenFlags[1]) && isPremium)
-    );
-  });
-
-  // Get the toggle state from persistent storage, as default if user is premium
-  // it should be false otherwise depends on the variant configuration
-  parameters.port.on(ytHavenToggleState, async (): Promise<boolean> => {
-    const isPremium = await parameters.isPremiumActive();
-    const [currentState, isDefaultEnabled] = await Promise.all([
-      browser.storage.local.get(ytHavenToggleStatePrefsKey),
-      ewe.experiments.getFlag(ytHavenDefaultEnabledFlag),
-    ]);
-    return Boolean(
-      currentState[ytHavenToggleStatePrefsKey] ??
-        (isPremium ? false : isDefaultEnabled),
-    );
-  });
-
-  // Update the toggle state
-  parameters.port.on(
-    ytHavenToggleStateUpdate,
-    async ({ newState }: YTHavenToggleMessage): Promise<boolean> => {
-      // update the state
-      await browser.storage.local.set({
-        [ytHavenToggleStatePrefsKey]: newState,
-      });
-
-      // record toggle state change event
-      const isPremium = await parameters.isPremiumActive();
-      const eventName = newState
-        ? ytHavenToggleStateEnabled
-        : ytHavenToggleStateDisabled;
-      const eventPayload = { p: isPremium };
-      sendAdWallEvents(eventName, eventPayload);
-
-      return newState;
-    },
-  );
-
   const trustedEventNames = [
     youTubeWallDetected,
     youTubeNavigation,
-    ytHavenShouldStart,
-    ytHavenNonEmbeddableFound,
-    ytHavenNonPlayableFound,
-    ytHavenEmbeddedPlayerIssue,
-    ytHavenMetaTagFound,
-    ytHavenNextVideoNotFound,
-    ytHavenToggleState,
-    ytHavenToggleStateUpdate,
-    ytHavenRecordEvent,
+    ytRecordEvent,
   ];
   parameters.addTrustedMessageTypes("https://youtube.com", trustedEventNames);
   parameters.addTrustedMessageTypes(

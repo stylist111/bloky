@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export const ytHavenShouldStart = "yt-haven.should-start";
-
 export const youTubeAlreadyAllowListed = "yt-site.already.allowlisted";
 export const youTubeAutoAllowlisted = "yt-auto.allowlisted";
 export const youTubeWallDetected = "yt-site.ad-wall-detected";
@@ -35,29 +33,4 @@ export enum ErrorType {
   SWW_ERROR = "sww_error",
 }
 
-export const ytHavenEmbedFreeFlag = "yt-haven-embed-free";
-export const ytHavenEmbedPremiumFlag = "yt-haven-embed-premium";
-export const ytHavenDefaultEnabledFlag = "yt-haven-default-enabled";
-
-export const ytHavenToggleStatePrefsKey = "yt_haven_toggle_state";
-export const ytHavenToggleState = "yt-haven.toggle-state";
-export const ytHavenToggleStateUpdate = "yt-haven.toggle-state-update";
-
-export const ytHavenRecordEvent = "yt-haven.record-event";
-
-export const ytHavenAutoAllowlistVideo = "yt-haven-allowlist-video";
-
-// events send by the info box
-export const ytHavenInfoBoxShown = "yt_haven_info_box_shown";
-export const ytHavenToggleStateEnabled = "yt_haven_toggle_state_enabled";
-export const ytHavenToggleStateDisabled = "yt_haven_toggle_state_disabled";
-export const ytHavenFeedbackMenuOpen = "yt_haven_feedback_menu_open";
-
-export const matchingElementFoundKey = "matchingElementFound";
-
-export const ytHavenEmbeddedPlayerIssue = "yt-haven.embed-issue";
-export const ytHavenMetaTagFound = "yt-haven.meta-tag.found";
-export const ytHavenNextVideoNotFound = "yt-haven.next-video-not-found";
-export const ytHavenNonEmbeddableFound = "yt-haven.non-embeddable-found";
-export const ytHavenNonPlayableFound = "yt-haven.non-playable-found";
-export const ytHavenIframeShown = "yt-haven.iframe-shown";
+export const ytRecordEvent = "yt-site.record-event";

@@ -17,13 +17,11 @@
  */
 
 import { start as startWallDetection } from "./detection.js";
-import { start as startHavenExperiment } from "./haven.js";
 
 /**
  * Initializes content script
  */
 export function start(): void {
-  void startHavenExperiment();
   startWallDetection();
 }
 

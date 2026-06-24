@@ -73,26 +73,9 @@ export interface AdWallMessage extends Message {
 }
 
 /**
- * Interface for the Message sent when the iFramePlayer fails with error
+ * Interface for the Message used to record a YouTube ad wall event
  */
-export interface YTHavenPlayerErrorMessage extends Message {
-  /**
-   * The error code for the player
-   */
-  errorCode: string;
-}
-
-export interface YTHavenToggleMessage extends Message {
-  /**
-   * The state of the toggle
-   */
-  newState: boolean;
-}
-
-/**
- * Interface for the Message
- */
-export interface YTHavenRecordEvent extends Message {
+export interface YTRecordEventMessage extends Message {
   eventName: string;
   eventPayload?: Record<string, any>;
 }
