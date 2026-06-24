@@ -27,7 +27,7 @@ import {
   addMocksForWebsitePages,
   addMocksForCDP,
 } from "../test-server/mock-http-server/index.js";
-import { findUrl, openNewTab, getAllWindowHandlesSafe, screenshot } from "./driver.js";
+import { findUrl, openNewTab, navigateTo, getAllWindowHandlesSafe, screenshot } from "./driver.js";
 import {
   getOptionsHandle,
   setOptionsHandle,
@@ -75,6 +75,10 @@ async function startBrowser(extensionPath, retry = 0) {
     let extraArgs;
     if (browserName === "firefox") {
       extraArgs = ["-width=1400", "-height=1500"];
+      // geckodriver 0.36.0+ requires this flag to allow Marionette chrome-context
+      // access (used for navigating to moz-extension:// URLs via setContext).
+      // Required for all Firefox versions when using geckodriver 0.36.0+.
+      extraArgs.push("-remote-allow-system-access");
       // EXT-497: we need to bind "testpages.eyeo.com" to "localhost"
       // to be able to test with locally hosted page. For FF we use PAC file
       // to set proxy
@@ -266,7 +270,7 @@ export async function beforeEachTasks() {
   // reload), navigate back to it so subsequent tests don't cascade-fail
   const currentUrl = await driver.getCurrentUrl();
   if (!currentUrl.includes("options.html")) {
-    await driver.navigate().to(`${extension.origin}/options.html`);
+    await navigateTo(`${extension.origin}/options.html`);
   }
 
   await cleanupOpenTabs();

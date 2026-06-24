@@ -221,7 +221,97 @@ export async function getDisplayedElement(
   return elem;
 }
 
+/**
+ * Navigates the current tab to a moz-extension:// URL using Firefox's
+ * privileged chrome context.
+ *
+ * Firefox 153+ blocks moz-extension:// navigation via two separate mechanisms:
+ *   1. driver.navigate().to() throws UnsupportedOperationError (W3C spec,
+ *      geckodriver enforcing restriction on privileged URL schemes).
+ *   2. window.location = "moz-extension://..." throws a security error when
+ *      called from an unprivileged page context (about:blank, http://, etc.).
+ *
+ * The only reliable workaround is Firefox's Marionette chrome context
+ * (driver.setContext("chrome")), which gives elevated browser-chrome
+ * privileges and can navigate to any URL via gBrowser APIs.
+ *
+ * @param {string} url
+ * @returns {Promise<void>}
+ */
+export async function navigateTo(url) {
+  if (url.startsWith("moz-extension://")) {
+    await driver.setContext("chrome");
+    try {
+      // openTrustedLinkIn is a browser-window global (defined in browser.js).
+      // It opens URLs with system-principal trust, bypassing the WebDriver
+      // restriction on moz-extension:// navigation. No module import needed.
+      await driver.executeScript(`openTrustedLinkIn(arguments[0], "current")`, url);
+    } finally {
+      await driver.setContext("content");
+    }
+
+    await driver.wait(
+      async () => {
+        try {
+          const currentUrl = await driver.getCurrentUrl();
+          if (!currentUrl.startsWith("moz-extension://")) {
+            return false;
+          }
+          const readyState = await driver.executeScript("return document.readyState");
+          return readyState === "complete";
+        } catch {
+          // During navigation the browsing context may be temporarily unavailable
+          return false;
+        }
+      },
+      10000,
+      `Page did not finish loading after navigating to ${url}`,
+    );
+  } else {
+    await driver.navigate().to(url);
+  }
+}
+
+/**
+ * Opens a new browser tab and navigates to the given URL.
+ * For moz-extension:// URLs, uses Firefox's chrome context (see navigateTo).
+ *
+ * @param {string} url
+ * @returns {Promise<string>} The WebDriver window handle of the new tab.
+ */
 export async function openNewTab(url) {
+  if (url.startsWith("moz-extension://")) {
+    const handlesBefore = new Set(await driver.getAllWindowHandles());
+
+    await driver.setContext("chrome");
+    try {
+      // openTrustedLinkIn("tab") opens a new foreground tab with system-principal
+      // trust — same global used in navigateTo, no module import needed.
+      await driver.executeScript(`openTrustedLinkIn(arguments[0], "tab")`, url);
+    } finally {
+      await driver.setContext("content");
+    }
+
+    let newHandle;
+    await driver.wait(
+      async () => {
+        const handles = await driver.getAllWindowHandles();
+        newHandle = handles.find((h) => !handlesBefore.has(h));
+        return !!newHandle;
+      },
+      10000,
+      `New tab for ${url} did not appear`,
+    );
+
+    await driver.switchTo().window(newHandle);
+    await driver.wait(
+      async () => (await driver.executeScript("return document.readyState")) === "complete",
+      10000,
+      `Page did not finish loading: ${url}`,
+    );
+    return newHandle;
+  }
+
   await driver.switchTo().newWindow("tab");
   await driver.navigate().to(url);
   return driver.getWindowHandle();
@@ -425,7 +515,7 @@ export async function clickAndNavigateBack(selector, expectedURL) {
     throw new Error(`Expected URL to be "${expectedURL}", but got "${newURL}"`);
   }
 
-  await driver.navigate().to(currentURL);
+  await navigateTo(currentURL);
   await driver.navigate().refresh();
 }
 

@@ -327,18 +327,41 @@ export async function reloadExtension(
     // wait for the extension to be ready and the options page to be displayed
     await wait(
       async () => {
+        // We use openNewTab rather than navigateTo here because Firefox 153+
+        // blocks navigating an existing http:// tab to a moz-extension:// URL
+        // even from chrome context. Opening a new tab via openTrustedLinkIn
+        // bypasses that restriction.
+        let newHandle;
         try {
-          await driver.navigate().to(`${extension.origin}/options.html`);
-          setOptionsHandle(await driver.getWindowHandle());
+          // Ensure we're back on the safe http:// tab for each attempt so the
+          // chrome-context gBrowser.selectedBrowser points somewhere predictable
+          await driver.switchTo().window(safeHandle);
+        } catch {
+          // safeHandle may already be gone; proceed anyway
+        }
+        try {
+          newHandle = await openNewTab(`${extension.origin}/options.html`);
+          setOptionsHandle(newHandle);
           // The options parameter is only used by ABP
           await initOptionsFn(getOptionsHandle(), { timeout: 10000, waitForDefaultState });
           return true;
         } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn(`reloadExtension retry error (${e.name}): ${e.message}`);
+          // Close the newly opened tab if the extension wasn't ready yet,
+          // then switch back to safeHandle so the next retry starts clean
+          if (newHandle) {
+            try {
+              await driver.switchTo().window(newHandle);
+              await driver.close();
+            } catch {
+              // ignore — tab may already be gone
+            }
+          }
           try {
-            await driver.navigate().refresh();
+            await driver.switchTo().window(safeHandle);
           } catch {
-            // If refresh also fails (e.g., session died during extension reload),
-            // let the wait loop retry — the extension may need more time to restart
+            // ignore
           }
         }
       },
