@@ -394,11 +394,6 @@ export const replacedCounts = (function getReplacedCount() {
   };
 })();
 
-browser.runtime.onStartup.addListener(async () => {
-  await License.ready();
-  await migrateToUserAccount();
-});
-
 browser.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === License.sevenDayAlarmName) {
     License.processSevenDayAlarm();
@@ -407,10 +402,6 @@ browser.alarms.onAlarm.addListener((alarm) => {
 
 License.ready().then(async () => {
   License.checkSevenDayAlarm();
-
-  // Attempt to migrate from legacy license to user account,
-  // when extension starts or SW restarts
-  await migrateToUserAccount();
 });
 
 License.initialize(() => {
@@ -418,52 +409,6 @@ License.initialize(() => {
     License.initialized = true;
   }
 });
-
-/**
- * Migrates the user's license to a user account if they have an active license
- * @returns {Promise<void>}
- */
-async function migrateToUserAccount() {
-  await Prefs.untilLoaded;
-  await License.ready();
-
-  // feature flag to gradually roll out this migration
-  if (!(await ewe.experiments.getFlag("ab_migrate_license"))) {
-    logger.debug("License migration feature flag is not enabled, skipping migration");
-    return;
-  }
-
-  // If the user doesn't have an active legacy license, we don't need to migrate
-  if (!License.isLicenseCodeValid() || License.get().status !== "active") {
-    logger.debug("Not active legacy license, skipping migration");
-    return;
-  }
-
-  // If the user already logged in, we don't need to do anything
-  if (await ewe.account.isLoggedIn()) {
-    logger.debug("Already has premium, skipping migration");
-    return;
-  }
-
-  // attempt to log in with the license
-  try {
-    // If there's no valid license code throw an error
-    if (!License.isLicenseCodeValid() || !License.get().code) {
-      throw new Error("No valid license code for migration");
-    }
-
-    const userId = await getUserId();
-    await ewe.account.logInWithLicense({
-      userId,
-      licenseId: License.get().code,
-    });
-    logger.debug("Migrated license to user account successfully");
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn("Failed to migrate license to user account", e);
-    ewe.sentry.reportError(e);
-  }
-}
 
 ewe.account.onChanged.addListener(async ({ user, oldUser }) => {
   const hasPremium = user && user.hasPremium;

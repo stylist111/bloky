@@ -250,7 +250,7 @@ function scheduleNextLicenseCheck(nextTimestamp: number | null): void {
   // for rescheduling an event when it is emitted.
   // https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/issues/1227
   licenseCheckTimeoutId = self.setTimeout(() => {
-    void checkLicense().then(migrateToUserAccount);
+    void checkLicense();
     scheduleNextLicenseCheck(null);
   }, nextTimestamp - Date.now());
 }
@@ -295,54 +295,6 @@ function initializeMessaging(): void {
 }
 
 /**
- * Migrates the user's license to a user account if they have an active license
- * @returns {Promise<void>}
- */
-async function migrateToUserAccount(): Promise<void> {
-  await Prefs.untilLoaded;
-
-  // Feature flag to gradually roll out this migration
-  if (!(await ewe.experiments.getFlag("abp_migrate_license"))) {
-    logger.debug(
-      "License migration feature flag is not enabled, skipping migration"
-    );
-    return;
-  }
-
-  // If the user doesn't have an active license, we don't need to migrate
-  if (!(await hasActiveLicense())) {
-    logger.debug("Not active license, skipping migration");
-    return;
-  }
-
-  // If the user already logged in, we don't need to do anything
-  if (await ewe.account.isLoggedIn()) {
-    logger.debug("Already logged in, skipping migration");
-    return;
-  }
-
-  // attempt to log in with the license
-  try {
-    const userId = Prefs.get("premium_user_id") as string;
-    const license = Prefs.get("premium_license") as License;
-
-    // If there's no valid license code throw an error
-    if (!license.code) {
-      throw new Error("No valid license code for migration");
-    }
-
-    await ewe.account.logInWithLicense({
-      userId,
-      licenseId: license.code
-    });
-    logger.debug("Migrated license to user account successfully");
-  } catch (e) {
-    console.warn("Failed to migrate license to user account", e);
-    ewe.sentry.reportError(e as Error);
-  }
-}
-
-/**
  * Initializes Premium license and license checks
  */
 export function start(): void {
@@ -365,7 +317,4 @@ export function start(): void {
       emitter.emit("activated");
     }
   });
-
-  // attempt to migration check on startup or SW restart
-  void migrateToUserAccount();
 }
