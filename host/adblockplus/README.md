@@ -2,17 +2,18 @@
 
 Welcome to the repository for the Adblock Plus extension!
 
-The main project is hosted on [GitLab][abp-ext] and, in addition to the user
+The main project is hosted on [GitLab][ext] and, in addition to the user
 interface and the web extension code, the Adblock Plus extension also includes
-[static filter lists][adblockinc-rules],
+[static filter lists][eyeo-filterlists],
 [eyeo's Web Extension Ad Blocking Toolkit (EWE)][eyeo-ewe] and
 [eyeo's snippets][eyeo-snippets].
 
 - [About Adblock Plus](#about-adblock-plus)
+- [Running the scripts](#running-the-scripts)
 - [Building](#building)
-- [UI elements](#ui-elements)
 - [Testing](#testing)
-- [Contributing](#contributing)
+- [Monitoring](#monitoring)
+- [Publishing](#publishing)
 
 ## About Adblock Plus
 
@@ -23,10 +24,6 @@ available for all major desktop browsers and for mobile devices.
 Adblock Plus is an open source project licensed under [GPLv3][gpl3] and subject
 to its [Terms of Use][eyeo-terms]. [eyeo GmbH][eyeo] is the parent company of
 Adblock Plus.
-
-## Monitoring
-
-The current extension health dashboard is available [here](https://eu.hex.tech/eyeo/app/Eyeo-Extension-Health-032QfyuottjWQzBZuQBKLm/latest).
 
 ## Running scripts
 
@@ -49,7 +46,7 @@ only required if you wish to enable the sending of telemetry.
 
 Various files need to be generated before using the UI. When building the UI
 for inclusion in the extension, this is achieved using
-`npm run dist -w=host/adblockplus` from the root folder (not this host folder).
+`npm run dist -w adblockplus` from the root folder (not this host folder).
 
 For usage [in the test environment](#testing), run the
 [`build`](../../README.md#building-the-extensions-in-development-mode) script to
@@ -74,54 +71,6 @@ If testing Sentry reporting locally, ensure that
 `sampleRate` to ensure that more of your test error events get through. A
 `sampleRate` of `1` will report all error events to Sentry.
 
-## UI elements
-
-Specifications for Adblock Plus elements can be found in [eyeo's spec
-repository][abp-spec].
-
-### UI pages
-
-These are pages that users primarily interact with because they are exposed to
-them via the browser's UI.
-
-- Bubble UI (popup)
-- Developer tools panel (devtools-panel)
-- Options
-  - Desktop (desktop-options)
-  - Mobile (Firefox) (mobile-options)
-
-### Dialogs
-
-These are pages that are dedicated to a specific feature and can be accessed via
-UI pages.
-
-- Filter composer (composer)
-- Issue reporter (issue-reporter)
-
-### Landing pages
-
-These are pages that cannot be accessed via UI pages. They are either directly
-or indirectly opened by the extension under certain conditions.
-
-- First run (first-run)
-- Problem (problem)
-- Updates (updates)
-
-### Helper pages
-
-These are pages that are part of another page. They are not meant to be shown on
-their own.
-
-- Proxy (proxy)
-
-### Additional extension functionality
-
-These are parts of the extension logic which are running alongside the other
-extension code in the extension's background process.
-
-- Notifications
-- Preferences
-
 ## Testing
 
 If you don't want to build the entire extension, you can open UI pages in a test
@@ -134,7 +83,7 @@ npm run -w adblockplus build:local
 npm start -w adblockplus
 ```
 
-After running `npm start --workspace host/adblockplus`, you can access the HTML
+After running `npm start -w adblockplus`, you can access the HTML
 pages under the URL shown in the terminal, e.g. http://127.0.0.1:8080.
 
 Various aspects of the pages can be tested by setting parameters in the URL (see
@@ -146,9 +95,9 @@ that you want to test.
 ### Unit tests
 
 The `./test/unit` folder contains various mocha unit tests files
-which can be run via `npm run $ test.unit.legacy --workspace host/adblockplus`.
+which can be run via `npm run $ test.unit.legacy -w adblockplus`.
 For `.ts` files we have jest unit tests that can be run via
-`npm run $ test.unit.love --workspace host/adblockplus`. Those can be run
+`npm run $ test.unit.love -w adblockplus`. Those can be run
 together via `npm test -- --scope adblockplus`.
 
 ### End-to-end tests
@@ -192,7 +141,7 @@ Mocha [command line options](https://mochajs.org/#command-line-usage) are also
 supported. Example:
 
 ```sh
-BROWSER={chromium|chrome|firefox|edge} MANIFEST_VERSION={2|3} npm run --workspace host/adblockplus test:end-to-end-local -- --grep "Smoke"
+BROWSER={chromium|chrome|firefox|edge} MANIFEST_VERSION={2|3} npm run -w adblockplus test:end-to-end-local -- --grep "Smoke"
 ```
 
 Screenshots for failing tests are stored in `host/adblockplus/test/end-to-end/screenshots`.
@@ -211,7 +160,7 @@ To use mocha command line options or a non-default browser version the
 `--entrypoint` parameter needs to be set. Example:
 
 ```sh
-docker run --shm-size=2g -it -e BROWSER={chromium|chrome|firefox|edge} [-e BROWSER_VERSION={version|channel}] -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w host/adblockplus test:end-to-end-local -- --grep "Smoke"
+docker run --shm-size=2g -it -e BROWSER={chromium|chrome|firefox|edge} [-e BROWSER_VERSION={version|channel}] -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w adblockplus test:end-to-end-local -- --grep "Smoke"
 ```
 
 To access the screenshots for failing tests run the following command, which
@@ -251,7 +200,7 @@ Optional environment variables:
 
 You can lint all files via `npm run lint` or lint only specific file types:
 
-- Translation files: `npm run --workspace host/adblockplus $ lint.locale`
+- Translation files: `npm run -w adblockplus $ lint.locale`
 
 The following can help fix issues:
 
@@ -261,11 +210,6 @@ The following can help fix issues:
 
 The project uses Gitlab CI to run pipelines which contain build and test jobs.
 
-### Nightlies
-
-Nightly builds for feature and release [branches][wiki-branches] can be found
-as artifacts [from this page][abp-ext-nightlies].
-
 ### Runners
 
 Pipeline jobs use self-managed runners from Google Cloud Platform (GCP). The
@@ -273,7 +217,17 @@ the setup of the runner is defined in [the devops runner project](https://gitlab
 [here](https://gitlab.com/groups/adblockinc/ext/-/runners). Access to GCP
 resources like the GCloud console can be granted by devops as well.
 
-## Uploading sourcemaps to Sentry
+## Monitoring
+
+For monitoring the overall health of the extension, use [eyeo's internal
+extension health dashboard][hex-ext-health].
+
+## Publishing
+
+The Adblock Plus extension is published to various extension stores according to
+the [host release process][wiki-release-process].
+
+### Uploading sourcemaps to Sentry
 
 The gitlab CI configuration has `release` stage and `upload_sourcemaps` job
 which is runs for tags like `adblockplus-<number>` and uploads the releases sourcemaps to Sentry.
@@ -293,33 +247,25 @@ mkdir ./dist/release/sourcemaps-mv3
    The sourcemaps are overwritten.
 5. Finalize the release with `VERSION=<version> npm run sentry:release-finalize`
 
-## Release history
+### Release history
 
-[Extension releases (since 3.11)][abp-ext-tags]
+[Extension releases (since 3.11)][ext-tags-abp]
 
-[Extension releases (prior to 3.11)][abp-webext-releases]
+[Extension releases (prior to 3.11)][abpchrome-tags]
 
-## Supported browsers
-
-List of browsers supported by extension can be found in the [supported-browsers].
-
-[abp-ext]: https://gitlab.com/adblockinc/ext/adblockplus/adblockplus
-[abp-ext-nightlies]: https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/pipelines?scope=branches
-[abp-ext-tags]: https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/tags
-[abp-spec]: https://gitlab.com/eyeo/specs/spec/tree/master/spec/abp
-[abp-webext-releases]: https://github.com/adblockplus/adblockpluschrome/releases
-[adblockinc-rules]: https://gitlab.com/adblockinc/ext/rules
-[badge-pipeline-image]: https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/badges/main/pipeline.svg
-[badge-pipeline-link]: https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/commits/main
+[abpchrome-tags]: https://gitlab.com/eyeo/adblockplus/adblockpluschrome/-/tags
+[ext]: https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions
+[ext-tags-abp]: https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/tags?sort=updated_desc&search=adblockplus-
 [eyeo]: https://eyeo.com/
 [eyeo-ewe]: https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution
+[eyeo-filterlists]: https://gitlab.com/eyeo/filters/filterlists
 [eyeo-snippets]: https://gitlab.com/eyeo/snippets
 [eyeo-terms]: https://adblockplus.org/terms
 [gpl3]: https://www.gnu.org/licenses/gpl.html
+[hex-ext-health]: https://eu.hex.tech/eyeo/app/Eyeo-Extension-Health-032QfyuottjWQzBZuQBKLm/latest
 [ms-wsl]: https://docs.microsoft.com/windows/wsl/install-win10
 [nodejs]: https://nodejs.org/en/
 [npm]: https://www.npmjs.com/get-npm
 [npx]: https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7d4bd282b
-[supported-browsers]: ../../README.md#supported-browsers
-[wiki-branches]: https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/wikis/development-workflow#branches
+[wiki-release-process]: https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/wikis/Host-release-process
 [wiki-utils]: https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/wikis/utilities

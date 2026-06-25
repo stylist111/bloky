@@ -24,7 +24,13 @@ When making changes to this code, consider adjusting the version numbers accordi
 - Update the `version` property in the package.json file whenever a change requires a new version to be published.
   - Breaking changes require a major version bump. These can either be breaking changes in the JSON schema or in the API of the package itself.
 
-## Releases
+## Testing
+
+The unit tests go in the `test/` folder and can be run with the
+`npm run -w @eyeo/remote-configuration-validator test`
+command.
+
+## Publishing
 
 Whenever a change to the package.json file lands in the main branch, a CI job will automatically attempt to publish a new package version to the [GitLab package registry](https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/packages).
 
@@ -34,9 +40,3 @@ In order for schema changes to take effect, this package needs to be updated acc
 - For validation in the extensions: Release a new version of the [extensions](https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/wikis/Host-release-process)
 - For validation in projects that integrate @eyeo/webext-ad-filtering-solution: Release a new version of the [@eyeo/webext-ad-filtering-solution package](https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/wikis/SDK-release-process) and publish the project that depends on it.
 - For use in the IPM campaign manager: Deploy a new version of the [IPM campaign manager](https://gitlab.com/eyeo/filters/ipm-campaign-manager)
-
-## Testing
-
-The unit tests go in the `test/` folder and can be run with the
-`npm run -w @eyeo/remote-configuration-validator test`
-command.

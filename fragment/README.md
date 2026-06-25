@@ -1,4 +1,4 @@
-# Fragments
+# Extension fragments
 
 Fragments are self-contained, host-integrable packages that add discrete features to browser extensions. Each fragment has its own build, tests, and versioning, and is integrated by host extensions as an npm workspace dependency.
 
@@ -6,9 +6,20 @@ Fragments are self-contained, host-integrable packages that add discrete feature
 
 ```plaintext
 fragment/
-├── fragments/                  # Fragment packages
-└── test/                       # Functional test extension and test suites
+├── fragments/
+│   └── <fragment>/                 # Fragment package
+│       ├── dist/                   # Fragment distribution files
+│       ├── src/                    # Fragment source code
+│       │   ├── all/ (or shared/)     # Code for any execution context
+│       │   ├── background/           # Code for background process
+│       │   ├── content/              # Code for isolated world
+│       │   ├── front/                # Code for UI page and isolated world
+│       │   └── main/                 # Code for main world
+│       └── test/                   # Fragment tests
+└── test/                           # Functional test extension and test suites
 ```
+
+Fragment source code is grouped by [execution context](../README.md#extension-execution-contexts).
 
 ## Building
 

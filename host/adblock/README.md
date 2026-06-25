@@ -3,17 +3,20 @@
 [AdBlock](https://getadblock.com/) is a popular ad blocking extension for Chrome,
 Edge and Firefox.
 
-## Monitoring
-
-The current extension health dashboard is available [here](https://eu.hex.tech/eyeo/app/Eyeo-Extension-Health-032QfyuottjWQzBZuQBKLm/latest).
+- [Requirements](#requirements)
+- [Running scripts](#running-scripts)
+- [Building](#building)
+- [Testing](#testing)
+- [Code style](#code-style)
+- [Developer guide](#developer-guide)
+- [Monitoring](#monitoring)
+- [Publishing](#publishing)
 
 ## Requirements
 
 This project requires [node.js](https://nodejs.org) and `npm` (which comes bundled with `node.js`).
 
 The exact version requirements can be found in the [package descriptor file](package.json) under the `engines` field.
-
-## Usage
 
 ## Running scripts
 
@@ -118,7 +121,7 @@ Mocha [command line options](https://mochajs.org/#command-line-usage) are also
 supported. Example:
 
 ```sh
-BROWSER={chromium|chrome|firefox|edge} MANIFEST_VERSION={2|3} npm run --workspace host/adblock test:end-to-end-local -- --grep "Smoke"
+BROWSER={chromium|chrome|firefox|edge} MANIFEST_VERSION={2|3} npm run -w adblock test:end-to-end-local -- --grep "Smoke"
 ```
 
 Screenshots for failing tests are stored in `host/adblock/test/end-to-end/screenshots`.
@@ -135,7 +138,7 @@ To use mocha command line options or a non-default browser version the
 `--entrypoint` parameter needs to be set. Example:
 
 ```sh
-docker run --shm-size=2g -it -e BROWSER={chromium|chrome|firefox|edge} [-e BROWSER_VERSION={version|channel}] -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w host/adblock test:end-to-end-local -- --grep "Smoke"
+docker run --shm-size=2g -it -e BROWSER={chromium|chrome|firefox|edge} [-e BROWSER_VERSION={version|channel}] -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w adblock test:end-to-end-local -- --grep "Smoke"
 ```
 
 To access the screenshots for failing tests run the following command, which
@@ -153,7 +156,7 @@ The following npm commands are then available:
 
 - `npm run lint` runs all linters and prints out all violations.
 - `npm run lint-fix` runs all linters and applies automatic fixes.
-- `npm run --workspace host/adblock html-hint` runs HTMLhint and flags any issues with the HTML templates such as missing `DOCTYPE`, tags and/or attributes. This does not run on pre-commits so it must be run manually. New AdBlock custom attributes should be added in `./rules/static/custom_attributes.json`. If mistakenly flagged, standard HTML attributes should be added in `./rules/static/aria_attributes.json` or `./rules/static/mapped_attributes.json`.
+- `npm run -w adblock html-hint` runs HTMLhint and flags any issues with the HTML templates such as missing `DOCTYPE`, tags and/or attributes. This does not run on pre-commits so it must be run manually. New AdBlock custom attributes should be added in `./rules/static/custom_attributes.json`. If mistakenly flagged, standard HTML attributes should be added in `./rules/static/aria_attributes.json` or `./rules/static/mapped_attributes.json`.
 
 ### Aliases
 
@@ -235,7 +238,17 @@ Each page can contain any combination of the following:
   - `icon`: material icons key of icon to be displayed on button, displayed before text
 - `footer`: displayed at bottom of page, i18n string key, max one per page
 
-## Uploading sourcemaps to Sentry
+## Monitoring
+
+For monitoring the overall health of the extension, use [eyeo's internal
+extension health dashboard][hex-ext-health].
+
+## Publishing
+
+The AdBlock web extension is published to various extension stores according to
+the [host release process][wiki-release-process].
+
+### Uploading sourcemaps to Sentry
 
 The gitlab CI configuration has `release` stage and `upload_sourcemaps` job
 which is runs for tags like `adblock-<number>` and uploads the releases sourcemaps to Sentry.
@@ -255,6 +268,5 @@ mkdir ./dist/sourcemaps/chrome-mv3
    The sourcemaps are overwritten.
 5. Finalize the release with `VERSION=<version> npm run sentry:release-finalize`
 
-## Supported browsers
-
-List of browsers supported by extension can be found in the [README on the root](../../README.md#supported-browsers).
+[hex-ext-health]: https://eu.hex.tech/eyeo/app/Eyeo-Extension-Health-032QfyuottjWQzBZuQBKLm/latest
+[wiki-release-process]: https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/wikis/Host-release-process

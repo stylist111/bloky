@@ -13,6 +13,7 @@ for further information.
 ## Table of contents
 
 * [Code of Conduct](#code-of-conduct)
+* [Directory structure](#directory-structure)
 * [Getting started](#getting-started)
   * [Supported browsers](#supported-browsers)
   * [Manifest for V2](#manifest-for-v2)
@@ -33,6 +34,7 @@ for further information.
   * [Building the documentation](#building-the-documentation)
   * [Linting the code](#linting-the-code)
 * [Testing](#testing)
+* [Publishing](#publishing)
 * [Events](#events)
 * [Supporting Manifest V3](#manifest-v3)
 
@@ -42,6 +44,25 @@ for further information.
 
 All contributors to this project are required to read, and follow, our
 [code of conduct](./CODE_OF_CONDUCT.md).
+
+## Directory structure
+
+```
+core/sdk/
+├── adblockpluscore/        # adblockpluscore ad-filtering engine
+├── docs/                   # Documentation
+├── dist/                   # SDK distribution files
+├── scripts/                # Build scripts and tooling
+├── src/                    # SDK Source code
+│   ├── all/ (or shared/)     # Code for any execution context
+│   ├── background/           # Code for background process
+│   ├── content/              # Code for isolated world
+│   ├── front/                # Code for UI page and isolated world
+│   └── main/                 # Code for main world
+└── test/                   # Functional tests
+```
+
+SDK source code is grouped by [execution context](../../README.md#extension-execution-contexts).
 
 ## Getting started
 
@@ -473,14 +494,13 @@ npm run lint
 
 </div>
 
-[abpui]:https://gitlab.com/adblockinc/ext/adblockplus/adblockplusui
-[api-docs]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#apis
-[allowlisting-module]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#allowlisting
-[notifications-module]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#notifications
-[npm-package]: https://www.npmjs.com/package/@eyeo/webext-ad-filtering-solution
-[snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
-[snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
-[supported-browsers]: ../../README.md#supported-browsers
+## Testing
+
+For full documentation about testing please refer to our [testing document](./docs/TESTING.md).
+
+## Publishing
+
+The SDK is published to npm according to the [SDK release process][release-process].
 
 ## Events
 
@@ -506,6 +526,12 @@ Use `addListener(...)` to subscribe and `removeListener(...)` to unsubscribe.
 See [the Manifest V3 documentation](./docs/MANIFEST_V3.md) for further
 explanations.
 
-## Testing
-
-For full documentation about testing please refer to our [testing document](./docs/TESTING.md).
+[abpui]:https://gitlab.com/adblockinc/ext/adblockplus/adblockplusui
+[api-docs]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#apis
+[allowlisting-module]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#allowlisting
+[notifications-module]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#notifications
+[npm-package]: https://www.npmjs.com/package/@eyeo/webext-ad-filtering-solution
+[release-process]: https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/wikis/SDK-release-process
+[snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
+[snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
+[supported-browsers]: ../../README.md#supported-browsers

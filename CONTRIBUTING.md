@@ -21,7 +21,7 @@ Almost all code contributions should contain appropriate automated tests to ensu
 
 ## Release notes
 
-We want to simplify the process of submitting changes to the various web stores. Therefore, any commit that has any impact on the user facing deployable things (found in `hosts/`) should have release notes. This means adding items to the `Unreleased` section in relevant `hosts/*/RELEASE_NOTES.md` files.
+We want to simplify the process of submitting changes to the various web stores. Therefore, any commit that has any impact on the user facing deployable things (found in `host/`) should have release notes. This means adding items to the `Unreleased` section in relevant `host/*/RELEASE_NOTES.md` files.
 
 ### What does this mean for me as a person creating a merge request?
 

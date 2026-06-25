@@ -10,6 +10,7 @@ eyeo's web extensions SDK and related components.
 - [Testing](#testing)
 - [Code Style](#code-style)
 - [CI pipeline](#ci-pipeline)
+- [Publishing](#publishing)
 - [Contributing](#contributing)
 - [Troubleshooting](#troubleshooting)
 
@@ -273,6 +274,11 @@ may be granted by devops.
 
 See also [GitLab runners documentation](docs/GITLAB_RUNNERS.md) for instructions
 on how to set up GitLab runners on a private machine.
+
+## Publishing
+
+Where applicable, instructions on how to publish a given package can be found in
+the documentation of the respective package.
 
 ## Contributing
 
