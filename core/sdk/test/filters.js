@@ -226,6 +226,31 @@ describe("Filters", function() {
     await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
   });
 
+  it("keeps metadata when adding a filter that is already on a subscription", async function() {
+    const filter = "/image-from-custom-filter.png^$image";
+    const metadata = {origin: "experiment", flagId: "test:filters"};
+    let updatedReply = [
+      "[Adblock Plus]",
+      filter
+    ].join("\n");
+    await setEndpointResponse("/subscription2.txt", updatedReply);
+    await EWE.subscriptions.add(subTestUpdatable2.url);
+    await waitForSubscriptionsToDownload();
+
+    await EWE.filters.add([filter], metadata);
+
+    expect(await EWE.filters.getMetadata(filter)).toEqual(metadata);
+    expect(await EWE.filters.getUserFilters()).toEqual(expect.arrayContaining([
+      expect.objectContaining({text: filter, metadata})
+    ]));
+
+    // Removing the user filter must drop its metadata, even though the filter
+    // remains active as part of the subscription.
+    await EWE.filters.remove(filter);
+    expect(await EWE.filters.getMetadata(filter)).toBeNull();
+    expect(await EWE.filters.getUserFilters()).toEqual([]);
+  });
+
   it("remove custom filter that is already on subscription as a custom filter only", async function() {
     await EWE.subscriptions.add(subTestUpdatable1.url);
     await waitForSubscriptionsToDownload();

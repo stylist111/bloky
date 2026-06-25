@@ -958,6 +958,14 @@ export async function addFilters(texts, metadata) {
         detail.subscriptionIds = [];
       }
       detail.subscriptionIds.push(null);
+
+      // The filter was already known from another subscription, so it skipped
+      // the `details` loop below where metadata is normally applied. Attach the
+      // metadata here too, otherwise adding it as a user filter would silently
+      // drop it.
+      if (metadata) {
+        detail.metadata = metadata;
+      }
     }
 
     for (let filterDetails of plannedChanges.details) {
@@ -1106,12 +1114,19 @@ async function removeOrDisableDynamicFilters(filterTexts, dynamicFilters,
 
           dynamicFilters.delete(text);
         }
-        else if (!details.enabled) {
-          // Disabling filters is something we do to user filters, not filters
-          // in subscriptions. If the disabled user filter is removed, but it
-          // still exists in a subscription, then the subscription one needs to
-          // be reenabled.
-          await _enableFilters([text], dynamicFilters);
+        else {
+          // The filter still belongs to a subscription, so it stops being a
+          // user filter but isn't removed. Drop the user metadata that was
+          // attached to it so it doesn't linger on the subscription filter.
+          delete details.metadata;
+
+          if (!details.enabled) {
+            // Disabling filters is something we do to user filters, not
+            // filters in subscriptions. If the disabled user filter is
+            // removed, but it still exists in a subscription, then the
+            // subscription one needs to be reenabled.
+            await _enableFilters([text], dynamicFilters);
+          }
         }
       }
     }
