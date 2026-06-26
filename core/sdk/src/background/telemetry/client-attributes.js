@@ -54,5 +54,18 @@ export async function buildClientAttributes() {
     });
   }
 
+  if (facts.pingIdMintCount != null) {
+    clientAttributes.push({
+      key: "ping_id_mint_count",
+      value: String(facts.pingIdMintCount),
+    });
+  }
+  if (facts.eventsIdMintCount != null) {
+    clientAttributes.push({
+      key: "events_id_mint_count",
+      value: String(facts.eventsIdMintCount),
+    });
+  }
+
   return clientAttributes;
 }

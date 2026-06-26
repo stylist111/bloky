@@ -23,6 +23,7 @@ import initializer from "../initializer.js";
 import {getTrialDaysLeft, getPreferences} from "../account/storage.js";
 import experiments from "../experiments.js";
 import {sha256Prefix} from "../../all/hashing.js";
+import sentry from "../sentry.js";
 
 const UNKNOWN_COUNTRY_CODE = "unknown";
 let _getFacts = async() => ({});
@@ -256,6 +257,21 @@ async function getDefaultFacts() {
     Promise.all(activeFilterUrls.slice(0, 10).map(sha256Prefix))
   ]);
 
+  let pingIdMintCount;
+  let eventsIdMintCount;
+  if (await experiments.getFlag("report-sync-ids-mint-count")) {
+    try {
+      ({pingIdMintCount, eventsIdMintCount} =
+        await browser.storage.sync.get(
+          {pingIdMintCount: 0, eventsIdMintCount: 0}
+        ));
+    }
+    catch(e) {
+      e.message = `storage.sync: ${e.message}`;
+      sentry.reportError(e);
+    }
+  }
+
   let staticRuleCount;
   if (_rulesIndex) {
     staticRuleCount = isMV3
@@ -275,7 +291,9 @@ async function getDefaultFacts() {
     marketingConsent: !!preferences.marketingEmail,
     dynamicRuleCount: dynamicRules.length,
     filterLists,
-    staticRuleCount
+    staticRuleCount,
+    pingIdMintCount,
+    eventsIdMintCount
   };
 }
 

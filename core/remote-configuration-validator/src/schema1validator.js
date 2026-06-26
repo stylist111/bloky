@@ -124,6 +124,22 @@ const validOperatorsByFact = {
     "olderThan",
   ],
   partnerExtensionCoinstalled: ["equal", "notEqual"],
+  pingIdMintCount: [
+    "equal",
+    "notEqual",
+    "lessThan",
+    "lessThanInclusive",
+    "greaterThan",
+    "greaterThanInclusive",
+  ],
+  eventsIdMintCount: [
+    "equal",
+    "notEqual",
+    "lessThan",
+    "lessThanInclusive",
+    "greaterThan",
+    "greaterThanInclusive",
+  ],
 };
 
 function isValidModValue(value) {

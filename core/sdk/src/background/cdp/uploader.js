@@ -42,6 +42,7 @@ import {importRSAPublicKey, encryptRSA, AES_LENGTH,
         createAESKey, generateAESNonce, AESkeyToBinary, encryptAES}
   from "./encryption.js";
 import {MaxLengthMetricsDict} from "./domains-trimming.js";
+import sentry from "../sentry.js";
 
 let manifest = browser.runtime.getManifest();
 const extensionVersion = manifest.version;
@@ -382,6 +383,20 @@ async function initializeUcid() {
   if (!storage.getState().ucid) {
     storage.getState().ucid = uuidv4();
     await storage.save();
+
+    if (await experiments.getFlag("report-sync-ids-mint-count")) {
+      try {
+        const {pingIdMintCount} =
+          await browser.storage.sync.get({pingIdMintCount: 0});
+        await browser.storage.sync.set(
+          {pingIdMintCount: pingIdMintCount + 1}
+        );
+      }
+      catch(e) {
+        e.message = `storage.sync: ${e.message}`;
+        sentry.reportError(e);
+      }
+    }
   }
 }
 

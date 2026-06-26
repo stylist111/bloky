@@ -10,6 +10,8 @@ import {Scheduler} from "../../all/scheduler.js";
 import {default as remoteConfig} from "../remote-config/index.js";
 import {modHashString} from "../../all/hashing.js";
 import {getLoggingConfig} from "../remote-config/storage.js";
+import sentry from "../sentry.js";
+import experiments from "../experiments.js";
 
 const DEFAULT_ID_ROTATION_PERIOD = 30 * MILLIS_IN_DAY;
 let idRotationPeriod = DEFAULT_ID_ROTATION_PERIOD;
@@ -93,6 +95,20 @@ export async function setRotatingClientId(id) {
   state.rotatingClientId = id;
   state.nextRotationTime = Date.now() + idRotationPeriod;
   await rotatingClientStorage.save();
+
+  if (await experiments.getFlag("report-sync-ids-mint-count")) {
+    try {
+      const {eventsIdMintCount} =
+        await browser.storage.sync.get({eventsIdMintCount: 0});
+      await browser.storage.sync.set(
+        {eventsIdMintCount: eventsIdMintCount + 1}
+      );
+    }
+    catch(e) {
+      e.message = `storage.sync: ${e.message}`;
+      sentry.reportError(e);
+    }
+  }
 
   emitter.emit("updated");
 
