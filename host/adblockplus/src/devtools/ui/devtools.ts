@@ -34,7 +34,7 @@ function forwardSearchAction(eventName: string, queryString?: string): void {
     return;
   }
 
-  panelWindow.postMessage({ type: eventName, queryString }, "*");
+  panelWindow.postMessage({ type: eventName, queryString }, location.origin);
 }
 
 /**

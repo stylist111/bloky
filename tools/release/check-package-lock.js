@@ -69,14 +69,22 @@ function checkOnlyOneVersion(name) {
 
   let explanations;
   try {
-    const output = execSync(`npm explain --package-lock-only --json ${name}`, {
-      encoding: "utf8",
-      cwd: path.dirname(path.resolve(packageLockPath)),
-      // The JSON dependency tree for widely-depended-on packages can exceed
-      // execSync's default 1 MB stdout buffer, which would throw ENOBUFS.
-      maxBuffer: 5 * 1024 * 1024,
-    });
-    explanations = JSON.parse(output);
+    const { status, stderr, stdout } = spawnSync(
+      "npm",
+      ["explain", "--package-lock-only", "--json", name],
+      {
+        encoding: "utf8",
+        cwd: path.dirname(path.resolve(packageLockPath)),
+        // The JSON dependency tree for widely-depended-on packages can exceed
+        // execSync's default 1 MB stdout buffer, which would throw ENOBUFS.
+        maxBuffer: 5 * 1024 * 1024,
+      },
+    );
+    if (status !== 0) {
+      throw new Error(stderr);
+    }
+
+    explanations = JSON.parse(stdout);
   } catch (e) {
     console.error(`Failed to run npm explain for ${name}: ${e.message}`);
     process.exit(1);

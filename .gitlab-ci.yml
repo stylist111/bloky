@@ -1,4 +1,14 @@
-include: "/.gitlab/ci-common.yml"
+include:
+  - "/.gitlab/ci-common.yml"
+  # Secrets detection
+  - project: eyeo/devops/terraform/utils/ci-templates
+    file: .gitlab-ci.gitleaks.yml
+  # Security-focused static analysis
+  - project: eyeo/devops/terraform/utils/ci-templates
+    file: .gitlab-ci.semgrep.yml
+  # Dependency vulnerability scanning
+  - project: eyeo/devops/terraform/utils/ci-templates
+    file: .gitlab-ci.trivy.yml
 
 default:
   image: node:24.14.1
@@ -20,6 +30,7 @@ workflow:
     - when: always
 
 stages:
+  - pre_checks
   - root
   - children
   - release
@@ -33,6 +44,7 @@ stages:
   rules:
     - !reference [.never-run-on-update-rules-trigger, rules]
     - when: on_success
+  needs: []
 
 .build:
   extends: .base
@@ -339,3 +351,11 @@ upload_sourcemaps:
     - unzip dist/release/$HOST-chrome-*-mv3.zip -d ./dist/sourcemaps/chrome-mv3/
     - VERSION=$VERSION npm run sentry:sourcemaps
     - VERSION=$VERSION npm run sentry:release-finalize
+
+################################################################################
+# Overrides for jobs from included templates
+################################################################################
+
+semgrep:sast:
+  variables:
+    SEMGREP_EXTRA_ARGS: "--config=.semgrep.yml"

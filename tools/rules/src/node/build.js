@@ -71,7 +71,6 @@ async function buildExtensionRules(hostname) {
   console.log("Created rules", await fsh.getDistPath(hostname, fsh.rulesDnr));
 
   const manifestArgs = [
-    "subs-generate",
     "-p",
     "/data/rules/dnr/",
     "-i",
@@ -84,7 +83,7 @@ async function buildExtensionRules(hostname) {
     manifestArgs.push("-d", ...config.defaultEnabled);
   }
 
-  await execNpm(...manifestArgs);
+  await execNpm("subs-generate", ...manifestArgs);
 
   console.log(
     "Created manifest fragment",

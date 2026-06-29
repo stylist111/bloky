@@ -1,0 +1,33 @@
+rules:
+  - id: custom.unsafe-exec-npm
+    mode: taint
+    pattern-sources:
+      - pattern: |
+          `...${...}...`
+    pattern-sinks:
+      - pattern: execNpm($CMD, ...)
+        focus-metavariable: $CMD
+    message: >
+      execNpm() called with an interpolated string as the command —
+      pass arguments separately instead.
+    languages: [javascript, typescript]
+    severity: ERROR
+    paths:
+      include:
+        - /tools/rules/
+  - id: custom.unsafe-run-command
+    mode: taint
+    pattern-sources:
+      - pattern: |
+          `...${...}...`
+    pattern-sinks:
+      - pattern: runCommand($CMD, ...)
+        focus-metavariable: $CMD
+    message: >
+      runCommand() called with an interpolated string as the command —
+      pass arguments separately instead.
+    languages: [javascript, typescript]
+    severity: ERROR
+    paths:
+      include:
+        - /core/sdk/

@@ -20,7 +20,7 @@ import https from "https";
 import fs from "fs";
 import url from "url";
 import path from "path";
-import {exec} from "child_process";
+import {spawn} from "child_process";
 
 export async function exists(filename) {
   try {
@@ -133,22 +133,27 @@ export function projectRootPath() {
   return path.normalize(projectRoot);
 }
 
-export function runCommand(command) {
+export function runCommand(command, ...args) {
   console.log(`> ${command}`);
   return new Promise((resolve, reject) => {
-    let process = exec(command, error => {
-      if (error) {
-        reject(error);
-      }
-      else {
-        resolve();
-      }
-    });
-    process.stdout.on("data", data => {
+    // Rather than checking for unsafe command execution in this wrapper,
+    // we are instead relying on the "custom.unsafe-run-command" rule
+    // eslint-disable-next-line max-len
+    // nosemgrep: javascript.lang.security.detect-child-process.detect-child-process
+    const proc = spawn(command, args);
+    proc.stdout.on("data", (data) => {
       console.log(data);
     });
-    process.stderr.on("data", data => {
+    proc.stderr.on("data", (data) => {
       console.error(data);
     });
+    proc.on("close", (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Process exited with code ${code}`));
+      }
+    });
+    proc.on("error", reject);
   });
 }

@@ -32,7 +32,7 @@ async function subsRunMV3(args) {
 
   if (args["force-subscription-update"]) {
     console.log("Clearing any existing bundled subscriptions...");
-    await runCommand("npm run subs-clean");
+    await runCommand("npm", "run", "subs-clean");
   }
 
   if (!args["use-external-server"] && isScriptInvokedFromCLI) {
@@ -42,8 +42,8 @@ async function subsRunMV3(args) {
   try {
     console.log("Downloading bundled subscriptions...");
 
-    await runCommand("npm run subs-run-mv3");
-    await runCommand("npm run subs-run-performance-mv3");
+    await runCommand("npm", "run", "subs-run-mv3");
+    await runCommand("npm", "run", "subs-run-performance-mv3");
   }
   finally {
     if (isScriptInvokedFromCLI) {
@@ -52,22 +52,22 @@ async function subsRunMV3(args) {
   }
 }
 
-async function build(args) {
+async function build(buildArgs) {
   console.log("Building...");
-  let command = "npx webpack";
-  if (args.env) {
-    command += ` --env ${args.env}`;
+  const args = [];
+  if (buildArgs.env) {
+    args.push("--env", buildArgs.env);
   }
 
-  if (args.configName) {
-    command += ` --config-name ${args.configName.join(" ")}`;
+  if (buildArgs.configName) {
+    args.push("--config-name", buildArgs.configName.join(" "));
   }
 
-  if (args.devtool == false) {
-    command += " --no-devtool";
+  if (buildArgs.devtool == false) {
+    args.push("--no-devtool");
   }
 
-  await runCommand(command);
+  await runCommand("npx", "webpack", ...args);
   console.log("✅ Building Completed");
 }
 
@@ -100,7 +100,7 @@ export async function run() {
   await subsRunMV3(args);
   // subsRunMV3 cleans the whole scriptsOutput directory.
   // That's why subs-run-mv2 needs to run afterwards
-  await runCommand("npm run subs-run-mv2");
+  await runCommand("npm", "run", "subs-run-mv2");
   await build(args);
 }
 

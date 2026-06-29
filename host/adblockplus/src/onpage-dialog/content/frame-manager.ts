@@ -127,6 +127,13 @@ function showDialog(platform: string): void {
     // The content script for the on-page dialog is already injected into
     // all frames, so we just need to tell it that it's running in a frame,
     // where it can render the on-page dialog
+    // We cannot limit this message to an origin because sandboxed anonymous
+    // iFrames with out "allow-same-origin" have origin `null`, but we are
+    // already treating this frame as untrustworthy, regardless of its origin,
+    // and web pages can already detect the presence of the extension by the
+    // mere presence of that frame, so there should be  no negative impact if
+    // an untrusted party receives this message
+    // nosemgrep: javascript.browser.security.wildcard-postmessage-configuration.wildcard-postmessage-configuration
     iframe.contentWindow.postMessage("onpage-dialog.start", "*");
   });
 

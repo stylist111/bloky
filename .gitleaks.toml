@@ -1,0 +1,11 @@
+[extend]
+useDefault = true
+
+# Filters in filter lists may contain public keys (= sitekeys) and domains
+[[allowlists]]
+description = "Filters in filter lists may contain public keys (= sitekeys) and domains"
+targetRules = ["generic-api-key"]
+paths = [
+  '''core/sdk/test/extension-safari/rulesets/''',
+  '''core/sdk/test/extension-safari/subscriptions/'''
+]

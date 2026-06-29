@@ -1,0 +1,13 @@
+# Cryptography tests may contain private keys
+core/sdk/adblockpluscore/test/rsa.js:private-key:39
+core/sdk/adblockpluscore/test/rsa.js:private-key:81
+core/sdk/adblockpluscore/test/rsa.js:private-key:141
+core/sdk/test/unit/background/cdp-encryption.js:private-key:33
+
+# Configuration of local certificate authority for mock HTTPS server may contain
+# private keys
+tools/test/test-server/mock-http-server/certificates/testCA.key:private-key:1
+
+# Mock SDK server for testing may use public keys (= sitekeys) and private keys
+tools/test/test-server/sdk-server/sitekey.pem:private-key:1
+tools/test/test-server/sdk-server/test-server-urls.js:generic-api-key:27

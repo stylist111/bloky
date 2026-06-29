@@ -22,7 +22,11 @@ export async function run() {
     throw new Error(`Unsupported platform: ${process.platform}`);
   }
 
-  await runCommand("npx webpack -c ./scripts/safari/webpack.config.js --entry ./test/extension-safari/index.js");
+  await runCommand(
+    "npx", "webpack",
+    "-c", "./scripts/safari/webpack.config.js",
+    "--entry", "./test/extension-safari/index.js"
+  );
   await runCommand("./scripts/safari/build-test-app.sh");
 }
 

@@ -52,7 +52,9 @@ let panelWindow = null;
 
       if (panel.onSearch) {
         panel.onSearch.addListener((eventName, queryString) => {
-          if (panelWindow) panelWindow.postMessage({ type: eventName, queryString }, "*");
+          if (panelWindow) {
+            panelWindow.postMessage({ type: eventName, queryString }, location.origin);
+          }
         });
       }
     }

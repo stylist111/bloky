@@ -42,7 +42,7 @@ import "./messageResponder.mjs";
           messageId,
           payload: responseMessage
         },
-        "*"
+        location.origin
       );
     }
 
@@ -91,7 +91,7 @@ import "./messageResponder.mjs";
             type: "subscriptions.add"
           }
         },
-        "*"
+        location.origin
       );
     }, 1000);
   }
@@ -115,7 +115,7 @@ import "./messageResponder.mjs";
             ]
           }
         },
-        "*"
+        location.origin
       );
     }, 1000);
   }

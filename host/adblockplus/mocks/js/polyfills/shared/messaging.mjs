@@ -26,7 +26,7 @@ Page.prototype = {
         messageId: -1,
         payload: message
       },
-      "*"
+      location.origin
     );
   }
 };
@@ -47,7 +47,7 @@ export const onMessage = {
             messageId,
             payload: message
           },
-          "*"
+          location.origin
         );
       };
       listener(event.data.payload, sender, callback);

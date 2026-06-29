@@ -69,13 +69,11 @@ export const License = (function getLicense() {
   const mabConfig = {
     prod: {
       licenseURL: "https://myadblock.licensing.getadblock.com/license/",
-      subscribeKey: "sub-c-9eccffb2-8c6a-11e9-97ab-aa54ad4b08ec",
       payURL: "https://getadblock.com/premium/enrollment/",
       subscriptionURL: "https://myaccount.getadblock.com/?ref=adblock-options&premium=true",
     },
     dev: {
       licenseURL: "https://dev.myadblock.licensing.getadblock.com/license/",
-      subscribeKey: "sub-c-9e0a7270-83e7-11e9-99de-d6d3b84c4a25",
       payURL: "https://getadblock.com/premium/enrollment/?testmode=true",
       subscriptionURL: "https://ab.ua-qa.eyeo.it/?ref=adblock-options&premium=true",
     },

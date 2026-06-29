@@ -26,7 +26,7 @@ function loadHandler(event) {
     messageQueue = null;
     if (queue) {
       for (const message of queue)
-        backgroundFrame.contentWindow.postMessage(message, "*");
+        backgroundFrame.contentWindow.postMessage(message, location.origin);
     }
     window.removeEventListener("message", loadHandler);
   }
@@ -42,7 +42,7 @@ function postMessage(msg) {
 
 export function sendMessageToBackground(message) {
   if (messageQueue) messageQueue.push(message);
-  else backgroundFrame.contentWindow.postMessage(message, "*");
+  else backgroundFrame.contentWindow.postMessage(message, location.origin);
 }
 
 export function start() {

@@ -24,7 +24,7 @@ function postMessage(msg) {
       id: this._id,
       payload: msg
     },
-    "*"
+    location.origin
   );
 }
 
@@ -36,7 +36,7 @@ export function start() {
         {
           type: "backgroundPageLoaded"
         },
-        "*"
+        location.origin
       );
     },
     false

@@ -23,6 +23,9 @@ const require = createRequire(import.meta.url);
 
 export async function execNpm(cmd, ...args) {
   return new Promise((resolve, reject) => {
+    // Rather than checking for unsafe command execution in this wrapper,
+    // we are instead relying on the "custom.unsafe-exec-npm" rule
+    // nosemgrep: javascript.lang.security.detect-child-process.detect-child-process
     const proc = spawn(cmd, args);
     proc.on("close", (code) => {
       if (code === 0) {
