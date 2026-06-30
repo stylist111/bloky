@@ -1,5 +1,9 @@
 # Unreleased
 
+# 6.43.1 - 2026-06-30
+
+This release contains only minor updates and under-the-hood changes.
+
 # 6.43.0 - 2026-06-23
 
 - Inline CSS filters are now applied using CSS stylesheets where possible
