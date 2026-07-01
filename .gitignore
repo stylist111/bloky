@@ -31,11 +31,6 @@ node_modules
 # Testing
 **/browser-snapshots
 
-# Pre-checks generated files
-gl-dependency-scanning-report.json
-gl-sast-report.json
-gl-secret-detection-report.json
-
 .env
 
 ### fragment/test

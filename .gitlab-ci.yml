@@ -110,6 +110,7 @@ update_rules:
     - ./tools/release/update-rules-dependency.sh
   rules:
     - !reference [.only-run-on-update-rules-trigger, rules]
+  needs: []
 
 tools:
   extends: .base
@@ -251,6 +252,7 @@ notify_events_schema_change:
           - core/sdk/events.js
       when: on_success
     - when: never
+  needs: []
 
 ################################################################################
 # Release
