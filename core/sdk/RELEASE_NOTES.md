@@ -1,5 +1,6 @@
 # Unreleased
 
+- Added `browserVersion` fact (semver string) for use in remote configuration conditions.
 - Fixed `filters.add()` dropping metadata in MV3 when the added filter was
   already present in a subscription. The filter is now stored as a user filter
   with the provided metadata, and the metadata is cleared again when the user

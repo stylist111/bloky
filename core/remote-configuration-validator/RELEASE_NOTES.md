@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added support for `browserVersion` fact with semver operators.
+
 # 0.12.0
 
 - `validateRemoteConfig` now returns `{ errors, warnings }` instead of a flat array. Unknown facts and invalid operators are reported in `warnings`; all other validation failures remain in `errors`.

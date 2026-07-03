@@ -24,6 +24,16 @@ const SCHEMA_ID = "1";
 const validOperatorsByFact = {
   aaEnabled: ["equal", "notEqual"],
   browserName: ["equal", "notEqual", "in", "notIn"],
+  browserVersion: [
+    "equal",
+    "notEqual",
+    "in",
+    "notIn",
+    "semverLessThan",
+    "semverLessThanInclusive",
+    "semverGreaterThan",
+    "semverGreaterThanInclusive",
+  ],
   browserLanguage: ["equal", "notEqual", "in", "notIn"],
   countryCode: ["equal", "notEqual", "in", "notIn"],
   partnerExtensionDetected: ["equal", "notEqual"],

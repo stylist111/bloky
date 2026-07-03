@@ -479,5 +479,8 @@
   },
   "options_upgrade_button": {
     "message": "업그레이드"
+  },
+  "options_unsupported_browser_banner": {
+    "message": "브라우저 버전이 더 이상 지원되지 않습니다. 확장 프로그램 업데이트를 계속 받으려면 브라우저를 업그레이드하세요."
   }
 }

@@ -488,5 +488,8 @@
   },
   "options_upgrade_button": {
     "message": "Magasabb verzióra frissítés"
+  },
+  "options_unsupported_browser_banner": {
+    "message": "A böngésző verziója már nem támogatott. Frissítse böngészőjét, hogy továbbra is megkaphassa a bővítményfrissítéseket."
   }
 }

@@ -295,6 +295,11 @@ async function displayUserAccount() {
   }
 }
 
+async function showUnsupportedBrowserBanner() {
+  const isUnsupported = await ewe.experiments.getFlag("unsupportedBrowserVersion");
+  document.body.classList.toggle("unsupported-browser", isUnsupported !== null);
+}
+
 $(async () => {
   await initializeProxies();
 
@@ -318,6 +323,7 @@ $(async () => {
   setSelectedThemeColor();
   displayVersionNumber();
   localizePage();
+  void showUnsupportedBrowserBanner();
   displayTranslationCredit();
   updateSocialIconsVisibility();
   displayUserAccount();

@@ -283,6 +283,7 @@ async function getDefaultFacts() {
     extName,
     extVersion: info.addonVersion,
     browserName: info.application,
+    browserVersion: info.applicationVersion,
     browserLanguage: browser.i18n.getUILanguage(),
     aaEnabled,
     installType,

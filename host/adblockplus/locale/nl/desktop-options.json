@@ -488,5 +488,8 @@
   },
   "options_upgrade_button": {
     "message": "Upgraden"
+  },
+  "options_unsupported_browser_banner": {
+    "message": "Uw browserversie wordt niet meer ondersteund. Werk uw browser bij om extensie-updates te blijven ontvangen."
   }
 }

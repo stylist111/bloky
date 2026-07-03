@@ -488,5 +488,8 @@
   },
   "options_upgrade_button": {
     "message": "Aktualizuj"
+  },
+  "options_unsupported_browser_banner": {
+    "message": "Twoja wersja przeglądarki nie jest już obsługiwana. Zaktualizuj przeglądarkę, aby nadal otrzymywać aktualizacje rozszerzenia."
   }
 }

@@ -614,5 +614,9 @@
   "options_data_collection_opt_out_label": {
     "message": "Opt-out of all data collection in the Adblock Plus extension.",
     "description": "https://gitlab.com/adblockinc/ext/adblockplus/spec/-/blob/f37613353f52e22a8034a00a43d497e012a45ce1/spec/abp/desktop-settings/advanced-tab.md#data-collection-section"
+  },
+  "options_unsupported_browser_banner": {
+    "message": "Your browser version is no longer supported. Please upgrade your browser to continue receiving extension updates.",
+    "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
   }
 }

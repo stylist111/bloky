@@ -13,7 +13,7 @@ module.exports = {
     es2021: true,
     webextensions: true,
   },
-  plugins: ["eslint-plugin-html", "mocha"],
+  plugins: ["html", "mocha"],
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",

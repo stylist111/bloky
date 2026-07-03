@@ -3453,5 +3453,9 @@
   },
   "user_account_manage_account": {
     "message": "我的帳戶"
+  },
+  "unsupported_browser_banner": {
+    "message": "您的瀏覽器版本不再受支援。請升級瀏覽器以繼續接收擴充功能更新。",
+    "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
   }
 }

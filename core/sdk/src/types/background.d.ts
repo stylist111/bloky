@@ -477,6 +477,10 @@ export interface Facts {
    */
   browserName?: string;
   /**
+   * The browser version.
+   */
+  browserVersion?: string;
+  /**
    * The browser language.
    */
   browserLanguage?: string

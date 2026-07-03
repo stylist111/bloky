@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import semver from "semver";
+import {compareVersions} from "#adblockpluscore/lib/versions.js";
 
 /**
  * Cohorts operator for relative time comparisons. Checks if a fact value is
@@ -45,41 +45,43 @@ export function withinLast(factValue, jsonValue) {
 }
 
 /**
- * Checks if the factValue is greater than the jsonValue (semver).
- * @param {string} factValue - The semantic version to compare.
- * @param {string} jsonValue - The semantic version to compare against.
+ * Checks if the factValue is greater than the jsonValue (version comparison).
+ * @param {string} factValue - The version to compare.
+ * @param {string} jsonValue - The version to compare against.
  * @returns {boolean}
  */
 export function semverGreaterThan(factValue, jsonValue) {
-  return semver.gt(factValue, jsonValue);
+  return compareVersions(factValue, jsonValue) > 0;
 }
 
 /**
- * Checks if the factValue is greater than or equal to the jsonValue (semver).
- * @param {string} factValue - The semantic version to compare.
- * @param {string} jsonValue - The semantic version to compare against.
+ * Checks if the factValue is greater than or equal to the jsonValue (version
+ * comparison).
+ * @param {string} factValue - The version to compare.
+ * @param {string} jsonValue - The version to compare against.
  * @returns {boolean}
  */
 export function semverGreaterThanInclusive(factValue, jsonValue) {
-  return semver.gte(factValue, jsonValue);
+  return compareVersions(factValue, jsonValue) >= 0;
 }
 
 /**
- * Checks if the factValue is less than the jsonValue (semver).
- * @param {string} factValue - The semantic version to compare.
- * @param {string} jsonValue - The semantic version to compare against.
+ * Checks if the factValue is less than the jsonValue (version comparison).
+ * @param {string} factValue - The version to compare.
+ * @param {string} jsonValue - The version to compare against.
  * @returns {boolean}
  */
 export function semverLessThan(factValue, jsonValue) {
-  return semver.lt(factValue, jsonValue);
+  return compareVersions(factValue, jsonValue) < 0;
 }
 
 /**
- * Checks if the factValue is less than or equal to the jsonValue (semver).
- * @param {string} factValue - The semantic version to compare.
- * @param {string} jsonValue - The semantic version to compare against.
+ * Checks if the factValue is less than or equal to the jsonValue (version
+ * comparison).
+ * @param {string} factValue - The version to compare.
+ * @param {string} jsonValue - The version to compare against.
  * @returns {boolean}
  */
 export function semverLessThanInclusive(factValue, jsonValue) {
-  return semver.lte(factValue, jsonValue);
+  return compareVersions(factValue, jsonValue) <= 0;
 }

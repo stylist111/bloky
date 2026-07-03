@@ -3464,5 +3464,9 @@
   },
   "marketing_opt_out": {
     "message": "Sta AdBlock toe om af en toe promotionele berichten te tonen"
+  },
+  "unsupported_browser_banner": {
+    "message": "Uw browserversie wordt niet meer ondersteund. Werk uw browser bij om extensie-updates te blijven ontvangen.",
+    "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
   }
 }

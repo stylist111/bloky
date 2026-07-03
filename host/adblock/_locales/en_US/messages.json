@@ -3553,5 +3553,9 @@
   },
   "user_account_manage_account": {
     "message": "My Account"
+  },
+  "unsupported_browser_banner": {
+    "message": "Your browser version is no longer supported. Please upgrade your browser to continue receiving extension updates.",
+    "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
   }
 }

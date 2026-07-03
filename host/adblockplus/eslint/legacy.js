@@ -10,6 +10,7 @@
 module.exports = {
   extends: ["eslint-config-eyeo", "prettier", "prettier/prettier"],
   root: true,
+  plugins: ["html"],
   env: {
     browser: true,
     webextensions: true

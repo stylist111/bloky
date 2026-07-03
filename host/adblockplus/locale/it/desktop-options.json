@@ -488,5 +488,8 @@
   },
   "options_upgrade_button": {
     "message": "Aggiorna"
+  },
+  "options_unsupported_browser_banner": {
+    "message": "La versione del tuo browser non è più supportata. Aggiorna il browser per continuare a ricevere gli aggiornamenti dell'estensione."
   }
 }

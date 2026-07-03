@@ -3440,5 +3440,9 @@
   "get_around_popups": {
     "message": "Med Bypass-läget kan du kringgå vissa av dessa popups utan att inaktivera AdBlock.",
     "description": "Description of Bypass Mode on the main Premium options page"
+  },
+  "unsupported_browser_banner": {
+    "message": "Din webbläsarversion stöds inte längre. Uppdatera din webbläsare för att fortsätta ta emot tilläggsuppdateringar.",
+    "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
   }
 }

@@ -3464,5 +3464,9 @@
   },
   "marketing_opt_out": {
     "message": "Разрешить AdBlock показывать иногда рекламные сообщения"
+  },
+  "unsupported_browser_banner": {
+    "message": "Ваша версия браузера больше не поддерживается. Обновите браузер, чтобы продолжать получать обновления расширения.",
+    "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
   }
 }

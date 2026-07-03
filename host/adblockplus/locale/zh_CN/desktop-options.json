@@ -488,5 +488,8 @@
   },
   "options_upgrade_button": {
     "message": "升级"
+  },
+  "options_unsupported_browser_banner": {
+    "message": "您的浏览器版本不再受支持。请升级浏览器以继续接收扩展程序更新。"
   }
 }

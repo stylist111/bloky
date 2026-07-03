@@ -488,5 +488,8 @@
   },
   "options_upgrade_button": {
     "message": "Yükselt"
+  },
+  "options_unsupported_browser_banner": {
+    "message": "Tarayıcı sürümünüz artık desteklenmiyor. Uzantı güncellemelerini almaya devam etmek için lütfen tarayıcınızı güncelleyin."
   }
 }

@@ -465,5 +465,8 @@
   },
   "options_upgrade_button": {
     "message": "アップグレード"
+  },
+  "options_unsupported_browser_banner": {
+    "message": "お使いのブラウザのバージョンはサポートされなくなりました。拡張機能のアップデートを引き続き受け取るには、ブラウザをアップグレードしてください。"
   }
 }

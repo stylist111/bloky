@@ -1911,9 +1911,17 @@ async function showUserAccount() {
   }
 }
 
+async function startUnsupportedBrowserBanner() {
+  const isUnsupported = await ewe.experiments.getFlag(
+    "unsupportedBrowserVersion"
+  );
+  document.body.classList.toggle("unsupported-browser", isUnsupported !== null);
+}
+
 export function start() {
   convertDoclinks();
   initI18n();
+  void startUnsupportedBrowserBanner();
 
   promisedDateFormat = messaging.app
     .get("localeInfo")

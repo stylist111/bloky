@@ -3464,5 +3464,9 @@
   },
   "marketing_opt_out": {
     "message": "允许 AdBlock 偶尔显示推广信息"
+  },
+  "unsupported_browser_banner": {
+    "message": "您的浏览器版本不再受支持。请升级浏览器以继续接收扩展程序更新。",
+    "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
   }
 }

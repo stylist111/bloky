@@ -742,6 +742,10 @@ export default {
             description: "The name of the browser",
             type: "string"
           },
+          browserVersion: {
+            description: "The version of the browser",
+            type: "string"
+          },
           browserLanguage: {
             description: "The language of the browser",
             type: "string"

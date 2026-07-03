@@ -3464,5 +3464,9 @@
   },
   "marketing_opt_out": {
     "message": "Consenti ad AdBlock di mostrare occasionali messaggi promozionali"
+  },
+  "unsupported_browser_banner": {
+    "message": "La versione del tuo browser non è più supportata. Aggiorna il browser per continuare a ricevere gli aggiornamenti dell'estensione.",
+    "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
   }
 }

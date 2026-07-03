@@ -488,5 +488,8 @@
   },
   "options_upgrade_button": {
     "message": "Actualizar"
+  },
+  "options_unsupported_browser_banner": {
+    "message": "La versión de tu navegador ya no es compatible. Actualiza tu navegador para seguir recibiendo actualizaciones de la extensión."
   }
 }

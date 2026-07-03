@@ -13,7 +13,7 @@ module.exports = {
     "prettier/prettier",
     "plugin:@typescript-eslint/eslint-recommended",
   ],
-  plugins: ["no-unsanitized", "@typescript-eslint"],
+  plugins: ["no-unsanitized", "@typescript-eslint", "html"],
   rules: {
     "linebreak-style": "off",
     strict: ["error", "global"],

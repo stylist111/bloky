@@ -488,5 +488,8 @@
   },
   "options_upgrade_button": {
     "message": "Mise à jour"
+  },
+  "options_unsupported_browser_banner": {
+    "message": "La version de votre navigateur n'est plus prise en charge. Veuillez mettre à jour votre navigateur pour continuer à recevoir les mises à jour de l'extension."
   }
 }
