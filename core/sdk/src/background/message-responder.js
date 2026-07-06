@@ -201,6 +201,12 @@ async function handleMessage(message, sender) {
 
       const snippetFilters = filterEngine.snippets.getFilters(hostname);
 
+      // Lightning snippets shouldn't run when only snippet filters
+      // on the page are domainless monitoring filters to reduce breakages.
+      const hasDomainSpecificFilters = snippetFilters.some(
+        filter => !filter.isGeneric()
+      );
+
       // Asynchronously log snippet filters This needs to be wrapped in a
       // promise callback so that we don't block the current execution context,
       // and rather returns as soon as possible.
@@ -215,6 +221,7 @@ async function handleMessage(message, sender) {
 
       return {
         ...defaultFiltersConfig,
+        useCache: defaultFiltersConfig.useCache && hasDomainSpecificFilters,
         filters: snippetFilters.map(snippetItem => snippetItem.body)
       };
     }

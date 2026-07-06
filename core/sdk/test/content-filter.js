@@ -1570,5 +1570,34 @@ describe("Snippets", function() {
         expect(config).toBeNull();
       }
     );
+
+    it("forces useCache off when all snippet filters for the host are " +
+       "domainless",
+    async function() {
+      // Host is activated for zero-delay caching
+      await EWE.experiments.overrideFlag(
+        "zero-delay-snippet-domains", ["localhost"]
+      );
+      // But the only active filter is domainless, so there is nothing
+      // site-specific worth caching. Only log-if-* snippets may be
+      // domainless.
+      await addFilter(
+        "#$#log-if-selector-exists .ad"
+      );
+
+      const tabId = await new Page(
+        "snippet-json-prune.html", forceBg
+      ).loaded;
+      await sleep(100);
+
+      // With useCache forced off, the filters config is never written to
+      // storage, so nothing is cached for the next page load.
+      const config = await executeScript(tabId, key => {
+        const raw = sessionStorage.getItem(key);
+        return raw ? JSON.parse(raw) : null;
+      }, [CACHED_FILTERS_CONFIG_KEY]);
+
+      expect(config).toBeNull();
+    });
   });
 });
