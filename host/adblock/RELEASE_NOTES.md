@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.43.2 - 2026-07-07
+
 - Added a banner on the desktop options page to notify users on unsupported
   browser versions that they will no longer receive extension updates and should
   upgrade their browser. Banner visibility is controlled by the
