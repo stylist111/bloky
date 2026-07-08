@@ -72,7 +72,7 @@ async function buildExtensionRules(hostname) {
 
   const manifestArgs = [
     "-p",
-    "/data/rules/dnr/",
+    "data/rules/dnr/",
     "-i",
     await fsh.getDistPath(hostname, fsh.rulesDnr),
     "-o",

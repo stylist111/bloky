@@ -76,7 +76,7 @@ describe("Rules build script", function () {
           expect(fragmentJson.rule_resources).toContainEqual({
             id: recommendedId,
             enabled: expectedEnabled || false,
-            path: `/data/rules/dnr/${recommendedId}`,
+            path: `data/rules/dnr/${recommendedId}`,
           });
         }
         expect(fragmentJson.rule_resources).toHaveLength(
