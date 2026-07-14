@@ -109,7 +109,7 @@
   },
   "connect_on_twitter": {
     "description": "https://gitlab.com/eyeo/specs/spec/blob/588556f9ca89668a018aa7db00252747ba789b07/spec/abp/popup.md#footer-teaser",
-    "message": "Connect on Twitter"
+    "message": "Connect on X"
   },
   "connect_on_facebook": {
     "description": "https://gitlab.com/eyeo/specs/spec/blob/588556f9ca89668a018aa7db00252747ba789b07/spec/abp/popup.md#footer-teaser",

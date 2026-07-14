@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated the Twitter social link icon and label to X (OM-784).
+
 # 4.41.2 - 2026-07-07
 
 - Added a banner on the desktop options page to notify users on unsupported

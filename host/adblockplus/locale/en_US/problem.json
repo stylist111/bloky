@@ -33,7 +33,7 @@
   },
   "problem_social_twitter": {
     "description": "https://gitlab.com/eyeo/specs/spec/blob/a8e03839c92b789dff36b84c520a57b0eceefb44/spec/abp/notifications.md#warning-data-corruption-and-filters-reset",
-    "message": "Twitter"
+    "message": "X"
   },
   "problem_solution_action": {
     "description": "https://gitlab.com/eyeo/specs/spec/blob/a8e03839c92b789dff36b84c520a57b0eceefb44/spec/abp/notifications.md#warning-data-corruption-and-filters-reset",
