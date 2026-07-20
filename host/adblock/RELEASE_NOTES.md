@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.13.0
+
 # 6.43.2 - 2026-07-07
 
 - Added a banner on the desktop options page to notify users on unsupported
