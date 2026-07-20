@@ -6,7 +6,8 @@
   "globals": {
     "driver": true,
     "extension": true,
-    "browserDetails": true
+    "browserDetails": true,
+    "mockServer": true
   },
   "parserOptions": {
     "sourceType": "module"

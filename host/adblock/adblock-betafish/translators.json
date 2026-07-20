@@ -1,9 +1,9 @@
 {
-  "en":{
+  "en": {
     "language": "English",
     "localized": "English",
     "professional": true,
-    "translators":[
+    "translators": [
       {
         "credit": "The AdBlock Team",
         "username": null,
@@ -97,11 +97,11 @@
       }
     ]
   },
-  "bg":{
+  "bg": {
     "language": "Bulgarian",
     "localized": "български",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Николай Филипов",
         "username": "zmeYpc",
@@ -118,11 +118,11 @@
       }
     ]
   },
-  "ca":{
+  "ca": {
     "language": "Catalan",
     "localized": "català",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "CatTranslations",
         "username": "CatTranslations",
@@ -139,11 +139,11 @@
       }
     ]
   },
-  "cs":{
+  "cs": {
     "language": "Czech",
     "localized": "čeština",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Petr Cízl",
         "username": null,
@@ -209,11 +209,11 @@
       }
     ]
   },
-  "da":{
+  "da": {
     "language": "Danish",
     "localized": "dansk",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "stallemanden",
         "username": null,
@@ -230,11 +230,11 @@
       }
     ]
   },
-  "de":{
+  "de": {
     "language": "German",
     "localized": "Deutsch",
     "professional": true,
-    "translators":[
+    "translators": [
       {
         "credit": "John Rey",
         "username": "Johnnz",
@@ -251,11 +251,11 @@
       }
     ]
   },
-  "el":{
+  "el": {
     "language": "Greek",
     "localized": "Ελληνικά",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Ανέστης Βαρσαμίδης",
         "username": null,
@@ -286,11 +286,11 @@
       }
     ]
   },
-  "es":{
+  "es": {
     "language": "Spanish",
     "localized": "español",
     "professional": true,
-    "translators":[
+    "translators": [
       {
         "credit": "@Jotaele_",
         "username": "Jotaele_",
@@ -321,11 +321,11 @@
       }
     ]
   },
-  "fi":{
+  "fi": {
     "language": "Finnish",
     "localized": "Suomi",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "ollinpos",
         "username": "Olli",
@@ -370,11 +370,11 @@
       }
     ]
   },
-  "fil":{
+  "fil": {
     "language": "Filipino",
     "localized": "Filipino",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "franzancot",
         "username": "franzancot",
@@ -419,11 +419,11 @@
       }
     ]
   },
-  "gl":{
+  "gl": {
     "language": "Galician",
     "localized": "Galego",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Xesús M. Mosquera Carregal (@estaengalego)",
         "username": "xesusmosquera",
@@ -447,11 +447,11 @@
       }
     ]
   },
-  "gu":{
+  "gu": {
     "language": "Gujarati",
     "localized": "ગુજરાતી",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Vatsal Shah (imvatsalshah)",
         "username": "imvatsalshah",
@@ -461,11 +461,11 @@
       }
     ]
   },
-  "he":{
+  "he": {
     "language": "Hebrew",
     "localized": "עברית",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "BarakSt",
         "username": "BarakSt",
@@ -496,11 +496,11 @@
       }
     ]
   },
-  "hr":{
+  "hr": {
     "language": "Croatian",
     "localized": "hrvatski",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Stjepan Treger",
         "username": "streger",
@@ -510,11 +510,11 @@
       }
     ]
   },
-  "hu":{
+  "hu": {
     "language": "Hungarian",
     "localized": "magyar",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "iScream",
         "username": null,
@@ -559,11 +559,11 @@
       }
     ]
   },
-  "id":{
+  "id": {
     "language": "Indonesian",
     "localized": "Bahasa Indonesia",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Ghie2lo",
         "username": null,
@@ -615,11 +615,11 @@
       }
     ]
   },
-  "it":{
+  "it": {
     "language": "Italian",
     "localized": "italiano",
     "professional": true,
-    "translators":[
+    "translators": [
       {
         "credit": "Giordano",
         "username": null,
@@ -643,11 +643,11 @@
       }
     ]
   },
-  "ja":{
+  "ja": {
     "language": "Japanese",
     "localized": "日本語",
     "professional": true,
-    "translators":[
+    "translators": [
       {
         "credit": "Yujin Takayanagi",
         "username": null,
@@ -699,11 +699,11 @@
       }
     ]
   },
-  "ko":{
+  "ko": {
     "language": "Korean",
     "localized": "한국어",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "메이비(Maybee)",
         "username": null,
@@ -776,11 +776,11 @@
       }
     ]
   },
-  "lv":{
+  "lv": {
     "language": "Latvian",
     "localized": "latviešu",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "KristapsK",
         "username": "KristapsK",
@@ -797,11 +797,11 @@
       }
     ]
   },
-  "ms":{
+  "ms": {
     "language": "Malay",
     "localized": "Bahasa Melayu",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Muhammad Ajwad",
         "username": "Ajwad",
@@ -811,11 +811,11 @@
       }
     ]
   },
-  "no":{
+  "no": {
     "language": "Norwegian",
     "localized": "Norsk bokmål",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Martin Hoftun",
         "username": null,
@@ -860,11 +860,11 @@
       }
     ]
   },
-  "nl":{
+  "nl": {
     "language": "Dutch",
     "localized": "Nederlands",
     "professional": true,
-    "translators":[
+    "translators": [
       {
         "credit": "Jérémy Keusters",
         "username": "Jeremyboy222",
@@ -895,11 +895,11 @@
       }
     ]
   },
-  "pl":{
+  "pl": {
     "language": "Polish",
     "localized": "polski",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Izokrex",
         "username": null,
@@ -1021,11 +1021,11 @@
       }
     ]
   },
-  "pt-br":{
+  "pt-br": {
     "language": "Portuguese (Brazilian)",
     "localized": "português (Brasil)",
     "professional": true,
-    "translators":[
+    "translators": [
       {
         "credit": "Philippe R.",
         "username": null,
@@ -1077,11 +1077,11 @@
       }
     ]
   },
-  "pt-pt":{
+  "pt-pt": {
     "language": "Portuguese",
     "localized": "português (Portugal)",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Pedro Oliveira",
         "username": "pedrofran12",
@@ -1154,11 +1154,11 @@
       }
     ]
   },
-  "ro":{
+  "ro": {
     "language": "Romanian",
     "localized": "română",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Eli",
         "username": "eliboyDEV",
@@ -1235,7 +1235,7 @@
     "language": "Russian",
     "localized": "русский",
     "professional": true,
-    "translators":[
+    "translators": [
       {
         "credit": "Вадим Богайсков",
         "username": "VBog",
@@ -1244,11 +1244,11 @@
         "joined": "2010-09"
       },
       {
-         "credit": "Даниил Санкин",
-         "username": "dsankin",
-         "professional": false,
-         "proofreader": false,
-         "joined": "2013-12"
+        "credit": "Даниил Санкин",
+        "username": "dsankin",
+        "professional": false,
+        "proofreader": false,
+        "joined": "2013-12"
       },
       {
         "credit": "Inlingo",
@@ -1259,11 +1259,11 @@
       }
     ]
   },
-  "sk":{
+  "sk": {
     "language": "Slovak",
     "localized": "slovenský",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Tomáš Taro",
         "username": "tomasko126",
@@ -1336,11 +1336,11 @@
       }
     ]
   },
-  "sl":{
+  "sl": {
     "language": "Slovenian",
     "localized": "slovenščina",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Gregory_K",
         "username": "Gregory_K",
@@ -1364,11 +1364,11 @@
       }
     ]
   },
-  "sr":{
+  "sr": {
     "language": "Serbian",
     "localized": "Српски",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Stefan Bajić",
         "username": "stefanbajic1",
@@ -1385,11 +1385,11 @@
       }
     ]
   },
-  "sv":{
+  "sv": {
     "language": "Swedish",
     "localized": "svenska",
     "professional": true,
-    "translators":[
+    "translators": [
       {
         "credit": "Åke Engelbrektson",
         "username": "eson",
@@ -1413,11 +1413,11 @@
       }
     ]
   },
-  "te":{
+  "te": {
     "language": "Telugu",
     "localized": "తెలుగు",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Ponakala P.",
         "username": "pponakala",
@@ -1427,11 +1427,11 @@
       }
     ]
   },
-  "tr":{
+  "tr": {
     "language": "Turkish",
     "localized": "Türkçe",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Necip Ateş",
         "username": "NightWatch",
@@ -1616,11 +1616,11 @@
       }
     ]
   },
-  "uk":{
+  "uk": {
     "language": "Ukrainian",
     "localized": "українська",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Юрій Жарков",
         "username": "yurqua",
@@ -1714,11 +1714,11 @@
       }
     ]
   },
-  "vi":{
+  "vi": {
     "language": "Vietnamese",
     "localized": "Tiếng Việt",
     "professional": false,
-    "translators":[
+    "translators": [
       {
         "credit": "Tuấn Phạm",
         "username": "TuanPham",
@@ -1728,11 +1728,11 @@
       }
     ]
   },
-  "zh-cn":{
+  "zh-cn": {
     "language": "Chinese (Simplified)",
     "localized": "中文 (简体)",
     "professional": true,
-    "translators":[
+    "translators": [
       {
         "credit": "Tai-Lin Chu",
         "username": null,
@@ -1777,11 +1777,11 @@
       }
     ]
   },
-  "zh-tw":{
+  "zh-tw": {
     "language": "Chinese (Traditional)",
     "localized": "中文 (繁體)",
     "professional": true,
-    "translators":[
+    "translators": [
       {
         "credit": "Tai-Lin Chu",
         "username": null,

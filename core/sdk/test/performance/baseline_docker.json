@@ -288,10 +288,10 @@
       },
       {
         "metric": "bootup-time",
-        "min": 2958,
-        "max": 3281,
-        "average": 3105,
-        "median": 3113
+        "min": 10333,
+        "max": 15191,
+        "average": 11959,
+        "median": 11951.5
       },
       {
         "metric": "total-blocking-time",
@@ -302,17 +302,17 @@
       },
       {
         "metric": "max-potential-fid",
-        "min": 290,
-        "max": 372,
-        "average": 322,
-        "median": 327
+        "min": 410,
+        "max": 497,
+        "average": 456,
+        "median": 461
       },
       {
         "metric": "mainthread-work-breakdown",
-        "min": 6371,
-        "max": 7018,
-        "average": 6692,
-        "median": 6652
+        "min": 16731,
+        "max": 24344,
+        "average": 20153,
+        "median": 20197
       },
       {
         "metric": "server-response-time",

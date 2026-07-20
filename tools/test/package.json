@@ -11,6 +11,7 @@
     "./account": "./e2e-runner/account.js",
     "./hooks": "./e2e-runner/hooks.js",
     "./public-api": "./e2e-runner/public-api.js",
+    "./mock-server": "./test-server/mock-http-server/index.js",
     "./host-filters": "./test-server/host-server/filters.js",
     "./host-urls": "./test-server/host-server/urls.js",
     "./sdk-urls": "./test-server/sdk-server/test-server-urls.js",

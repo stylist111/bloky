@@ -226,11 +226,77 @@ func:v2:firefox:oldest:
     # like the extensions monorepo, if npm can't retry fetching dependencies.
     npm_config_fetch_retries: 2
   before_script:
+    # Fail the job if any before_script step errors. PowerShell cmdlet errors
+    # are non-terminating by default, so a broken setup step would otherwise let
+    # the job go green without running the tests.
+    - $ErrorActionPreference = "Stop"
     # While eyeo-windows doesn't come with Node 24 out of the box yet, we need
     # to install it ourselves
     - choco uninstall -y nodejs nodejs.install
     - choco install -y --no-progress nodejs-lts --version 24.14.1
     - npm install
+    # Edge 150 self-stages its AppX package on launch (StagePackageByUriAsync),
+    # which runs setup.exe; on the runner that crashed with 0xc06d007e (a
+    # missing-module / VC++ runtime error) and tore the test session down.
+    # Install the VC++ 2015-2022 runtime so setup.exe has its dependencies and
+    # can complete the stage without crashing.
+    - choco install vcredist140 -y --no-progress
+    # The runner image installs Edge via choco at build time, so it ships an
+    # older build. Upgrade to the current stable so the tests run the version
+    # under test (.65).
+    - choco upgrade microsoft-edge -yf
+    # Edge 150 self-repairs a few seconds after launch, rewriting the files the
+    # running msedge.exe executes from and tearing down the test session
+    # mid-suite. Run Edge from a private copy of the install dir instead: the
+    # self-repair rewrites the original location while our copy keeps running,
+    # so the session survives the whole suite. Edge is installed on the runner
+    # as a plain MSI (the Enterprise MSI via choco), not an MSIX/Store package,
+    # so its files live under Program Files\Microsoft\Edge\Application - copy
+    # that dir with robocopy and hand the path to the tests via EDGE_RUN_COPY
+    # (see functional.js). Every failure path exits non-zero so a broken copy
+    # makes the job go red instead of a fake green on the wrong or no Edge.
+    - |
+      try {
+        $ErrorActionPreference = "Stop"
+        # Edge is an MSI install, not MSIX, so Get-AppxPackage finds nothing.
+        # The real .65 bits sit under the Edge Application dir; the 64-bit MSI
+        # uses the x86 Program Files path. Take whichever dir actually holds a
+        # msedge.exe.
+        $edgeAppDir = @(
+          "C:\Program Files (x86)\Microsoft\Edge\Application",
+          "C:\Program Files\Microsoft\Edge\Application"
+        ) | Where-Object { Test-Path (Join-Path $_ "msedge.exe") } |
+          Select-Object -First 1
+        if (-not $edgeAppDir) {
+          throw "Could not find an installed msedge.exe under the Edge Application dirs"
+        }
+        $installedVersion = (Get-Item (Join-Path $edgeAppDir "msedge.exe")).VersionInfo.ProductVersion
+        Write-Output "Installed Edge $installedVersion at $edgeAppDir"
+        $copyDir = Join-Path $env:CI_PROJECT_DIR "edge-run-copy"
+        robocopy $edgeAppDir $copyDir /E /NFL /NDL /NJH /NJS /NP
+        # robocopy exit codes below 8 are success; 8+ are real failures.
+        if ($LASTEXITCODE -ge 8) {
+          throw "robocopy failed copying Edge (exit code $LASTEXITCODE)"
+        }
+        $global:LASTEXITCODE = 0
+        $edgeBinary = Join-Path $copyDir "msedge.exe"
+        if (-not (Test-Path $edgeBinary)) {
+          throw "Copied Edge binary not found at $edgeBinary"
+        }
+        $copiedVersion = (Get-Item $edgeBinary).VersionInfo.ProductVersion
+        if ($copiedVersion -ne $installedVersion) {
+          throw "Copied Edge $copiedVersion does not match installed $installedVersion"
+        }
+        $env:EDGE_RUN_COPY = $edgeBinary
+        Write-Output "EDGE_RUN_COPY=$edgeBinary ($copiedVersion)"
+      } catch {
+        # Write-Host, not Write-Error: under $ErrorActionPreference = "Stop"
+        # Write-Error is itself terminating and would abort before exit 1,
+        # letting the job go green without running the tests. Write-Host cannot
+        # throw, so exit 1 always runs and the job fails red on a bad copy.
+        Write-Host "Edge copy setup failed: $_"
+        exit 1
+      }
   tags:
     - eyeo-windows
   # We set a custom timeout here to allow for more time to run functional tests

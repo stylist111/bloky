@@ -25,21 +25,27 @@ const USER_ACCOUNTS_HOSTS = [
 
 const WEBSITE_HOSTS = ["getadblock.com", "welcome.adblockplus.org", "adblockplus.org"];
 
+// Filter list requests are passed through to the real servers by default, but
+// the hosts need to be TLS-intercepted so that tests can mock specific URLs
+const FILTER_LIST_HOSTS = ["easylist-downloads.adblockplus.org"];
+
 const mockServer = mockttp.getLocal({
   cors: true,
   https: {
     certPath: path.join(__dirname, "certificates/testCA.pem"),
     keyPath: path.join(__dirname, "certificates/testCA.key"),
-    tlsInterceptOnly: [...TELEMETRY_HOSTS, ...USER_ACCOUNTS_HOSTS, ...WEBSITE_HOSTS].map(
-      (hostname) => ({ hostname }),
-    ),
+    tlsInterceptOnly: [
+      ...TELEMETRY_HOSTS,
+      ...USER_ACCOUNTS_HOSTS,
+      ...WEBSITE_HOSTS,
+      ...FILTER_LIST_HOSTS,
+    ].map((hostname) => ({ hostname })),
   },
 });
 
 export async function startMockServer(port = 9999) {
   await mockServer.start(port);
-  // Let unmatched requests pass through (e.g., requests to filter lists)
-  await mockServer.forUnmatchedRequest().thenPassThrough();
+  await addDefaultMocks();
   console.log(`Mock HTTP server started on port ${port}`);
 
   //   // For debugging, you can uncomment these lines
@@ -55,6 +61,23 @@ export async function startMockServer(port = 9999) {
 export async function stopMockServer() {
   await mockServer.stop();
   console.log(`Mock HTTP server stopped`);
+}
+
+export async function addDefaultMocks() {
+  // Let unmatched requests pass through (e.g., requests to filter lists)
+  await mockServer.forUnmatchedRequest().thenPassThrough();
+  // EXT-497: we need to bind "testpages.eyeo.com" to "localhost"
+  // to be able to test with locally hosted page.
+  await addMocksForTestPages();
+  // we mock some pages from the website to avoid polluting our analytics
+  await addMocksForWebsitePages();
+  await addMocksForCDP();
+}
+
+// Removes any rules added by individual tests and restores the default rules
+export async function resetMockServer() {
+  mockServer.reset();
+  await addDefaultMocks();
 }
 
 export async function addMocksForTestPages() {

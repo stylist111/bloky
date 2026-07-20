@@ -30,6 +30,7 @@ import {
   subscriptionUrl,
   removeAllFilters
 } from "@eyeo/test-utils/extension";
+import { resetMockServer } from "@eyeo/test-utils/mock-server";
 import {
   easylistFilter,
   customBlockingFilter
@@ -109,11 +110,22 @@ export default () => {
         ? "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
         : "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt";
 
-    const { gear, sourceLink } = getFLSelectors(name);
-    await clickOnDisplayedElement(gear);
-    await clickOnDisplayedElement(sourceLink);
+    // Serve a small body for the filter list source page. Chromium 151+ takes
+    // minutes to render the real multi-MB text file, which blocks WebDriver
+    // commands on that tab until the page finishes loading.
+    await mockServer
+      .forGet(aaUrl)
+      .thenReply(200, "[Adblock Plus 2.0]\n! Mocked filter list\n");
 
-    await findUrl(aaUrl);
+    try {
+      const { gear, sourceLink } = getFLSelectors(name);
+      await clickOnDisplayedElement(gear);
+      await clickOnDisplayedElement(sourceLink);
+
+      await findUrl(aaUrl);
+    } finally {
+      await resetMockServer();
+    }
   });
 
   it("disables and reenables a filter list - advanced tab", async function () {

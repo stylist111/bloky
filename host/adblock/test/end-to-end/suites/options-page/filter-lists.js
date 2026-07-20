@@ -28,6 +28,7 @@ import {
   wait,
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle, subscriptionUrl } from "@eyeo/test-utils/extension";
+import { resetMockServer } from "@eyeo/test-utils/mock-server";
 
 import {
   initOptionsGeneralTab,
@@ -104,10 +105,19 @@ export default () => {
     await initOptionsGeneralTab(getOptionsHandle());
     await enableAdvancedUser();
 
-    await initOptionsFiltersTab(getOptionsHandle());
-    await clickOnDisplayedElement("#btnShowLinks");
-    await clickOnDisplayedElement('[name="acceptable_ads"] > label a.filter-list-link');
-    await findUrl(aaUrl);
+    // Serve a small body for the filter list source page. Chromium 151+ takes
+    // minutes to render the real multi-MB text file, which blocks WebDriver
+    // commands on that tab until the page finishes loading.
+    await mockServer.forGet(aaUrl).thenReply(200, "[Adblock Plus 2.0]\n! Mocked filter list\n");
+
+    try {
+      await initOptionsFiltersTab(getOptionsHandle());
+      await clickOnDisplayedElement("#btnShowLinks");
+      await clickOnDisplayedElement('[name="acceptable_ads"] > label a.filter-list-link');
+      await findUrl(aaUrl);
+    } finally {
+      await resetMockServer();
+    }
   });
 
   for (const name of ["anticircumvent", "easylist"]) {

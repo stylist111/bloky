@@ -12,6 +12,7 @@ module.exports = {
     driver: true,
     extension: true,
     browserDetails: true,
+    mockServer: true,
   },
   rules: {
     "import/no-extraneous-dependencies": [

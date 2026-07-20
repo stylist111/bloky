@@ -559,6 +559,32 @@ async function suspendServiceWorker(driver, handle) {
   );
 }
 
+// Print the Edge log written by the enable-logging arguments above when the
+// session dies, so CI shows why the browser closed the connection. Prints the
+// crash-related lines and the tail of the log.
+function dumpEdgeDebugLog(browser) {
+  if (browser !== "edge") {
+    return;
+  }
+
+  try {
+    let logPath = path.join(process.cwd(), "edge-debug.log");
+    let lines = fs.readFileSync(logPath, "utf8").split("\n");
+    let keywords =
+      /crash|renderer|gpu|fatal|check failed|dump|killed|exited|out of memory|disconnect/i;
+    let matches = lines.filter(line => keywords.test(line));
+
+    console.log("===== Edge log: crash-related lines =====");
+    console.log(matches.slice(-150).join("\n"));
+    console.log("===== Edge log: last 150 lines =====");
+    console.log(lines.slice(-150).join("\n"));
+    console.log("===== end Edge log =====");
+  }
+  catch (readErr) {
+    console.warn(`Could not read Edge debug log: ${readErr.message}`);
+  }
+}
+
 export async function run() {
   const args = parseArguments();
   try {
@@ -567,6 +593,12 @@ export async function run() {
     }
 
     await runTests(args);
+  }
+  catch (err) {
+    // A Windows Edge crash leaves no error in the test output - the browser
+    // just closes the connection - so dump the Edge debug log to show why.
+    dumpEdgeDebugLog(args.browser);
+    throw err;
   }
   finally {
     if (isScriptInvokedFromCLI) {
@@ -595,6 +627,16 @@ async function runTests({manifest, browser, version, params, testKinds}) {
   let customBrowserBinary = null;
   if (typeof params != "undefined" && typeof params.browserBinary != "undefined") {
     customBrowserBinary = params.browserBinary;
+  }
+  else if (browser === "edge" && process.platform === "win32" &&
+           process.env.EDGE_RUN_COPY) {
+    // On the Windows runner, before_script copies Edge's install dir (a plain
+    // MSI under Program Files) and exports the copied msedge.exe here. Running
+    // Edge from a private copy keeps the session alive if Edge self-repairs
+    // mid-suite: the repair rewrites the original install location while our
+    // copy keeps running, so the session survives.
+    customBrowserBinary = process.env.EDGE_RUN_COPY;
+    console.log(`Running Edge from private copy: ${customBrowserBinary}`);
   }
 
   console.log(`Getting ready to run ${browser} ${version} ...`);
@@ -655,6 +697,30 @@ async function runTests({manifest, browser, version, params, testKinds}) {
 
     // allow HTTP
     insecure = true;
+  }
+
+  // Log Edge's browser and renderer output to a file so that, if the session
+  // dies, dumpEdgeDebugLog() can print why. A Windows Edge crash otherwise
+  // leaves no error in the test output - the browser just closes the
+  // connection.
+  if (isEdge) {
+    extraArgs.push("enable-logging");
+    extraArgs.push("v=1");
+    extraArgs.push(`log-file=${path.join(process.cwd(), "edge-debug.log")}`);
+  }
+
+  // On Windows, Edge runs a post-startup maintenance batch (first-run setup,
+  // component updates, background networking) a few seconds after launch. On
+  // the Server Core CI runner that batch hits Edge's per-user MSIX integrity
+  // check and re-stages the package (StagePackageByUriAsync), which tears down
+  // the running browser and kills the WebDriver session mid-test. Suppress the
+  // subsystems that trigger it so Edge never asks to re-stage.
+  if (isEdge && process.platform == "win32") {
+    extraArgs.push("no-first-run");
+    extraArgs.push("no-default-browser-check");
+    extraArgs.push("disable-background-networking");
+    extraArgs.push("disable-component-update");
+    extraArgs.push("disable-default-apps");
   }
 
   // geckodriver 6.x downloads the latest geckodriver binary by default,

@@ -17,16 +17,11 @@
 
 /* eslint-disable no-console */
 
+import os from "os";
 import path from "path";
 
 import { BROWSERS, getMajorVersion } from "@eyeo/get-browser-binary";
-import {
-  startMockServer,
-  stopMockServer,
-  addMocksForTestPages,
-  addMocksForWebsitePages,
-  addMocksForCDP,
-} from "../test-server/mock-http-server/index.js";
+import { startMockServer, stopMockServer } from "../test-server/mock-http-server/index.js";
 import { findUrl, openNewTab, navigateTo, getAllWindowHandlesSafe, screenshot } from "./driver.js";
 import {
   getOptionsHandle,
@@ -74,6 +69,19 @@ async function startBrowser(extensionPath, retry = 0) {
     let options;
     let extraArgs;
     if (browserName === "firefox") {
+      // TODO: Unpin geckodriver and support future versions by starting
+      // geckodriver with --allow-system-access (requires
+      // @eyeo/get-browser-binary support).
+      // geckodriver 0.37.1+ rejects -remote-allow-system-access being set via
+      // capabilities (moz:firefoxOptions) and instead requires geckodriver
+      // itself to be started with --allow-system-access, which
+      // @eyeo/get-browser-binary does not support yet. Pin the last
+      // geckodriver version that accepts the capabilities-based flag.
+      // The version-specific cache dir is needed because the geckodriver npm
+      // package reuses any previously cached binary regardless of its version.
+      process.env.GECKODRIVER_VERSION = "0.37.0";
+      process.env.GECKODRIVER_CACHE_DIR = path.join(os.tmpdir(), "geckodriver-0.37.0");
+
       extraArgs = ["-width=1400", "-height=1500"];
       // geckodriver 0.36.0+ requires this flag to allow Marionette chrome-context
       // access (used for navigating to moz-extension:// URLs via setContext).
@@ -137,12 +145,6 @@ export async function setupBrowserHook(buildsDirPath, unpackedDirPath) {
   }
 
   const mockServer = await startMockServer();
-  // EXT-497: we need to bind "testpages.eyeo.com" to "localhost"
-  // to be able to test with locally hosted page.
-  await addMocksForTestPages();
-  // we mock some pages from the website to avoid polluting our analytics
-  await addMocksForWebsitePages();
-  await addMocksForCDP();
 
   const [driver, browserName, fullBrowserVersion, majorBrowserVersion] =
     await startBrowser(extensionPath);
