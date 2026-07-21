@@ -77,6 +77,14 @@ const createdTabsMap = new Map<number, string>();
 const serverLogger = new ewe.telemetry.ServerLogger("new_tab");
 
 /**
+ * Promise chain ensuring that only one instance of openNewTab() runs at a
+ * time. Without this, concurrent triggers from tab events and processed IPM
+ * commands can race and result in duplicate tabs and duplicate "tab_loaded"
+ * events.
+ */
+let openNewTabQueue = Promise.resolve();
+
+/**
  * Compares two new tab requests to see which has the higher priority.
  *
  * @param newTabA The first new tab request
@@ -292,6 +300,22 @@ async function openNewTab(): Promise<void> {
 }
 
 /**
+ * Queues a call to openNewTab() to ensure that only one instance of it runs
+ * at a time.
+ *
+ * @returns A promise that resolves once this queued attempt has completed
+ */
+export async function queueOpenNewTab(): Promise<void> {
+  const attempt = openNewTabQueue.then(async () => {
+    await openNewTab();
+  });
+  openNewTabQueue = attempt.catch((ex) => {
+    logger.reportAndLogError(ex, "[new-tab]: Error while opening new tab");
+  });
+  await openNewTabQueue;
+}
+
+/**
  * Listens to the creation of tabs and will add their ids to our list.
  *
  * On Firefox, will directly open the new tab.
@@ -302,7 +326,7 @@ function onTabCreated(tab: browser.Tabs.Tab): void {
   // Firefox loads its New Tab Page immediately and doesn't notify us
   // when it's complete so we need to open our new tab already here.
   if (tab.url === "about:newtab") {
-    void openNewTab();
+    void queueOpenNewTab();
     return;
   }
 
@@ -345,7 +369,7 @@ function onTabUpdated(
     return;
   }
 
-  void openNewTab();
+  void queueOpenNewTab();
 }
 
 /**
@@ -454,7 +478,7 @@ async function onCommandsProcessed(): Promise<void> {
       (candidate) => candidate.behavior.method === CreationMethod.force
     )
   ) {
-    await openNewTab();
+    await queueOpenNewTab();
   }
 }
 

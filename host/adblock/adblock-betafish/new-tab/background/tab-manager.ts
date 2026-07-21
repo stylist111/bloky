@@ -66,6 +66,14 @@ const createdTabsMap = new Map<number, string>();
 const serverLogger = new ewe.telemetry.ServerLogger("new_tab");
 
 /**
+ * Promise chain ensuring that only one instance of openNewtab() runs at a
+ * time. Without this, concurrent triggers from tab events and processed IPM
+ * commands can race and result in duplicate tabs and duplicate "tab_loaded"
+ * events.
+ */
+let openNewTabQueue = Promise.resolve();
+
+/**
  * Compares two new tab requests to see which has the higher priority.
  *
  * @param newTabA The first new tab request
@@ -301,6 +309,22 @@ async function openNewtab(): Promise<void> {
 }
 
 /**
+ * Queues a call to openNewtab() to ensure that only one instance of it runs
+ * at a time.
+ *
+ * @returns A promise that resolves once this queued attempt has completed
+ */
+async function queueOpenNewtab(): Promise<void> {
+  const attempt = openNewTabQueue.then(async () => {
+    await openNewtab();
+  });
+  openNewTabQueue = attempt.catch((ex) => {
+    logger.reportAndLogError(ex, "[new-tab]: Error while opening new tab");
+  });
+  await openNewTabQueue;
+}
+
+/**
  * Removes the create, update and remove listeners that were set up for the
  * given IPM id.
  *
@@ -329,7 +353,7 @@ function removeListeners(ipmId: string): void {
  */
 const openNotificationTab = () => {
   tabIds.clear();
-  openNewtab();
+  void queueOpenNewtab();
 };
 
 /**
@@ -464,7 +488,7 @@ async function onCommandsProcessed(): Promise<void> {
       (candidate) => candidate.behavior.method === CreationMethod.force,
     )
   ) {
-    await openNewtab();
+    await queueOpenNewtab();
   }
 }
 

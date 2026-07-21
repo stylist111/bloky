@@ -1,6 +1,8 @@
 # Unreleased
 
 - Updated snippets to 2.13.0
+- Fixed: New tab campaign tabs could be opened multiple times for some users
+  due to a race condition between tab events and processed IPM commands.
 
 # 6.43.2 - 2026-07-07
 
