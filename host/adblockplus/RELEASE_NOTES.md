@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.42.0 - 2026-07-21
+
+This release contains only minor updates and under-the-hood changes.
+
 - Updated the Twitter social link icon and label to X (OM-784).
 - Updated snippets to 2.13.0
 - Fixed: New tab campaign tabs could be opened multiple times for some users
