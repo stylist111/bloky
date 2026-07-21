@@ -22,6 +22,7 @@ import * as info from "../info.js";
 import initializer from "../initializer.js";
 import {getTrialDaysLeft, getPreferences} from "../account/storage.js";
 import experiments from "../experiments.js";
+import * as clientIds from "../client-ids.js";
 import {sha256Prefix} from "../../all/hashing.js";
 import sentry from "../sentry.js";
 
@@ -164,6 +165,16 @@ export async function getCountryCode() {
 }
 
 /**
+ * Retrieves the 32-letter client ID from the remote config response.
+ *    e.g. "BD386D23DCBC2A7C92E37AEBA50D32FE".
+ * @returns {Promise<string>}
+ */
+export async function getClientId() {
+  const state = await remoteConfigState.getStateLoaded();
+  return state.clientId || null;
+}
+
+/**
  * Retrieves current remote config revision ID
  * @returns {Promise<string|null>}
  */
@@ -247,14 +258,15 @@ async function getDefaultFacts() {
   );
   const [
     aaEnabled, trialDaysLeft, preferences, dynamicRules,
-    filterLists
+    filterLists, clientIdStability
   ] = await Promise.all([
     hasAcceptableAdsEnabled(),
     getTrialDaysLeft(),
     getPreferences(),
     isMV3 ?
       browser.declarativeNetRequest.getDynamicRules() : Promise.resolve([]),
-    Promise.all(activeFilterUrls.slice(0, 10).map(sha256Prefix))
+    Promise.all(activeFilterUrls.slice(0, 10).map(sha256Prefix)),
+    clientIds.getClientIdStability()
   ]);
 
   let pingIdMintCount;
@@ -294,7 +306,8 @@ async function getDefaultFacts() {
     filterLists,
     staticRuleCount,
     pingIdMintCount,
-    eventsIdMintCount
+    eventsIdMintCount,
+    clientIdStability
   };
 }
 
@@ -315,6 +328,9 @@ async function getDefaultFacts() {
  * @property {number} trialDaysLeft - Days left in trial.
  * @property {boolean} marketingConsent - Whether the user consented to
  *    marketing emails.
+ * @property {number} clientIdStability - Frequency of the most common
+ *    client ID (IP address hash) in the client ID history, as a
+ *    percentage of all entries. 0 if there isn't enough history yet.
  *
  * @returns {Promise<Facts>}
  */

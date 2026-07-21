@@ -773,6 +773,37 @@ export default {
           blockedCount: {
             description: "The number of blocked requests",
             type: "number"
+          },
+          isTrial: {
+            description: "Whether the user is on a trial",
+            type: "boolean"
+          },
+          trialDaysLeft: {
+            description: "Days left in trial",
+            type: ["number", "null"]
+          },
+          marketingConsent: {
+            description: "Whether the user consented to marketing emails",
+            type: "boolean"
+          },
+          dynamicRuleCount: {
+            description: "The number of dynamic DNR rules (MV3 only)",
+            type: "number"
+          },
+          staticRuleCount: {
+            description: "The number of static DNR rules (MV3 only)",
+            type: ["number", "null"]
+          },
+          filterLists: {
+            description: "Hashes of the first 10 active filter list URLs",
+            type: "array",
+            items: {
+              type: "string"
+            }
+          },
+          clientIdStability: {
+            description: "Frequency of the most common client ID in the client ID history, as a percentage of all entries. 0 if there isn't enough history yet.",
+            type: "number"
           }
         }
       }

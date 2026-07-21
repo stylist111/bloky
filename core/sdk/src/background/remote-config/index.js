@@ -22,12 +22,14 @@ import {EventEmitter} from "../../../adblockpluscore/lib/events.js";
 import {EventDispatcher} from "../types.js";
 import * as experiments from "../experiments.js";
 import * as cohorts from "../cohorts/index.js";
+import * as clientIds from "../client-ids.js";
 import * as serverLogConfig from "../telemetry/server-log-config.js";
 import {ServerLogger} from "../telemetry/server-logger.js";
 import {
   getCohortsConfig,
   getConfig,
   getCountryCode,
+  getClientId,
   getExperimentsConfig,
   getIpmCommands,
   getLoggingConfig,
@@ -75,9 +77,10 @@ async function downloadConfig() {
     const date = response.headers.get("date");
     const etag = response.headers.get("etag");
     const countryCode = response.headers.get("X-Country-Code");
+    const clientId = response.headers.get("X-Client-Id");
 
     if (response.status === 304) {
-      return {cacheFresh: true, date, etag, countryCode};
+      return {cacheFresh: true, date, etag, countryCode, clientId};
     }
 
     if (!response.ok) {
@@ -87,7 +90,7 @@ async function downloadConfig() {
     const data = await response.json();
     const revisionId = await hashString(JSON.stringify(data));
 
-    return {data, date, etag, revisionId, countryCode};
+    return {data, date, etag, revisionId, countryCode, clientId};
   }
   catch (e) {
     return {downloadError: true};
@@ -114,7 +117,8 @@ async function sync() {
     revisionId,
     date,
     etag,
-    countryCode
+    countryCode,
+    clientId
   } = await downloadConfig();
 
   if (downloadError) {
@@ -125,8 +129,9 @@ async function sync() {
 
   delete state.lastNetworkError;
 
-  // update the last downloaded timestamp and country code
+  // update the last downloaded timestamp, country code and client ID
   state.countryCode = countryCode;
+  state.clientId = clientId;
   state.lastDownloaded = date ?
     new Date(date).toISOString() :
     new Date().toISOString();
@@ -183,6 +188,7 @@ async function syncSubmodules(cacheFresh = false) {
   // because they depend on facts that might have changed from the last sync.
   await cohorts.sync();
   await experiments.sync();
+  await clientIds.sync();
 
   // Below are modules that don't have conditions to re-evaluate, so we only
   // synchronize them if the cache is not fresh
@@ -346,6 +352,14 @@ const remoteConfig = {
    * @returns {Promise<string>}
    */
   getCountryCode,
+
+  /**
+   * Retrieves the 32-letter client ID from the remote config response.
+   *    e.g. "BD386D23DCBC2A7C92E37AEBA50D32FE".
+   * @function
+   * @returns {Promise<string>}
+   */
+  getClientId,
 
   /**
    * Retrieves the remote config data

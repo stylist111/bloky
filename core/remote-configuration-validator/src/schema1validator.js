@@ -150,6 +150,14 @@ const validOperatorsByFact = {
     "greaterThan",
     "greaterThanInclusive",
   ],
+  clientIdStability: [
+    "equal",
+    "notEqual",
+    "lessThan",
+    "lessThanInclusive",
+    "greaterThan",
+    "greaterThanInclusive",
+  ],
 };
 
 function isValidModValue(value) {

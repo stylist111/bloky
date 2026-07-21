@@ -269,7 +269,8 @@ describe("Cohorts", function() {
       installType: "development",
       dynamicRuleCount: expect.any(Number),
       staticRuleCount: expect.any(Number),
-      filterLists: expect.any(Array)
+      filterLists: expect.any(Array),
+      clientIdStability: expect.any(Number)
     };
 
     beforeEach(async function() {
