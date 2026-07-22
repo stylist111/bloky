@@ -205,12 +205,6 @@ func:v2:firefox:latest:
     BROWSER: firefox latest
     TEST_PARAMS: 2 $BROWSER
 
-func:v2:firefox:incognito:
-  extends: .functional-n-times
-  variables:
-    BROWSER: firefox latest
-    TEST_PARAMS: 2 $BROWSER --incognito
-
 func:v2:firefox:oldest:
   extends: .functional-n-times
   variables:
@@ -412,6 +406,13 @@ func:v3:chrome:beta:
   variables:
     BROWSER: chrome beta
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
+
+
+func:v2:firefox:incognito:
+  extends: .functional-nightly
+  variables:
+    BROWSER: firefox latest
+    TEST_PARAMS: 2 $BROWSER --incognito
 
 func:v2:firefox:incognito:update:
   extends: .functional-nightly
