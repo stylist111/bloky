@@ -142,7 +142,14 @@ function showDialog(platform: string): void {
   });
 
   overlay.appendChild(iframe);
-  document.body.appendChild(overlay);
+  // `document.body` resolves to the `<frameset>` element on pages that use a
+  // frameset instead of a body (e.g. some router admin UIs), which doesn't
+  // behave like a normal container, so fall back to the document element.
+  const container =
+    document.body && document.body.tagName !== "FRAMESET"
+      ? document.body
+      : document.documentElement;
+  container.appendChild(overlay);
   void prepareElementForUnload(overlay, DisplayValue.block);
 
   // Firefox doesn't inject content scripts into frames with the sandbox

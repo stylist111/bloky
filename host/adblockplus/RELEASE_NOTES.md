@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed: On-page dialogs failed to render on pages using a legacy `<frameset>`
+  layout instead of `<body>`.
 - Fixed: On-page dialogs could be injected more than once into the same tab
   due to a race condition between concurrent page-loaded events.
 
