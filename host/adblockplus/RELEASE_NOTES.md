@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fixed: On-page dialogs could be injected more than once into the same tab
+  due to a race condition between concurrent page-loaded events.
+
 # 4.42.0 - 2026-07-21
 
 This release contains only minor updates and under-the-hood changes.

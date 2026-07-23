@@ -133,6 +133,28 @@ export class TabSessionStorage extends EventEmitter {
   }
 
   /**
+   * Atomically sets session storage content for given tab ID, unless content
+   * is already set for that tab ID. Needed by the on-page dialog (OPD)
+   * tab-manager to atomically claim a tab, avoiding a race where two
+   * concurrent calls both see no dialog assigned yet and both proceed to
+   * assign and inject one.
+   * @param {number} tabId
+   * @param {any} value
+   * @return {Promise<boolean>} whether the value was set, false if content
+   *   was already present
+   */
+  async setIfAbsent(tabId, value) {
+    return sessionByTabId.transaction(async () => {
+      const session = (await sessionByTabId.get(tabId)) || {};
+      if (this._namespace in session) return false;
+
+      session[this._namespace] = value;
+      await sessionByTabId.set(tabId, session);
+      return true;
+    });
+  }
+
+  /**
    * Sets flag value for given tab ID.
    * @param {number} tabId
    * @param {boolean} value

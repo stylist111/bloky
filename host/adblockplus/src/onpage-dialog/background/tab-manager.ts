@@ -611,7 +611,14 @@ export async function showOnpageDialog(
   }
 
   logger.debug("[onpage-dialog]: Show dialog");
-  await assignedDialogs.set(tabId, dialog);
+
+  // Atomically claim the tab for this dialog. This guards against a
+  // concurrent call having already assigned a dialog to this tab, e.g. when
+  // two "loaded" page events fire for the same tab in quick succession.
+  if (!(await assignedDialogs.setIfAbsent(tabId, dialog))) {
+    logger.debug("[onpage-dialog]: Tab already contains dialog");
+    return ShowOnpageDialogResult.rejected;
+  }
 
   // Sometimes dialog fails to be asssigned to the page,
   // in that case we should ignore it so it can be retried

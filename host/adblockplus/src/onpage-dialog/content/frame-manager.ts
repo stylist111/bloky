@@ -106,6 +106,10 @@ function isShowMessage(message: Message): message is ShowMessage {
  * Creates frame to show on-page dialog
  */
 function showDialog(platform: string): void {
+  // Avoid appending a duplicate overlay/iframe if one is already shown,
+  // e.g. if "onpage-dialog.show" is received more than once for the same tab
+  hideDialog();
+
   overlay = document.createElement("div");
   overlay.setAttribute("id", "__abp-overlay-onpage-dialog");
 
