@@ -9,8 +9,6 @@
     "build:local": "npm run $ create.devenv local 2",
     "build:release": "npm run $ build.release",
     "build:source": "gulp source",
-    "csv-export": "node build/locale-sync/csv/main.js -e",
-    "csv-import": "node build/locale-sync/csv/main.js -i && node build/locale-sync/normalize.js",
     "dist": "npm run $ create.dist",
     "lint": "npm run $ lint",
     "start": "http-server ./dist/devenv/local-mv2/",
@@ -46,16 +44,6 @@
       },
       "release": "gulp build -c release -t $1 -m $2 --unhandled-rejections=strict"
     },
-    "crowdin": {
-      "download-translations": [
-        "node build/locale-sync/crowdin/clear-files.js",
-        "crowdin download",
-        "for file in $(grep -rw './locale' -le '{}'); do rm $file; done",
-        "node build/locale-sync/normalize.js"
-      ],
-      "upload-strings": "crowdin upload sources",
-      "upload-translations": "crowdin upload translations --auto-approve-imported"
-    },
     "lint": {
       "ts": "tsc --noEmit",
       "locale": "node build/locale-linter ./locale/**/*.json"
@@ -82,16 +70,6 @@
           "mv3": "if [[ -z \"$1\" || \"$1\" == \"chrome\" && \"$2\" != \"2\" ]]; then MANIFEST_VERSION=3 BROWSER=chrome npm run test:end-to-end-local; fi"
         }
       }
-    },
-    "xtm": {
-      "create": "node build/locale-sync/xtm --create",
-      "details": "node build/locale-sync/xtm --details",
-      "update": "node build/locale-sync/xtm --update",
-      "build": "node build/locale-sync/xtm --build",
-      "download": [
-        "node build/locale-sync/xtm --download",
-        "node build/locale-sync/normalize.js"
-      ]
     }
   },
   "peerDependencies": {
@@ -111,13 +89,8 @@
     "@eyeo/webext-ad-filtering-solution": "*",
     "@types/webextension-polyfill": "0.12.0",
     "argparse": "1.0.10",
-    "css-loader": "6.8.1",
-    "del": "7.0.0",
-    "glob": "8.0.3",
     "gulp": "5.0.1",
     "gulp-gzip": "1.4.2",
-    "gulp-tar": "3.1.0",
-    "gulp-vinyl-zip": "2.2.1",
     "handlebars": "4.7.9",
     "hyperhtml-element": "3.15.2",
     "merge-stream": "2.0.0",
@@ -148,11 +121,16 @@
     "babel-jest": "29.7.0",
     "basichtml": "2.4.9",
     "chai": "4.3.6",
+    "css-loader": "6.8.1",
     "csv": "6.1.3",
+    "del": "7.0.0",
     "dotenv": "16.4.5",
     "dotenv-webpack": "8.1.0",
     "form-data": "4.0.6",
+    "glob": "8.0.3",
     "gulp-replace": "1.1.4",
+    "gulp-tar": "3.1.0",
+    "gulp-vinyl-zip": "2.2.1",
     "http-server": "14.1.1",
     "jest": "29.7.0",
     "jest-environment-jsdom": "29.7.0",
@@ -161,7 +139,7 @@
     "minimist": "1.2.6",
     "moment": "2.29.4",
     "node-fetch": "2.7.0",
-    "postcss": "8.5.1",
+    "postcss": "8.5.23",
     "postcss-loader": "8.2.1",
     "selenium-webdriver": "4.23.0",
     "sharp": "0.33.5",

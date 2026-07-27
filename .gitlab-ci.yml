@@ -361,3 +361,7 @@ upload_sourcemaps:
 semgrep:sast:
   variables:
     SEMGREP_EXTRA_ARGS: "--config=.semgrep.yml"
+
+trivy:sca:
+  variables:
+    TRIVY_EXTRA_ARGS: "--ignorefile .trivyignore.yaml"
