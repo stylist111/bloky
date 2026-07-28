@@ -1,5 +1,9 @@
 # Unreleased
 
+# 6.44.0.1 - 2026-07-28
+
+This release contains only minor updates and under-the-hood changes.
+
 # 6.44.0 - 2026-07-21
 
 This release contains only minor updates and under-the-hood changes.

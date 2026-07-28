@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.42.1 - 2026-07-28
+
+This release contains bugfixes and under-the-hood changes.
+
 - Fixed: On-page dialogs failed to render on pages using a legacy `<frameset>`
   layout instead of `<body>`.
 - Fixed: On-page dialogs could be injected more than once into the same tab
