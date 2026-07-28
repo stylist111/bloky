@@ -23,6 +23,9 @@ variables:
   OLDEST_CHROMIUM_MV2_VERSION: "79.0.3945.79"
   OLDEST_CHROMIUM_MV3_VERSION: "124.0.6367.60"
   OLDEST_FIREFOX_VERSION: "68.0"
+  # Oldest version get-browser-binary can install for Edge (numeric versions
+  # below this are rejected by the tooling, and only resolve on Linux)
+  OLDEST_EDGE_MV2_VERSION: "114.0.1823.37"
   # Latest Chromium version that still supports MV2
   LATEST_CHROMIUM_MV2_VERSION: "128.0.6613.0"
   # Latest Firefox version using browser local storage in incognito mode
@@ -301,6 +304,8 @@ func:v2:firefox:oldest:
 
 func:v2:windows:edge:
   extends: .functional-windows
+  rules:
+    - !reference [.nightly-run, rules]
   script:
     - npm run -w=@eyeo/webext-ad-filtering-solution test:functional "--" 2 edge latest --timeout=10000
 
@@ -328,6 +333,11 @@ func:v3:edge:latest:
   variables:
     BROWSER: edge latest
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
+
+func:v3:windows:edge:
+  extends: .functional-windows
+  script:
+    - npm run -w=@eyeo/webext-ad-filtering-solution test:functional "--" 3 edge latest --timeout=10000 --testKinds functional reload update
 
 # Functional tests - isolated
 .functional-isolated:
@@ -420,10 +430,10 @@ func:v2:firefox:incognito:update:
     BROWSER: firefox $BSL_FIREFOX_INCOGNITO_VERSION
     TEST_PARAMS: 2 $BROWSER --testKinds update --incognito
 
-func:v2:edge:latest:
+func:v2:edge:oldest:
   extends: .functional-nightly
   variables:
-    BROWSER: edge
+    BROWSER: edge $OLDEST_EDGE_MV2_VERSION
     TEST_PARAMS: 2 $BROWSER --testKinds functional reload
 
 # Fuzz tests

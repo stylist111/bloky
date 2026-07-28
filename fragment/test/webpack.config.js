@@ -27,6 +27,7 @@ const outPath = path.resolve(dirname, "dist", "fragments-extension");
 
 const baseManifest = {
   name: "Fragments Test Extension",
+  short_name: "Fragments Test Extension",
   version: "1.0.0",
   description: "Extension for testing fragments",
   permissions: [

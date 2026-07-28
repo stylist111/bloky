@@ -203,6 +203,11 @@ comp:MV3:chrome:latest:
   variables:
     BROWSER: chrome latest
 
+comp:MV3:edge:latest:
+  extends: .compliance:MV3
+  variables:
+    BROWSER: edge latest
+
 .compliance:MV2:
   extends: .compliance
   variables:
@@ -213,11 +218,6 @@ comp:MV2:chromium:last-mv2-version:
   extends: .compliance:MV2
   variables:
     BROWSER: chromium 128.0.6613.0
-
-comp:MV2:edge:latest:
-  extends: .compliance:MV2
-  variables:
-    BROWSER: edge latest
 
 comp:MV2:chromium:oldest:
   extends: .compliance:MV2
@@ -270,10 +270,10 @@ end-to-end:MV2:firefox:latest:
     MANIFEST_VERSION: 2
     BROWSER: firefox
 
-end-to-end:MV2:edge:latest:
+end-to-end:MV3:edge:latest:
   extends: .end-to-end-n-times
   variables:
-    MANIFEST_VERSION: 2
+    MANIFEST_VERSION: 3
     BROWSER: edge
 
 end-to-end:MV3:chrome:latest:
@@ -288,10 +288,10 @@ end-to-end:MV3:chrome:latest:
   rules:
     - !reference [.nightly-run, rules]
 
-end-to-end:MV3:edge:latest:
+end-to-end:MV2:edge:latest:
   extends: .end-to-end-nightly
   variables:
-    MANIFEST_VERSION: 3
+    MANIFEST_VERSION: 2
     BROWSER: edge
 
 end-to-end:MV2:firefox:beta:

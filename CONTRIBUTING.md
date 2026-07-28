@@ -70,6 +70,7 @@ We support browser versions according to the manifest.json file of the respectiv
 | MV2      | Firefox for Android | not supported | 68.0          | 68.0       |
 | MV2      | Microsoft Edge      | 79.0          | 79.0          | 79.0       |
 | MV3      | Chrome              | 124.0         | 124.0         | 124.0      |
+| MV3      | Microsoft Edge      | 124.0         | 124.0         | 124.0      |
 | MV3      | Opera               | not supported | 112.0         | 112.0      |
 | MV3      | Yandex Browser      | 124.0         | 124.0         | 124.0      |
 

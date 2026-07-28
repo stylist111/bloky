@@ -47,11 +47,11 @@ functional:MV2:firefox:latest:
     BROWSER: firefox
     MANIFEST_VERSION: 2
 
-functional:MV2:edge:latest:
+functional:MV3:edge:latest:
   extends: .functional-n-times
   variables:
     BROWSER: edge
-    MANIFEST_VERSION: 2
+    MANIFEST_VERSION: 3
 
 functional:MV3:chrome:latest:
   extends: .functional-n-times
@@ -65,11 +65,11 @@ functional:MV3:chrome:latest:
   rules:
     - !reference [.nightly-run, rules]
 
-end-to-end:MV3:edge:latest:
+functional:MV2:edge:latest:
   extends: .functional-nightly
   variables:
     BROWSER: edge
-    MANIFEST_VERSION: 3
+    MANIFEST_VERSION: 2
 
 functional:MV2:firefox:beta:
   extends: .functional-nightly

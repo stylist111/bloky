@@ -187,16 +187,16 @@ comp:MV3:chrome:latest:
     BROWSER: chrome latest
     EXTENSION: adblock-chrome-*-mv3.zip
 
+comp:MV3:edge:latest:
+  extends: .compliance
+  variables:
+    BROWSER: edge latest
+    EXTENSION: adblock-chrome-*-mv3.zip
+
 comp:MV2:chromium:last-mv2-version:
   extends: .compliance
   variables:
     BROWSER: chromium 128.0.6613.0
-    EXTENSION: adblock-chrome-*-mv2.zip
-
-comp:MV2:edge:latest:
-  extends: .compliance
-  variables:
-    BROWSER: edge latest
     EXTENSION: adblock-chrome-*-mv2.zip
 
 comp:MV2:firefox:latest:
@@ -248,11 +248,11 @@ end-to-end:MV2:firefox:latest:
     BROWSER: firefox
     MANIFEST_VERSION: 2
 
-end-to-end:MV2:edge:latest:
+end-to-end:MV3:edge:latest:
   extends: .end-to-end-n-times
   variables:
     BROWSER: edge
-    MANIFEST_VERSION: 2
+    MANIFEST_VERSION: 3
 
 end-to-end:MV3:chrome:latest:
   extends: .end-to-end-n-times
@@ -266,11 +266,11 @@ end-to-end:MV3:chrome:latest:
   rules:
     - !reference [.nightly-run, rules]
 
-end-to-end:MV3:edge:latest:
+end-to-end:MV2:edge:latest:
   extends: .end-to-end-nightly
   variables:
     BROWSER: edge
-    MANIFEST_VERSION: 3
+    MANIFEST_VERSION: 2
 
 end-to-end:MV2:firefox:beta:
   extends: .end-to-end-nightly
