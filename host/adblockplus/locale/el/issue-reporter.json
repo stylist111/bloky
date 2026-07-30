@@ -11,6 +11,12 @@
   "issueReporter_anonymousSubmission_warning": {
     "message": "Δεν θα μπορέσουμε να επικοινωνήσουμε μαζί σας και πιθανώς η αναφορά σας να θεωρηθεί χαμηλής προτεραιότητας."
   },
+  "issueReporter_back_label": {
+    "message": "Πίσω"
+  },
+  "issueReporter_closeButton_label": {
+    "message": "Κλείσιμο"
+  },
   "issueReporter_commentPage_heading": {
     "message": "Εισαγωγή σχολίου"
   },
@@ -19,6 +25,9 @@
   },
   "issueReporter_comment_label": {
     "message": "Σχόλιο (προαιρετικό):"
+  },
+  "issueReporter_comment_optional_label": {
+    "message": "Άλλα σχόλια (προαιρετικά):"
   },
   "issueReporter_config_label": {
     "message": "Να συμπεριληφθούν πληροφορίες σχετικά με τη διαμόρφωση του προγράμματος περιήγησής μου, καθώς και μια λίστα με τις ενεργές επεκτάσεις που χρησιμοποιώ."
@@ -29,6 +38,15 @@
   "issueReporter_data_gathering_tab": {
     "message": "<strong>Σημείωση:</strong> Μια πρόσθετη καρτέλα θα ανοίξει προσωρινά, οπότε η σελίδα όπου βρίσκεστε δεν θα επηρεαστεί από τον Αναφορέα Έκδοσης."
   },
+  "issueReporter_debug_label": {
+    "message": "Συμπεριλάβετε δεδομένα εντοπισμού σφαλμάτων για να βοηθήσετε την ομάδα μας να διαγνώσει το πρόβλημα ταχύτερα."
+  },
+  "issueReporter_detailsButton_label": {
+    "message": "Λεπτομέρειες"
+  },
+  "issueReporter_detailsPage_heading": {
+    "message": "Προσθήκη λεπτομερειών"
+  },
   "issueReporter_doneButton_label": {
     "message": "Τέλος"
   },
@@ -38,8 +56,17 @@
   "issueReporter_email_label": {
     "message": "Email:"
   },
+  "issueReporter_email_note": {
+    "message": "Η κοινή χρήση του email σας μας επιτρέπει να επικοινωνήσουμε μαζί σας εάν χρειαστούμε περισσότερες λεπτομέρειες για την επίλυση του προβλήματός σας. Το email σας δεν θα κοινοποιηθεί ποτέ σε τρίτους."
+  },
+  "issueReporter_email_optional_label": {
+    "message": "Email (προαιρετικό):"
+  },
   "issueReporter_errorMessage": {
     "message": "Η προσπάθεια αποστολής της αναφοράς απέτυχε με κωδικό λάθους \"?1?\". Παρακαλώ βεβαιωθείτε ότι έχετε πρόσβαση στο ίντερνετ και προσπαθήστε ξανά. Εάν το πρόβλημα παραμείνει, παρακαλώ ζητήστε βοήθεια στο [link]forum του Adblock Plus[/link]."
+  },
+  "issueReporter_errorMessage_simple": {
+    "message": "Κάτι πήγε στραβά. Επικοινωνήστε με το <a0>support@adblockplus.org</a0> για βοήθεια."
   },
   "issueReporter_falseNegative_description": {
     "message": "Επιλέξτε αυτό αν μια διαφήμιση εμφανίζεται παρόλο που το Adblock Plus είναι ενεργοποιημένο."
@@ -53,17 +80,131 @@
   "issueReporter_falsePositive_label": {
     "message": "Το Adblock Plus φράζει πάρα πολλά στοιχεία"
   },
+  "issueReporter_issueType_heading": {
+    "message": "Ποιο είναι το πρόβλημα;"
+  },
   "issueReporter_knownIssueMessage": {
     "message": "Το ζήτημα που αναφέρατε είναι πιθανώς ήδη γνωστό. Περισσότερες πληροφορίες:"
   },
+  "issueReporter_otherMessage_label": {
+    "message": "Περιγράψτε το πρόβλημά σας:"
+  },
+  "issueReporter_other_description": {
+    "message": "Έχω διαφορετικό πρόβλημα ή σχόλια για αναφορά."
+  },
   "issueReporter_other_issues": {
-    "message": "Για κάθε άλλο ζήτημα, επικοινωνήστε μαζί μας μέσω της ηλεκτρονικής διεύθυνσης <a0>support@adblockplus.org</a0>."
+    "message": "Ενδέχεται να μην απαντήσουμε σε μεμονωμένες αναφορές. Εάν χρειάζεστε βοήθεια, επικοινωνήστε μαζί μας μέσω <a0>support@adblockplus.org</a0>."
+  },
+  "issueReporter_other_label": {
+    "message": "Άλλο πρόβλημα"
   },
   "issueReporter_page_title": {
     "message": "Αναφορά ζητήματος"
   },
+  "issueReporter_preview_adblockplus": {
+    "message": "Adblock Plus"
+  },
+  "issueReporter_preview_browser": {
+    "message": "Πρόγραμμα περιήγησης"
+  },
+  "issueReporter_preview_comment": {
+    "message": "Σχόλιο"
+  },
+  "issueReporter_preview_debugData": {
+    "message": "Δεδομένα εντοπισμού σφαλμάτων"
+  },
+  "issueReporter_preview_email": {
+    "message": "Email"
+  },
+  "issueReporter_preview_extensions": {
+    "message": "Επεκτάσεις"
+  },
+  "issueReporter_preview_filters": {
+    "message": "Φίλτρα που ταιριάζουν"
+  },
+  "issueReporter_preview_issue": {
+    "message": "Πρόβλημα"
+  },
+  "issueReporter_preview_issueDescription": {
+    "message": "Περιγραφή προβλήματος"
+  },
+  "issueReporter_preview_issueType": {
+    "message": "Τύπος"
+  },
+  "issueReporter_preview_notProvided": {
+    "message": "Δεν παρέχεται"
+  },
+  "issueReporter_preview_pageUrl": {
+    "message": "URL σελίδας"
+  },
+  "issueReporter_preview_platform": {
+    "message": "Πλατφόρμα"
+  },
+  "issueReporter_preview_requests": {
+    "message": "Αιτήματα"
+  },
+  "issueReporter_preview_screenshot": {
+    "message": "Στιγμιότυπο οθόνης"
+  },
+  "issueReporter_preview_screenshotIncluded": {
+    "message": "Συμπεριλαμβάνεται στιγμιότυπο οθόνης (επεξεργασμένο: {0})"
+  },
+  "issueReporter_preview_subscriptions": {
+    "message": "Λίστες φίλτρων"
+  },
   "issueReporter_privacyPolicy": {
     "message": "Πολιτική ιδιωτικού απορρήτου"
+  },
+  "issueReporter_processing_screenshot": {
+    "message": "επεξεργασία"
+  },
+  "issueReporter_reportAnonymously_label": {
+    "message": "Ανώνυμη αναφορά"
+  },
+  "issueReporter_reportConsent_label": {
+    "message": "Συμφωνώ να κοινοποιήσω αυτήν την αναφορά, συμπεριλαμβανομένων των πληροφοριών που παρέχω και των διαθέσιμων τεχνικών δεδομένων, στην ομάδα υποστήριξης του Adblock Plus για την αντιμετώπιση προβλημάτων."
+  },
+  "issueReporter_reportId": {
+    "message": "Αναγνωριστικό αναφοράς: {0}"
+  },
+  "issueReporter_reportIssueButton_label": {
+    "message": "Αναφορά προβλήματος"
+  },
+  "issueReporter_reportIssue_description": {
+    "message": "Επιλέξτε τον τύπο του προβλήματος και χρησιμοποιήστε τα εργαλεία για να επισημάνετε ή να αποκρύψετε περιοχές στο στιγμιότυπο οθόνης."
+  },
+  "issueReporter_reportIssue_heading": {
+    "message": "Αναφορά προβλήματος"
+  },
+  "issueReporter_reviewButton_label": {
+    "message": "Έλεγχος"
+  },
+  "issueReporter_reviewPage_description": {
+    "message": "Ελέγξτε τις παρακάτω πληροφορίες πριν την αποστολή. Μπορείτε να επιστρέψετε για να κάνετε αλλαγές."
+  },
+  "issueReporter_reviewPage_heading": {
+    "message": "Ελέγξτε την αναφορά σας"
+  },
+  "issueReporter_screenreader_warning": {
+    "message": "Για να μας βοηθήσετε να κατανοήσουμε καλύτερα το πρόβλημα, απαιτείται στιγμιότυπο οθόνης κατά την υποβολή αναφοράς προβλήματος. Ανάλογα με τον ιστότοπο στον οποίο βρίσκεστε, το στιγμιότυπο οθόνης ενδέχεται να περιέχει προσωπικές πληροφορίες. Εάν δεν αισθάνεστε άνετα να υποβάλετε στιγμιότυπο οθόνης, στείλτε το πρόβλημά σας με email στο <a0>support@adblockplus.org</a0>."
+  },
+  "issueReporter_screenshot_consent_confirm": {
+    "message": "Κατανοώ, συνέχεια"
+  },
+  "issueReporter_screenshot_consent_question": {
+    "message": "Συνεχίστε για να συμπεριλάβετε αυτό το στιγμιότυπο οθόνης στην αναφορά σας."
+  },
+  "issueReporter_screenshot_consent_return": {
+    "message": "Επιστροφή"
+  },
+  "issueReporter_screenshot_consent_title": {
+    "message": "Συναίνεση στιγμιότυπου οθόνης"
+  },
+  "issueReporter_screenshot_highlight_hint": {
+    "message": "Χρησιμοποιήστε το εργαλείο Highlight για να σημειώσετε τις περιοχές του προβλήματος στο στιγμιότυπο οθόνης."
+  },
+  "issueReporter_screenshot_warning": {
+    "message": "Αυτό το στιγμιότυπο οθόνης ενδέχεται να περιέχει προσωπικές πληροφορίες. Χρησιμοποιήστε το Hide για να καλύψετε ευαίσθητες πληροφορίες."
   },
   "issueReporter_sendButton_label": {
     "message": "Αποστολή αναφοράς"
@@ -77,10 +218,16 @@
   "issueReporter_showData_label": {
     "message": "Εμφάνιση δεδομένων αναφοράς"
   },
+  "issueReporter_supportContact": {
+    "message": "Εάν έχετε περαιτέρω προβλήματα, επικοινωνήστε με το <a0>support@adblockplus.org</a0>."
+  },
   "issueReporter_typeSelector_description": {
     "message": "Σε αυτό το παράθυρο θα βρείτε βοήθεια για τα βήματα που πρέπει να ακολουθηθούν ώστε να υποβληθεί μια αναφορά για κάποιο ζήτημα που αντιμετωπίζετε σχετικά με το Adblock Plus. Παρακαλώ πρώτα επιλέξτε τον τύπο του ζητήματος που αντιμετωπίζετε σε αυτή την σελίδα:"
   },
   "issueReporter_typeSelector_heading": {
     "message": "Τύπος ζητήματος"
+  },
+  "issueReporter_usePremiumEmail_label": {
+    "message": "Χρήση αυτού του email:"
   }
 }

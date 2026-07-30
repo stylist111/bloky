@@ -11,6 +11,9 @@
   "issueReporter_anonymousSubmission_warning": {
     "message": "Nous ne serons pas en mesure de vous recontacter et votre signalement ne sera probablement pas traité prioritairement."
   },
+  "issueReporter_back_label": {
+    "message": "Retour"
+  },
   "issueReporter_closeButton_label": {
     "message": "Fermer"
   },
@@ -23,6 +26,9 @@
   "issueReporter_comment_label": {
     "message": "Commentaire (facultatif) :"
   },
+  "issueReporter_comment_optional_label": {
+    "message": "Autres commentaires (facultatif) :"
+  },
   "issueReporter_config_label": {
     "message": "Inclure des informations sur la configuration de mon navigateur, ainsi qu'une liste des extensions actives que j'utilise."
   },
@@ -32,8 +38,14 @@
   "issueReporter_data_gathering_tab": {
     "message": "<strong>Remarque :</strong> Un onglet supplémentaire s'ouvrira temporairement de façon à ce que la page sur laquelle vous vous trouvez ne soit pas affectée par le signaleur de problèmes."
   },
+  "issueReporter_debug_label": {
+    "message": "Inclure des données de débogage pour aider notre équipe à diagnostiquer le problème plus rapidement."
+  },
   "issueReporter_detailsButton_label": {
     "message": "Détails"
+  },
+  "issueReporter_detailsPage_heading": {
+    "message": "Ajouter des détails"
   },
   "issueReporter_doneButton_label": {
     "message": "Terminé"
@@ -44,8 +56,17 @@
   "issueReporter_email_label": {
     "message": "E-mail :"
   },
+  "issueReporter_email_note": {
+    "message": "En partageant votre adresse e-mail, vous nous permettez de vous recontacter si nous avons besoin de plus de détails pour résoudre votre problème. Votre adresse e-mail ne sera jamais partagée avec des tiers."
+  },
+  "issueReporter_email_optional_label": {
+    "message": "E-mail (facultatif) :"
+  },
   "issueReporter_errorMessage": {
     "message": "Une tentative d'envoi du signalement a échoué avec le code erreur « ?1? ». Veuillez vérifier que vous êtes bien connecté à Internet et réessayer. Si le problème persiste, veuillez demander assistance dans le [link]forum d'Adblock Plus[/link]."
+  },
+  "issueReporter_errorMessage_simple": {
+    "message": "Une erreur s'est produite. Veuillez contacter <a0>support@adblockplus.org</a0> pour obtenir de l'aide."
   },
   "issueReporter_falseNegative_description": {
     "message": "Adblock Plus est activé, mais je continue à voir une ou des publicités."
@@ -65,17 +86,80 @@
   "issueReporter_highlighter_heading": {
     "message": "Mettre en surbrillance le problème"
   },
+  "issueReporter_issueType_heading": {
+    "message": "Quel est le problème ?"
+  },
   "issueReporter_knownIssueMessage": {
     "message": "Le problème que vous signalez est probablement déjà connu. Davantage d'informations :"
   },
   "issueReporter_markIssueButton_label": {
     "message": "Marquer le problème"
   },
+  "issueReporter_otherMessage_label": {
+    "message": "Décrivez votre problème :"
+  },
+  "issueReporter_other_description": {
+    "message": "J'ai un autre problème ou des commentaires à signaler."
+  },
   "issueReporter_other_issues": {
-    "message": "Pour toute autre question, n'hésitez pas à nous contacter en nous écrivant à <a0>support@adblockplus.org</a0>."
+    "message": "Nous ne répondons pas nécessairement à chaque signalement. Si vous avez besoin d'aide, veuillez nous contacter à l'adresse <a0>support@adblockplus.org</a0>."
+  },
+  "issueReporter_other_label": {
+    "message": "Autre problème"
   },
   "issueReporter_page_title": {
     "message": "Signalement de problèmes"
+  },
+  "issueReporter_preview_adblockplus": {
+    "message": "Adblock Plus"
+  },
+  "issueReporter_preview_browser": {
+    "message": "Navigateur"
+  },
+  "issueReporter_preview_comment": {
+    "message": "Commentaire"
+  },
+  "issueReporter_preview_debugData": {
+    "message": "Données de débogage"
+  },
+  "issueReporter_preview_email": {
+    "message": "E-mail"
+  },
+  "issueReporter_preview_extensions": {
+    "message": "Extensions"
+  },
+  "issueReporter_preview_filters": {
+    "message": "Filtres correspondants"
+  },
+  "issueReporter_preview_issue": {
+    "message": "Problème"
+  },
+  "issueReporter_preview_issueDescription": {
+    "message": "Description du problème"
+  },
+  "issueReporter_preview_issueType": {
+    "message": "Type"
+  },
+  "issueReporter_preview_notProvided": {
+    "message": "Non fourni"
+  },
+  "issueReporter_preview_pageUrl": {
+    "message": "URL de la page"
+  },
+  "issueReporter_preview_platform": {
+    "message": "Plateforme"
+  },
+  "issueReporter_preview_requests": {
+    "message": "Requêtes"
+  },
+  "issueReporter_preview_screenshot": {
+    "message": "Capture d'écran"
+  },
+  "issueReporter_preview_screenshotIncluded": {
+    "message": "Capture d'écran incluse (modifiée : {0})"
+  },
+  "issueReporter_preview_subscriptions": {
+    "message": "Listes de filtres"
   },
   "issueReporter_privacyPolicy": {
     "message": "Politique de confidentialité"
@@ -83,14 +167,59 @@
   "issueReporter_processing_screenshot": {
     "message": "en traitement"
   },
+  "issueReporter_reportAnonymously_label": {
+    "message": "Signaler anonymement"
+  },
+  "issueReporter_reportConsent_label": {
+    "message": "J'accepte de partager ce signalement, y compris les informations que je fournis et les données techniques disponibles, avec l'équipe d'assistance d'Adblock Plus à des fins de dépannage."
+  },
+  "issueReporter_reportId": {
+    "message": "ID du signalement : {0}"
+  },
+  "issueReporter_reportIssueButton_label": {
+    "message": "Signaler un problème"
+  },
+  "issueReporter_reportIssue_description": {
+    "message": "Sélectionnez le type de problème et utilisez les outils pour mettre en surbrillance ou masquer des zones sur la capture d'écran."
+  },
+  "issueReporter_reportIssue_heading": {
+    "message": "Signaler un problème"
+  },
+  "issueReporter_reviewButton_label": {
+    "message": "Vérifier"
+  },
+  "issueReporter_reviewPage_description": {
+    "message": "Veuillez vérifier les informations ci-dessous avant l'envoi. Vous pouvez revenir en arrière pour apporter des modifications."
+  },
+  "issueReporter_reviewPage_heading": {
+    "message": "Vérifiez votre signalement"
+  },
   "issueReporter_screenreader_warning": {
     "message": "Pour nous aider à comprendre le problème, nous avons besoin d’une capture d’écran lorsque vous nous soumettez un rapport de problème. En fonction du site internet sur lequel vous êtes, la capture d’écran est susceptible de contenir des informations personnelles. Si vous ne souhaitez pas nous transférer la capture d’écran, merci de nous envoyer un e-mail exposant votre problème à l’adresse <a0>support@adblockplus.org</a0>."
+  },
+  "issueReporter_screenshot_consent_confirm": {
+    "message": "J'ai compris, continuer"
+  },
+  "issueReporter_screenshot_consent_question": {
+    "message": "Continuer pour inclure cette capture d'écran dans votre signalement."
+  },
+  "issueReporter_screenshot_consent_return": {
+    "message": "Retour"
+  },
+  "issueReporter_screenshot_consent_title": {
+    "message": "Consentement pour la capture d'écran"
   },
   "issueReporter_screenshot_hide": {
     "message": "Masquer"
   },
   "issueReporter_screenshot_highlight": {
     "message": "Mettre en surbrillance"
+  },
+  "issueReporter_screenshot_highlight_hint": {
+    "message": "Utilisez l'outil Highlight pour marquer les zones problématiques sur la capture d'écran."
+  },
+  "issueReporter_screenshot_warning": {
+    "message": "Cette capture d'écran peut contenir des informations personnelles. Utilisez Hide pour couvrir les informations sensibles."
   },
   "issueReporter_selectIssueButton_label": {
     "message": "Sélectionner le problème"
@@ -107,10 +236,16 @@
   "issueReporter_showData_label": {
     "message": "Cliquez sur ce lien pour examiner les données contenues dans le rapport avant de l’envoyer"
   },
+  "issueReporter_supportContact": {
+    "message": "Si vous rencontrez d'autres problèmes, veuillez contacter <a0>support@adblockplus.org</a0>."
+  },
   "issueReporter_typeSelector_description": {
     "message": "S'il vous plaît sélectionnez un problème :"
   },
   "issueReporter_typeSelector_heading": {
     "message": "Quel type de problème rencontrez-vous ?"
+  },
+  "issueReporter_usePremiumEmail_label": {
+    "message": "Utiliser cette adresse e-mail :"
   }
 }

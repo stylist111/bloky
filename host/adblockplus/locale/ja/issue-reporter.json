@@ -11,6 +11,12 @@
   "issueReporter_anonymousSubmission_warning": {
     "message": "匿名で報告の際は報告者を個別に識別できないので優先度が下がります。"
   },
+  "issueReporter_back_label": {
+    "message": "戻る"
+  },
+  "issueReporter_closeButton_label": {
+    "message": "閉じる"
+  },
   "issueReporter_commentPage_heading": {
     "message": "コメントを入力"
   },
@@ -19,6 +25,9 @@
   },
   "issueReporter_comment_label": {
     "message": "コメント (省略可):"
+  },
+  "issueReporter_comment_optional_label": {
+    "message": "その他のコメント（任意）："
   },
   "issueReporter_config_label": {
     "message": "ブラウザの設定に関する情報と、使用中のアクティブな拡張機能のリストを含めます。"
@@ -29,8 +38,14 @@
   "issueReporter_data_gathering_tab": {
     "message": "<strong>注記：</strong> 追加タブが一時的に開くため、現在開いているページはIssue Reporterによる影響を受けません。"
   },
+  "issueReporter_debug_label": {
+    "message": "問題をより早く診断できるよう、デバッグデータを含めます。"
+  },
   "issueReporter_detailsButton_label": {
     "message": "詳細"
+  },
+  "issueReporter_detailsPage_heading": {
+    "message": "詳細を追加"
   },
   "issueReporter_doneButton_label": {
     "message": "完了"
@@ -41,8 +56,17 @@
   "issueReporter_email_label": {
     "message": "メール:"
   },
+  "issueReporter_email_note": {
+    "message": "メールアドレスを共有していただくと、問題を解決するために詳細が必要な場合にご連絡できます。お客様のメールアドレスが第三者と共有されることは決してありません。"
+  },
+  "issueReporter_email_optional_label": {
+    "message": "メール（任意）："
+  },
   "issueReporter_errorMessage": {
     "message": "不具合報告の送信がエラーコード \"?1?\" で失敗しました。インターネットに接続されているか確認し再試行してください。問題が解決しない場合は [link]Adblock Plus フォーラム[/link] で助けを求めてください。"
+  },
+  "issueReporter_errorMessage_simple": {
+    "message": "問題が発生しました。サポートについては <a0>support@adblockplus.org</a0> までお問い合わせください。"
   },
   "issueReporter_falseNegative_description": {
     "message": "Adblock Plus が有効でも広告が表示される場合はこの選択肢。"
@@ -62,17 +86,80 @@
   "issueReporter_highlighter_heading": {
     "message": "問題をハイライト表示します。"
   },
+  "issueReporter_issueType_heading": {
+    "message": "どのような問題ですか？"
+  },
   "issueReporter_knownIssueMessage": {
     "message": "恐らく、あなたの報告した不具合は既知の問題です。詳細:"
   },
   "issueReporter_markIssueButton_label": {
     "message": "問題をマークします。"
   },
+  "issueReporter_otherMessage_label": {
+    "message": "問題を説明してください："
+  },
+  "issueReporter_other_description": {
+    "message": "別の問題またはフィードバックを報告したいです。"
+  },
   "issueReporter_other_issues": {
-    "message": "その他のあらゆる問題については、<a0>support@adblockplus.org</a0> からご連絡ください。"
+    "message": "個別のご報告には返信できない場合があります。サポートが必要な場合は、<a0>support@adblockplus.org</a0> までご連絡ください。"
+  },
+  "issueReporter_other_label": {
+    "message": "その他の問題"
   },
   "issueReporter_page_title": {
     "message": "不具合報告"
+  },
+  "issueReporter_preview_adblockplus": {
+    "message": "Adblock Plus"
+  },
+  "issueReporter_preview_browser": {
+    "message": "ブラウザ"
+  },
+  "issueReporter_preview_comment": {
+    "message": "コメント"
+  },
+  "issueReporter_preview_debugData": {
+    "message": "デバッグデータ"
+  },
+  "issueReporter_preview_email": {
+    "message": "メール"
+  },
+  "issueReporter_preview_extensions": {
+    "message": "拡張機能"
+  },
+  "issueReporter_preview_filters": {
+    "message": "一致したフィルター"
+  },
+  "issueReporter_preview_issue": {
+    "message": "問題"
+  },
+  "issueReporter_preview_issueDescription": {
+    "message": "問題の説明"
+  },
+  "issueReporter_preview_issueType": {
+    "message": "種類"
+  },
+  "issueReporter_preview_notProvided": {
+    "message": "提供されていません"
+  },
+  "issueReporter_preview_pageUrl": {
+    "message": "ページURL"
+  },
+  "issueReporter_preview_platform": {
+    "message": "プラットフォーム"
+  },
+  "issueReporter_preview_requests": {
+    "message": "リクエスト"
+  },
+  "issueReporter_preview_screenshot": {
+    "message": "スクリーンショット"
+  },
+  "issueReporter_preview_screenshotIncluded": {
+    "message": "スクリーンショットを含む（編集済み：{0}）"
+  },
+  "issueReporter_preview_subscriptions": {
+    "message": "フィルターリスト"
   },
   "issueReporter_privacyPolicy": {
     "message": "プライバシー ポリシー"
@@ -80,11 +167,59 @@
   "issueReporter_processing_screenshot": {
     "message": "処理中"
   },
+  "issueReporter_reportAnonymously_label": {
+    "message": "匿名で報告"
+  },
+  "issueReporter_reportConsent_label": {
+    "message": "私が提供する情報および利用可能な技術データを含むこのレポートを、トラブルシューティングのために Adblock Plus サポートチームと共有することに同意します。"
+  },
+  "issueReporter_reportId": {
+    "message": "レポートID：{0}"
+  },
+  "issueReporter_reportIssueButton_label": {
+    "message": "問題を報告"
+  },
+  "issueReporter_reportIssue_description": {
+    "message": "問題の種類を選択し、ツールを使用してスクリーンショット上の領域を強調表示または非表示にします。"
+  },
+  "issueReporter_reportIssue_heading": {
+    "message": "問題を報告する"
+  },
+  "issueReporter_reviewButton_label": {
+    "message": "確認"
+  },
+  "issueReporter_reviewPage_description": {
+    "message": "送信する前に以下の情報をご確認ください。変更するには戻ることができます。"
+  },
+  "issueReporter_reviewPage_heading": {
+    "message": "レポートを確認する"
+  },
+  "issueReporter_screenreader_warning": {
+    "message": "問題をよりよく理解するため、問題レポートを送信する際にはスクリーンショットが必要です。現在表示しているウェブサイトによっては、スクリーンショットに個人情報が含まれる場合があります。スクリーンショットの送信に抵抗がある場合は、問題を <a0>support@adblockplus.org</a0> までメールでお送りください。"
+  },
+  "issueReporter_screenshot_consent_confirm": {
+    "message": "理解しました、続行"
+  },
+  "issueReporter_screenshot_consent_question": {
+    "message": "続行して、このスクリーンショットをレポートに含めます。"
+  },
+  "issueReporter_screenshot_consent_return": {
+    "message": "戻る"
+  },
+  "issueReporter_screenshot_consent_title": {
+    "message": "スクリーンショットの同意"
+  },
   "issueReporter_screenshot_hide": {
     "message": "非表示"
   },
   "issueReporter_screenshot_highlight": {
     "message": "ハイライト"
+  },
+  "issueReporter_screenshot_highlight_hint": {
+    "message": "Highlight ツールを使用して、スクリーンショット上の問題箇所をマークします。"
+  },
+  "issueReporter_screenshot_warning": {
+    "message": "このスクリーンショットには個人情報が含まれている可能性があります。Hide を使用して機密情報を隠してください。"
   },
   "issueReporter_selectIssueButton_label": {
     "message": "不具合種別を選択"
@@ -101,10 +236,16 @@
   "issueReporter_showData_label": {
     "message": "不具合報告データを表示"
   },
+  "issueReporter_supportContact": {
+    "message": "さらに問題がある場合は、<a0>support@adblockplus.org</a0> までお問い合わせください。"
+  },
   "issueReporter_typeSelector_description": {
     "message": "このウィンドウで不具合の報告に必要なステップをご案内します。まず最初に、遭遇した不具合の種別を選択してください:"
   },
   "issueReporter_typeSelector_heading": {
     "message": "不具合種別を選択"
+  },
+  "issueReporter_usePremiumEmail_label": {
+    "message": "このメールアドレスを使用："
   }
 }

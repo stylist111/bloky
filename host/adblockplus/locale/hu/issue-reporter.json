@@ -11,6 +11,9 @@
   "issueReporter_anonymousSubmission_warning": {
     "message": "Nem fogunk tudni kapcsolatba lépni Önnel, és valószínű, hogy a jelentése alacsonyabb prioritást kap."
   },
+  "issueReporter_back_label": {
+    "message": "Vissza"
+  },
   "issueReporter_closeButton_label": {
     "message": "Bezárás"
   },
@@ -23,6 +26,9 @@
   "issueReporter_comment_label": {
     "message": "Megjegyzés (nem kötelező):"
   },
+  "issueReporter_comment_optional_label": {
+    "message": "Egyéb megjegyzések (nem kötelező):"
+  },
   "issueReporter_config_label": {
     "message": "Tartalmazzon információkat a böngészőm konfigurációjáról, valamint az általam használt aktív kiterjesztések listájáról."
   },
@@ -32,8 +38,14 @@
   "issueReporter_data_gathering_tab": {
     "message": "<strong>Megjegyzés:</strong> Egy további lap ideiglenesen megnyílik, így az oldal, amelyen tartózkodik, nem érinti a kiadói jelentéstevő."
   },
+  "issueReporter_debug_label": {
+    "message": "Hibakeresési adatok mellékelése, hogy csapatunk gyorsabban diagnosztizálhassa a problémát."
+  },
   "issueReporter_detailsButton_label": {
     "message": "Részletek"
+  },
+  "issueReporter_detailsPage_heading": {
+    "message": "Részletek hozzáadása"
   },
   "issueReporter_doneButton_label": {
     "message": "Befejezés"
@@ -44,8 +56,17 @@
   "issueReporter_email_label": {
     "message": "Email:"
   },
+  "issueReporter_email_note": {
+    "message": "Ha megosztja e-mail-címét, felvehetjük Önnel a kapcsolatot, ha további részletekre van szükségünk a probléma megoldásához. E-mail-címét soha nem osztjuk meg harmadik felekkel."
+  },
+  "issueReporter_email_optional_label": {
+    "message": "E-mail (nem kötelező):"
+  },
   "issueReporter_errorMessage": {
     "message": "A jelentés elküldése közben hiba történt, melynek kódja: \"?1?\". Kérem ellenőrizze, hogy megfelelően csatlakozik-e az Internethez és próbálja újra. Ha a probléma nem szűnik meg, kérem kérjen segítséget az [link]Adblock Plus fórumon[/link]."
+  },
+  "issueReporter_errorMessage_simple": {
+    "message": "Valami hiba történt. Segítségért forduljon a következőhöz: <a0>support@adblockplus.org</a0>."
   },
   "issueReporter_falseNegative_description": {
     "message": "Válassza ezt a lehetőséget, ha hirdetések jelennek meg az oldalon annak ellenére, hogy az Adblock Plus engedélyezve van."
@@ -65,17 +86,80 @@
   "issueReporter_highlighter_heading": {
     "message": "Probléma kiemelése"
   },
+  "issueReporter_issueType_heading": {
+    "message": "Mi a probléma?"
+  },
   "issueReporter_knownIssueMessage": {
     "message": "Az Ön által bejelentett hiba már ismert. További információk:"
   },
   "issueReporter_markIssueButton_label": {
     "message": "Probléma kijelölés"
   },
+  "issueReporter_otherMessage_label": {
+    "message": "Írja le a problémát:"
+  },
+  "issueReporter_other_description": {
+    "message": "Más problémám vagy visszajelzésem van."
+  },
   "issueReporter_other_issues": {
-    "message": "Minden más kérdésben, kérjük, lépjen velünk kapcsolatba a <a0>support@adblockplus.org</a0> címen."
+    "message": "Előfordulhat, hogy nem válaszolunk az egyes jelentésekre. Ha segítségre van szüksége, kérjük, lépjen velünk kapcsolatba a <a0>support@adblockplus.org</a0> címen."
+  },
+  "issueReporter_other_label": {
+    "message": "Egyéb probléma"
   },
   "issueReporter_page_title": {
     "message": "Hibajelentő"
+  },
+  "issueReporter_preview_adblockplus": {
+    "message": "Adblock Plus"
+  },
+  "issueReporter_preview_browser": {
+    "message": "Böngésző"
+  },
+  "issueReporter_preview_comment": {
+    "message": "Megjegyzés"
+  },
+  "issueReporter_preview_debugData": {
+    "message": "Hibakeresési adatok"
+  },
+  "issueReporter_preview_email": {
+    "message": "E-mail"
+  },
+  "issueReporter_preview_extensions": {
+    "message": "Bővítmények"
+  },
+  "issueReporter_preview_filters": {
+    "message": "Egyező szűrők"
+  },
+  "issueReporter_preview_issue": {
+    "message": "Probléma"
+  },
+  "issueReporter_preview_issueDescription": {
+    "message": "Probléma leírása"
+  },
+  "issueReporter_preview_issueType": {
+    "message": "Típus"
+  },
+  "issueReporter_preview_notProvided": {
+    "message": "Nincs megadva"
+  },
+  "issueReporter_preview_pageUrl": {
+    "message": "Oldal URL-címe"
+  },
+  "issueReporter_preview_platform": {
+    "message": "Platform"
+  },
+  "issueReporter_preview_requests": {
+    "message": "Kérések"
+  },
+  "issueReporter_preview_screenshot": {
+    "message": "Képernyőkép"
+  },
+  "issueReporter_preview_screenshotIncluded": {
+    "message": "Képernyőkép mellékelve (szerkesztve: {0})"
+  },
+  "issueReporter_preview_subscriptions": {
+    "message": "Szűrőlisták"
   },
   "issueReporter_privacyPolicy": {
     "message": "Adatvédelmi irányelv"
@@ -83,14 +167,59 @@
   "issueReporter_processing_screenshot": {
     "message": "feldolgozás"
   },
+  "issueReporter_reportAnonymously_label": {
+    "message": "Névtelen bejelentés"
+  },
+  "issueReporter_reportConsent_label": {
+    "message": "Hozzájárulok, hogy megosszam ezt a jelentést, beleértve az általam megadott információkat és az elérhető technikai adatokat, az Adblock Plus támogatási csapatával hibaelhárítás céljából."
+  },
+  "issueReporter_reportId": {
+    "message": "Jelentésazonosító: {0}"
+  },
+  "issueReporter_reportIssueButton_label": {
+    "message": "Probléma bejelentése"
+  },
+  "issueReporter_reportIssue_description": {
+    "message": "Válassza ki a probléma típusát, és használja az eszközöket a képernyőkép területeinek kiemeléséhez vagy elrejtéséhez."
+  },
+  "issueReporter_reportIssue_heading": {
+    "message": "Probléma bejelentése"
+  },
+  "issueReporter_reviewButton_label": {
+    "message": "Áttekintés"
+  },
+  "issueReporter_reviewPage_description": {
+    "message": "Küldés előtt tekintse át az alábbi információkat. Visszaléphet a módosítások elvégzéséhez."
+  },
+  "issueReporter_reviewPage_heading": {
+    "message": "Tekintse át a jelentését"
+  },
   "issueReporter_screenreader_warning": {
     "message": "A probléma jobb megértése érdekében képernyőképet kell készíteni a problémajelentés benyújtásakor. A jelenlegi webhelytől függően a képernyőkép személyes információkat tartalmazhat. Ha kellemetlennek találja a képernyőkép benyújtását, kérjük, küldje el kérdését e-mailben a <a0>support@adblockplus.org</a0> címre."
+  },
+  "issueReporter_screenshot_consent_confirm": {
+    "message": "Megértettem, folytatás"
+  },
+  "issueReporter_screenshot_consent_question": {
+    "message": "Folytassa, hogy belefoglalja ezt a képernyőképet a jelentésébe."
+  },
+  "issueReporter_screenshot_consent_return": {
+    "message": "Vissza"
+  },
+  "issueReporter_screenshot_consent_title": {
+    "message": "Hozzájárulás a képernyőképhez"
   },
   "issueReporter_screenshot_hide": {
     "message": "Elrejt"
   },
   "issueReporter_screenshot_highlight": {
     "message": "Kiemelés"
+  },
+  "issueReporter_screenshot_highlight_hint": {
+    "message": "Használja a Highlight eszközt a problémás területek megjelöléséhez a képernyőképen."
+  },
+  "issueReporter_screenshot_warning": {
+    "message": "Ez a képernyőkép személyes adatokat tartalmazhat. Használja a Hide funkciót az érzékeny adatok eltakarásához."
   },
   "issueReporter_selectIssueButton_label": {
     "message": "Probléma kiválasztása"
@@ -107,10 +236,16 @@
   "issueReporter_showData_label": {
     "message": "Jelentés adatainak megtekintése"
   },
+  "issueReporter_supportContact": {
+    "message": "Ha további problémái vannak, forduljon a következőhöz: <a0>support@adblockplus.org</a0>."
+  },
   "issueReporter_typeSelector_description": {
     "message": "Ez az ablak végigvezeti az Adblock Plus hiba bejelentési lépésein. Először kérem válassza ki a webhelyen jelentkező hiba jellegét:"
   },
   "issueReporter_typeSelector_heading": {
     "message": "Vállasszon típust"
+  },
+  "issueReporter_usePremiumEmail_label": {
+    "message": "Ezt az e-mail-címet használom:"
   }
 }

@@ -11,6 +11,9 @@
   "issueReporter_anonymousSubmission_warning": {
     "message": "我们将无法回复你，并且报告可能被放在较低的优先级次序。"
   },
+  "issueReporter_back_label": {
+    "message": "返回"
+  },
   "issueReporter_closeButton_label": {
     "message": "关闭"
   },
@@ -23,6 +26,9 @@
   "issueReporter_comment_label": {
     "message": "注释（可选）："
   },
+  "issueReporter_comment_optional_label": {
+    "message": "其他备注（可选）："
+  },
   "issueReporter_config_label": {
     "message": "包括有关浏览器配置的信息，以及我正在使用的活动扩展列表。"
   },
@@ -32,8 +38,14 @@
   "issueReporter_data_gathering_tab": {
     "message": "<strong>注意：</strong>将会暂时打开一个附加选项卡，因此您所在的页面不会受到问题报告器的影响。"
   },
+  "issueReporter_debug_label": {
+    "message": "包含调试数据，以帮助我们的团队更快地诊断问题。"
+  },
   "issueReporter_detailsButton_label": {
     "message": "详细情况"
+  },
+  "issueReporter_detailsPage_heading": {
+    "message": "添加详细信息"
   },
   "issueReporter_doneButton_label": {
     "message": "完成"
@@ -44,8 +56,17 @@
   "issueReporter_email_label": {
     "message": "电子邮件："
   },
+  "issueReporter_email_note": {
+    "message": "提供您的电子邮件地址后，如果我们需要更多详细信息来解决您的问题，即可与您联系。您的电子邮件地址绝不会与第三方共享。"
+  },
+  "issueReporter_email_optional_label": {
+    "message": "电子邮件（可选）："
+  },
   "issueReporter_errorMessage": {
     "message": "发送报告失败，错误码 \"?1?\"。请确保您已连接互联网并重试。 如果问题依旧，请到 [link]Adblock Plus 论坛[/link]寻求帮助。"
+  },
+  "issueReporter_errorMessage_simple": {
+    "message": "出了点问题。请联系 <a0>support@adblockplus.org</a0> 以获得帮助。"
   },
   "issueReporter_falseNegative_description": {
     "message": "Adblock Plus 已启用，但我还是看到了广告。"
@@ -65,17 +86,80 @@
   "issueReporter_highlighter_heading": {
     "message": "突出显示问题"
   },
+  "issueReporter_issueType_heading": {
+    "message": "遇到了什么问题？"
+  },
   "issueReporter_knownIssueMessage": {
     "message": "您提交的问题可能是个已知问题。详情见："
   },
   "issueReporter_markIssueButton_label": {
     "message": "标记问题"
   },
+  "issueReporter_otherMessage_label": {
+    "message": "描述您的问题："
+  },
+  "issueReporter_other_description": {
+    "message": "我要报告其他问题或反馈。"
+  },
   "issueReporter_other_issues": {
-    "message": "对于所有其他问题，请通过 <a0>support@adblockplus.org</a0> 联系我们。"
+    "message": "我们可能无法回复每一份报告。如果您需要帮助，请通过 <a0>support@adblockplus.org</a0> 联系我们。"
+  },
+  "issueReporter_other_label": {
+    "message": "其他问题"
   },
   "issueReporter_page_title": {
     "message": "问题报告"
+  },
+  "issueReporter_preview_adblockplus": {
+    "message": "Adblock Plus"
+  },
+  "issueReporter_preview_browser": {
+    "message": "浏览器"
+  },
+  "issueReporter_preview_comment": {
+    "message": "备注"
+  },
+  "issueReporter_preview_debugData": {
+    "message": "调试数据"
+  },
+  "issueReporter_preview_email": {
+    "message": "电子邮件"
+  },
+  "issueReporter_preview_extensions": {
+    "message": "扩展程序"
+  },
+  "issueReporter_preview_filters": {
+    "message": "匹配的过滤规则"
+  },
+  "issueReporter_preview_issue": {
+    "message": "问题"
+  },
+  "issueReporter_preview_issueDescription": {
+    "message": "问题描述"
+  },
+  "issueReporter_preview_issueType": {
+    "message": "类型"
+  },
+  "issueReporter_preview_notProvided": {
+    "message": "未提供"
+  },
+  "issueReporter_preview_pageUrl": {
+    "message": "页面网址"
+  },
+  "issueReporter_preview_platform": {
+    "message": "平台"
+  },
+  "issueReporter_preview_requests": {
+    "message": "请求"
+  },
+  "issueReporter_preview_screenshot": {
+    "message": "屏幕截图"
+  },
+  "issueReporter_preview_screenshotIncluded": {
+    "message": "已包含屏幕截图（已编辑：{0}）"
+  },
+  "issueReporter_preview_subscriptions": {
+    "message": "过滤规则列表"
   },
   "issueReporter_privacyPolicy": {
     "message": "隐私政策"
@@ -83,14 +167,59 @@
   "issueReporter_processing_screenshot": {
     "message": "处理中"
   },
+  "issueReporter_reportAnonymously_label": {
+    "message": "匿名报告"
+  },
+  "issueReporter_reportConsent_label": {
+    "message": "我同意将本报告（包括我提供的任何信息和可用的技术数据）与 Adblock Plus 支持团队共享以进行故障排查。"
+  },
+  "issueReporter_reportId": {
+    "message": "报告 ID：{0}"
+  },
+  "issueReporter_reportIssueButton_label": {
+    "message": "报告问题"
+  },
+  "issueReporter_reportIssue_description": {
+    "message": "选择问题类型，并使用工具在屏幕截图上突出显示或隐藏相关区域。"
+  },
+  "issueReporter_reportIssue_heading": {
+    "message": "报告问题"
+  },
+  "issueReporter_reviewButton_label": {
+    "message": "查看"
+  },
+  "issueReporter_reviewPage_description": {
+    "message": "发送前请检查以下信息。您可以返回进行修改。"
+  },
+  "issueReporter_reviewPage_heading": {
+    "message": "检查您的报告"
+  },
   "issueReporter_screenreader_warning": {
     "message": "为了帮助我们更好地理解问题，提交问题报告时需要屏幕截图。根据您当前使用的网站，屏幕截图可能包含个人信息。如果您不方便提交屏幕截图，请将您的问题通过电子邮件发送至 <a0>support@adblockplus.org</a0>。"
+  },
+  "issueReporter_screenshot_consent_confirm": {
+    "message": "我了解，继续"
+  },
+  "issueReporter_screenshot_consent_question": {
+    "message": "继续以在您的报告中包含此屏幕截图。"
+  },
+  "issueReporter_screenshot_consent_return": {
+    "message": "返回"
+  },
+  "issueReporter_screenshot_consent_title": {
+    "message": "屏幕截图授权"
   },
   "issueReporter_screenshot_hide": {
     "message": "隐藏"
   },
   "issueReporter_screenshot_highlight": {
     "message": "高亮"
+  },
+  "issueReporter_screenshot_highlight_hint": {
+    "message": "使用 Highlight 工具在截图上标记问题区域。"
+  },
+  "issueReporter_screenshot_warning": {
+    "message": "此屏幕截图可能包含个人信息。使用 Hide 遮盖敏感信息。"
   },
   "issueReporter_selectIssueButton_label": {
     "message": "选择问题"
@@ -107,10 +236,16 @@
   "issueReporter_showData_label": {
     "message": "点击此链接查看即将发送的报告数据"
   },
+  "issueReporter_supportContact": {
+    "message": "如果您还有其他问题，请联系 <a0>support@adblockplus.org</a0>。"
+  },
   "issueReporter_typeSelector_description": {
     "message": "请选择一个问题："
   },
   "issueReporter_typeSelector_heading": {
     "message": "您遇到了什么类型的问题？"
+  },
+  "issueReporter_usePremiumEmail_label": {
+    "message": "使用此电子邮件："
   }
 }

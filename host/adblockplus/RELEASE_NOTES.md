@@ -3,6 +3,11 @@
 - Added: Support for Premium reverse-trial on-page dialogs, shown and configured
   via remote configuration. When another eyeo extension is installed alongside,
   only one reverse-trial dialog is shown per page.
+- The screenshot editor's "Highlight" and "Hide" tool buttons are now always
+  labelled in English, so they match the hint and warning texts that refer to
+  them by those names.
+- Fixed: The redesigned issue reporter showed untranslated English text in every
+  language, because none of the strings it added had translations.
 
 # 4.42.1 - 2026-07-28
 

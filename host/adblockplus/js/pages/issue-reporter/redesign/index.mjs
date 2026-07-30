@@ -17,7 +17,7 @@
 
 import { convertDoclinks } from "../../../common.mjs";
 import { $ } from "../../../dom.mjs";
-import { initI18n, setElementLinks } from "~/i18n/ui";
+import { initI18n, setElementLinks, setElementText } from "~/i18n/ui";
 import {
   gatherInitialData,
   closeRequestsCollectingTab,
@@ -44,7 +44,7 @@ function formatReportForPreview(
   includeConfig = true,
   includeDebug = true
 ) {
-  const i18n = (key) => browser.i18n.getMessage(key) || key;
+  const i18n = (key) => browser.i18n.getMessage(key);
   const escape = (str) =>
     String(str)
       .replace(/&/g, "&amp;")
@@ -455,16 +455,14 @@ const SUPPORT_EMAIL = "support@adblockplus.org";
 function sendReport(reportData) {
   const url = "https://issue-report.adblockplus.org/api/v1/issue-report";
 
-  const createSupportEmailLink = (reportId = null) => {
-    const link = document.createElement("a");
-    if (reportId) {
-      link.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Issue Report: ${reportId}`)}`;
-    } else {
-      link.href = `mailto:${SUPPORT_EMAIL}`;
+  const setSupportEmailLink = (element, reportId = null) => {
+    const href = reportId
+      ? `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Issue Report: ${reportId}`)}`
+      : `mailto:${SUPPORT_EMAIL}`;
+    for (const link of element.querySelectorAll("a[data-i18n-index]")) {
+      link.href = href;
+      link.className = "support-email";
     }
-    link.textContent = SUPPORT_EMAIL;
-    link.className = "support-email";
-    return link;
   };
 
   const showError = () => {
@@ -474,14 +472,8 @@ function sendReport(reportData) {
     document.body.classList.add("sent");
 
     const errorElement = document.getElementById("error");
-    errorElement.textContent = "";
-
-    const errorText =
-      browser.i18n.getMessage("issueReporter_errorMessage_simple") ||
-      "Something went wrong. Please contact ";
-    errorElement.appendChild(document.createTextNode(errorText));
-    errorElement.appendChild(createSupportEmailLink());
-    errorElement.appendChild(document.createTextNode(" for assistance."));
+    setElementText(errorElement, "issueReporter_errorMessage_simple", null);
+    setSupportEmailLink(errorElement);
 
     errorElement.hidden = false;
 
@@ -501,26 +493,15 @@ function sendReport(reportData) {
 
     const reportIdElement = document.createElement("p");
     reportIdElement.className = "report-id";
-    reportIdElement.textContent =
-      browser.i18n.getMessage("issueReporter_reportId", [reportId]) ||
-      `Report ID: ${reportId}`;
+    reportIdElement.textContent = browser.i18n
+      .getMessage("issueReporter_reportId")
+      .replace("{0}", reportId);
     resultElement.appendChild(reportIdElement);
 
     const supportMessage = document.createElement("p");
     supportMessage.className = "support-message";
-
-    const supportText =
-      browser.i18n.getMessage("issueReporter_supportContact_before") ||
-      "If you have further issues, please contact ";
-    supportMessage.appendChild(document.createTextNode(supportText));
-    supportMessage.appendChild(createSupportEmailLink(reportId));
-
-    const afterText =
-      browser.i18n.getMessage("issueReporter_supportContact_after", [
-        reportId
-      ]) || ` with your report ID: ${reportId}`;
-    supportMessage.appendChild(document.createTextNode(afterText));
-
+    setElementText(supportMessage, "issueReporter_supportContact", null);
+    setSupportEmailLink(supportMessage, reportId);
     resultElement.appendChild(supportMessage);
 
     resultElement.hidden = false;

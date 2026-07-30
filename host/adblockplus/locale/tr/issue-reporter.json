@@ -11,6 +11,9 @@
   "issueReporter_anonymousSubmission_warning": {
     "message": "Size geri dönemeyiz ve muhtemelen rapor önceliği düşük olarak ayarlanır."
   },
+  "issueReporter_back_label": {
+    "message": "Geri"
+  },
   "issueReporter_closeButton_label": {
     "message": "Kapat"
   },
@@ -23,6 +26,9 @@
   "issueReporter_comment_label": {
     "message": "Yorum (isteğe bağlı):"
   },
+  "issueReporter_comment_optional_label": {
+    "message": "Diğer yorumlar (isteğe bağlı):"
+  },
   "issueReporter_config_label": {
     "message": "Tarayıcımın yapılandırması hakkında bilgileri ve kullanmakta olduğum aktif uzantıların bir listesini dahil edin."
   },
@@ -32,8 +38,14 @@
   "issueReporter_data_gathering_tab": {
     "message": "<strong>Not:</strong> Bulunduğunuz sayfanın Sorun Bildiricisi tarafından etkilenmemesi için, geçici olarak ek bir sekme açılacaktır."
   },
+  "issueReporter_debug_label": {
+    "message": "Ekibimizin sorunu daha hızlı teşhis etmesine yardımcı olmak için hata ayıklama verilerini ekleyin."
+  },
   "issueReporter_detailsButton_label": {
     "message": "Ayrıntılar"
+  },
+  "issueReporter_detailsPage_heading": {
+    "message": "Ayrıntı ekle"
   },
   "issueReporter_doneButton_label": {
     "message": "Bitir"
@@ -44,8 +56,17 @@
   "issueReporter_email_label": {
     "message": "E-posta:"
   },
+  "issueReporter_email_note": {
+    "message": "E-posta adresinizi paylaşmanız, sorununuzu çözmek için daha fazla ayrıntıya ihtiyaç duyarsak sizinle iletişime geçmemize olanak tanır. E-posta adresiniz asla üçüncü taraflarla paylaşılmayacaktır."
+  },
+  "issueReporter_email_optional_label": {
+    "message": "E-posta (isteğe bağlı):"
+  },
   "issueReporter_errorMessage": {
     "message": "Hata bildirimi gönderme girişiminiz \"?1?\" hata koduyla başarısız oldu. Lütfen internete bağlı olduğunuzdan emin olun ve yeniden deneyin. Sorun devam ederse lütfen [link]Adblock Plus forumunda[/link] yardım isteyin."
+  },
+  "issueReporter_errorMessage_simple": {
+    "message": "Bir şeyler ters gitti. Yardım için lütfen <a0>support@adblockplus.org</a0> ile iletişime geçin."
   },
   "issueReporter_falseNegative_description": {
     "message": "Adblock Plus etkinleştirildi, ancak hâlâ bir ya da daha fazla reklam görüyorum."
@@ -65,17 +86,80 @@
   "issueReporter_highlighter_heading": {
     "message": "Sorunu belirt"
   },
+  "issueReporter_issueType_heading": {
+    "message": "Sorun nedir?"
+  },
   "issueReporter_knownIssueMessage": {
     "message": "Bildirdiğiniz sorun büyük olasılıkla biliniyor. Daha fazla bilgi:"
   },
   "issueReporter_markIssueButton_label": {
     "message": "Sorunu işaretle"
   },
+  "issueReporter_otherMessage_label": {
+    "message": "Sorununuzu açıklayın:"
+  },
+  "issueReporter_other_description": {
+    "message": "Bildirmek istediğim farklı bir sorun veya geri bildirim var."
+  },
   "issueReporter_other_issues": {
-    "message": "Diğer tüm sorunlar için, bizimle şuradan iletişime geçin: <a0>support@adblockplus.org</a0>."
+    "message": "Bireysel raporların tümüne yanıt veremeyebiliriz. Yardıma ihtiyacınız varsa, bizimle şuradan iletişime geçin: <a0>support@adblockplus.org</a0>."
+  },
+  "issueReporter_other_label": {
+    "message": "Diğer sorun"
   },
   "issueReporter_page_title": {
     "message": "Sorun bildirici"
+  },
+  "issueReporter_preview_adblockplus": {
+    "message": "Adblock Plus"
+  },
+  "issueReporter_preview_browser": {
+    "message": "Tarayıcı"
+  },
+  "issueReporter_preview_comment": {
+    "message": "Yorum"
+  },
+  "issueReporter_preview_debugData": {
+    "message": "Hata ayıklama verileri"
+  },
+  "issueReporter_preview_email": {
+    "message": "E-posta"
+  },
+  "issueReporter_preview_extensions": {
+    "message": "Uzantılar"
+  },
+  "issueReporter_preview_filters": {
+    "message": "Eşleşen filtreler"
+  },
+  "issueReporter_preview_issue": {
+    "message": "Sorun"
+  },
+  "issueReporter_preview_issueDescription": {
+    "message": "Sorun açıklaması"
+  },
+  "issueReporter_preview_issueType": {
+    "message": "Tür"
+  },
+  "issueReporter_preview_notProvided": {
+    "message": "Sağlanmadı"
+  },
+  "issueReporter_preview_pageUrl": {
+    "message": "Sayfa URL'si"
+  },
+  "issueReporter_preview_platform": {
+    "message": "Platform"
+  },
+  "issueReporter_preview_requests": {
+    "message": "İstekler"
+  },
+  "issueReporter_preview_screenshot": {
+    "message": "Ekran görüntüsü"
+  },
+  "issueReporter_preview_screenshotIncluded": {
+    "message": "Ekran görüntüsü dahil (düzenlendi: {0})"
+  },
+  "issueReporter_preview_subscriptions": {
+    "message": "Filtre listeleri"
   },
   "issueReporter_privacyPolicy": {
     "message": "Gizlilik Politikası"
@@ -83,14 +167,59 @@
   "issueReporter_processing_screenshot": {
     "message": "işleniyor"
   },
+  "issueReporter_reportAnonymously_label": {
+    "message": "Anonim olarak bildir"
+  },
+  "issueReporter_reportConsent_label": {
+    "message": "Bu raporu, sağladığım tüm bilgiler ve mevcut teknik veriler dahil olmak üzere, sorun giderme amacıyla Adblock Plus destek ekibiyle paylaşmayı kabul ediyorum."
+  },
+  "issueReporter_reportId": {
+    "message": "Rapor kimliği: {0}"
+  },
+  "issueReporter_reportIssueButton_label": {
+    "message": "Sorun bildir"
+  },
+  "issueReporter_reportIssue_description": {
+    "message": "Sorun türünü seçin ve ekran görüntüsündeki alanları vurgulamak veya gizlemek için araçları kullanın."
+  },
+  "issueReporter_reportIssue_heading": {
+    "message": "Sorun bildir"
+  },
+  "issueReporter_reviewButton_label": {
+    "message": "Gözden geçir"
+  },
+  "issueReporter_reviewPage_description": {
+    "message": "Göndermeden önce lütfen aşağıdaki bilgileri gözden geçirin. Değişiklik yapmak için geri dönebilirsiniz."
+  },
+  "issueReporter_reviewPage_heading": {
+    "message": "Raporunuzu gözden geçirin"
+  },
   "issueReporter_screenreader_warning": {
     "message": "Sorunu daha iyi anlamamıza yardımcı olmak için, sorun raporu gönderirken bir ekran görüntüsü gerekir. Bulunduğunuz web sitesine bağlı olarak, ekran görüntüsü kişisel bilgiler içerebilir. Bir ekran görüntüsü göndermek için uygun olduğunuzu düşünmüyorsanız, lütfen yaşadığınız sorunu e-posta yoluyla <a0>support@adblockplus.org</a0> adresine gönderin."
+  },
+  "issueReporter_screenshot_consent_confirm": {
+    "message": "Anladım, devam et"
+  },
+  "issueReporter_screenshot_consent_question": {
+    "message": "Bu ekran görüntüsünü raporunuza dahil etmek için devam edin."
+  },
+  "issueReporter_screenshot_consent_return": {
+    "message": "Dön"
+  },
+  "issueReporter_screenshot_consent_title": {
+    "message": "Ekran görüntüsü izni"
   },
   "issueReporter_screenshot_hide": {
     "message": "Gizle"
   },
   "issueReporter_screenshot_highlight": {
     "message": "Vurgula"
+  },
+  "issueReporter_screenshot_highlight_hint": {
+    "message": "Ekran görüntüsündeki sorunlu alanları işaretlemek için Highlight aracını kullanın."
+  },
+  "issueReporter_screenshot_warning": {
+    "message": "Bu ekran görüntüsü kişisel bilgiler içerebilir. Hassas bilgileri örtmek için Hide'ı kullanın."
   },
   "issueReporter_selectIssueButton_label": {
     "message": "Sorunu seç"
@@ -107,10 +236,16 @@
   "issueReporter_showData_label": {
     "message": "Göndermeden önce rapor verilerini gözden geçirmek için bu bağlantıya tıklayın"
   },
+  "issueReporter_supportContact": {
+    "message": "Başka sorunlarınız varsa, lütfen <a0>support@adblockplus.org</a0> ile iletişime geçin."
+  },
   "issueReporter_typeSelector_description": {
     "message": "Lütfen bir sorun seçin:"
   },
   "issueReporter_typeSelector_heading": {
     "message": "Ne tür bir sorun yaşıyorsunuz?"
+  },
+  "issueReporter_usePremiumEmail_label": {
+    "message": "Bu e-postayı kullan:"
   }
 }

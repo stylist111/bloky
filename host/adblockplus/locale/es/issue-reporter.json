@@ -11,6 +11,9 @@
   "issueReporter_anonymousSubmission_warning": {
     "message": "No podremos comunicarnos contigo y es probable que le demos una prioridad inferior a tu informe."
   },
+  "issueReporter_back_label": {
+    "message": "Atrás"
+  },
   "issueReporter_closeButton_label": {
     "message": "Cerrar"
   },
@@ -23,6 +26,9 @@
   "issueReporter_comment_label": {
     "message": "Comentario (opcional):"
   },
+  "issueReporter_comment_optional_label": {
+    "message": "Otros comentarios (opcional):"
+  },
   "issueReporter_config_label": {
     "message": "Incluir información sobre la configuración de mi navegador, así como una lista de extensiones activas que uso actualmente."
   },
@@ -32,8 +38,14 @@
   "issueReporter_data_gathering_tab": {
     "message": "<strong>Nota:</strong> Se abrirá una pestaña temporal adicional para que el generador de informes de problemas no afecte a la página en la que te encuentras actualmente."
   },
+  "issueReporter_debug_label": {
+    "message": "Incluir datos de depuración para ayudar a nuestro equipo a diagnosticar el problema más rápido."
+  },
   "issueReporter_detailsButton_label": {
     "message": "Detalles"
+  },
+  "issueReporter_detailsPage_heading": {
+    "message": "Añadir detalles"
   },
   "issueReporter_doneButton_label": {
     "message": "Hecho"
@@ -44,8 +56,17 @@
   "issueReporter_email_label": {
     "message": "Correo electrónico:"
   },
+  "issueReporter_email_note": {
+    "message": "Compartir tu correo electrónico nos permite ponernos en contacto contigo si necesitamos más detalles para resolver tu problema. Tu correo electrónico nunca se compartirá con terceros."
+  },
+  "issueReporter_email_optional_label": {
+    "message": "Correo electrónico (opcional):"
+  },
   "issueReporter_errorMessage": {
     "message": "Se produjo un fallo con código de error \"?1?\" al intentar enviar el informe. Asegúrate de tener conexión a Internet y vuelve a intentarlo. Si el problema persiste, por favor pide ayuda en el [link]foro de Adblock Plus[/link]."
+  },
+  "issueReporter_errorMessage_simple": {
+    "message": "Algo salió mal. Ponte en contacto con <a0>support@adblockplus.org</a0> para obtener ayuda."
   },
   "issueReporter_falseNegative_description": {
     "message": "Adblock Plus está activado, pero siguen apareciendo anuncios."
@@ -65,17 +86,80 @@
   "issueReporter_highlighter_heading": {
     "message": "Destacar problema"
   },
+  "issueReporter_issueType_heading": {
+    "message": "¿Cuál es el problema?"
+  },
   "issueReporter_knownIssueMessage": {
     "message": "El problema del que informó probablemente ya fuera conocido. Más información:"
   },
   "issueReporter_markIssueButton_label": {
     "message": "Marcar problema"
   },
+  "issueReporter_otherMessage_label": {
+    "message": "Describe tu problema:"
+  },
+  "issueReporter_other_description": {
+    "message": "Tengo un problema diferente o comentarios que informar."
+  },
   "issueReporter_other_issues": {
-    "message": "Para cualquier otra cuestión, ponte en contacto con nosotros en <a0>support@adblockplus.org</a0>."
+    "message": "Es posible que no respondamos a los informes individuales. Si necesitas ayuda, ponte en contacto con nosotros en <a0>support@adblockplus.org</a0>."
+  },
+  "issueReporter_other_label": {
+    "message": "Otro problema"
   },
   "issueReporter_page_title": {
     "message": "Generador de informes de problemas"
+  },
+  "issueReporter_preview_adblockplus": {
+    "message": "Adblock Plus"
+  },
+  "issueReporter_preview_browser": {
+    "message": "Navegador"
+  },
+  "issueReporter_preview_comment": {
+    "message": "Comentario"
+  },
+  "issueReporter_preview_debugData": {
+    "message": "Datos de depuración"
+  },
+  "issueReporter_preview_email": {
+    "message": "Correo electrónico"
+  },
+  "issueReporter_preview_extensions": {
+    "message": "Extensiones"
+  },
+  "issueReporter_preview_filters": {
+    "message": "Filtros coincidentes"
+  },
+  "issueReporter_preview_issue": {
+    "message": "Problema"
+  },
+  "issueReporter_preview_issueDescription": {
+    "message": "Descripción del problema"
+  },
+  "issueReporter_preview_issueType": {
+    "message": "Tipo"
+  },
+  "issueReporter_preview_notProvided": {
+    "message": "No proporcionado"
+  },
+  "issueReporter_preview_pageUrl": {
+    "message": "URL de la página"
+  },
+  "issueReporter_preview_platform": {
+    "message": "Plataforma"
+  },
+  "issueReporter_preview_requests": {
+    "message": "Solicitudes"
+  },
+  "issueReporter_preview_screenshot": {
+    "message": "Captura de pantalla"
+  },
+  "issueReporter_preview_screenshotIncluded": {
+    "message": "Captura de pantalla incluida (editada: {0})"
+  },
+  "issueReporter_preview_subscriptions": {
+    "message": "Listas de filtros"
   },
   "issueReporter_privacyPolicy": {
     "message": "Política de privacidad"
@@ -83,14 +167,59 @@
   "issueReporter_processing_screenshot": {
     "message": "procesando"
   },
+  "issueReporter_reportAnonymously_label": {
+    "message": "Informar de forma anónima"
+  },
+  "issueReporter_reportConsent_label": {
+    "message": "Acepto compartir este informe, incluida cualquier información que proporcione y los datos técnicos disponibles, con el equipo de asistencia de Adblock Plus para la resolución de problemas."
+  },
+  "issueReporter_reportId": {
+    "message": "ID del informe: {0}"
+  },
+  "issueReporter_reportIssueButton_label": {
+    "message": "Informar del problema"
+  },
+  "issueReporter_reportIssue_description": {
+    "message": "Selecciona el tipo de problema y usa las herramientas para resaltar u ocultar áreas en la captura de pantalla."
+  },
+  "issueReporter_reportIssue_heading": {
+    "message": "Informar de un problema"
+  },
+  "issueReporter_reviewButton_label": {
+    "message": "Revisar"
+  },
+  "issueReporter_reviewPage_description": {
+    "message": "Revisa la información a continuación antes de enviar. Puedes volver atrás para hacer cambios."
+  },
+  "issueReporter_reviewPage_heading": {
+    "message": "Revisa tu informe"
+  },
   "issueReporter_screenreader_warning": {
     "message": "Cuando envías un informe de error, se requiere una captura de pantalla del problema para ayudarnos a entenderlo mejor. Dependiendo de la página web en la que estés ahora, la captura de pantalla puede contener datos personales. Si te incomoda enviar esa información, puedes mandar un correo a <a0>support@adblockplus.org</a0> detallando el error."
+  },
+  "issueReporter_screenshot_consent_confirm": {
+    "message": "Entiendo, continuar"
+  },
+  "issueReporter_screenshot_consent_question": {
+    "message": "Continúa para incluir esta captura de pantalla en tu informe."
+  },
+  "issueReporter_screenshot_consent_return": {
+    "message": "Volver"
+  },
+  "issueReporter_screenshot_consent_title": {
+    "message": "Consentimiento de captura de pantalla"
   },
   "issueReporter_screenshot_hide": {
     "message": "Ocultar"
   },
   "issueReporter_screenshot_highlight": {
     "message": "Resaltar"
+  },
+  "issueReporter_screenshot_highlight_hint": {
+    "message": "Usa la herramienta Highlight para marcar las áreas problemáticas en la captura de pantalla."
+  },
+  "issueReporter_screenshot_warning": {
+    "message": "Esta captura de pantalla puede contener información personal. Usa Hide para cubrir información sensible."
   },
   "issueReporter_selectIssueButton_label": {
     "message": "Seleccionar problema"
@@ -107,10 +236,16 @@
   "issueReporter_showData_label": {
     "message": "Hacer clic en este enlace para revisar los datos del informe antes de enviarlo"
   },
+  "issueReporter_supportContact": {
+    "message": "Si tienes más problemas, ponte en contacto con <a0>support@adblockplus.org</a0>."
+  },
   "issueReporter_typeSelector_description": {
     "message": "Selecciona un problema:"
   },
   "issueReporter_typeSelector_heading": {
     "message": "¿De qué tipo de problema se trata?"
+  },
+  "issueReporter_usePremiumEmail_label": {
+    "message": "Usar este correo electrónico:"
   }
 }

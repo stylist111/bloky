@@ -11,6 +11,9 @@
   "issueReporter_anonymousSubmission_warning": {
     "message": "لن نكون قادرين على الرجوع إليك و لن نعطي للتقرير أهمية كبيرة."
   },
+  "issueReporter_back_label": {
+    "message": "رجوع"
+  },
   "issueReporter_closeButton_label": {
     "message": "أغلق"
   },
@@ -23,6 +26,9 @@
   "issueReporter_comment_label": {
     "message": "التعليق (إختياري):"
   },
+  "issueReporter_comment_optional_label": {
+    "message": "تعليقات أخرى (اختياري):"
+  },
   "issueReporter_config_label": {
     "message": "أدرج معلومات عن تكوين متصفحي بالإضافة إلى قائمة بالامتدادات النشطة التي أستخدمها."
   },
@@ -32,8 +38,14 @@
   "issueReporter_data_gathering_tab": {
     "message": "<strong>ملاحظة:</strong>سيتم فتح علامة تبويب إضافية مؤقتًا بحيث لن تتأثر الصفحة التي تزورها بمُبلّغ المشاكل."
   },
+  "issueReporter_debug_label": {
+    "message": "تضمين بيانات التصحيح لمساعدة فريقنا على تشخيص المشكلة بشكل أسرع."
+  },
   "issueReporter_detailsButton_label": {
     "message": "تفاصيل"
+  },
+  "issueReporter_detailsPage_heading": {
+    "message": "إضافة تفاصيل"
   },
   "issueReporter_doneButton_label": {
     "message": "تمّ"
@@ -44,8 +56,17 @@
   "issueReporter_email_label": {
     "message": "البريد الإلكتروني:"
   },
+  "issueReporter_email_note": {
+    "message": "تتيح لنا مشاركة بريدك الإلكتروني التواصل معك إذا احتجنا إلى مزيد من التفاصيل لحل مشكلتك. لن تتم مشاركة بريدك الإلكتروني مطلقًا مع أطراف ثالثة."
+  },
+  "issueReporter_email_optional_label": {
+    "message": "البريد الإلكتروني (اختياري):"
+  },
   "issueReporter_errorMessage": {
     "message": "فشل إرسال التقرير بسبب الخطأ \"?1?\". الرجاء التأكد من صحة اتصالك بالإنترنت ثم أعاد المحاولة. إن استمرت المشكلة الرجاء طلب المساعدة على [link]منتديات Adblock Plus[/link]."
+  },
+  "issueReporter_errorMessage_simple": {
+    "message": "حدث خطأ ما. يرجى التواصل مع <a0>support@adblockplus.org</a0> للحصول على المساعدة."
   },
   "issueReporter_falseNegative_description": {
     "message": "اختر هذا الخيار إن كان أحد الإعلانات ظاهرا رغم أن آدبلوك بلس مفعل"
@@ -65,17 +86,80 @@
   "issueReporter_highlighter_heading": {
     "message": "تظليل المشكلة"
   },
+  "issueReporter_issueType_heading": {
+    "message": "ما هي المشكلة؟"
+  },
   "issueReporter_knownIssueMessage": {
     "message": "المشكلة التي قمت بالإبلاغ عنه معروفة مسبقاً. للمزيد من المعلومات:"
   },
   "issueReporter_markIssueButton_label": {
     "message": "وَسْم المشكل"
   },
+  "issueReporter_otherMessage_label": {
+    "message": "صف مشكلتك:"
+  },
+  "issueReporter_other_description": {
+    "message": "لدي مشكلة مختلفة أو ملاحظات للإبلاغ عنها."
+  },
   "issueReporter_other_issues": {
-    "message": "لأي مشكلة أخرى، يُرجى التواصل معنا عبر البريد الإلكتروني ⁦<a0>⁩support@adblockplus.org</a0>."
+    "message": "قد لا نتمكن من الرد على كل تقرير على حدة. إذا كنت بحاجة إلى مساعدة، يُرجى التواصل معنا عبر <a0>support@adblockplus.org</a0>."
+  },
+  "issueReporter_other_label": {
+    "message": "مشكلة أخرى"
   },
   "issueReporter_page_title": {
     "message": "مُبَلِغ المشاكل"
+  },
+  "issueReporter_preview_adblockplus": {
+    "message": "Adblock Plus"
+  },
+  "issueReporter_preview_browser": {
+    "message": "المتصفح"
+  },
+  "issueReporter_preview_comment": {
+    "message": "تعليق"
+  },
+  "issueReporter_preview_debugData": {
+    "message": "بيانات التصحيح"
+  },
+  "issueReporter_preview_email": {
+    "message": "البريد الإلكتروني"
+  },
+  "issueReporter_preview_extensions": {
+    "message": "الإضافات"
+  },
+  "issueReporter_preview_filters": {
+    "message": "الفلاتر المطابقة"
+  },
+  "issueReporter_preview_issue": {
+    "message": "المشكلة"
+  },
+  "issueReporter_preview_issueDescription": {
+    "message": "وصف المشكلة"
+  },
+  "issueReporter_preview_issueType": {
+    "message": "النوع"
+  },
+  "issueReporter_preview_notProvided": {
+    "message": "غير مُقدَّم"
+  },
+  "issueReporter_preview_pageUrl": {
+    "message": "عنوان URL للصفحة"
+  },
+  "issueReporter_preview_platform": {
+    "message": "المنصة"
+  },
+  "issueReporter_preview_requests": {
+    "message": "الطلبات"
+  },
+  "issueReporter_preview_screenshot": {
+    "message": "لقطة الشاشة"
+  },
+  "issueReporter_preview_screenshotIncluded": {
+    "message": "لقطة الشاشة مُضمَّنة (مُعدَّلة: {0})"
+  },
+  "issueReporter_preview_subscriptions": {
+    "message": "قوائم الفلاتر"
   },
   "issueReporter_privacyPolicy": {
     "message": "سياسة الخصوصية"
@@ -83,14 +167,59 @@
   "issueReporter_processing_screenshot": {
     "message": "معالجة"
   },
+  "issueReporter_reportAnonymously_label": {
+    "message": "الإبلاغ بشكل مجهول"
+  },
+  "issueReporter_reportConsent_label": {
+    "message": "أوافق على مشاركة هذا التقرير، بما في ذلك أي معلومات أقدمها والبيانات التقنية المتاحة، مع فريق دعم Adblock Plus لأغراض استكشاف الأخطاء وإصلاحها."
+  },
+  "issueReporter_reportId": {
+    "message": "معرّف التقرير: {0}"
+  },
+  "issueReporter_reportIssueButton_label": {
+    "message": "الإبلاغ عن مشكلة"
+  },
+  "issueReporter_reportIssue_description": {
+    "message": "حدد نوع المشكلة واستخدم الأدوات لتمييز المناطق في لقطة الشاشة أو إخفائها."
+  },
+  "issueReporter_reportIssue_heading": {
+    "message": "الإبلاغ عن مشكلة"
+  },
+  "issueReporter_reviewButton_label": {
+    "message": "مراجعة"
+  },
+  "issueReporter_reviewPage_description": {
+    "message": "يرجى مراجعة المعلومات أدناه قبل الإرسال. يمكنك الرجوع لإجراء تغييرات."
+  },
+  "issueReporter_reviewPage_heading": {
+    "message": "راجع تقريرك"
+  },
   "issueReporter_screenreader_warning": {
     "message": "لمساعدتنا على فهم المشكل بشكل أفضل، لقطة شاشة مطلوب عند تقديم تقرير المشكلة. حسب موقع الويب الذي تستخدمه حاليًا، قد تحتوي لقطة الشاشة على معلومات شخصية. إذا كنت غير مرتاح لإرسال لقطة شاشة، يرجى إرسال مشكلتك بالبريد الإلكتروني إلى <a0>support@adblockplus.org</a0>."
+  },
+  "issueReporter_screenshot_consent_confirm": {
+    "message": "أفهم ذلك، متابعة"
+  },
+  "issueReporter_screenshot_consent_question": {
+    "message": "تابع لتضمين لقطة الشاشة هذه في تقريرك."
+  },
+  "issueReporter_screenshot_consent_return": {
+    "message": "رجوع"
+  },
+  "issueReporter_screenshot_consent_title": {
+    "message": "الموافقة على لقطة الشاشة"
   },
   "issueReporter_screenshot_hide": {
     "message": "إخفاء"
   },
   "issueReporter_screenshot_highlight": {
     "message": "تظليل"
+  },
+  "issueReporter_screenshot_highlight_hint": {
+    "message": "استخدم أداة Highlight لتحديد مناطق المشكلة في لقطة الشاشة."
+  },
+  "issueReporter_screenshot_warning": {
+    "message": "قد تحتوي لقطة الشاشة هذه على معلومات شخصية. استخدم أداة Hide لتغطية المعلومات الحساسة."
   },
   "issueReporter_selectIssueButton_label": {
     "message": "حدد المشكلة"
@@ -107,10 +236,16 @@
   "issueReporter_showData_label": {
     "message": "إظهار بيانات التقرير"
   },
+  "issueReporter_supportContact": {
+    "message": "إذا واجهت المزيد من المشكلات، يرجى التواصل مع <a0>support@adblockplus.org</a0>."
+  },
   "issueReporter_typeSelector_description": {
     "message": "هذه النافذة ستقودك خلال الخطوات المطلوبة لإرسال تبليغ بمشكلة في آدبلوك بلس. في البداية عليك إختيار نوع المشكلة التي تواجهها من هذه الصفحة:"
   },
   "issueReporter_typeSelector_heading": {
     "message": "إختر نوع المشكلة"
+  },
+  "issueReporter_usePremiumEmail_label": {
+    "message": "استخدام هذا البريد الإلكتروني:"
   }
 }

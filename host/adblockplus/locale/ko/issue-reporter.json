@@ -11,6 +11,9 @@
   "issueReporter_anonymousSubmission_warning": {
     "message": "우리가 당신에 게 돌아올 수 없을 고 가능성이 보고서 낮은 우선 순위를 지정 합니다."
   },
+  "issueReporter_back_label": {
+    "message": "뒤로"
+  },
   "issueReporter_closeButton_label": {
     "message": "닫기"
   },
@@ -23,6 +26,9 @@
   "issueReporter_comment_label": {
     "message": "보고 내용 (필수 항목) :"
   },
+  "issueReporter_comment_optional_label": {
+    "message": "기타 의견(선택 사항):"
+  },
   "issueReporter_config_label": {
     "message": "내 브라우저 구성을 비롯하여 사용 중인 활성 확장 기능 목록에 관한 정보를 포함합니다."
   },
@@ -32,8 +38,14 @@
   "issueReporter_data_gathering_tab": {
     "message": "<strong>참고:</strong> 추가 탭이 일시적으로 열리므로 귀하가 방문 중인 페이지는 이슈 리포터의 영향을 받지 않습니다."
   },
+  "issueReporter_debug_label": {
+    "message": "저희 팀이 문제를 더 빨리 진단할 수 있도록 디버그 데이터를 포함합니다."
+  },
   "issueReporter_detailsButton_label": {
     "message": "상세"
+  },
+  "issueReporter_detailsPage_heading": {
+    "message": "세부 정보 추가"
   },
   "issueReporter_doneButton_label": {
     "message": "실행"
@@ -44,8 +56,17 @@
   "issueReporter_email_label": {
     "message": "이메일:"
   },
+  "issueReporter_email_note": {
+    "message": "이메일을 공유하면 문제를 해결하기 위해 더 자세한 정보가 필요할 때 연락드릴 수 있습니다. 귀하의 이메일은 절대 제3자와 공유되지 않습니다."
+  },
+  "issueReporter_email_optional_label": {
+    "message": "이메일(선택 사항):"
+  },
   "issueReporter_errorMessage": {
     "message": "오류 코드 \"?1?\"에 의해 보고 전송을 실패했습니다. 인터넷이 접속되었는지 확인한 후 다시 시도하십시오. 만약 문제가 계속해서 발생한다면 [link]애드블록 플러스 포럼[/link]에 도움을 요청하십시오."
+  },
+  "issueReporter_errorMessage_simple": {
+    "message": "문제가 발생했습니다. 도움이 필요하면 <a0>support@adblockplus.org</a0>로 문의하세요."
   },
   "issueReporter_falseNegative_description": {
     "message": "애드블록 플러스를 사용함에도 불구하고 광고가 보이면 이 옵션을 선택하십시오."
@@ -65,17 +86,80 @@
   "issueReporter_highlighter_heading": {
     "message": "문제 강조"
   },
+  "issueReporter_issueType_heading": {
+    "message": "무엇이 문제인가요?"
+  },
   "issueReporter_knownIssueMessage": {
     "message": "보고한 문제는 다른 사용자들에 의해 이미 많이 보고되었습니다. 더 많은 정보 :"
   },
   "issueReporter_markIssueButton_label": {
     "message": "문제 표시"
   },
+  "issueReporter_otherMessage_label": {
+    "message": "문제를 설명해 주세요:"
+  },
+  "issueReporter_other_description": {
+    "message": "다른 문제나 피드백을 신고하고 싶습니다."
+  },
   "issueReporter_other_issues": {
-    "message": "다른 문제의 경우 <a0>support@adblockplus.org</a0>로 연락해 주십시오."
+    "message": "개별 보고에는 응답하지 못할 수 있습니다. 도움이 필요하시면 <a0>support@adblockplus.org</a0>로 연락해 주십시오."
+  },
+  "issueReporter_other_label": {
+    "message": "기타 문제"
   },
   "issueReporter_page_title": {
     "message": "문제 보고 마법사"
+  },
+  "issueReporter_preview_adblockplus": {
+    "message": "Adblock Plus"
+  },
+  "issueReporter_preview_browser": {
+    "message": "브라우저"
+  },
+  "issueReporter_preview_comment": {
+    "message": "의견"
+  },
+  "issueReporter_preview_debugData": {
+    "message": "디버그 데이터"
+  },
+  "issueReporter_preview_email": {
+    "message": "이메일"
+  },
+  "issueReporter_preview_extensions": {
+    "message": "확장 프로그램"
+  },
+  "issueReporter_preview_filters": {
+    "message": "일치하는 필터"
+  },
+  "issueReporter_preview_issue": {
+    "message": "문제"
+  },
+  "issueReporter_preview_issueDescription": {
+    "message": "문제 설명"
+  },
+  "issueReporter_preview_issueType": {
+    "message": "유형"
+  },
+  "issueReporter_preview_notProvided": {
+    "message": "제공되지 않음"
+  },
+  "issueReporter_preview_pageUrl": {
+    "message": "페이지 URL"
+  },
+  "issueReporter_preview_platform": {
+    "message": "플랫폼"
+  },
+  "issueReporter_preview_requests": {
+    "message": "요청"
+  },
+  "issueReporter_preview_screenshot": {
+    "message": "스크린샷"
+  },
+  "issueReporter_preview_screenshotIncluded": {
+    "message": "스크린샷 포함됨(편집됨: {0})"
+  },
+  "issueReporter_preview_subscriptions": {
+    "message": "필터 목록"
   },
   "issueReporter_privacyPolicy": {
     "message": "개인 정보 보호 정책"
@@ -83,14 +167,59 @@
   "issueReporter_processing_screenshot": {
     "message": "처리 중"
   },
+  "issueReporter_reportAnonymously_label": {
+    "message": "익명으로 신고"
+  },
+  "issueReporter_reportConsent_label": {
+    "message": "제가 제공하는 모든 정보와 사용 가능한 기술 데이터를 포함하여 이 신고를 문제 해결을 위해 Adblock Plus 지원팀과 공유하는 데 동의합니다."
+  },
+  "issueReporter_reportId": {
+    "message": "신고 ID: {0}"
+  },
+  "issueReporter_reportIssueButton_label": {
+    "message": "문제 신고"
+  },
+  "issueReporter_reportIssue_description": {
+    "message": "문제 유형을 선택하고 도구를 사용하여 스크린샷의 영역을 강조 표시하거나 숨기세요."
+  },
+  "issueReporter_reportIssue_heading": {
+    "message": "문제 신고하기"
+  },
+  "issueReporter_reviewButton_label": {
+    "message": "검토"
+  },
+  "issueReporter_reviewPage_description": {
+    "message": "보내기 전에 아래 정보를 검토하세요. 변경하려면 뒤로 돌아갈 수 있습니다."
+  },
+  "issueReporter_reviewPage_heading": {
+    "message": "신고 내용 검토"
+  },
   "issueReporter_screenreader_warning": {
     "message": "어떤 문제인지 알 수 있도록 문제를 알려주실 떄 스크린샷을 포함해주세요. 웹사이트에 따라 민감한 개인정보가 포함되어 있을 수 있습니다. 스크린샷을 보내기가 곤란하다면, <a0>support@adblockplus.org</a0>으로 문제를 보내주세요."
+  },
+  "issueReporter_screenshot_consent_confirm": {
+    "message": "이해했습니다, 계속"
+  },
+  "issueReporter_screenshot_consent_question": {
+    "message": "계속하여 이 스크린샷을 신고에 포함합니다."
+  },
+  "issueReporter_screenshot_consent_return": {
+    "message": "돌아가기"
+  },
+  "issueReporter_screenshot_consent_title": {
+    "message": "스크린샷 동의"
   },
   "issueReporter_screenshot_hide": {
     "message": "숨기기"
   },
   "issueReporter_screenshot_highlight": {
     "message": "강조"
+  },
+  "issueReporter_screenshot_highlight_hint": {
+    "message": "Highlight 도구를 사용하여 스크린샷에서 문제 영역을 표시하세요."
+  },
+  "issueReporter_screenshot_warning": {
+    "message": "이 스크린샷에는 개인 정보가 포함될 수 있습니다. Hide를 사용하여 민감한 정보를 가리세요."
   },
   "issueReporter_selectIssueButton_label": {
     "message": "문제 유형 선택"
@@ -107,10 +236,16 @@
   "issueReporter_showData_label": {
     "message": "보고할 자료 보기"
   },
+  "issueReporter_supportContact": {
+    "message": "추가 문제가 있으면 <a0>support@adblockplus.org</a0>로 문의하세요."
+  },
   "issueReporter_typeSelector_description": {
     "message": "문제 보고 마법사는 애드블록 플러스의 문제를 필터 유지자에게 보고하기 위해 필요한 단계를 안내합니다. 먼저 현재 페이지의 문제 유형을 선택하십시오."
   },
   "issueReporter_typeSelector_heading": {
     "message": "문제 유형 선택"
+  },
+  "issueReporter_usePremiumEmail_label": {
+    "message": "이 이메일 사용:"
   }
 }

@@ -11,6 +11,9 @@
   "issueReporter_anonymousSubmission_warning": {
     "message": "Мы не сможем связаться с вами и, вероятно, уделим меньше внимания Вашему сообщению."
   },
+  "issueReporter_back_label": {
+    "message": "Назад"
+  },
   "issueReporter_closeButton_label": {
     "message": "Закрыть"
   },
@@ -23,6 +26,9 @@
   "issueReporter_comment_label": {
     "message": "Комментарий (необязательно):"
   },
+  "issueReporter_comment_optional_label": {
+    "message": "Другие комментарии (необязательно):"
+  },
   "issueReporter_config_label": {
     "message": "Добавить информацию о конфигурации моего браузера, а также список моих активных расширений."
   },
@@ -32,8 +38,14 @@
   "issueReporter_data_gathering_tab": {
     "message": "<strong>Примечание:</strong> Дополнительная вкладка будет временно открыта, чтобы Журнал ошибок не нарушал работу Вашей текущей страницы."
   },
+  "issueReporter_debug_label": {
+    "message": "Включить отладочные данные, чтобы помочь нашей команде быстрее диагностировать проблему."
+  },
   "issueReporter_detailsButton_label": {
     "message": "Сведения"
+  },
+  "issueReporter_detailsPage_heading": {
+    "message": "Добавить подробности"
   },
   "issueReporter_doneButton_label": {
     "message": "Готово"
@@ -44,8 +56,17 @@
   "issueReporter_email_label": {
     "message": "E-mail:"
   },
+  "issueReporter_email_note": {
+    "message": "Предоставление вашего адреса электронной почты позволяет нам связаться с вами, если нам потребуется больше подробностей для решения вашей проблемы. Ваш адрес электронной почты никогда не будет передан третьим лицам."
+  },
+  "issueReporter_email_optional_label": {
+    "message": "Электронная почта (необязательно):"
+  },
   "issueReporter_errorMessage": {
     "message": "Ошибка отправки сообщения: «?1?». Пожалуйста, удостоверьтесь, что ваше соединение с сетью Интернет работает, и попробуйте еще раз. Если проблема остается, обратитесь на [link]форум Adblock Plus[/link]."
+  },
+  "issueReporter_errorMessage_simple": {
+    "message": "Что-то пошло не так. Пожалуйста, обратитесь за помощью по адресу <a0>support@adblockplus.org</a0>."
   },
   "issueReporter_falseNegative_description": {
     "message": "Adblock Plus работает, но я по-прежнему вижу рекламу."
@@ -65,17 +86,80 @@
   "issueReporter_highlighter_heading": {
     "message": "Выделите проблему"
   },
+  "issueReporter_issueType_heading": {
+    "message": "В чём проблема?"
+  },
   "issueReporter_knownIssueMessage": {
     "message": "Возможно, что проблема, о которой вы сообщили, уже известна. Дополнительная информация:"
   },
   "issueReporter_markIssueButton_label": {
     "message": "Отметить проблему"
   },
+  "issueReporter_otherMessage_label": {
+    "message": "Опишите вашу проблему:"
+  },
+  "issueReporter_other_description": {
+    "message": "У меня другая проблема или отзыв."
+  },
   "issueReporter_other_issues": {
-    "message": "В случае возникновения любых других проблем свяжитесь с нами по адресу <a0>support@adblockplus.org</a0>."
+    "message": "Мы можем не отвечать на отдельные сообщения. Если вам нужна помощь, свяжитесь с нами по адресу <a0>support@adblockplus.org</a0>."
+  },
+  "issueReporter_other_label": {
+    "message": "Другая проблема"
   },
   "issueReporter_page_title": {
     "message": "Сообщить о проблеме"
+  },
+  "issueReporter_preview_adblockplus": {
+    "message": "Adblock Plus"
+  },
+  "issueReporter_preview_browser": {
+    "message": "Браузер"
+  },
+  "issueReporter_preview_comment": {
+    "message": "Комментарий"
+  },
+  "issueReporter_preview_debugData": {
+    "message": "Отладочные данные"
+  },
+  "issueReporter_preview_email": {
+    "message": "Электронная почта"
+  },
+  "issueReporter_preview_extensions": {
+    "message": "Расширения"
+  },
+  "issueReporter_preview_filters": {
+    "message": "Совпавшие фильтры"
+  },
+  "issueReporter_preview_issue": {
+    "message": "Проблема"
+  },
+  "issueReporter_preview_issueDescription": {
+    "message": "Описание проблемы"
+  },
+  "issueReporter_preview_issueType": {
+    "message": "Тип"
+  },
+  "issueReporter_preview_notProvided": {
+    "message": "Не указано"
+  },
+  "issueReporter_preview_pageUrl": {
+    "message": "URL страницы"
+  },
+  "issueReporter_preview_platform": {
+    "message": "Платформа"
+  },
+  "issueReporter_preview_requests": {
+    "message": "Запросы"
+  },
+  "issueReporter_preview_screenshot": {
+    "message": "Снимок экрана"
+  },
+  "issueReporter_preview_screenshotIncluded": {
+    "message": "Снимок экрана включён (отредактирован: {0})"
+  },
+  "issueReporter_preview_subscriptions": {
+    "message": "Списки фильтров"
   },
   "issueReporter_privacyPolicy": {
     "message": "Политика конфиденциальности"
@@ -83,14 +167,59 @@
   "issueReporter_processing_screenshot": {
     "message": "обработка"
   },
+  "issueReporter_reportAnonymously_label": {
+    "message": "Сообщить анонимно"
+  },
+  "issueReporter_reportConsent_label": {
+    "message": "Я согласен поделиться этим отчётом, включая любую предоставленную мной информацию и доступные технические данные, с командой поддержки Adblock Plus для устранения неполадок."
+  },
+  "issueReporter_reportId": {
+    "message": "Идентификатор отчёта: {0}"
+  },
+  "issueReporter_reportIssueButton_label": {
+    "message": "Сообщить о проблеме"
+  },
+  "issueReporter_reportIssue_description": {
+    "message": "Выберите тип проблемы и используйте инструменты, чтобы выделить или скрыть области на снимке экрана."
+  },
+  "issueReporter_reportIssue_heading": {
+    "message": "Сообщить о проблеме"
+  },
+  "issueReporter_reviewButton_label": {
+    "message": "Проверить"
+  },
+  "issueReporter_reviewPage_description": {
+    "message": "Пожалуйста, проверьте информацию ниже перед отправкой. Вы можете вернуться, чтобы внести изменения."
+  },
+  "issueReporter_reviewPage_heading": {
+    "message": "Проверьте ваш отчёт"
+  },
   "issueReporter_screenreader_warning": {
     "message": "Чтобы мы лучше могли понять проблему, при отправки отчета нужно приложить скриншот. В зависимости от сайта, который сейчас открыт, скриншот может содержать личную информацию. Если ты не хочешь прикладывать скриншот, пожалуйста отправь описание проблемы на адрес <a0>support@adblockplus.org</a0>."
+  },
+  "issueReporter_screenshot_consent_confirm": {
+    "message": "Понятно, продолжить"
+  },
+  "issueReporter_screenshot_consent_question": {
+    "message": "Продолжите, чтобы включить этот снимок экрана в ваш отчёт."
+  },
+  "issueReporter_screenshot_consent_return": {
+    "message": "Вернуться"
+  },
+  "issueReporter_screenshot_consent_title": {
+    "message": "Согласие на снимок экрана"
   },
   "issueReporter_screenshot_hide": {
     "message": "Скрыть"
   },
   "issueReporter_screenshot_highlight": {
     "message": "Выделить"
+  },
+  "issueReporter_screenshot_highlight_hint": {
+    "message": "Используйте инструмент Highlight, чтобы отметить проблемные области на снимке экрана."
+  },
+  "issueReporter_screenshot_warning": {
+    "message": "Этот снимок экрана может содержать личную информацию. Используйте Hide, чтобы закрыть конфиденциальные данные."
   },
   "issueReporter_selectIssueButton_label": {
     "message": "Выбрать проблему"
@@ -107,10 +236,16 @@
   "issueReporter_showData_label": {
     "message": "Нажмите на эту ссылку для просмотра данных отчета перед отправкой"
   },
+  "issueReporter_supportContact": {
+    "message": "Если у вас возникнут дальнейшие проблемы, обратитесь по адресу <a0>support@adblockplus.org</a0>."
+  },
   "issueReporter_typeSelector_description": {
     "message": "Выберите проблему:"
   },
   "issueReporter_typeSelector_heading": {
     "message": "С какой проблемой вы столкнулись?"
+  },
+  "issueReporter_usePremiumEmail_label": {
+    "message": "Использовать эту электронную почту:"
   }
 }

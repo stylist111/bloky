@@ -68,6 +68,11 @@ class IOHighlighter extends IOElement {
     if (this.state.drawing) this.setAttribute("drawing", this.state.drawing);
     else this.removeAttribute("drawing");
 
+    // The "Highlight" and "Hide" button labels below are intentionally
+    // hardcoded in English: the issue reporter's hint and warning strings refer
+    // to both tools by their English names (e.g. "Use Hide to cover sensitive
+    // info"), so translating the buttons would leave those instructions
+    // pointing at labels that no longer exist.
     this.html`
     <div class="split">
       <div class="options">
@@ -79,7 +84,7 @@ class IOHighlighter extends IOElement {
               changeMode(this, "highlight");
           }}"
         >
-          ${{ i18n: "issueReporter_screenshot_highlight" }}
+          Highlight
         </button>
         <button
           tabindex="-1"
@@ -89,7 +94,7 @@ class IOHighlighter extends IOElement {
               changeMode(this, "hide");
           }}"
         >
-          ${{ i18n: "issueReporter_screenshot_hide" }}
+          Hide
         </button>
       </div>
       <canvas />

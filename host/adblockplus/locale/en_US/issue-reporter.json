@@ -74,7 +74,7 @@
   },
   "issueReporter_other_issues": {
     "description": "https://gitlab.com/eyeo/specs/spec/blob/68b2ce406fde75fb849d8f2732b19b1e4105ce3d/spec/abp/issue-reporter.md#issue-type",
-    "message": "For all other issues, please contact us via <a0>support@adblockplus.org</a0>."
+    "message": "We may not respond to individual reports. If you need assistance, please contact us via <a0>support@adblockplus.org</a0>."
   },
   "issueReporter_page_title": {
     "message": "Issue reporter"
@@ -268,5 +268,14 @@
   "issueReporter_reportConsent_label": {
     "description": "Label for report consent checkbox on review page",
     "message": "I agree to share this report, including any information I provide and available technical data, with the Adblock Plus support team for troubleshooting."
+  },
+  "issueReporter_errorMessage_simple": {
+    "message": "Something went wrong. Please contact <a0>support@adblockplus.org</a0> for assistance."
+  },
+  "issueReporter_reportId": {
+    "message": "Report ID: {0}"
+  },
+  "issueReporter_supportContact": {
+    "message": "If you have further issues, please contact <a0>support@adblockplus.org</a0>."
   }
 }

@@ -11,6 +11,9 @@
   "issueReporter_anonymousSubmission_warning": {
     "message": "We zullen geen contact met u kunnen opnemen en het rapport waarschijnlijk een lagere prioriteit geven."
   },
+  "issueReporter_back_label": {
+    "message": "Terug"
+  },
   "issueReporter_closeButton_label": {
     "message": "Sluiten"
   },
@@ -23,6 +26,9 @@
   "issueReporter_comment_label": {
     "message": "Opmerking (optioneel):"
   },
+  "issueReporter_comment_optional_label": {
+    "message": "Overige opmerkingen (optioneel):"
+  },
   "issueReporter_config_label": {
     "message": "Informatie over mijn browserconfiguratie toevoegen, evenals een lijst van actieve extensies die ik gebruik"
   },
@@ -32,8 +38,14 @@
   "issueReporter_data_gathering_tab": {
     "message": "<strong>Opmerking:</strong> er wordt tijdelijk een extra tabblad geopend, zodat de pagina waarop u zich bevindt niet door de probleemrapportage wordt beïnvloed."
   },
+  "issueReporter_debug_label": {
+    "message": "Voeg foutopsporingsgegevens toe om ons team te helpen het probleem sneller te diagnosticeren."
+  },
   "issueReporter_detailsButton_label": {
     "message": "Details"
+  },
+  "issueReporter_detailsPage_heading": {
+    "message": "Details toevoegen"
   },
   "issueReporter_doneButton_label": {
     "message": "Gereed"
@@ -44,8 +56,17 @@
   "issueReporter_email_label": {
     "message": "E-mail:"
   },
+  "issueReporter_email_note": {
+    "message": "Door je e-mailadres te delen, kunnen we contact met je opnemen als we meer details nodig hebben om je probleem op te lossen. Je e-mailadres wordt nooit met derden gedeeld."
+  },
+  "issueReporter_email_optional_label": {
+    "message": "E-mail (optioneel):"
+  },
   "issueReporter_errorMessage": {
     "message": "Een poging om het rapport te verzenden is mislukt met foutcode ‘?1?’. Controleer uw internetverbinding en probeer het opnieuw. Als het probleem aanhoudt, vraag dan om hulp in het [link]Adblock Plus-forum[/link]."
+  },
+  "issueReporter_errorMessage_simple": {
+    "message": "Er is iets misgegaan. Neem contact op met <a0>support@adblockplus.org</a0> voor hulp."
   },
   "issueReporter_falseNegative_description": {
     "message": "Adblock Plus is ingeschakeld, maar ik zie nog steeds een of meer advertenties."
@@ -65,17 +86,80 @@
   "issueReporter_highlighter_heading": {
     "message": "Probleem markeren"
   },
+  "issueReporter_issueType_heading": {
+    "message": "Wat is het probleem?"
+  },
   "issueReporter_knownIssueMessage": {
     "message": "Het door u gemelde probleem is waarschijnlijk al bekend. Meer informatie:"
   },
   "issueReporter_markIssueButton_label": {
     "message": "Probleem markeren"
   },
+  "issueReporter_otherMessage_label": {
+    "message": "Beschrijf je probleem:"
+  },
+  "issueReporter_other_description": {
+    "message": "Ik heb een ander probleem of feedback om te melden."
+  },
   "issueReporter_other_issues": {
-    "message": "Neem voor alle andere problemen contact met ons op via <a0>support@adblockplus.org</a0>."
+    "message": "We reageren mogelijk niet op individuele rapporten. Als u hulp nodig hebt, neem dan contact met ons op via <a0>support@adblockplus.org</a0>."
+  },
+  "issueReporter_other_label": {
+    "message": "Ander probleem"
   },
   "issueReporter_page_title": {
     "message": "Probleemrapportage"
+  },
+  "issueReporter_preview_adblockplus": {
+    "message": "Adblock Plus"
+  },
+  "issueReporter_preview_browser": {
+    "message": "Browser"
+  },
+  "issueReporter_preview_comment": {
+    "message": "Opmerking"
+  },
+  "issueReporter_preview_debugData": {
+    "message": "Foutopsporingsgegevens"
+  },
+  "issueReporter_preview_email": {
+    "message": "E-mail"
+  },
+  "issueReporter_preview_extensions": {
+    "message": "Extensies"
+  },
+  "issueReporter_preview_filters": {
+    "message": "Overeenkomende filters"
+  },
+  "issueReporter_preview_issue": {
+    "message": "Probleem"
+  },
+  "issueReporter_preview_issueDescription": {
+    "message": "Probleembeschrijving"
+  },
+  "issueReporter_preview_issueType": {
+    "message": "Type"
+  },
+  "issueReporter_preview_notProvided": {
+    "message": "Niet opgegeven"
+  },
+  "issueReporter_preview_pageUrl": {
+    "message": "Pagina-URL"
+  },
+  "issueReporter_preview_platform": {
+    "message": "Platform"
+  },
+  "issueReporter_preview_requests": {
+    "message": "Verzoeken"
+  },
+  "issueReporter_preview_screenshot": {
+    "message": "Schermafbeelding"
+  },
+  "issueReporter_preview_screenshotIncluded": {
+    "message": "Schermafbeelding inbegrepen (bewerkt: {0})"
+  },
+  "issueReporter_preview_subscriptions": {
+    "message": "Filterlijsten"
   },
   "issueReporter_privacyPolicy": {
     "message": "Privacybeleid"
@@ -83,14 +167,59 @@
   "issueReporter_processing_screenshot": {
     "message": "verwerken"
   },
+  "issueReporter_reportAnonymously_label": {
+    "message": "Anoniem melden"
+  },
+  "issueReporter_reportConsent_label": {
+    "message": "Ik ga ermee akkoord dit rapport, inclusief alle informatie die ik verstrek en beschikbare technische gegevens, te delen met het ondersteuningsteam van Adblock Plus voor probleemoplossing."
+  },
+  "issueReporter_reportId": {
+    "message": "Rapport-ID: {0}"
+  },
+  "issueReporter_reportIssueButton_label": {
+    "message": "Probleem melden"
+  },
+  "issueReporter_reportIssue_description": {
+    "message": "Selecteer het type probleem en gebruik de hulpmiddelen om gebieden op de schermafbeelding te markeren of te verbergen."
+  },
+  "issueReporter_reportIssue_heading": {
+    "message": "Een probleem melden"
+  },
+  "issueReporter_reviewButton_label": {
+    "message": "Controleren"
+  },
+  "issueReporter_reviewPage_description": {
+    "message": "Controleer de onderstaande informatie voordat je verzendt. Je kunt teruggaan om wijzigingen aan te brengen."
+  },
+  "issueReporter_reviewPage_heading": {
+    "message": "Controleer je rapport"
+  },
   "issueReporter_screenreader_warning": {
     "message": "Om ons te helpen het probleem beter te begrijpen, is een schermafbeelding nodig bij het indienen van een probleemrapport. Afhankelijk van de website waarop u zich bevindt, kan de schermafbeelding persoonlijke informatie bevatten. Als u liever geen schermafbeelding indient, e-mail dan uw probleem naar <a0>support@adblockplus.org</a0>."
+  },
+  "issueReporter_screenshot_consent_confirm": {
+    "message": "Ik begrijp het, doorgaan"
+  },
+  "issueReporter_screenshot_consent_question": {
+    "message": "Ga door om deze schermafbeelding in je rapport op te nemen."
+  },
+  "issueReporter_screenshot_consent_return": {
+    "message": "Terug"
+  },
+  "issueReporter_screenshot_consent_title": {
+    "message": "Toestemming voor schermafbeelding"
   },
   "issueReporter_screenshot_hide": {
     "message": "Verbergen"
   },
   "issueReporter_screenshot_highlight": {
     "message": "Markeren"
+  },
+  "issueReporter_screenshot_highlight_hint": {
+    "message": "Gebruik het Highlight-hulpmiddel om probleemgebieden op de schermafbeelding te markeren."
+  },
+  "issueReporter_screenshot_warning": {
+    "message": "Deze schermafbeelding kan persoonlijke informatie bevatten. Gebruik Hide om gevoelige informatie af te dekken."
   },
   "issueReporter_selectIssueButton_label": {
     "message": "Probleem selecteren"
@@ -107,10 +236,16 @@
   "issueReporter_showData_label": {
     "message": "Klik op deze koppeling om de rapportgegevens te bekijken voordat ze worden verzonden"
   },
+  "issueReporter_supportContact": {
+    "message": "Als je verdere problemen hebt, neem dan contact op met <a0>support@adblockplus.org</a0>."
+  },
   "issueReporter_typeSelector_description": {
     "message": "Selecteer een probleem:"
   },
   "issueReporter_typeSelector_heading": {
     "message": "Welk type probleem ondervindt u?"
+  },
+  "issueReporter_usePremiumEmail_label": {
+    "message": "Gebruik dit e-mailadres:"
   }
 }
