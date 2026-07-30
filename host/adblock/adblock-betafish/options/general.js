@@ -57,15 +57,11 @@ const toggleDataCollectionOptPref = function (value) {
     // eslint-disable-next-line camelcase
     settings.data_collection_v2 = false;
     DataCollectionV2.end();
-    // eslint-disable-next-line camelcase
-    Prefs.send_ad_wall_messages = false;
     settings.onpageMessages = false;
   } else {
     // eslint-disable-next-line camelcase
     settings.data_collection_v2 = false;
     DataCollectionV2.end();
-    // eslint-disable-next-line camelcase
-    Prefs.send_ad_wall_messages = true;
     settings.onpageMessages = true;
   }
 

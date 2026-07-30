@@ -32,7 +32,6 @@ export default () => {
     const dataCollectionOptOut = await isCheckboxPropertyEnabled("#prefs__data_collection_opt_out");
     expect(dataCollectionOptOut).toEqual(true);
     await waitForNotDisplayed("//label[@for='enable_data_collection_v2']");
-    await waitForNotDisplayed("//label[@for='prefs__send_ad_wall_messages']");
     await waitForNotDisplayed("//label[@for='enable_onpageMessages']");
 
     const optOutFlag = await driver.executeScript(() =>

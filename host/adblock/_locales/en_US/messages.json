@@ -1507,10 +1507,6 @@
     "message": "Opt-out of all data collection in the AdBlock extension.",
     "description": "Checkbox on the 'General' tab of the Options page"
   },
-  "allow_ad_wall_messages": {
-    "message": "Help improve AdBlock by allowing some user specific data collection on sites that use anti-adblock walls",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
   "work_around_hulu_problems": {
     "message": "Work around Hulu.com videos not playing (requires restarting your browser)",
     "description": "Advanced Options page checkbox, which users only need to use if Hulu.com videos break. It directs the user to restart their browser in order for changes to the checkbox to take effect."

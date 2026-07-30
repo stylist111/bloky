@@ -33,7 +33,6 @@ const abpPrefPropertyNames = [
   "show_statsinicon",
   "shouldShowBlockElementMenu",
   "show_devtools_panel",
-  "send_ad_wall_messages",
   "data_collection_opt_out",
   "marketing_opt_out",
 ];

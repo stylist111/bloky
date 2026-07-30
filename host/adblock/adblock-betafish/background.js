@@ -722,9 +722,6 @@ initialize
       port,
       prefs: Prefs,
       sendAdWallEvents: async (eventName, payload) => {
-        if (!Prefs.get("send_ad_wall_messages")) {
-          return;
-        }
         // Normalize event name for serverLogger
         const normalizedEventName = eventName.replace(/[.-]/g, "_");
         if (migratedEvents.has(normalizedEventName)) {
