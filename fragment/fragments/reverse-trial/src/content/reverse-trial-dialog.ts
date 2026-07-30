@@ -22,7 +22,9 @@ import {
   GET_DIALOG_MESSAGE_TYPE,
   GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
   DIALOG_ACTION_MESSAGE_TYPE,
+  DIALOG_SHOWN_MESSAGE_TYPE,
   DISMISS_DIALOG_MESSAGE_TYPE,
+  DIALOG_MARKER_ATTRIBUTE,
   YT_MASTHEAD_TIMEOUT_MS,
 } from "../shared/constants.js";
 import {
@@ -42,6 +44,19 @@ function sendDialogAction(touchPointStep: number, action: string): void {
     type: DIALOG_ACTION_MESSAGE_TYPE,
     touchPointStep,
     action,
+  });
+}
+
+/**
+ * Notifies the service worker that the dialog was actually rendered on the
+ * page. The service worker emits the `dialog_shown` impression telemetry in
+ * response, so it's only counted when the dialog truly appeared — not when a
+ * co-installed sibling extension won the shared-DOM render race.
+ */
+function sendDialogShown(touchPointStep: number): void {
+  void browser.runtime.sendMessage({
+    type: DIALOG_SHOWN_MESSAGE_TYPE,
+    touchPointStep,
   });
 }
 
@@ -493,6 +508,7 @@ function stopAutoDismissTimer(): void {
  */
 function buildDialog(payload: DialogPayload): HTMLElement {
   const host = document.createElement("div");
+  host.setAttribute(DIALOG_MARKER_ATTRIBUTE, "");
   const shadow = host.attachShadow({ mode: "closed" });
 
   const style = document.createElement("style");
@@ -607,9 +623,20 @@ function renderDialog(payload: DialogPayload): void {
   if (dialogContainer !== null || dialogRemoved) {
     return;
   }
+  // Cross-extension guard: if a sibling eyeo extension (AdBlock/ABP,
+  // both shipping this fragment) already rendered an OPD on this page,
+  // don't add a second one. Read-only check with no `await` before the
+  // append below, so whichever content script gets here first wins the
+  // race and the other bails. Removal stays keyed to `dialogContainer`
+  // (never this marker), so a bailing extension never touches the
+  // sibling's dialog.
+  if (document.querySelector(`[${DIALOG_MARKER_ATTRIBUTE}]`)) {
+    return;
+  }
   dialogContainer = buildDialog(payload);
   currentTouchPointStep = payload.touchPointStep;
   document.body.appendChild(dialogContainer);
+  sendDialogShown(payload.touchPointStep);
 
   if (payload.autoDismissMs) {
     autoDismissMs = payload.autoDismissMs;

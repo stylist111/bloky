@@ -123,6 +123,11 @@ export default {
         src: "/content"
       },
       {
+        dest: "reverse-trial.preload.js",
+        package: "@eyeo-fragments/reverse-trial",
+        src: "/content"
+      },
+      {
         dest: "conflict-detection.preload.js",
         package: "@eyeo-fragments/conflict-detection",
         src: "/content"

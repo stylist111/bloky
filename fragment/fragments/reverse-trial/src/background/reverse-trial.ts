@@ -24,6 +24,7 @@ import {
   GET_DIALOG_MESSAGE_TYPE,
   GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
   DIALOG_ACTION_MESSAGE_TYPE,
+  DIALOG_SHOWN_MESSAGE_TYPE,
   DISMISS_DIALOG_MESSAGE_TYPE,
   STEP_PREF_KEY,
   TOUCH_POINT_CONFIG_FLAG_PREFIX,
@@ -50,25 +51,6 @@ import {
 import { advanceTrialStep, endTrial, startTrial } from "./trial-lifecycle.js";
 
 const serverLogger = new ewe.telemetry.ServerLogger("reverse_trial");
-
-/**
- * Fetches an image URL and returns its contents as a base64 data URL.
- *
- * Done in the service worker rather than the content script so the
- * image request is not visible to the page — otherwise the YouTube page
- * could detect our extension by observing the logo fetch.
- */
-async function toDataUrl(url: string): Promise<string> {
-  const response = await fetch(url);
-  const blob = await response.blob();
-  const arrayBuffer = await blob.arrayBuffer();
-  const bytes = new Uint8Array(arrayBuffer);
-  let binary = "";
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return `data:${blob.type};base64,${btoa(binary)}`;
-}
 
 /**
  * Handles a dialog request from the content script.
@@ -163,14 +145,6 @@ async function requestDialogHandler(
     return null;
   }
 
-  const logoUrl = await toDataUrl(params.logoUrl);
-
-  serverLogger.info("dialog_shown", {
-    touchPointStep: step.id,
-    installDate: (params.prefs.get("installDate") as number | undefined) ?? 0,
-    reverseTrialStartDate: trialStartDate,
-  });
-
   const isOptedOut = await params.isOptedOut();
   const urlVars = await buildUrlVariables(
     step.id,
@@ -183,7 +157,7 @@ async function requestDialogHandler(
 
   return buildDialogPayload(
     step,
-    logoUrl,
+    params.logoUrl,
     locale,
     urlVars,
     textVars,
@@ -375,6 +349,25 @@ async function dismissOpenDialogs(): Promise<void> {
 }
 
 /**
+ * Emits the `dialog_shown` telemetry once the content script confirms the
+ * dialog was actually rendered. Kept separate from payload building so the
+ * impression is only counted for the extension that truly displayed the
+ * OPD — when both AdBlock and Adblock Plus are installed, the one that
+ * loses the shared-DOM render race never sends this message.
+ */
+function dialogShownHandler(
+  message: { touchPointStep: number },
+  params: StartInfo,
+): void {
+  serverLogger.info("dialog_shown", {
+    touchPointStep: message.touchPointStep,
+    installDate: (params.prefs.get("installDate") as number | undefined) ?? 0,
+    reverseTrialStartDate:
+      (params.prefs.get(TRIAL_START_DATE_PREF_KEY) as number | undefined) ?? 0,
+  });
+}
+
+/**
  * Initializes the reverse trial background logic.
  *
  * Registers port handlers and trusted message types for YouTube.
@@ -386,7 +379,12 @@ async function dismissOpenDialogs(): Promise<void> {
  *     caller opinion (defense-in-depth — endTrial already clears it)
  *     and resets trial prefs so the user can be re-targeted later.
  */
-export function start(params: StartInfo): void {
+export async function start(params: StartInfo): Promise<void> {
+  // Wait for the host's prefs to finish loading before registering
+  // handlers, so the trial step / start date are never read as defaults
+  // (which would re-enroll a mid-trial user).
+  await params.prefs.untilLoaded;
+
   params.port.on(
     GET_DIALOG_MESSAGE_TYPE,
     async (message: { ytPremium?: boolean }) =>
@@ -403,11 +401,18 @@ export function start(params: StartInfo): void {
     async (message: { touchPointStep: number }) =>
       await dialogShouldStillShowHandler(message, params),
   );
+  params.port.on(
+    DIALOG_SHOWN_MESSAGE_TYPE,
+    (message: { touchPointStep: number }) => {
+      dialogShownHandler(message, params);
+    },
+  );
 
   const trustedTypes = [
     GET_DIALOG_MESSAGE_TYPE,
     GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
     DIALOG_ACTION_MESSAGE_TYPE,
+    DIALOG_SHOWN_MESSAGE_TYPE,
   ];
   params.addTrustedMessageTypes("https://youtube.com", trustedTypes);
   params.addTrustedMessageTypes("https://www.youtube.com", trustedTypes);

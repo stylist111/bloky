@@ -24,6 +24,7 @@ import type { DialogPayload, StartInfo } from "../../src/shared";
 import {
   GET_DIALOG_MESSAGE_TYPE,
   DIALOG_ACTION_MESSAGE_TYPE,
+  DIALOG_SHOWN_MESSAGE_TYPE,
   DISMISS_DIALOG_MESSAGE_TYPE,
   GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
   STEP_PREF_KEY,
@@ -209,6 +210,7 @@ function createMockParams(prefsData: Record<string, unknown> = {}): StartInfo {
         delete prefsData[key];
         return Promise.resolve();
       }),
+      untilLoaded: Promise.resolve(),
     },
     port: {
       on: vi.fn((type: string, handler: MessageHandler) => {
@@ -216,7 +218,7 @@ function createMockParams(prefsData: Record<string, unknown> = {}): StartInfo {
       }),
     },
     addTrustedMessageTypes: vi.fn(),
-    logoUrl: "icons/adblock-20.svg",
+    logoUrl: "data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=",
     isOptedOut: vi.fn().mockResolvedValue(false),
     addonVersion: "1.0.0",
     allowedUrlHosts: ALLOWED_HOSTS,
@@ -247,6 +249,12 @@ async function sendDialogShouldStillShow(
   if (!handler)
     throw new Error("No dialog-should-still-show handler registered");
   return handler({ touchPointStep });
+}
+
+async function sendDialogShown(touchPointStep: number): Promise<void> {
+  const handler = portHandlers.get(DIALOG_SHOWN_MESSAGE_TYPE);
+  if (!handler) throw new Error("No dialog-shown handler registered");
+  await handler({ touchPointStep });
 }
 
 function mockFlags({
@@ -286,21 +294,6 @@ describe("reverse-trial background", () => {
     mockAccountOnChangedListeners.length = 0;
     vi.mocked(ewe.account.hasPremium).mockResolvedValue(false);
 
-    const fakeArrayBuffer = new Uint8Array([60, 115, 118, 103, 62]).buffer; // b"<svg>"
-    const fakeBlob = {
-      type: "image/svg+xml",
-      arrayBuffer: vi.fn().mockResolvedValue(fakeArrayBuffer),
-    };
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string) => {
-        if (url === "icons/adblock-20.svg") {
-          return Promise.resolve({ blob: vi.fn().mockResolvedValue(fakeBlob) });
-        }
-        return Promise.reject(new Error(`Unexpected fetch call: ${url}`));
-      }),
-    );
-
     mockFlags();
     vi.mocked(browser.tabs.query).mockResolvedValue([]);
   });
@@ -309,21 +302,21 @@ describe("reverse-trial background", () => {
     it("returns null when the remote config flag is absent", async () => {
       mockFlags({ config: null });
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       expect(await sendMessage()).toBeNull();
     });
 
     it("returns null when the remote config is malformed", async () => {
       mockFlags({ config: { trialDurationDays: -1, steps: [] } });
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       expect(await sendMessage()).toBeNull();
     });
 
     it("returns null when experiment flag is disabled and trial hasn't started", async () => {
       mockFlags({ experimentFlag: false });
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       expect(await sendMessage()).toBeNull();
     });
   });
@@ -331,7 +324,7 @@ describe("reverse-trial background", () => {
   describe("requestDialogHandler: step resolution", () => {
     it("returns step 1 payload on first visit, stamps trial start date, and activates lightning snippets", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
 
       const result = (await sendMessage()) as DialogPayload;
       expect(result).not.toBeNull();
@@ -349,6 +342,25 @@ describe("reverse-trial background", () => {
       // Auto-enrollment activates lightning snippets via the SDK
       // caller-opinion API (the variant flag is the kill switch only).
       expect(ewe.lightningSnippets.enable).toHaveBeenCalled();
+      // dialog_shown is NOT emitted when the payload is built — only once
+      // the content script confirms the dialog was actually rendered.
+      expect(mockLoggerInfo).not.toHaveBeenCalledWith(
+        "dialog_shown",
+        expect.anything(),
+      );
+    });
+
+    it("emits dialog_shown only after the content script confirms render", async () => {
+      const params = createMockParams({ [STEP_PREF_KEY]: 0 });
+      await start(params);
+
+      await sendMessage();
+      expect(mockLoggerInfo).not.toHaveBeenCalledWith(
+        "dialog_shown",
+        expect.anything(),
+      );
+
+      await sendDialogShown(1);
       expect(mockLoggerInfo).toHaveBeenCalledWith("dialog_shown", {
         touchPointStep: 1,
         installDate: expect.any(Number),
@@ -361,7 +373,7 @@ describe("reverse-trial background", () => {
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
         [STEP_PREF_KEY]: 1,
       });
-      start(params);
+      await start(params);
       await sendMessage();
       expect(params.prefs.set).not.toHaveBeenCalledWith(
         TRIAL_START_DATE_PREF_KEY,
@@ -375,7 +387,7 @@ describe("reverse-trial background", () => {
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
         [STEP_PREF_KEY]: 1,
       });
-      start(params);
+      await start(params);
 
       const result = (await sendMessage()) as DialogPayload;
       expect(result.touchPointStep).toBe(2);
@@ -392,7 +404,7 @@ describe("reverse-trial background", () => {
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
         [STEP_PREF_KEY]: 1,
       });
-      start(params);
+      await start(params);
 
       const result = (await sendMessage()) as DialogPayload;
       expect(result.touchPointStep).toBe(3);
@@ -404,7 +416,7 @@ describe("reverse-trial background", () => {
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
         [STEP_PREF_KEY]: 3,
       });
-      start(params);
+      await start(params);
       expect(await sendMessage()).toBeNull();
     });
 
@@ -413,7 +425,7 @@ describe("reverse-trial background", () => {
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
         [STEP_PREF_KEY]: 1,
       });
-      start(params);
+      await start(params);
       expect(await sendMessage()).toBeNull();
     });
   });
@@ -427,7 +439,7 @@ describe("reverse-trial background", () => {
     it("resolves the gate and config flags under a non-default experiment id", async () => {
       mockFlags({ experimentId: "trial-a" });
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       const result = (await sendMessage()) as DialogPayload;
       expect(result).not.toBeNull();
       expect(result.touchPointStep).toBe(1);
@@ -437,7 +449,7 @@ describe("reverse-trial background", () => {
       // No `show-reverse-trial-opd-*` flag at all.
       vi.mocked(ewe.experiments.getFlags).mockResolvedValue({});
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       expect(await sendMessage()).toBeNull();
     });
   });
@@ -445,7 +457,7 @@ describe("reverse-trial background", () => {
   describe("requestDialogHandler: URL variables", () => {
     it("substitutes {step} and opt-in-sensitive variables into link URLs", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
 
       const result = (await sendMessage()) as DialogPayload;
       const learnMoreUrl = result.links?.[0].url ?? "";
@@ -456,7 +468,7 @@ describe("reverse-trial background", () => {
     it("resolves opt-out-sensitive URL variables to empty string when opted out", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
       vi.mocked(params.isOptedOut).mockResolvedValue(true);
-      start(params);
+      await start(params);
 
       const result = (await sendMessage()) as DialogPayload;
       const learnMoreUrl = result.links?.[0].url ?? "";
@@ -474,7 +486,7 @@ describe("reverse-trial background", () => {
       vi.mocked(ewe.experiments.getEncodedExperiments).mockResolvedValue(
         "a+b/c==",
       );
-      start(params);
+      await start(params);
 
       const config = buildValidConfig() as Record<string, unknown>;
       (config as { steps: Array<Record<string, unknown>> }).steps[0].links = [
@@ -491,7 +503,7 @@ describe("reverse-trial background", () => {
 
       const paramsWithVersion = createMockParams({ [STEP_PREF_KEY]: 0 });
       paramsWithVersion.addonVersion = "1.2.3+chrome";
-      start(paramsWithVersion);
+      await start(paramsWithVersion);
 
       const result = (await sendMessage()) as DialogPayload;
       const url = result.links?.[0].url ?? "";
@@ -514,7 +526,7 @@ describe("reverse-trial background", () => {
       mockFlags({ config });
 
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
 
       const result = (await sendMessage()) as DialogPayload;
       expect(result.links?.[0].url).toBe("https://getadblock.com/?x={unknown}");
@@ -527,7 +539,7 @@ describe("reverse-trial background", () => {
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
         [STEP_PREF_KEY]: 1,
       });
-      start(params);
+      await start(params);
 
       const result = (await sendMessage()) as DialogPayload;
       expect(result.body[0].text).toBe("6 days remaining.");
@@ -552,7 +564,7 @@ describe("reverse-trial background", () => {
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 20 * MS_PER_DAY,
         [STEP_PREF_KEY]: 2,
       });
-      start(params);
+      await start(params);
 
       const result = (await sendMessage()) as DialogPayload;
       expect(result.body[0].text).toBe("0 days left (clamped).");
@@ -579,7 +591,7 @@ describe("reverse-trial background", () => {
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 10 * MS_PER_DAY,
         [STEP_PREF_KEY]: 1,
       });
-      start(params);
+      await start(params);
 
       const result = (await sendMessage()) as DialogPayload;
       expect(result.body[0].text).toBe("Active for 10 days.");
@@ -609,7 +621,7 @@ describe("reverse-trial background", () => {
       mockFlags({ config });
 
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       const result = (await sendMessage()) as DialogPayload;
       expect(result.title).toBe("DE");
     });
@@ -636,7 +648,7 @@ describe("reverse-trial background", () => {
       mockFlags({ config });
 
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       const result = (await sendMessage()) as DialogPayload;
       expect(result.title).toBe("DE");
     });
@@ -644,7 +656,7 @@ describe("reverse-trial background", () => {
     it("falls back to en when locale is missing", async () => {
       vi.mocked(browser.i18n.getUILanguage).mockReturnValue("fr");
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       const result = (await sendMessage()) as DialogPayload;
       expect(result.title).toBe("Trial active");
     });
@@ -675,7 +687,7 @@ describe("reverse-trial background", () => {
       mockFlags({ config });
 
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       const result = (await sendMessage()) as DialogPayload;
       expect(result.ctaButton?.url).toBe("https://getadblock.com/path/1");
     });
@@ -684,7 +696,7 @@ describe("reverse-trial background", () => {
   describe("dialogActionHandler", () => {
     it("logs dialog_action with action and touchPointStep", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
 
       await sendDialogAction(1, "learn_more");
 
@@ -698,28 +710,28 @@ describe("reverse-trial background", () => {
 
     it("advances step on close action", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       await sendDialogAction(1, "CLOSE");
       expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 1);
     });
 
     it("advances step on auto-dismiss action", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       await sendDialogAction(1, "AUTO_DISMISS");
       expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 1);
     });
 
     it("advances step on NAVIGATE with closeAfter=true (default)", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       await sendDialogAction(1, "learn_more");
       expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 1);
     });
 
     it("does not advance step on NAVIGATE with closeAfter=false", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       await sendDialogAction(1, "feedback");
       expect(params.prefs.set).not.toHaveBeenCalledWith(STEP_PREF_KEY, 1);
     });
@@ -729,7 +741,7 @@ describe("reverse-trial background", () => {
         { id: 1 } as browser.Tabs.Tab,
       ]);
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       await sendDialogAction(1, "feedback");
       expect(vi.mocked(browser.tabs.sendMessage)).not.toHaveBeenCalled();
     });
@@ -739,7 +751,7 @@ describe("reverse-trial background", () => {
         [STEP_PREF_KEY]: 1,
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
       });
-      start(params);
+      await start(params);
       await sendDialogAction(2, "mid_end");
       expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
       expect(ewe.lightningSnippets.clear).toHaveBeenCalled();
@@ -747,14 +759,14 @@ describe("reverse-trial background", () => {
 
     it("clears lightning-snippets opinion when advancing to the last step", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 2 });
-      start(params);
+      await start(params);
       await sendDialogAction(3, "CLOSE");
       expect(ewe.lightningSnippets.clear).toHaveBeenCalled();
     });
 
     it("dialog-action is idempotent — repeating the same step is a no-op on step", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 1 });
-      start(params);
+      await start(params);
       await sendDialogAction(1, "CLOSE");
       expect(params.prefs.set).not.toHaveBeenCalledWith(STEP_PREF_KEY, 1);
     });
@@ -765,7 +777,7 @@ describe("reverse-trial background", () => {
         { id: 2 } as browser.Tabs.Tab,
       ]);
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       await sendDialogAction(1, "CLOSE");
       expect(vi.mocked(browser.tabs.sendMessage)).toHaveBeenCalledWith(1, {
         type: DISMISS_DIALOG_MESSAGE_TYPE,
@@ -783,7 +795,7 @@ describe("reverse-trial background", () => {
         new Error("no content script"),
       );
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       await expect(sendDialogAction(1, "CLOSE")).resolves.toBeUndefined();
     });
   });
@@ -845,7 +857,7 @@ describe("reverse-trial background", () => {
     it("requireOptIn: true defers trial start on first visit (no enable, no start date)", async () => {
       mockFlags({ config: buildOptInConfig() });
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
 
       const result = (await sendMessage()) as DialogPayload;
       expect(result).not.toBeNull();
@@ -863,14 +875,14 @@ describe("reverse-trial background", () => {
       // dismissed step 1 and the calendar advanced.
       mockFlags({ config: buildOptInConfig() });
       const params = createMockParams({ [STEP_PREF_KEY]: 1 });
-      start(params);
+      await start(params);
       expect(await sendMessage()).toBeNull();
     });
 
     it("START_TRIAL action stamps the trial start date and activates lightning snippets", async () => {
       mockFlags({ config: buildOptInConfig() });
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
 
       await sendDialogAction(1, "accept");
 
@@ -884,7 +896,7 @@ describe("reverse-trial background", () => {
     it("START_TRIAL advances the step normally (not straight to last)", async () => {
       mockFlags({ config: buildOptInConfig() });
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
 
       await sendDialogAction(1, "accept");
 
@@ -895,7 +907,7 @@ describe("reverse-trial background", () => {
     it("× close on the opt-in step is treated as END_TRIAL", async () => {
       mockFlags({ config: buildOptInConfig() });
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
 
       await sendDialogAction(1, "CLOSE");
 
@@ -908,7 +920,7 @@ describe("reverse-trial background", () => {
     it("AUTO_DISMISS on the opt-in step is treated as END_TRIAL", async () => {
       mockFlags({ config: buildOptInConfig() });
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
 
       await sendDialogAction(1, "AUTO_DISMISS");
 
@@ -936,7 +948,7 @@ describe("reverse-trial background", () => {
         }),
       });
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
 
       await sendDialogAction(1, "later");
 
@@ -968,7 +980,7 @@ describe("reverse-trial background", () => {
         }),
       });
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
 
       await sendDialogAction(1, "learn");
 
@@ -1000,7 +1012,7 @@ describe("reverse-trial background", () => {
         }),
       });
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
 
       await sendDialogAction(1, "feedback");
 
@@ -1021,7 +1033,7 @@ describe("reverse-trial background", () => {
         [STEP_PREF_KEY]: 1,
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 11 * MS_PER_DAY,
       });
-      start(params);
+      await start(params);
 
       await sendDialogAction(2, "CLOSE");
 
@@ -1033,13 +1045,13 @@ describe("reverse-trial background", () => {
   describe("dialogShouldStillShow", () => {
     it("returns true when currentStep is less than touchPointStep", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 1 });
-      start(params);
+      await start(params);
       expect(await sendDialogShouldStillShow(2)).toBe(true);
     });
 
     it("returns false when currentStep has advanced to or past touchPointStep", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 2 });
-      start(params);
+      await start(params);
       expect(await sendDialogShouldStillShow(2)).toBe(false);
       expect(await sendDialogShouldStillShow(1)).toBe(false);
     });
@@ -1049,7 +1061,7 @@ describe("reverse-trial background", () => {
         [STEP_PREF_KEY]: 1,
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
       });
-      start(params);
+      await start(params);
       await sendDialogShouldStillShow(2);
       expect(mockLoggerDebug).toHaveBeenCalledWith(
         "dialog_should_still_show_checked",
@@ -1073,7 +1085,7 @@ describe("reverse-trial background", () => {
     it("Premium user with no prior trial state ends the trial and does not start a trialStartDate", async () => {
       vi.mocked(ewe.account.hasPremium).mockResolvedValue(true);
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       expect(await sendMessage()).toBeNull();
       expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
       expect(params.prefs.set).not.toHaveBeenCalledWith(
@@ -1089,7 +1101,7 @@ describe("reverse-trial background", () => {
         [STEP_PREF_KEY]: 1,
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
       });
-      start(params);
+      await start(params);
       expect(await sendMessage()).toBeNull();
       expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
       expect(ewe.lightningSnippets.clear).toHaveBeenCalled();
@@ -1101,7 +1113,7 @@ describe("reverse-trial background", () => {
         [STEP_PREF_KEY]: 3,
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
       });
-      start(params);
+      await start(params);
       expect(await sendMessage()).toBeNull();
       expect(params.prefs.set).not.toHaveBeenCalledWith(
         STEP_PREF_KEY,
@@ -1116,7 +1128,7 @@ describe("reverse-trial background", () => {
         [STEP_PREF_KEY]: 1,
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
       });
-      start(params);
+      await start(params);
       await sendMessage();
       expect(params.prefs.reset).not.toHaveBeenCalled();
     });
@@ -1124,7 +1136,7 @@ describe("reverse-trial background", () => {
     it("Non-Premium user still shows OPDs as before (regression)", async () => {
       vi.mocked(ewe.account.hasPremium).mockResolvedValue(false);
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       const result = (await sendMessage()) as DialogPayload;
       expect(result).not.toBeNull();
       expect(result.touchPointStep).toBe(1);
@@ -1132,7 +1144,7 @@ describe("reverse-trial background", () => {
 
     it("YT Premium user on first visit does not start the trial", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       expect(await sendMessage({ ytPremium: true })).toBeNull();
       expect(params.prefs.set).not.toHaveBeenCalledWith(
         TRIAL_START_DATE_PREF_KEY,
@@ -1145,7 +1157,7 @@ describe("reverse-trial background", () => {
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
         [STEP_PREF_KEY]: 2,
       });
-      start(params);
+      await start(params);
       expect(await sendMessage({ ytPremium: true })).toBeNull();
       expect(params.prefs.set).toHaveBeenCalledWith(STEP_PREF_KEY, 3);
     });
@@ -1155,7 +1167,7 @@ describe("reverse-trial background", () => {
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 8 * MS_PER_DAY,
         [STEP_PREF_KEY]: 1,
       });
-      start(params);
+      await start(params);
       expect(await sendMessage({ ytPremium: true })).toBeNull();
       expect(mockLoggerDebug).toHaveBeenCalledWith(
         "dialog_skipped_yt_premium",
@@ -1169,9 +1181,31 @@ describe("reverse-trial background", () => {
   });
 
   describe("start() wiring", () => {
-    it("registers all handlers via port.on", () => {
+    it("defers registration until prefs have loaded", async () => {
+      let resolveLoaded: () => void = () => {};
+      const untilLoaded = new Promise<void>((resolve) => {
+        resolveLoaded = resolve;
+      });
       const params = createMockParams();
-      start(params);
+      params.prefs.untilLoaded = untilLoaded;
+
+      const started = start(params);
+      // Nothing is registered while prefs are still loading.
+      expect(params.port.on).not.toHaveBeenCalled();
+      expect(params.addTrustedMessageTypes).not.toHaveBeenCalled();
+      expect(ewe.account.onChanged.addListener).not.toHaveBeenCalled();
+
+      resolveLoaded();
+      await started;
+      // Registration happens once prefs are ready.
+      expect(params.port.on).toHaveBeenCalled();
+      expect(params.addTrustedMessageTypes).toHaveBeenCalled();
+      expect(ewe.account.onChanged.addListener).toHaveBeenCalled();
+    });
+
+    it("registers all handlers via port.on", async () => {
+      const params = createMockParams();
+      await start(params);
 
       expect(params.port.on).toHaveBeenCalledWith(
         GET_DIALOG_MESSAGE_TYPE,
@@ -1189,7 +1223,7 @@ describe("reverse-trial background", () => {
 
     it("registers an experiments.onChanged listener for lightning-snippets cleanup", async () => {
       const params = createMockParams();
-      start(params);
+      await start(params);
 
       expect(ewe.experiments.onChanged.addListener).toHaveBeenCalledTimes(1);
       expect(mockOnChangedListeners).toHaveLength(1);
@@ -1202,23 +1236,23 @@ describe("reverse-trial background", () => {
 
     it("does not clear caller opinion while the OPD config flag is present", async () => {
       const params = createMockParams();
-      start(params);
+      await start(params);
 
       mockFlags();
       await mockOnChangedListeners[0]();
       expect(ewe.lightningSnippets.clear).not.toHaveBeenCalled();
     });
 
-    it("converts logoUrl to a base64 data URL", async () => {
+    it("passes the host-provided logoUrl through to the dialog payload", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 0 });
-      start(params);
+      await start(params);
       const result = (await sendMessage()) as DialogPayload;
-      expect(result.logoUrl).toMatch(/^data:image\/svg\+xml;base64,/);
+      expect(result.logoUrl).toBe(params.logoUrl);
     });
 
-    it("registers an account.onChanged listener", () => {
+    it("registers an account.onChanged listener", async () => {
       const params = createMockParams();
-      start(params);
+      await start(params);
       expect(ewe.account.onChanged.addListener).toHaveBeenCalledTimes(1);
       expect(mockAccountOnChangedListeners).toHaveLength(1);
     });
@@ -1231,7 +1265,7 @@ describe("reverse-trial background", () => {
         [STEP_PREF_KEY]: 1,
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
       });
-      start(params);
+      await start(params);
 
       await mockAccountOnChangedListeners[0]({
         user: { hasPremium: true },
@@ -1253,7 +1287,7 @@ describe("reverse-trial background", () => {
         [STEP_PREF_KEY]: 3,
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 15 * MS_PER_DAY,
       });
-      start(params);
+      await start(params);
 
       await mockAccountOnChangedListeners[0]({
         user: { hasPremium: true },
@@ -1277,7 +1311,7 @@ describe("reverse-trial background", () => {
         [STEP_PREF_KEY]: 1,
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
       });
-      start(params);
+      await start(params);
 
       await mockAccountOnChangedListeners[0]({
         user: { hasPremium: true },
@@ -1294,7 +1328,7 @@ describe("reverse-trial background", () => {
         [STEP_PREF_KEY]: 1,
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
       });
-      start(params);
+      await start(params);
 
       await mockAccountOnChangedListeners[0]({
         user: { hasPremium: false },
@@ -1307,7 +1341,7 @@ describe("reverse-trial background", () => {
 
     it("no-change transitions (both true, both false) are no-ops", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 1 });
-      start(params);
+      await start(params);
 
       await mockAccountOnChangedListeners[0]({
         user: { hasPremium: true },
@@ -1324,7 +1358,7 @@ describe("reverse-trial background", () => {
 
     it("logout (user=null) is a no-op", async () => {
       const params = createMockParams({ [STEP_PREF_KEY]: 1 });
-      start(params);
+      await start(params);
 
       await mockAccountOnChangedListeners[0]({
         user: null,
@@ -1340,7 +1374,7 @@ describe("reverse-trial background", () => {
         [STEP_PREF_KEY]: 1,
         [TRIAL_START_DATE_PREF_KEY]: Date.now() - 3 * MS_PER_DAY,
       });
-      start(params);
+      await start(params);
 
       await mockAccountOnChangedListeners[0]({
         user: { hasPremium: true },

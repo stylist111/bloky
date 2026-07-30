@@ -27,6 +27,7 @@ import { start as startYtWallDetection } from "@eyeo-fragments/yt-wall-detection
 import { start as startReverseTrial } from "@eyeo-fragments/reverse-trial/background";
 import { start as startPublicAPI } from "@eyeo-fragments/public-api";
 import { start as startCloseTab } from "@eyeo-fragments/close-tab";
+import logoBase64 from "../icons/adblock-20.svg?uri";
 import { start as startFacts } from "../src/remote-config/background";
 import { Prefs } from "./alias/prefs";
 import { getUserFilters } from "./filter-utils";
@@ -739,7 +740,7 @@ initialize
       addTrustedMessageTypes: ext.addTrustedMessageTypes,
       prefs: Prefs,
       port,
-      logoUrl: browser.runtime.getURL("icons/adblock-20.svg"),
+      logoUrl: logoBase64,
       async isOptedOut() {
         return Prefs.get("data_collection_opt_out") === true;
       },

@@ -46,6 +46,11 @@
       "run_at": "document_start"
     },
     {
+      "js": ["polyfill.js", "reverse-trial.preload.js"],
+      "matches": ["https://youtube.com/*", "https://www.youtube.com/*"],
+      "run_at": "document_start"
+    },
+    {
       "js": ["polyfill.js", "premium-onboarding.preload.js"],
       "matches": [
         "https://accounts.adblockplus.org/*",

@@ -26,6 +26,14 @@ export interface Prefs {
   get: (key: string) => unknown;
   set: (key: string, value: unknown) => Promise<void> | void;
   reset: (key: string) => Promise<void> | void;
+
+  /**
+   * Resolves once the host's preferences have finished loading from
+   * storage. `start()` awaits this before registering handlers so the
+   * trial step / start date are never read as defaults (which would
+   * re-enroll a mid-trial user).
+   */
+  untilLoaded: Promise<void>;
 }
 
 /**
@@ -56,8 +64,10 @@ export interface StartInfo {
   addTrustedMessageTypes: (origin: string | null, types: string[]) => void;
 
   /**
-   * URL to the extension logo image, used in the dialog header.
-   * Typically obtained via `browser.runtime.getURL("icons/adblock-20.svg")`.
+   * The host extension's logo, shown in the dialog header. Provide it as an
+   * inlined `data:` URI (each host imports its own SVG via the webpack
+   * `?uri` asset loader, e.g. `import logo from "…/logo.svg?uri"`) so the
+   * page never observes a logo request that could reveal the extension.
    */
   logoUrl: string;
 
@@ -287,7 +297,7 @@ export interface DialogPayload {
    */
   ctaButton?: { text: string; key: string; url: string };
 
-  /** URL to the extension logo displayed in the dialog */
+  /** The extension logo (a `data:` URI) displayed in the dialog header */
   logoUrl: string;
 
   /** Touch point step number, echoed back in dialog-action messages */

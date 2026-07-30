@@ -316,6 +316,22 @@ defaults.new_tab_last_shown = 0;
 defaults.new_tab_cool_down = 7 * 24 * 60 * 60 * 1000;
 
 /**
+ * The last shown reverse trial touch point step id (0 = none shown yet).
+ * Read and written by the @eyeo-fragments/reverse-trial fragment.
+ *
+ * @type {number}
+ */
+defaults.reverse_trial_step = 0;
+
+/**
+ * The reverse trial start date (epoch ms; 0 = trial not started).
+ * Read and written by the @eyeo-fragments/reverse-trial fragment.
+ *
+ * @type {number}
+ */
+defaults.reverse_trial_start_date = 0;
+
+/**
  * The URL for the campaign that automatically opens on extension update
  *
  * @type {string}

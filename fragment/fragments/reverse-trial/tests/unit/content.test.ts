@@ -30,8 +30,10 @@ import { DialogAction, type DialogPayload } from "../../src/shared";
 import {
   GET_DIALOG_MESSAGE_TYPE,
   DIALOG_ACTION_MESSAGE_TYPE,
+  DIALOG_SHOWN_MESSAGE_TYPE,
   DISMISS_DIALOG_MESSAGE_TYPE,
   GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE,
+  DIALOG_MARKER_ATTRIBUTE,
 } from "../../src/shared";
 
 vi.mock("webextension-polyfill", () => ({
@@ -79,7 +81,7 @@ describe("reverse-trial content script", () => {
   const basePayload: DialogPayload = {
     title: "Premium active",
     body: [{ text: "Enjoy fewer ads.", style: "paragraph" }],
-    logoUrl: "icons/adblock-20.svg",
+    logoUrl: "data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=",
     touchPointStep: 1,
     showCloseButton: true,
   };
@@ -121,6 +123,68 @@ describe("reverse-trial content script", () => {
       await start();
       await start();
       expect(document.body.children.length).toBe(2);
+    });
+  });
+
+  describe("cross-extension dedup", () => {
+    it("marks the dialog host with the shared marker attribute", async () => {
+      vi.mocked(browser.runtime).sendMessage.mockResolvedValue(basePayload);
+      await start();
+
+      const container = document.body.lastElementChild as HTMLElement;
+      expect(container.hasAttribute(DIALOG_MARKER_ATTRIBUTE)).toBe(true);
+    });
+
+    it("does not render when a sibling extension's dialog is already present", async () => {
+      const sibling = document.createElement("div");
+      sibling.setAttribute(DIALOG_MARKER_ATTRIBUTE, "");
+      document.body.appendChild(sibling);
+
+      vi.mocked(browser.runtime).sendMessage.mockResolvedValue(basePayload);
+      await start();
+
+      // Only the sibling carries the marker — no second dialog was added.
+      expect(
+        document.querySelectorAll(`[${DIALOG_MARKER_ATTRIBUTE}]`).length,
+      ).toBe(1);
+    });
+
+    it("sends dialog-shown after actually rendering the dialog", async () => {
+      vi.mocked(browser.runtime).sendMessage.mockResolvedValue(basePayload);
+      await start();
+
+      expect(vi.mocked(browser.runtime).sendMessage).toHaveBeenCalledWith({
+        type: DIALOG_SHOWN_MESSAGE_TYPE,
+        touchPointStep: 1,
+      });
+    });
+
+    it("does not send dialog-shown when it bails on a sibling's dialog", async () => {
+      const sibling = document.createElement("div");
+      sibling.setAttribute(DIALOG_MARKER_ATTRIBUTE, "");
+      document.body.appendChild(sibling);
+
+      vi.mocked(browser.runtime).sendMessage.mockResolvedValue(basePayload);
+      await start();
+
+      expect(vi.mocked(browser.runtime).sendMessage).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: DIALOG_SHOWN_MESSAGE_TYPE }),
+      );
+    });
+
+    it("after bailing, a DISMISS message does not remove the sibling's dialog", async () => {
+      const sibling = document.createElement("div");
+      sibling.setAttribute(DIALOG_MARKER_ATTRIBUTE, "");
+      document.body.appendChild(sibling);
+
+      vi.mocked(browser.runtime).sendMessage.mockResolvedValue(basePayload);
+      await start();
+
+      const addListener = vi.mocked(browser.runtime.onMessage.addListener);
+      const handler = addListener.mock.calls[0][0] as (m: unknown) => void;
+      handler({ type: DISMISS_DIALOG_MESSAGE_TYPE });
+
+      expect(document.body.contains(sibling)).toBe(true);
     });
   });
 
@@ -507,9 +571,14 @@ describe("reverse-trial content script", () => {
     }
 
     it("sends should-still-show when tab becomes visible with a dialog present", async () => {
-      vi.mocked(browser.runtime)
-        .sendMessage.mockResolvedValueOnce(basePayload)
-        .mockResolvedValueOnce(true);
+      vi.mocked(browser.runtime).sendMessage.mockImplementation((msg) =>
+        Promise.resolve(
+          (msg as { type?: string })?.type ===
+            GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE
+            ? true
+            : basePayload,
+        ),
+      );
       await start();
 
       setVisibilityState("visible");
@@ -523,9 +592,14 @@ describe("reverse-trial content script", () => {
     });
 
     it("removes the dialog when should-still-show returns false", async () => {
-      vi.mocked(browser.runtime)
-        .sendMessage.mockResolvedValueOnce(basePayload)
-        .mockResolvedValueOnce(false);
+      vi.mocked(browser.runtime).sendMessage.mockImplementation((msg) =>
+        Promise.resolve(
+          (msg as { type?: string })?.type ===
+            GET_DIALOG_SHOULD_STILL_SHOW_MESSAGE_TYPE
+            ? false
+            : basePayload,
+        ),
+      );
       await start();
 
       setVisibilityState("visible");

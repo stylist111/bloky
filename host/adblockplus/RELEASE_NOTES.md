@@ -1,5 +1,9 @@
 # Unreleased
 
+- Added: Support for Premium reverse-trial on-page dialogs, shown and configured
+  via remote configuration. When another eyeo extension is installed alongside,
+  only one reverse-trial dialog is shown per page.
+
 # 4.42.1 - 2026-07-28
 
 This release contains bugfixes and under-the-hood changes.

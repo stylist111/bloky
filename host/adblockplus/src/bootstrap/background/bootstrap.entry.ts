@@ -50,6 +50,8 @@ import { start as startCloseTab } from "@eyeo-fragments/close-tab";
 import { start as startPages } from "../../core/pages/background";
 import { start as startGlobals } from "../../globals/background";
 import { start as startPublicAPI } from "@eyeo-fragments/public-api";
+import { start as startReverseTrial } from "@eyeo-fragments/reverse-trial/background";
+import logoBase64 from "../../../skin/icons/logo/abp.svg?uri";
 import { port, addTrustedMessageTypes } from "~/core/messaging/background";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { getPerformanceTimings } from "@eyeo/webext-ad-filtering-solution/all/profiling.js";
@@ -145,6 +147,19 @@ async function bootstrap(): Promise<void> {
     prefs: Prefs,
     sendAdWallEvents: undefined,
     isPremiumActive: hasActiveLicense
+  });
+  void startReverseTrial({
+    addTrustedMessageTypes,
+    prefs: Prefs,
+    port,
+    logoUrl: logoBase64,
+    isOptedOut: async () => Prefs.get("data_collection_opt_out") === true,
+    addonVersion: info.addonVersion,
+    allowedUrlHosts: [
+      "adblockplus.org",
+      "accounts.adblockplus.org",
+      "docs.google.com"
+    ]
   });
   startInfoInjector();
   startCloseTab({

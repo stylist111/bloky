@@ -36,6 +36,7 @@ export async function getFacts(): Promise<Facts> {
     hasPremium: await hasActiveLicense(),
     installDate: Prefs.get("installDate"),
     blockedCount: Prefs.get("blocked_total"),
+    reverseTrialStartDate: Prefs.get("reverse_trial_start_date"),
     lastBlockthroughTagDate: Prefs.get("lastBlockthroughTagDate"),
     lastBaitBlockedDate: Prefs.get("lastBaitBlockedDate"),
     partnerExtensionCoinstalled:
