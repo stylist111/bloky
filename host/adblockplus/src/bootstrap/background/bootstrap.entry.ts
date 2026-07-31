@@ -144,9 +144,7 @@ async function bootstrap(): Promise<void> {
     addTrustedMessageTypes,
     logger,
     port,
-    prefs: Prefs,
-    sendAdWallEvents: undefined,
-    isPremiumActive: hasActiveLicense
+    prefs: Prefs
   });
   void startReverseTrial({
     addTrustedMessageTypes,

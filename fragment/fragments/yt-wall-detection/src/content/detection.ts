@@ -146,7 +146,7 @@ async function handlePlayerError(node: Element): Promise<void> {
     category: ErrorType.PLAYER_ERROR,
     applicationVersion: "",
     error: "",
-    error_msg: "",
+    errorMsg: "",
   });
 }
 

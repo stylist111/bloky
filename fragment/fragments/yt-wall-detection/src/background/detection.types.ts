@@ -33,31 +33,10 @@ export interface TabDescriptor {
  * Function to add trusted message types for certain origins
  *
  */
-export type sendAdWallEventsFunction = (
-  eventMessage: string,
-  additionalParams?: any,
-) => void;
-
-/**
- * Function to add trusted message types for certain origins
- *
- */
 export type addTrustedMessageTypesFunction = (
   origin: string | null,
   types: string[],
 ) => void;
-
-/**
- * A no-op Function type
- *
- */
-export type noopFunction = () => void;
-
-/**
- * A no-op Function declartion
- *
- */
-export const noop: noopFunction = () => {};
 
 /**
  * Interface for the start ad wall detection
@@ -90,15 +69,4 @@ export interface StartInfo {
    *
    */
   prefs: any;
-
-  /**
-   * A reference to a function will send event messages
-   *
-   */
-  sendAdWallEvents: sendAdWallEventsFunction | undefined;
-
-  /**
-   * Function to get the premium state of the user
-   */
-  isPremiumActive: () => Promise<boolean>;
 }

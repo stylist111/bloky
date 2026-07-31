@@ -8,6 +8,8 @@
   them by those names.
 - Fixed: The redesigned issue reporter showed untranslated English text in every
   language, because none of the strings it added had translations.
+- Added: Additional anonymous usage data collection, governed by the existing
+  data collection opt-out setting.
 
 # 4.42.1 - 2026-07-28
 

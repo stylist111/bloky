@@ -25,11 +25,7 @@ import {
   type AdWallMessage,
   type YTRecordEventMessage,
 } from "@eyeo/polyfills/all";
-import {
-  noop,
-  type StartInfo,
-  ytAllowlistStartDate,
-} from "./detection.types.js";
+import { type StartInfo, ytAllowlistStartDate } from "./detection.types.js";
 
 import {
   youTubeAlreadyAllowListed,
@@ -40,8 +36,16 @@ import {
   contextTamperingEvent,
   adShownEvent,
   errorEvent,
+  AllowlistScope,
   ErrorType,
 } from "../shared/index.js";
+
+/**
+ * Reports the events below. Payloads must match the `youtube` module in
+ * core/sdk/events.js exactly: every property it declares has to be present and
+ * of the declared type, otherwise the event is dropped without throwing.
+ */
+const logger = new ewe.telemetry.ServerLogger("youtube");
 
 /**
  * capture the allowlist YT start date (the update or install date)
@@ -93,7 +97,6 @@ async function hasAllowlistedFilter(
  *
  */
 const processYouTubeWallMessage = async (
-  parameters: StartInfo,
   message: AdWallMessage,
   sender: MessageSender,
 ): Promise<void> => {
@@ -102,13 +105,10 @@ const processYouTubeWallMessage = async (
   if (typeof tabId === "undefined" || typeof tabURL === "undefined") {
     return;
   }
-  const { sendAdWallEvents = noop } = parameters;
-
   const senderURL = new URL(tabURL);
   const host = senderURL.hostname.replace(/^www\./, "");
 
   const allowlistUrl = host;
-  const allowlistDuration = "tab";
   const filters = await ewe.filters.getAllowingFilters(tabId);
   const isAllowListed = filters.some((f) => f.includes(allowlistUrl));
 
@@ -116,11 +116,11 @@ const processYouTubeWallMessage = async (
   const eventName = isAllowListed
     ? youTubeAlreadyAllowListed
     : youTubeWallDetected;
-  sendAdWallEvents(eventName, {
-    category: message.hasDismiss ? "soft" : "hard",
+  logger.behavior(eventName, {
+    adwallCategory: message.hasDismiss ? "soft" : "hard",
     userLoggedIn: message.userLoggedIn ? "1" : "0",
     isAllowListed: isAllowListed ? "1" : "0",
-    allowlistDuration,
+    allowlistScope: AllowlistScope.TAB,
   });
 
   // Already allowlisted, no need to add the rule;
@@ -146,8 +146,8 @@ const processYouTubeWallMessage = async (
   } else {
     await browser.tabs.reload(tabId);
   }
-  sendAdWallEvents(youTubeAutoAllowlisted, {
-    allowlistDuration,
+  logger.behavior(youTubeAutoAllowlisted, {
+    allowlistScope: AllowlistScope.TAB,
   });
 };
 
@@ -155,14 +155,6 @@ const processYouTubeWallMessage = async (
  * Initializes YouTube telemetry
  */
 export function start(parameters: StartInfo): void {
-  /**
-   * The following StartInfo properties are passed into the start function
-   * as a temporary solution because core utilities for those objects are missing.
-   * Once a core utility for these objects are created, it is expected that they would
-   * no longer need to be passed in but imported.
-   */
-  const { sendAdWallEvents = noop } = parameters;
-
   // Capture the start date for the YT auto allowlist logic
   const captureDateOnUpdatedWithParameters = captureDateOnUpdate.bind(
     null,
@@ -184,26 +176,26 @@ export function start(parameters: StartInfo): void {
 
       const [isAllowlisted, isPremium] = await Promise.all([
         hasAllowlistedFilter(tabId),
-        parameters.isPremiumActive(),
+        ewe.account.hasPremium(),
       ]);
 
       if (
         errorMsg?.includes("read-only") &&
         errorMsg?.includes("non-configurable")
       ) {
-        sendAdWallEvents(contextTamperingEvent, {
-          applicationVersion: ytClientVersion,
+        logger.behavior(contextTamperingEvent, {
+          applicationVersion: ytClientVersion ?? "",
           isAllowListed: isAllowlisted ? "1" : "0",
-          p: isPremium,
+          isPremium,
         });
       } else {
-        sendAdWallEvents(errorEvent, {
+        logger.behavior(errorEvent, {
           isAllowListed: isAllowlisted ? "1" : "0",
-          p: isPremium,
-          error: type,
-          applicationVersion: ytClientVersion,
+          isPremium,
+          error: type ?? "",
+          applicationVersion: ytClientVersion ?? "",
           category: ErrorType.UNCAUGHT_EXCEPTION,
-          error_msg: stack,
+          errorMsg: stack ?? "",
         });
       }
     },
@@ -223,7 +215,7 @@ export function start(parameters: StartInfo): void {
 
       const [isAllowlisted, isPremium] = await Promise.all([
         hasAllowlistedFilter(tabId),
-        parameters.isPremiumActive(),
+        ewe.account.hasPremium(),
       ]);
 
       if (
@@ -235,12 +227,12 @@ export function start(parameters: StartInfo): void {
         return;
       }
 
-      sendAdWallEvents(adShownEvent, {
+      logger.behavior(adShownEvent, {
         isAllowListed: isAllowlisted ? "1" : "0",
-        p: isPremium,
-        category: adFormat,
-        bc: Math.floor(Number(totalAdTime) * 1000),
-        amount: Math.floor(Number(adShownTime) * 1000),
+        isPremium,
+        adFormat: adFormat ?? "",
+        totalAdDurationMs: Math.floor(Number(totalAdTime) * 1000),
+        adShownDurationMs: Math.floor(Number(adShownTime) * 1000),
       });
     },
     { urls: ["*://*.youtube.com/api/stats/watchtime?*el=adunit*"] },
@@ -260,31 +252,26 @@ export function start(parameters: StartInfo): void {
 
       const [isAllowlisted, isPremium] = await Promise.all([
         hasAllowlistedFilter(tabId),
-        parameters.isPremiumActive(),
+        ewe.account.hasPremium(),
       ]);
 
-      sendAdWallEvents(errorEvent, {
+      logger.behavior(errorEvent, {
         isAllowListed: isAllowlisted ? "1" : "0",
-        p: isPremium,
+        isPremium,
         error,
-        applicationVersion: clientVersion,
+        applicationVersion: clientVersion ?? "",
         category: ErrorType.SWW_ERROR,
-        error_msg: "",
+        errorMsg: "",
       });
     },
     { urls: ["*://*.youtube.com/api/stats/qoe?*"] },
   );
 
-  const processYouTubeWallMessageWithParameters =
-    processYouTubeWallMessage.bind(null, parameters);
-  parameters.port.on(
-    youTubeWallDetected,
-    processYouTubeWallMessageWithParameters,
-  );
+  parameters.port.on(youTubeWallDetected, processYouTubeWallMessage);
   parameters.port.on(
     youTubeNavigation,
     async (message: AdWallMessage, sender: MessageSender): Promise<void> => {
-      sendAdWallEvents(youTubeNavigation, {
+      logger.behavior(youTubeNavigation, {
         userLoggedIn: message.userLoggedIn ? "1" : "0",
       });
     },
@@ -299,13 +286,15 @@ export function start(parameters: StartInfo): void {
       const tabId = sender.tab?.id;
       const [isAllowlisted, isPremium] = await Promise.all([
         hasAllowlistedFilter(tabId),
-        parameters.isPremiumActive(),
+        ewe.account.hasPremium(),
       ]);
-
-      sendAdWallEvents(eventName, {
+      // The content script sends the properties specific to its event, and
+      // these two are added here because only the background page can resolve
+      // them.
+      logger.behavior(eventName, {
         ...eventPayload,
         isAllowListed: isAllowlisted ? "1" : "0",
-        p: isPremium,
+        isPremium,
       });
     },
   );

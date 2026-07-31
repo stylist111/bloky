@@ -24,7 +24,7 @@ import { start } from "../../src/content/index";
 
 test("content script", () => {
   const responseMessage: AdWallMessage = {
-    type: "yt-site.ad-wall-detected",
+    type: "yt_site_ad_wall_detected",
     userLoggedIn: false,
     currentPlaybackTime: 0,
   };

@@ -22,7 +22,7 @@ import { getOptionsHandle, ytAllowlistUrl } from "@eyeo/test-utils/extension";
 
 export default () => {
   it("auto-allowlists YouTube", async function () {
-    const eventName = "yt-site.ad-wall-detected";
+    const eventName = "yt_site_ad_wall_detected";
 
     await driver.wait(
       async () => {

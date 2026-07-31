@@ -21,7 +21,6 @@ import { mockFn, mockReset } from "vitest-mock-extended";
 import {
   type addTrustedMessageTypesFunction,
   type StartInfo,
-  type sendAdWallEventsFunction,
 } from "../../src/background/detection.types.js";
 import {
   youTubeAlreadyAllowListed,
@@ -32,6 +31,8 @@ import {
 } from "../../src/shared/index.js";
 import { type MessageSender, type AdWallMessage } from "@eyeo/polyfills/all";
 
+const { behaviorMock } = vi.hoisted(() => ({ behaviorMock: vi.fn() }));
+
 vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
   filters: {
     add: mockFn(),
@@ -40,6 +41,14 @@ vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
   experiments: {
     getFlag: mockFn(),
     onChanged: { addListener: mockFn() },
+  },
+  account: {
+    hasPremium: mockFn().mockResolvedValue(false),
+  },
+  telemetry: {
+    ServerLogger: class {
+      behavior = behaviorMock;
+    },
   },
 }));
 
@@ -58,15 +67,11 @@ const port = { on: onFnMock };
 
 const addTrustedMessageTypesFNMock = mockFn<addTrustedMessageTypesFunction>();
 
-const sendAdWallEventsFNMock = mockFn<sendAdWallEventsFunction>();
-
 const startInfo: StartInfo = {
   addTrustedMessageTypes: addTrustedMessageTypesFNMock,
   logger,
   prefs,
   port,
-  sendAdWallEvents: sendAdWallEventsFNMock,
-  isPremiumActive: vi.fn().mockResolvedValue(false),
 };
 
 const trustedEventNames = [
@@ -93,16 +98,15 @@ describe("Fragment / YT Ad Wall Detection", () => {
     mockReset(setFNMock);
     mockReset(onFnMock);
     mockReset(addTrustedMessageTypesFNMock);
-    mockReset(sendAdWallEventsFNMock);
     mockReset(startInfo.addTrustedMessageTypes);
-    mockReset(startInfo.sendAdWallEvents);
+    behaviorMock.mockReset();
     (chrome.runtime.onInstalled as any).clearListeners();
   });
 
   it("respond correctly to a YT navigation message", async () => {
     let message: AdWallMessage = {
       type: youTubeNavigation,
-      userLoggedIn: "0",
+      userLoggedIn: false,
       currentPlaybackTime: 0,
       hasDismiss: false,
     };
@@ -114,7 +118,7 @@ describe("Fragment / YT Ad Wall Detection", () => {
 
       if (arg1 === youTubeNavigation) {
         arg2(message, { tab: {} });
-        sendAdWallEventsFNMock.calledWith(youTubeNavigation, {
+        expect(behaviorMock).toHaveBeenCalledWith(youTubeNavigation, {
           userLoggedIn: "0",
         });
       }
@@ -158,10 +162,6 @@ describe("Fragment / YT Ad Wall Detection", () => {
         });
 
         processYouTubeWallDetected(message, sender);
-        sendAdWallEventsFNMock.calledWith(youTubeWallDetected, {
-          userLoggedIn: "0",
-          isAllowListed: "0",
-        });
         ewe.filters.add.calledWith(`@@||www.youtube.com$document`, {
           expiresByTabId: 1,
           origin: "auto",
@@ -213,10 +213,6 @@ describe("Fragment / YT Ad Wall Detection", () => {
         );
 
         processYouTubeWallDetected(message, sender);
-        sendAdWallEventsFNMock.calledWith(youTubeWallDetected, {
-          userLoggedIn: "0",
-          isAllowListed: "0",
-        });
         ewe.filters.add.calledWith(`@@||www.youtube.com$document`, {
           expiresByTabId: 1,
           origin: "auto",
@@ -248,10 +244,6 @@ describe("Fragment / YT Ad Wall Detection", () => {
 
       if (arg1 === youTubeWallDetected) {
         arg2(message, sender);
-        sendAdWallEventsFNMock.calledWith(youTubeAlreadyAllowListed, {
-          userLoggedIn: "1",
-          isAllowListed: "1",
-        });
       }
     };
     ewe.filters.getAllowingFilters = function () {

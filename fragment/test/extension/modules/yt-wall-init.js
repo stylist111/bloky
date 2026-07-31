@@ -25,7 +25,6 @@ export function startYtWallFragment() {
     prefs: mocks.prefs,
     logger: mocks.logger,
     addTrustedMessageTypes: mocks.addTrustedMessageTypes,
-    sendAdWallEvents: mocks.sendAdWallEvents,
   });
 
   return { port: mocks.port };

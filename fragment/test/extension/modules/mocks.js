@@ -31,10 +31,6 @@ export const logger = {
 };
 
 export const addTrustedMessageTypes = sinon.stub();
-export const sendAdWallEvents = sinon.stub();
-export const getSendAdWallEventsSpies = () => ({
-  sendCalls: sendAdWallEvents.getCalls().map((call) => call.args),
-});
 
 export const port = {
   __registry: {},

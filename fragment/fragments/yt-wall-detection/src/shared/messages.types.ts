@@ -16,14 +16,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export const youTubeAlreadyAllowListed = "yt-site.already.allowlisted";
-export const youTubeAutoAllowlisted = "yt-auto.allowlisted";
-export const youTubeWallDetected = "yt-site.ad-wall-detected";
-export const youTubeNavigation = "yt-site.navigation";
-export const adShownEvent = "yt-site.ad-shown";
-export const toastShownEvent = "yt-site.toast-shown";
-export const contextTamperingEvent = "yt-site.context-tampering";
-export const errorEvent = "yt-site.yt-error";
+/**
+ * Names of the events this fragment reports. These double as the message types
+ * exchanged between the content script and the background page, and must match
+ * the `youtube` module entries in core/sdk/events.js exactly — an unknown name
+ * is rejected by the logger and the event is dropped.
+ */
+export const youTubeAlreadyAllowListed = "yt_site_already_allowlisted";
+export const youTubeAutoAllowlisted = "yt_auto_allowlisted";
+export const youTubeWallDetected = "yt_site_ad_wall_detected";
+export const youTubeNavigation = "yt_site_navigation";
+export const adShownEvent = "yt_site_ad_shown";
+export const toastShownEvent = "yt_site_toast_shown";
+export const contextTamperingEvent = "yt_site_context_tampering";
+export const errorEvent = "yt_site_yt_error";
+/**
+ * How long an automatic allowlisting lasts. Only `TAB` is currently reported;
+ * `VIDEO` is the other value the event schema permits.
+ */
+export enum AllowlistScope {
+  // Applies until the tab is closed
+  TAB = "tab",
+  // Applies to the current video only
+  VIDEO = "video",
+}
+
 export enum ErrorType {
   // Error when video is not playing
   PLAYER_ERROR = "player_error",
