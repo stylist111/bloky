@@ -222,7 +222,7 @@ comp:MV2:chromium:last-mv2-version:
 comp:MV2:chromium:oldest:
   extends: .compliance:MV2
   variables:
-    BROWSER: chromium 79.0.3945.0
+    BROWSER: chromium 127.0.6533.0
 
 comp:MV2:firefox:latest:
   extends: .compliance:MV2
@@ -233,7 +233,7 @@ comp:MV2:firefox:latest:
 comp:MV2:firefox:oldest:
   extends: .compliance:MV2
   variables:
-    BROWSER: firefox 68.0
+    BROWSER: firefox 128.0
     EXTENSION: adblockplus-firefox-*-mv2.xpi
 
 ################################################################################

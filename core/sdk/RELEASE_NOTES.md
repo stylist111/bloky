@@ -1,5 +1,7 @@
 # Unreleased
 
+- Dropped support for Chromium/Edge below 127.0, Firefox below 128.0, and Opera
+  below 113.0 in accordance with the browser deprecation policy.
 - Added `browserVersion` fact (semver string) for use in remote configuration conditions.
 - Fixed `filters.add()` dropping metadata in MV3 when the added filter was
   already present in a subscription. The filter is now stored as a user filter

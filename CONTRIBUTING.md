@@ -65,14 +65,14 @@ We support browser versions according to the manifest.json file of the respectiv
 
 | Manifest | Browser             | AdBlock       | Adblock Plus  | webext SDK |
 | -------- | ------------------- | ------------- | ------------- | ---------- |
-| MV2      | Chrome              | not supported | not supported | 79.0       |
-| MV2      | Firefox             | 75.0          | 68.0          | 68.0       |
-| MV2      | Firefox for Android | not supported | 68.0          | 68.0       |
-| MV2      | Microsoft Edge      | 79.0          | 79.0          | 79.0       |
-| MV3      | Chrome              | 124.0         | 124.0         | 124.0      |
+| MV2      | Chrome              | not supported | not supported | 127.0      |
+| MV2      | Firefox             | 128.0         | 128.0         | 128.0      |
+| MV2      | Firefox for Android | not supported | 128.0         | 128.0      |
+| MV2      | Microsoft Edge      | 127.0         | 127.0         | 127.0      |
+| MV3      | Chrome              | 127.0         | 127.0         | 127.0      |
 | MV3      | Microsoft Edge      | 124.0         | 124.0         | 124.0      |
-| MV3      | Opera               | not supported | 112.0         | 112.0      |
-| MV3      | Yandex Browser      | 124.0         | 124.0         | 124.0      |
+| MV3      | Opera               | not supported | 113.0         | 113.0      |
+| MV3      | Yandex Browser      | 127.0         | 127.0         | 127.0      |
 
 More generally, we want to support:
 
@@ -89,6 +89,7 @@ Dropping support for a browser version for a given host extension means:
   - Firefox / Firefox for Android: "applications" > "gecko" > "strict_min_version"
   - Opera: "minimum_opera_version"
 - Updating the .browserslistrc file.
+- Updating versions in CI configuration.
 - Mentioning the change in the RELEASE_NOTES.md file.
 - Updating the above table.
 

@@ -6,6 +6,8 @@
 - Removed a redundant data collection option from the General options page. Data
   collection is now controlled solely by the "Opt-out of all data collection in
   the AdBlock extension" option.
+- Dropped support for Chrome/Edge below 127.0, Firefox below 128.0, and Opera
+  below 113.0 in accordance with the browser deprecation policy.
 
 # 6.44.0.1 - 2026-07-28
 

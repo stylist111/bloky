@@ -10,6 +10,9 @@
   language, because none of the strings it added had translations.
 - Added: Additional anonymous usage data collection, governed by the existing
   data collection opt-out setting.
+- Dropped support for Chrome/Edge below 127.0, Firefox/Firefox for Android
+  below 128.0, and Opera below 113.0 in accordance with the browser
+  deprecation policy.
 
 # 4.42.1 - 2026-07-28
 

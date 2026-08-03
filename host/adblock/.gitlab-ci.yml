@@ -208,15 +208,14 @@ comp:MV2:firefox:latest:
 comp:MV2:chromium:oldest:
   extends: .compliance
   variables:
-    BROWSER: chromium 79.0.3945.0
+    BROWSER: chromium 127.0.6533.0
     EXTENSION: adblock-chrome-*-mv2.zip
 
-# https://eyeo.atlassian.net/browse/EE-542
-# comp:MV2:firefox:oldest:
-#   extends: .compliance
-#   variables:
-#     BROWSER: firefox 75.0
-#     EXTENSION: adblock-firefox-*-mv2.xpi
+comp:MV2:firefox:oldest:
+  extends: .compliance
+  variables:
+    BROWSER: firefox 128.0
+    EXTENSION: adblock-firefox-*-mv2.xpi
 
 ################################################################################
 # End-to-end tests

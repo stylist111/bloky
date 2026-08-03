@@ -16,8 +16,8 @@
     "default_popup": "adblock-button-popup.html",
     "default_title": "__MSG_name__"
   },
-  "minimum_chrome_version": "79.0",
-  "minimum_opera_version": "66.0",
+  "minimum_chrome_version": "127.0",
+  "minimum_opera_version": "113.0",
   "permissions": [
     "<all_urls>",
     "alarms",
