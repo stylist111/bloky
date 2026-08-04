@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.45.0 - 2026-08-04
+
 - The reverse-trial on-page dialog is now suppressed when another eyeo extension
   has already shown one on the same page, so only one dialog appears when both
   extensions are installed.
