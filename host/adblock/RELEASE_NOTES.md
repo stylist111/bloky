@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.14.0
+
 # 6.45.0 - 2026-08-04
 
 - The reverse-trial on-page dialog is now suppressed when another eyeo extension

@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.14.0
+
 # 4.43.0 - 2026-08-04
 
 - Added: Support for Premium reverse-trial on-page dialogs, shown and configured
