@@ -25,7 +25,7 @@ variables:
   OLDEST_FIREFOX_VERSION: "128.0"
   # Oldest version get-browser-binary can install for Edge (numeric versions
   # below this are rejected by the tooling, and only resolve on Linux)
-  OLDEST_EDGE_MV2_VERSION: "114.0.1823.37"
+  OLDEST_EDGE_MV2_VERSION: "116.0.1938.54"
   # Latest Chromium version that still supports MV2
   LATEST_CHROMIUM_MV2_VERSION: "128.0.6613.0"
 
