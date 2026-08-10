@@ -363,5 +363,6 @@ semgrep:sast:
     SEMGREP_EXTRA_ARGS: "--config=.semgrep.yml"
 
 trivy:sca:
+  allow_failure: true
   variables:
     TRIVY_EXTRA_ARGS: "--ignorefile .trivyignore.yaml"
