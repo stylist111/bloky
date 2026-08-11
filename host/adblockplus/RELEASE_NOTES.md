@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.43.1 - 2026-08-11
+
 - Updated snippets to 2.14.0
 
 # 4.43.0 - 2026-08-04

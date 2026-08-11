@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.45.1 - 2026-08-11
+
 - Updated snippets to 2.14.0
 - Fixed: Blank space appeared to the right of the popup menu in Microsoft Edge.
 
