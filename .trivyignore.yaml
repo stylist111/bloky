@@ -1,9 +1,7 @@
 vulnerabilities:
-  - id: CVE-2026-14257
+  - id: CVE-2026-48801
     statement: >
-      The identified vulnerable code is no longer actively being used
-      (host/adblockplus/build/locale-sync/), so OM-1219 doesn't apply.
-      No patched 1.x or 2.x release exists. Vulnerable packages (documentation,
-      eslint-plugin-import, lerna, mocha) don't provide a fixed version and also
-      cannot be upgraded to brace-expansion@5.x due to an incompatible API
-      change.
+      linkify-it is only used for linting Markdown files contained in this repo
+  - id: CVE-2026-59887
+    statement: >
+      linkify-it is only used for linting Markdown files contained in this repo

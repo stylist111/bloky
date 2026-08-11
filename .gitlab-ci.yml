@@ -365,4 +365,4 @@ semgrep:sast:
 trivy:sca:
   allow_failure: true
   variables:
-    TRIVY_EXTRA_ARGS: "--ignorefile .trivyignore.yaml"
+    TRIVY_EXTRA_ARGS: "--include-dev-deps --ignorefile .trivyignore.yaml"

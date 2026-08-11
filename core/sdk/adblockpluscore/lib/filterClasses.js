@@ -684,57 +684,26 @@ exports.URLFilter = class URLFilter extends ActiveFilter {
        this.urlPattern.matchesLocation(request) &&
        this.isActiveOnDomain(request.documentHostname, sitekey));
   }
-};
 
-/**
- * Creates a URL filter from its text representation
- *
- * @param {string} filterText   same as in Filter()
- * @return {module:filterClasses.Filter}
- */
-exports.URLFilter.fromText = function(filterText) {
-  let result = parse(filterText);
+  /**
+   * Creates a URL filter from its text representation
+   *
+   * @param {string} filterText   same as in Filter()
+   * @return {module:filterClasses.Filter}
+   */
+  static fromText(filterText) {
+    let result = parse(filterText);
 
-  if (result instanceof FilterParsingError) {
-    let option = null;
-    if (result.message == "filter_unknown_option" && result.detail) {
-      option = result.detail.option;
+    if (result instanceof FilterParsingError) {
+      let option = null;
+      if (result.message == "filter_unknown_option" && result.detail) {
+        option = result.detail.option;
+      }
+      return new InvalidFilter(filterText, result.message, option);
     }
-    return new InvalidFilter(filterText, result.message, option);
-  }
 
-  let {
-    blocking,
-    text,
-    regexpSource,
-    contentType,
-    matchCase,
-    domains,
-    thirdParty,
-    sitekeys,
-    header,
-    rewrite,
-    csp,
-    addHeader
-  } = result;
-
-  try {
-    if (blocking) {
-      return new BlockingFilter(
-        text,
-        regexpSource,
-        contentType,
-        matchCase,
-        domains,
-        thirdParty,
-        sitekeys,
-        header,
-        rewrite,
-        csp,
-        addHeader
-      );
-    }
-    return new AllowingFilter(
+    let {
+      blocking,
       text,
       regexpSource,
       contentType,
@@ -742,11 +711,42 @@ exports.URLFilter.fromText = function(filterText) {
       domains,
       thirdParty,
       sitekeys,
-      header
-    );
-  }
-  catch (e) {
-    return new InvalidFilter(filterText, "filter_invalid_regexp");
+      header,
+      rewrite,
+      csp,
+      addHeader
+    } = result;
+
+    try {
+      if (blocking) {
+        return new BlockingFilter(
+          text,
+          regexpSource,
+          contentType,
+          matchCase,
+          domains,
+          thirdParty,
+          sitekeys,
+          header,
+          rewrite,
+          csp,
+          addHeader
+        );
+      }
+      return new AllowingFilter(
+        text,
+        regexpSource,
+        contentType,
+        matchCase,
+        domains,
+        thirdParty,
+        sitekeys,
+        header
+      );
+    }
+    catch (e) {
+      return new InvalidFilter(filterText, "filter_invalid_regexp");
+    }
   }
 };
 
@@ -882,6 +882,19 @@ exports.AllowingFilter = class AllowingFilter extends URLFilter {
   }
 };
 
+/**
+ * Returns true if every command in a snippet script is a "log-if-*" monitoring
+ * snippet or the "race" control structure, making the script safe to use
+ * without a domain restriction.
+ * @param {string} script The snippet script body.
+ * @returns {boolean}
+ */
+function isMonitoringOnlyScript(script) {
+  let commands = parseScript(script);
+  return commands.length > 0 &&
+    commands.every(([name]) => name.startsWith("log-if-") || name === "race");
+}
+
 let ContentFilter =
 /**
  * Base class for content filters
@@ -903,114 +916,104 @@ exports.ContentFilter = class ContentFilter extends ActiveFilter {
 
     this.body = body;
   }
-};
 
-/**
- * Returns true if every command in a snippet script is a "log-if-*" monitoring
- * snippet or the "race" control structure, making the script safe to use
- * without a domain restriction.
- * @param {string} script The snippet script body.
- * @returns {boolean}
- */
-function isMonitoringOnlyScript(script) {
-  let commands = parseScript(script);
-  return commands.length > 0 &&
-    commands.every(([name]) => name.startsWith("log-if-") || name === "race");
-}
-
-/**
- * Creates a content filter from a pre-parsed text representation
- *
- * @param {string} text         same as in Filter()
- * @param {string} [domains]
- *   domains part of the text representation
- * @param {string} [type]
- *   rule type, either:
- *     * "" for an element hiding filter
- *     * "@" for an element hiding exception filter
- *     * "?" for an element hiding emulation filter
- *     * "$" for a snippet filter
- * @param {string} body
- *   body part of the text representation, either a CSS selector or a snippet
- *   script
- * @return {module:filterClasses.ElemHideFilter|
- *          module:filterClasses.ElemHideException|
- *          module:filterClasses.ElemHideEmulationFilter|
- *          module:filterClasses.SnippetFilter|
- *          module:filterClasses.InvalidFilter}
- */
-exports.ContentFilter.fromText = function(text, domains, type, body) {
-  // We don't allow content filters which have any empty domains.
-  // Note: The ContentFilter.prototype.domainSeparator is duplicated here, if
-  // that changes this must be changed too.
-  if (domains && /(^|,)~?(,|$)/.test(domains)) {
-    return new InvalidFilter(text, "filter_invalid_domain");
-  }
-
-  let restrictedByDomain = /,[^~][^,.]*\.[^,]/.test("," + domains) ||
-      ("," + domains + ",").includes(",localhost,");
-
-  if (type == "$") {
-    // Element hiding emulation and snippet filters are inefficient so we need
-    // to make sure that they're only applied if they specify active domains.
-    // Exception: scripts consisting only of "log-if-*" monitoring snippets are
-    // allowed without a domain, including when wrapped in a race block.
-
-    let snippetFilter = new SnippetFilter(text, domains, body);
-    if (!restrictedByDomain && !isMonitoringOnlyScript(snippetFilter.script)) {
-      return new InvalidFilter(text, "filter_snippet_nodomain");
+  /**
+   * Creates a content filter from a pre-parsed text representation
+   *
+   * @param {string} text         same as in Filter()
+   * @param {string} [domains]
+   *   domains part of the text representation
+   * @param {string} [type]
+   *   rule type, either:
+   *     * "" for an element hiding filter
+   *     * "@" for an element hiding exception filter
+   *     * "?" for an element hiding emulation filter
+   *     * "$" for a snippet filter
+   * @param {string} body
+   *   body part of the text representation, either a CSS selector or a snippet
+   *   script
+   * @return {module:filterClasses.ElemHideFilter|
+   *          module:filterClasses.ElemHideException|
+   *          module:filterClasses.ElemHideEmulationFilter|
+   *          module:filterClasses.SnippetFilter|
+   *          module:filterClasses.InvalidFilter}
+   */
+  static fromText(text, domains, type, body) {
+    // We don't allow content filters which have any empty domains.
+    // Note: The ContentFilter.prototype.domainSeparator is duplicated here, if
+    // that changes this must be changed too.
+    if (domains && /(^|,)~?(,|$)/.test(domains)) {
+      return new InvalidFilter(text, "filter_invalid_domain");
     }
-    return snippetFilter;
-  }
 
-  let selector = body;
-  let propertiesList;
-  let css = null;
-  let remove = false;
+    let restrictedByDomain = /,[^~][^,.]*\.[^,]/.test("," + domains) ||
+        ("," + domains + ",").includes(",localhost,");
 
-  if (selector.startsWith("@")) {
-    return new InvalidFilter(text, "filter_elemhide_invalid_selector");
-  }
+    if (type == "$") {
+      // Element hiding emulation and snippet filters are inefficient so we need
+      // to make sure that they're only applied if they specify active domains.
+      // Exception: scripts consisting only of "log-if-*" monitoring snippets
+      // are allowed without a domain, including when wrapped in a race block.
 
-  let propertiesListExtractingResult = /^(.*[^ ]) +{([^{]*)}$/.exec(body);
-  if (propertiesListExtractingResult) {
-    [, selector, propertiesList] = propertiesListExtractingResult;
-    propertiesList = propertiesList.toLowerCase();
-    remove = propertiesList.includes("remove:true;");
+      let snippetFilter = new SnippetFilter(text, domains, body);
+      if (
+        !restrictedByDomain &&
+        !isMonitoringOnlyScript(snippetFilter.script)
+      ) {
+        return new InvalidFilter(text, "filter_snippet_nodomain");
+      }
+      return snippetFilter;
+    }
 
-    if (!remove) {
-      css = extractCSSProperties(propertiesList);
-      if (!verifyCSSProperties(css)) {
-        return new InvalidFilter(text, "filter_elemhide_invalid_inline_css");
+    let selector = body;
+    let propertiesList;
+    let css = null;
+    let remove = false;
+
+    if (selector.startsWith("@")) {
+      return new InvalidFilter(text, "filter_elemhide_invalid_selector");
+    }
+
+    let propertiesListExtractingResult = /^(.*[^ ]) +{([^{]*)}$/.exec(body);
+    if (propertiesListExtractingResult) {
+      [, selector, propertiesList] = propertiesListExtractingResult;
+      propertiesList = propertiesList.toLowerCase();
+      remove = propertiesList.includes("remove:true;");
+
+      if (!remove) {
+        css = extractCSSProperties(propertiesList);
+        if (!verifyCSSProperties(css)) {
+          return new InvalidFilter(text, "filter_elemhide_invalid_inline_css");
+        }
       }
     }
-  }
 
-  if (type == "?") {
-    if (!restrictedByDomain) {
-      return new InvalidFilter(text, "filter_elemhideemulation_nodomain");
+    if (type == "?") {
+      if (!restrictedByDomain) {
+        return new InvalidFilter(text, "filter_elemhideemulation_nodomain");
+      }
+
+      return new ElemHideEmulationFilter(text, domains, selector, remove, css);
     }
 
-    return new ElemHideEmulationFilter(text, domains, selector, remove, css);
-  }
+    if (!restrictedByDomain &&
+        body.length < MIN_GENERIC_CONTENT_FILTER_BODY_LENGTH) {
+      return new InvalidFilter(text, "filter_elemhide_not_specific_enough");
+    }
 
-  if (!restrictedByDomain &&
-      body.length < MIN_GENERIC_CONTENT_FILTER_BODY_LENGTH) {
-    return new InvalidFilter(text, "filter_elemhide_not_specific_enough");
-  }
+    if (type == "@") {
+      return new ElemHideException(text, domains, selector);
+    }
 
-  if (type == "@") {
-    return new ElemHideException(text, domains, selector);
-  }
+    // Remove is only implemented for elemhide emulation filters, so if we want
+    // it to work on an elemhide filter then it needs to instantiate an elemhide
+    // emulation filter instead.
+    if (remove) {
+      return new ElemHideEmulationFilter(text, domains, selector, remove, null);
+    }
 
-  // Remove is only implemented for elemhide emulation filters, so if we want
-  // it to work on an elemhide filter then it needs to instantiate an elemhide
-  // emulation filter instead.
-  if (remove) {
-    return new ElemHideEmulationFilter(text, domains, selector, remove, null);
+    return new ElemHideFilter(text, domains, selector, css);
   }
-
-  return new ElemHideFilter(text, domains, selector, css);
 };
 
 function extractCSSProperties(propertiesList) {

@@ -4,7 +4,7 @@
   "repository": "https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore.git",
   "license": "GPL-3.0-only",
   "dependencies": {
-    "tar": "7.5.13",
+    "tar": "7.5.19",
     "yargs": "17.7.2"
   },
   "devDependencies": {
@@ -18,7 +18,7 @@
     "nock": "13.5.6",
     "sandboxed-module": "2.0.4",
     "script-loader": "0.7.0",
-    "webpack": "5.97.1"
+    "webpack": "5.109.2"
   },
   "peerDependencies": {
     "mocha": "10.8.2"

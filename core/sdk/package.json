@@ -46,7 +46,7 @@
     "jsonpath-plus": "10.3.0",
     "pako": "2.1.0",
     "semver": "7.7.2",
-    "tar": "7.5.13",
+    "tar": "7.5.19",
     "uuid": "9.0.1",
     "yargs": "17.7.2"
   },
@@ -79,7 +79,7 @@
     "source-map-loader": "3.0.2",
     "terser-webpack-plugin": "5.5.0",
     "wbn": "0.0.8",
-    "webpack": "5.97.1",
+    "webpack": "5.109.2",
     "webpack-cli": "4.10.0"
   },
   "scripts": {
