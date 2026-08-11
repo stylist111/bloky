@@ -18,7 +18,7 @@
     "message": "További zavaró elemek blokkolása"
   },
   "premium_onboarding_feature_cookies_description": {
-    "message": "A funkció hozzáadásával és az értesítések blokkolásával elfogadod, hogy nem kapsz a sütik használatára és a süti beállítások módosítására vonatkozó értesítést az egyedi weboldalakon. A blokkolást bármikor kikapcsolhatod."
+    "message": "A funkció hozzáadásával és az értesítések blokkolásával elfogadod, hogy nem kapsz a sütik használatára (a nem szükséges sütiket a rendszer lehetőség szerint automatikusan elutasítja a nevedben) és a süti beállítások módosítására vonatkozó értesítést az egyedi weboldalakon. A blokkolást bármikor kikapcsolhatod."
   },
   "premium_onboarding_feature_cookies_subtitle": {
     "message": "Süti elfogadási felugró ablakok blokkolása a népszerű oldalakon"

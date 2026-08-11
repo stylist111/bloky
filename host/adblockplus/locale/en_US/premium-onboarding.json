@@ -25,7 +25,7 @@
   },
   "premium_onboarding_feature_cookies_description": {
     "description": "https://gitlab.com/adblockinc/ext/adblockplus/spec/-/blob/954a4afc0b231e1635d59ad072b44d767ba86173/spec/abp/premium-onboarding.md#block-cookie-consent-pop-ups",
-    "message": "By adding this feature and blocking these prompts, you are consenting to not be notified about cookie usage and to edit cookie settings on individual websites. You can change this at any time."
+    "message": "By adding this feature and blocking these prompts, you are consenting to not be notified about cookie usage (non-necessary cookies will be automatically rejected on your behalf where possible) and to edit cookie settings on individual websites. You can change this at any time."
   },
   "premium_onboarding_feature_cookies_subtitle": {
     "description": "https://gitlab.com/adblockinc/ext/adblockplus/spec/-/blob/954a4afc0b231e1635d59ad072b44d767ba86173/spec/abp/premium-onboarding.md#block-cookie-consent-pop-ups",

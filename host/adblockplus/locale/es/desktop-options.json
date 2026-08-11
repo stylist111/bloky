@@ -172,7 +172,7 @@
     "message": "Vale, entendido"
   },
   "options_dialog_optIn_premium_subscription_description": {
-    "message": "Al añadir esta función y bloquear estos mensajes, estás otorgando tu consentimiento para que no se te notifique el uso de cookies y para editar los ajustes de cookies en páginas web específicas. Puedes cambiar esto en cualquier momento"
+    "message": "Al añadir esta función y bloquear estos mensajes, estás otorgando tu consentimiento para que no se te notifique el uso de cookies (las cookies no necesarias se rechazarán automáticamente en tu nombre cuando sea posible) y para editar los ajustes de cookies en páginas web específicas. Puedes cambiar esto en cualquier momento"
   },
   "options_dialog_optIn_premium_subscription_reject": {
     "message": "Ahora no"

@@ -172,7 +172,7 @@
     "message": "Tak, zrozumiałem/am"
   },
   "options_dialog_optIn_premium_subscription_description": {
-    "message": "Dodając tę funkcję i blokując te monity, wyrażasz zgodę na to, aby nie otrzymywać powiadomień o używaniu plików cookie oraz edycji ustawień plików cookies na poszczególnych stronach internetowych. Możesz to zmienić w dowolnym momencie."
+    "message": "Dodając tę funkcję i blokując te monity, wyrażasz zgodę na to, aby nie otrzymywać powiadomień o używaniu plików cookie (niepotrzebne pliki cookie będą automatycznie odrzucane w Twoim imieniu, tam gdzie to możliwe) oraz edycji ustawień plików cookies na poszczególnych stronach internetowych. Możesz to zmienić w dowolnym momencie."
   },
   "options_dialog_optIn_premium_subscription_reject": {
     "message": "Nie teraz"

@@ -18,7 +18,7 @@
     "message": "Bloquear mais distrações"
   },
   "premium_onboarding_feature_cookies_description": {
-    "message": "Ao adicionar o recurso e bloquear esses alertas, você concorda em não ser notificado(a) sobre o uso de cookies e sobre a edição das configurações de cookies em sites específicos. Você pode alterar isso a qualquer momento."
+    "message": "Ao adicionar o recurso e bloquear esses alertas, você concorda em não ser notificado(a) sobre o uso de cookies (os cookies não essenciais serão rejeitados automaticamente em seu nome, sempre que possível) e sobre a edição das configurações de cookies em sites específicos. Você pode alterar isso a qualquer momento."
   },
   "premium_onboarding_feature_cookies_subtitle": {
     "message": "Ocultar janelas pop-up de autorização de cookies em sites populares"

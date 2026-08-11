@@ -18,7 +18,7 @@
     "message": "Bloquea más distracciones"
   },
   "premium_onboarding_feature_cookies_description": {
-    "message": "Al añadir esta función y bloquear estos mensajes, estás dando tu consentimiento para que no se te notifique el uso de cookies y para editar la configuración de cookies en sitios web concretos. Puedes cambiar esto en cualquier momento."
+    "message": "Al añadir esta función y bloquear estos mensajes, estás dando tu consentimiento para que no se te notifique el uso de cookies (las cookies no necesarias se rechazarán automáticamente en tu nombre cuando sea posible) y para editar la configuración de cookies en sitios web concretos. Puedes cambiar esto en cualquier momento."
   },
   "premium_onboarding_feature_cookies_subtitle": {
     "message": "Oculta las ventanas emergentes de consentimiento de cookies en los sitios populares"

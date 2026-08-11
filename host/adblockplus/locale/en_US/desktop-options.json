@@ -566,7 +566,7 @@
   },
   "options_dialog_optIn_premium_subscription_description": {
     "description": "https://gitlab.com/adblockinc/ext/adblockplus/spec/blob/ab27c2fcfbde533411185c88190a108f21f6496b/spec/abp/desktop-settings/general-tab.md#premium-features-1",
-    "message": "By adding this feature and blocking these prompts, you are consenting to not be notified about cookie usage and to edit cookie settings on individual websites. You can change this at any time."
+    "message": "By adding this feature and blocking these prompts, you are consenting to not be notified about cookie usage (non-necessary cookies will be automatically rejected on your behalf where possible) and to edit cookie settings on individual websites. You can change this at any time."
   },
   "options_dialog_optIn_premium_subscription_confirm": {
     "description": "https://gitlab.com/adblockinc/ext/adblockplus/spec/blob/ab27c2fcfbde533411185c88190a108f21f6496b/spec/abp/desktop-settings/general-tab.md#premium-features-1",

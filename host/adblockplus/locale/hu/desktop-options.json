@@ -172,7 +172,7 @@
     "message": "Rendben, értem"
   },
   "options_dialog_optIn_premium_subscription_description": {
-    "message": "A funkció hozzáadásával és az értesítések blokkolásával elfogadod, hogy nem kapsz a sütik használatára és a süti beállítások módosítására vonatkozó értesítést az egyedi weboldalakon. A blokkolást bármikor kikapcsolhatod."
+    "message": "A funkció hozzáadásával és az értesítések blokkolásával elfogadod, hogy nem kapsz a sütik használatára (a nem szükséges sütiket a rendszer lehetőség szerint automatikusan elutasítja a nevedben) és a süti beállítások módosítására vonatkozó értesítést az egyedi weboldalakon. A blokkolást bármikor kikapcsolhatod."
   },
   "options_dialog_optIn_premium_subscription_reject": {
     "message": "Most nem"

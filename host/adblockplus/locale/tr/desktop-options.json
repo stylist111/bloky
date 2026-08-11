@@ -172,7 +172,7 @@
     "message": "Tamam, anladım"
   },
   "options_dialog_optIn_premium_subscription_description": {
-    "message": "Bu özelliği ekleyerek ve bu istemleri engelleyerek, çerez kullanımı hakkında bilgilendirilmemeyi ve çerez ayarlarını tek tek web sitelerinde düzenlemeyi kabul etmiş olursunuz. Bunu istediğiniz zaman değiştirebilirsiniz."
+    "message": "Bu özelliği ekleyerek ve bu istemleri engelleyerek, çerez kullanımı hakkında bilgilendirilmemeyi (gerekli olmayan çerezler mümkün olduğunda sizin adınıza otomatik olarak reddedilecektir) ve çerez ayarlarını tek tek web sitelerinde düzenlemeyi kabul etmiş olursunuz. Bunu istediğiniz zaman değiştirebilirsiniz."
   },
   "options_dialog_optIn_premium_subscription_reject": {
     "message": "Şimdi değil"

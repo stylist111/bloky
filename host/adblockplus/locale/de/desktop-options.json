@@ -172,7 +172,7 @@
     "message": "OK, verstanden"
   },
   "options_dialog_optIn_premium_subscription_description": {
-    "message": "Durch Hinzufügen dieser Funktion und Blockieren dieser Aufforderungen erklärst du dich einverstanden, nicht über die Verwendung von Cookies benachrichtigt zu werden und Cookie-Einstellungen auf einzelnen Webseiten zu bearbeiten. Du kannst dies jederzeit wieder ändern."
+    "message": "Durch Hinzufügen dieser Funktion und Blockieren dieser Aufforderungen erklärst du dich einverstanden, nicht über die Verwendung von Cookies benachrichtigt zu werden (nicht notwendige Cookies werden, soweit möglich, automatisch für dich abgelehnt) und Cookie-Einstellungen auf einzelnen Webseiten zu bearbeiten. Du kannst dies jederzeit wieder ändern."
   },
   "options_dialog_optIn_premium_subscription_reject": {
     "message": "Nicht jetzt"

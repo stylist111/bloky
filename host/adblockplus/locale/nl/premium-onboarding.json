@@ -18,7 +18,7 @@
     "message": "Blokkeer meer afleidingen"
   },
   "premium_onboarding_feature_cookies_description": {
-    "message": "Door deze functie toe te voegen en deze prompts te blokkeren, geeft u toestemming om geen meldingen te krijgen over het gebruik van cookies en om cookie-instellingen aan te passen op individuele websites. U kunt dit op elk moment wijzigen."
+    "message": "Door deze functie toe te voegen en deze prompts te blokkeren, geeft u toestemming om geen meldingen te krijgen over het gebruik van cookies (niet-noodzakelijke cookies worden waar mogelijk automatisch namens u afgewezen) en om cookie-instellingen aan te passen op individuele websites. U kunt dit op elk moment wijzigen."
   },
   "premium_onboarding_feature_cookies_subtitle": {
     "message": "Verberg pop-ups voor cookietoestemming op populaire sites"

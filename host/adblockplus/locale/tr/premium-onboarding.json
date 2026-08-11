@@ -18,7 +18,7 @@
     "message": "Daha fazla dikkat dağıtıcı unsur engelleyin"
   },
   "premium_onboarding_feature_cookies_description": {
-    "message": "Bu özelliği ekleyerek ve bu istemleri engelleyerek, çerez kullanımı hakkında bilgilendirilmemeyi ve çerez ayarlarını tek tek web sitelerinde düzenlemeyi kabul etmiş olursunuz. Bunu istediğiniz zaman değiştirebilirsiniz."
+    "message": "Bu özelliği ekleyerek ve bu istemleri engelleyerek, çerez kullanımı hakkında bilgilendirilmemeyi (gerekli olmayan çerezler mümkün olduğunda sizin adınıza otomatik olarak reddedilecektir) ve çerez ayarlarını tek tek web sitelerinde düzenlemeyi kabul etmiş olursunuz. Bunu istediğiniz zaman değiştirebilirsiniz."
   },
   "premium_onboarding_feature_cookies_subtitle": {
     "message": "Popüler sitelerdeki çerez onayı isteyen açılır pencereleri gizleyin"

@@ -172,7 +172,7 @@
     "message": "OK, entendi."
   },
   "options_dialog_optIn_premium_subscription_description": {
-    "message": "Ao adicionar o recurso e bloquear esses alertas, você concorda em não ser notificado(a) sobre o uso de cookies e sobre a edição das configurações de cookies em sites específicos. Você pode alterar isso a qualquer momento."
+    "message": "Ao adicionar o recurso e bloquear esses alertas, você concorda em não ser notificado(a) sobre o uso de cookies (os cookies não essenciais serão rejeitados automaticamente em seu nome, sempre que possível) e sobre a edição das configurações de cookies em sites específicos. Você pode alterar isso a qualquer momento."
   },
   "options_dialog_optIn_premium_subscription_reject": {
     "message": "Agora não"

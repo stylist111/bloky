@@ -18,7 +18,7 @@
     "message": "Blocca ulteriori distrazioni"
   },
   "premium_onboarding_feature_cookies_description": {
-    "message": "Aggiungendo questa funzionalità e bloccando queste notifiche, acconsentirai a non ricevere le notifiche relative all'uso dei cookie e a modificare le impostazioni dei cookie su siti web individuali. Potrai cambiare questa funzionalità in qualsiasi momento."
+    "message": "Aggiungendo questa funzionalità e bloccando queste notifiche, acconsentirai a non ricevere le notifiche relative all'uso dei cookie (i cookie non necessari verranno rifiutati automaticamente per tuo conto, laddove possibile) e a modificare le impostazioni dei cookie su siti web individuali. Potrai cambiare questa funzionalità in qualsiasi momento."
   },
   "premium_onboarding_feature_cookies_subtitle": {
     "message": "Nascondi i pop-up di consenso ai cookie su siti più frequentati"

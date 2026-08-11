@@ -18,7 +18,7 @@
     "message": "拦截更多干扰内容"
   },
   "premium_onboarding_feature_cookies_description": {
-    "message": "添加此功能并拦截这些弹出窗口，即表示您同意不接收有关 Cookie 使用的通知，且不在各个网站上编辑 Cookie 设置。您可以随时更改此功能。"
+    "message": "添加此功能并拦截这些弹出窗口，即表示您同意不接收有关 Cookie 使用的通知（非必要 Cookie 将在可能的情况下自动代表您被拒绝），且不在各个网站上编辑 Cookie 设置。您可以随时更改此功能。"
   },
   "premium_onboarding_feature_cookies_subtitle": {
     "message": "隐藏热门网站上的 Cookie 同意弹出窗口"

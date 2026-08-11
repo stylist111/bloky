@@ -1,5 +1,8 @@
 # Unreleased
 
+- Updated the Premium "block cookie consent pop-ups" disclaimer text to clarify
+  that non-necessary cookies will be automatically rejected where possible.
+
 # 4.43.1 - 2026-08-11
 
 - Updated snippets to 2.14.0

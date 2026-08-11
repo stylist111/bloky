@@ -172,7 +172,7 @@
     "message": "Oké, ik snap het"
   },
   "options_dialog_optIn_premium_subscription_description": {
-    "message": "Door deze functie toe te voegen en deze prompts te blokkeren, geeft u toestemming om geen meldingen te krijgen over het gebruik van cookies en om cookie-instellingen aan te passen op individuele websites. U kunt dit op elk moment wijzigen."
+    "message": "Door deze functie toe te voegen en deze prompts te blokkeren, geeft u toestemming om geen meldingen te krijgen over het gebruik van cookies (niet-noodzakelijke cookies worden waar mogelijk automatisch namens u afgewezen) en om cookie-instellingen aan te passen op individuele websites. U kunt dit op elk moment wijzigen."
   },
   "options_dialog_optIn_premium_subscription_reject": {
     "message": "Niet nu"
