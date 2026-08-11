@@ -20,6 +20,21 @@
 
 /* GENERAL */
 
+:root {
+  --popup-width: 320px;
+}
+
+html,
+body {
+  /* Explicit width, matching #wrapper, so the popup's auto-sizing doesn't
+   * rely on the browser inferring the page's natural width (observed to
+   * produce extra blank space on the right in Microsoft Edge).
+   * Both html AND body need this: setting it on body alone was tried first
+   * and did not fix the Edge bug, so don't simplify this back to `body`
+   * only. */
+  width: var(--popup-width);
+}
+
 body {
   color: var(--popup-main-text-color);
   background-color: var(--popup-background-color);
@@ -32,7 +47,7 @@ body::-webkit-scrollbar {
 #wrapper {
   font-size: 15px;
   margin: 0px 0px 20px 0px;
-  width: 320px;
+  width: var(--popup-width);
   max-height: 606px;
 }
 
