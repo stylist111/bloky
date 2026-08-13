@@ -717,7 +717,7 @@ const downloadDebugData = (data) => {
     data = "Error: no debug data was returned";
   }
   const myBlob = new Blob([JSON.stringify(data, null, 4)], {
-    type: "text/plain"
+    type: "application/json"
   });
   const blobURL = URL.createObjectURL(myBlob);
   const a = document.createElement("a");
@@ -731,7 +731,7 @@ const downloadDebugData = (data) => {
     .replace(/[-T:]/g, "");
   a.setAttribute(
     "download",
-    `adblockplus-data-${currentLocalTimeNoSpecialChars}.txt`
+    `adblockplus-data-${currentLocalTimeNoSpecialChars}.json`
   );
   a.style.display = "none";
   document.body.appendChild(a);

@@ -33,6 +33,8 @@ import { getUserAgentInfo } from "./user-agent-info";
 import browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
+const MILLIS_IN_SECOND = 1000;
+
 async function getExperimentsAssignments(): Promise<ExperimentsAssignments> {
   const assignments = await ewe.experiments.getAssignments();
   return Object.entries(assignments).map(([experimentId, variantId]) => ({
@@ -51,7 +53,7 @@ async function getDebugAlarmInfo(): Promise<AlarmInfo> {
   const alarms = await browser.alarms.getAll();
   const alarmInfo: AlarmInfo = alarms.map((alarm) => ({
     name: alarm.name,
-    time: new Date(alarm.scheduledTime).toLocaleString(),
+    time: new Date(alarm.scheduledTime).toISOString(),
   }));
   return alarmInfo;
 }
@@ -64,10 +66,10 @@ async function getSubscriptionInfo(): Promise<SubscriptionDetails> {
       title: sub.title,
       id: sub.id,
       lastSuccess: sub.lastSuccess
-        ? new Date(sub.lastSuccess).toLocaleString()
+        ? new Date(sub.lastSuccess * MILLIS_IN_SECOND).toISOString()
         : "unknown",
       lastDownload: sub.lastDownload
-        ? new Date(sub.lastDownload).toLocaleString()
+        ? new Date(sub.lastDownload * MILLIS_IN_SECOND).toISOString()
         : "unknown",
       downloadStatus: sub.downloadStatus ?? "unknown",
       downloadCount: sub.downloadCount ?? -1,

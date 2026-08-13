@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fixed: The downloaded debug data file showed filter list update dates from
+  1970 instead of the actual dates.
+
 # 6.45.1 - 2026-08-11
 
 - Updated snippets to 2.14.0

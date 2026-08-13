@@ -24,19 +24,21 @@ import type { UserProfile } from "@eyeo/webext-ad-filtering-solution";
 import { getDebugInformation } from "../../src/background/debug";
 import { type HostSpecificInformation } from "../../src/background/debug.types";
 
+const NOW_SECONDS = Math.round(Date.now() / 1000);
+
 const defaultSubscriptionData = [
   {
     enabled: true,
     title: "Sub1",
-    lastSuccess: new Date(),
-    lastDownload: new Date(),
+    lastSuccess: NOW_SECONDS,
+    lastDownload: NOW_SECONDS,
     downloadStatus: "ok",
   },
   {
     enabled: true,
     title: "Sub2",
-    lastSuccess: new Date(),
-    lastDownload: new Date(),
+    lastSuccess: NOW_SECONDS,
+    lastDownload: NOW_SECONDS,
     downloadStatus: "ok",
   },
 ];
@@ -68,6 +70,33 @@ const defaultUser: UserProfile = {
   features: [],
 };
 
+// vi.mock() below is hoisted above this file's other top-level statements,
+// so these defaults must be created via vi.hoisted() rather than a plain
+// const — referencing a plain const by identifier here would hit vitest's
+// temporal-dead-zone guard ("Cannot access ... before initialization").
+const {
+  getDefaultSubscriptions,
+  getDefaultUserFilters,
+  getDefaultMetadata,
+  getDefaultFlags,
+  getDefaultAssignments,
+} = vi.hoisted(() => ({
+  getDefaultSubscriptions: () => Promise.resolve(defaultSubscriptionData),
+  getDefaultUserFilters: () => Promise.resolve(defaultFilters),
+  getDefaultMetadata: (ruleText?: string) => {
+    if (!ruleText || ruleText === "nometa") {
+      return Promise.resolve(undefined);
+    }
+    return Promise.resolve({
+      meta: {
+        text: ruleText || "no text",
+      },
+    });
+  },
+  getDefaultFlags: () => Promise.resolve(defaultFlags),
+  getDefaultAssignments: () => Promise.resolve(complexAssignment),
+}));
+
 // Mock the @eyeo/webext-ad-filtering-solution module
 vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
   account: {
@@ -81,33 +110,16 @@ vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
     ),
   },
   filters: {
-    getUserFilters: vi.fn().mockImplementation(() => {
-      return Promise.resolve(defaultFilters);
-    }),
+    getUserFilters: vi.fn().mockImplementation(getDefaultUserFilters),
     getMigrationErrors: vi.fn().mockReturnValue(""),
-    getMetadata: vi.fn().mockImplementation((ruleText) => {
-      if (!ruleText || ruleText === "nometa") {
-        return Promise.resolve(undefined);
-      }
-      return Promise.resolve({
-        meta: {
-          text: ruleText || "no text",
-        },
-      });
-    }),
+    getMetadata: vi.fn().mockImplementation(getDefaultMetadata),
   },
   experiments: {
-    getFlags: vi.fn().mockImplementation(() => {
-      return Promise.resolve(defaultFlags);
-    }),
-    getAssignments: vi.fn().mockImplementation(() => {
-      return Promise.resolve(complexAssignment);
-    }),
+    getFlags: vi.fn().mockImplementation(getDefaultFlags),
+    getAssignments: vi.fn().mockImplementation(getDefaultAssignments),
   },
   subscriptions: {
-    getSubscriptions: vi.fn().mockImplementation(() => {
-      return Promise.resolve(defaultSubscriptionData);
-    }),
+    getSubscriptions: vi.fn().mockImplementation(getDefaultSubscriptions),
     getMigrationErrors: vi.fn().mockReturnValue(""),
   },
 }));
@@ -158,6 +170,45 @@ describe("pretty print debug data", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    // vi.clearAllMocks() only clears call history, not mockImplementation
+    // overrides set via vi.spyOn(...).mockImplementation(...) in individual
+    // tests below, so defaults are re-applied here to avoid order-dependency.
+    vi.mocked(ewe.subscriptions.getSubscriptions).mockImplementation(
+      getDefaultSubscriptions,
+    );
+    vi.mocked(ewe.filters.getUserFilters).mockImplementation(
+      getDefaultUserFilters,
+    );
+    vi.mocked(ewe.filters.getMetadata).mockImplementation(getDefaultMetadata);
+    vi.mocked(ewe.experiments.getFlags).mockImplementation(getDefaultFlags);
+    vi.mocked(ewe.experiments.getAssignments).mockImplementation(
+      getDefaultAssignments,
+    );
+  });
+
+  it("should convert subscription epoch-second timestamps to ISO strings", async () => {
+    const debugData = await getDebugInformation(defaultParameters);
+    const [sub1] = debugData.deviceSpecificInformation.subscriptions ?? [];
+
+    const expectedIso = new Date(NOW_SECONDS * 1000).toISOString();
+    expect(sub1.lastSuccess).toEqual(expectedIso);
+    expect(sub1.lastDownload).toEqual(expectedIso);
+
+    // Regression guard for the 1970 bug caused by treating seconds as milliseconds
+    expect(sub1.lastSuccess.startsWith("1970")).toBe(false);
+    expect(sub1.lastDownload.startsWith("1970")).toBe(false);
+  });
+
+  it("should report alarm scheduled time as an ISO string", async () => {
+    const debugData = await getDebugInformation(defaultParameters);
+    const alarms = debugData.deviceSpecificInformation.alarmInformation;
+
+    expect(alarms[0].time).toEqual(
+      new Date(defaultAlarmResponse[0].scheduledTime).toISOString(),
+    );
+    expect(alarms[0].time).toMatch(
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+    );
   });
 
   it("should contain user account info", async () => {
@@ -427,5 +478,33 @@ describe("pretty print debug data", () => {
     expect(
       debugData.deviceSpecificInformation.userFilters?.[3].ruleText,
     ).toEqual(complexUserFilters[4].text);
+  });
+
+  it("should report 'unknown' for missing or zero subscription timestamps", async () => {
+    const mockGetSubscriptions = vi.fn().mockResolvedValue([
+      {
+        enabled: false,
+        title: "NeverDownloaded",
+        lastSuccess: 0,
+        lastDownload: 0,
+        downloadStatus: "unknown",
+      },
+      {
+        enabled: true,
+        title: "MissingFields",
+        downloadStatus: "unknown",
+      },
+    ]);
+    vi.spyOn(ewe.subscriptions, "getSubscriptions").mockImplementation(
+      mockGetSubscriptions,
+    );
+
+    const debugData = await getDebugInformation(defaultParameters);
+    const subs = debugData.deviceSpecificInformation.subscriptions ?? [];
+
+    expect(subs[0].lastSuccess).toEqual("unknown");
+    expect(subs[0].lastDownload).toEqual("unknown");
+    expect(subs[1].lastSuccess).toEqual("unknown");
+    expect(subs[1].lastDownload).toEqual("unknown");
   });
 });

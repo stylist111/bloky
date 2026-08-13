@@ -29,7 +29,7 @@ $(async () => {
    */
   const downloadDebugData = (data) => {
     const myBlob = new Blob([JSON.stringify(data, null, 4)], {
-      type: "text/plain",
+      type: "application/json",
     });
     const blobURL = URL.createObjectURL(myBlob);
     const a = document.createElement("a");
@@ -41,7 +41,7 @@ $(async () => {
       .split(".")[0]
       .slice(0, -2)
       .replace(/[-T:]/g, "");
-    a.setAttribute("download", `adblock-data-${currentLocalTimeNoSpecialChars}.txt`);
+    a.setAttribute("download", `adblock-data-${currentLocalTimeNoSpecialChars}.json`);
     a.style.display = "none";
     document.body.appendChild(a);
     a.click();
