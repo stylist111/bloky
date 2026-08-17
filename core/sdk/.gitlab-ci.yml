@@ -525,7 +525,15 @@ int:safari:
   before_script:
     - !reference [.macos-image, before_script]
     # /etc/hosts edit based on https://gitlab.com/eyeo/network-filtering/nasapp-testing/-/blob/main/scripts/setup-host.sh
-    - asdf install java openjdk-22
+    # asdf-java fetches its release catalog into a 1-hour-TTL cache via a
+    # single unguarded curl call with no retry or validation. A transient
+    # failure fetching raw.githubusercontent.com (rate limiting, a GitHub
+    # outage, etc.) writes the error response into that cache, which then
+    # looks "fresh" and causes "Unknown release" on every subsequent
+    # install this run - even though the release genuinely exists. Since
+    # these are fresh VMs each run, there's no warm cache to fall back on,
+    # so retry with the cache cleared to force a fresh fetch each time.
+    - for i in 1 2 3; do rm -rf "${TMPDIR:-/tmp}/asdf-java-$(whoami).cache"; asdf install java openjdk-22 && break; sleep 5; done
     - asdf global java openjdk-22
     - grep -q "127.0.0.1 testpages.eyeo.com" /etc/hosts || echo "127.0.0.1 testpages.eyeo.com" | sudo tee -a /etc/hosts
     - npm install
