@@ -5,3 +5,11 @@ vulnerabilities:
   - id: CVE-2026-59887
     statement: >
       linkify-it is only used for linting Markdown files contained in this repo
+  - id: CVE-2026-56876
+    statement: >
+      extract-zip is a transitive devDependency (via @eyeo/get-browser-binary
+      and @puppeteer/browsers) used only to extract browser binaries
+      downloaded from trusted official sources during test/CI setup. It never
+      processes untrusted zip input and is never shipped in the extension.
+      No fixed version exists upstream (2.0.1 is the latest release,
+      published 2020).
