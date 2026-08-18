@@ -7,7 +7,7 @@
   already present in a subscription. The filter is now stored as a user filter
   with the provided metadata, and the metadata is cleared again when the user
   filter is removed while the subscription copy remains.
-- Updated snippets to 2.14.0
+- Updated snippets to 2.15.0
 - Added the `zero-delay-disabled-domains` experiment flag that can
   be used to disable Lightning Snippets for given domains.
 

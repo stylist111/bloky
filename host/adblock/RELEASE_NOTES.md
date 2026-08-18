@@ -1,5 +1,6 @@
 # Unreleased
 
+- Updated snippets to 2.15.0
 - Fixed: The downloaded debug data file showed filter list update dates from
   1970 instead of the actual dates.
 
