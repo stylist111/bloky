@@ -256,11 +256,11 @@ async function onInstalled(details) {
  * In MV3 extensions, this must be called in the first turn of the
  * event loop.
  *
- * @param {Object?} [addonInfo] An object containing addon
+ * @param {Object} addonInfo An object containing addon
  *   information belonging to sdk consumer, that can be accessed via
  *   `debugging` module. (It is usually used as an identifier in
- *   network requests, etc.). This object can be undefined for MV2. If it is,
- *   name and version will default to the extension's name and version.
+ *   network requests, etc.). `name` and `version` default to the
+ *   extension's own name and version when omitted.
  * @param {string} [addonInfo.name] Name of the addon/extension.
  * @param {string} [addonInfo.version] Version of the addon/extension.
  * @param {Object} [addonInfo.account] - Configuration for the account module.
@@ -278,6 +278,9 @@ async function onInstalled(details) {
  * @param {string?} [addonInfo.bundledSubscriptionsPath]
  *   A path to subscription files provided by the integrator. Cannot be
  *   undefined for MV3.
+ * @param {string} addonInfo.heavyDependenciesPath
+ *   Path, relative to the extension root, at which the integrator must have
+ *   copied this package's `dist/ewe-heavy-dependencies.js` file.
  * @param {Object?} [addonInfo.telemetry] Settings for telemetry. The telemetry
  *   module will only be started if this is provided. This module will send a
  *   POST request to the specified telemetry URL every 24 hours with metadata

@@ -551,6 +551,11 @@ export default {
           },
         ],
       },
+      {
+        dest: "vendor/@eyeo/webext-ad-filtering-solution/heavy-dependencies.js",
+        package: "@eyeo/webext-ad-filtering-solution",
+        src: "dist/ewe-heavy-dependencies.js",
+      },
     ],
   },
   translations: {

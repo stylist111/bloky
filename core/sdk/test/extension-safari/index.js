@@ -26,7 +26,9 @@ import * as ewe from "./ewe.js";
 import {getSubscriptions, setSubscriptionEnabled} from "./subscriptions.js";
 
 try {
-  ewe.start();
+  ewe.start({
+    heavyDependenciesPath: "/ewe-heavy-dependencies.js"
+  });
 }
 catch (e) {
   console.error(`Failed to start EWE: ${e}`);

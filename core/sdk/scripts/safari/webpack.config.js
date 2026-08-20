@@ -56,7 +56,8 @@ export default async(env = {}) => {
           {from: path.join(extensionPath, "rulesets"), to: path.join(distPath, "rulesets")},
           {from: path.join(extensionPath, "_locales"), to: path.join(distPath, "_locales")},
           {from: path.join(extensionPath, "subscriptions"), to: path.join(distPath, "subscriptions")},
-          {from: path.join(eweDistPath, "ewe-content.js")}
+          {from: path.join(eweDistPath, "ewe-content.js")},
+          {from: path.join(eweDistPath, "ewe-heavy-dependencies.js")}
         ]
       })
     ],

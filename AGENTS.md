@@ -78,7 +78,7 @@ Add to this list only when a divergence is explicitly off-roadmap, not just "we 
 - Preserve existing code style, indentation, and formatting exactly.
 - Never add TODO comments or placeholder code — implement complete solutions.
 - Don't add comments inside functions unless explaining non-obvious business logic.
-- **Release notes:** update the relevant `RELEASE_NOTES.md` under `Unreleased` for user-visible changes. This applies to host extensions (`host/*/RELEASE_NOTES.md`) as well as published packages such as `@eyeo/webext-ad-filtering-solution` and `@eyeo/remote-configuration-validator`.
+- **Release notes:** update the relevant `RELEASE_NOTES.md` under `Unreleased` for user-visible changes. This applies to host extensions (`host/*/RELEASE_NOTES.md`) as well as published packages such as `@eyeo/webext-ad-filtering-solution` and `@eyeo/remote-configuration-validator`. Add new entries at the **top** of the `Unreleased` list, immediately under the heading — not appended after existing entries. A release commit inserts its version heading right after `# Unreleased`, above the existing entries, without moving them; an entry added at the bottom anchors to those entries and gets rebased/merged into the new version section along with them, wrongly appearing as already released. Adding at the top anchors to the stable `# Unreleased` heading itself, which a release commit never touches.
 - **Touch only what the task requires:**
   - Do not clean up adjacent code, fix nearby style issues, or improve surrounding logic while working on something else.
   - If you notice something unrelated that should change, ask first — don't act on it.

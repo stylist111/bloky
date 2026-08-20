@@ -28,7 +28,7 @@ import {debugOptions, trace, debug, warn} from "./debugging.js";
 import {arraysDiff, objectArraysDiff} from "./set-operations.js";
 import {shouldNotifyActive} from "./cdp/index.js";
 import {patchSender as patchHistoryApi} from "./safari-history.js";
-import {isSafari} from "./info.js";
+import {isSafari, addonHeavyDependenciesPath} from "./info.js";
 import dependencySnippets from "@eyeo/snippets/isolated/heavy";
 import {DEBUG_CSS_PROPERTIES} from "../all/snippets.js";
 
@@ -42,14 +42,13 @@ import {DEBUG_CSS_PROPERTIES} from "../all/snippets.js";
 async function injectHeavySnippets(tabId, frameId, hostname) {
   const snippetFilters = filterEngine.snippets.getFilters(hostname);
   const isolated = [];
-  const dependencies = new Set();
+  const dependencyNames = new Set();
   for (const {body} of snippetFilters) {
     for (const script of parseScript(body)) {
       if (dependencySnippets.has(script[0])) {
         isolated.push(script);
-        const dep = dependencySnippets.get(script[0]);
-        if (dep) {
-          dependencies.add(dep);
+        if (dependencySnippets.get(script[0])) {
+          dependencyNames.add(script[0]);
         }
       }
     }
@@ -60,8 +59,8 @@ async function injectHeavySnippets(tabId, frameId, hostname) {
   // They only exist to help debug the heavy snippet.
   // We don't want to inject the heavy snippet if only helper snippets are used.
   // That's why we don't look at the isolated.length here but look at the
-  // dependencies.size instead.
-  if (!dependencies.size) {
+  // dependencyNames.size instead.
+  if (!dependencyNames.size) {
     return;
   }
 
@@ -74,32 +73,44 @@ async function injectHeavySnippets(tabId, frameId, hostname) {
   try {
     if (browser.scripting && browser.scripting.executeScript) {
       const target = {tabId, frameIds: [frameId]};
-      await Promise.all([...dependencies].map(dep =>
-        browser.scripting.executeScript({
-          target,
-          world: "ISOLATED",
-          func: dep
-        })
-      ));
+      // dependencySnippets is too large, and not structured-cloneable, to
+      // pass to `func:` via closure or `args` - see
+      // heavy-dependencies.entry.js for why it's loaded as a real file.
       await browser.scripting.executeScript({
         target,
         world: "ISOLATED",
-        func: dependencySnippets,
-        args: [environment, ...isolated]
+        files: [addonHeavyDependenciesPath]
+      });
+      // Reach it through the global that file sets up, since a serialized
+      // `func:` can't reference it directly.
+      await browser.scripting.executeScript({
+        target,
+        world: "ISOLATED",
+        func: (names, env, scripts) =>
+          globalThis.eweRunHeavySnippets(names, env, scripts),
+        args: [[...dependencyNames], environment, isolated]
       });
     }
     else if (browser.tabs && browser.tabs.executeScript) {
-      const args = JSON.stringify([environment, ...isolated]);
-      let code = "";
-      for (const dep of dependencies) {
-        code += `(${dep})();`;
-      }
-      code += `(${dependencySnippets}).apply(null,${args})`;
+      // Same reasoning as the browser.scripting branch above: stringifying
+      // this into `code:` loses the same scope - load the real file and
+      // call through the global it sets up instead.
       await browser.tabs.executeScript(
         tabId,
         {
           frameId,
-          code,
+          file: addonHeavyDependenciesPath,
+          matchAboutBlank: true,
+          runAt: "document_start"
+        }
+      );
+      const runArgs =
+        JSON.stringify([[...dependencyNames], environment, isolated]);
+      await browser.tabs.executeScript(
+        tabId,
+        {
+          frameId,
+          code: `globalThis.eweRunHeavySnippets(...${runArgs})`,
           matchAboutBlank: true,
           runAt: "document_start"
         }

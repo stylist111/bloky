@@ -180,6 +180,9 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
       },
       "content-main": {
         import: "./src/content/main/snippets.entry.js"
+      },
+      "heavy-dependencies": {
+        import: "./src/content/isolated/heavy-dependencies.entry.js"
       }
     },
     output: {
@@ -220,7 +223,7 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
       ...(env.release ? [
         // Enable minification for content scripts only, if in release mode.
         new TerserPlugin({
-          test: /ewe-content\.js/,
+          test: /ewe-content\.js|ewe-heavy-dependencies\.js/,
           terserOptions: {
             compress: true,
             mangle: true
@@ -229,7 +232,7 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
         }),
         // Strip inline source maps from content scripts to reduce file size
         new RemoveSourceMapPlugin({
-          test: /^ewe-content(-main)?\.js$/
+          test: /^ewe-content(-main)?\.js$|^ewe-heavy-dependencies\.js$/
         })
       ] : []),
       ...commonPlugins()

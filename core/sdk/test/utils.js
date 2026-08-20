@@ -576,6 +576,9 @@ export async function checkElementsHidden(tabId, selector, timeoutMs = 2000) {
   await wait(async() => {
     return await executeScript(tabId, elemSelector => {
       const nodes = document.querySelectorAll(elemSelector);
+      if (nodes.length == 0) {
+        return false;
+      }
       for (const node of nodes) {
         // offsetParent is null when the element is not visible
         if (node.offsetParent) {

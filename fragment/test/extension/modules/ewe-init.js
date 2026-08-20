@@ -22,6 +22,9 @@ export function startEwe() {
   const mockAddonInfo = {
     bundledSubscriptions: [],
     bundledSubscriptionsPath: "./",
+    // Required by ewe.start(), but this fragment test extension never
+    // injects heavy snippets, so the file doesn't need to actually exist.
+    heavyDependenciesPath: "/ewe-heavy-dependencies.js",
     telemetry: {
       url: "https://mock-telemetry-url.local",
       bearer: "mock-bearer-token",

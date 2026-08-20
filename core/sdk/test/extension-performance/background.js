@@ -25,12 +25,14 @@ if (isMV3()) {
   importScripts("ewe-api.js", "custom-mv3-subscriptions.js", "polling.js");
 }
 
-let startupInfo = {};
+let startupInfo = {
+  heavyDependenciesPath: "/ewe-heavy-dependencies.js"
+};
+
 if (isMV3()) {
-  startupInfo = {
-    bundledSubscriptionsPath: "subscriptions",
-    bundledSubscriptions: customMV3Subscriptions // eslint-disable-line no-undef
-  };
+  startupInfo.bundledSubscriptionsPath = "subscriptions";
+  // eslint-disable-next-line no-undef
+  startupInfo.bundledSubscriptions = customMV3Subscriptions;
 }
 
 EWE.start(startupInfo).then(async firstRun => {

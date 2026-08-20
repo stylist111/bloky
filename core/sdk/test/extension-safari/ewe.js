@@ -42,6 +42,7 @@ let startupInfo = {};
 
 startupInfo.bundledSubscriptionsPath = "subscriptions";
 startupInfo.bundledSubscriptions = subscriptions;
+startupInfo.heavyDependenciesPath = "/ewe-heavy-dependencies.js";
 
 /**
  * Entry point

@@ -247,6 +247,18 @@ The API will be available in your own background scripts and UI pages through
 the global `EWE` object. In the background scripts, please call `EWE.start()`
 to start blocking ads.
 
+At minimum the following information need to be passed to `EWE.start()`:
+
+* `bundledSubscriptions` (only Manifest v3)\
+  List of subscriptions that can be found at `bundledSubscriptionsPath`
+* `bundledSubscriptionsPath` (only Manifest v3)\
+  Path to directory in the extension build containing ABP-syntax filter list
+  files\
+  _e.g. /data/rules/abp_
+* `heavyDependenciesPath`\
+  Path to dist/ewe-heavy-dependencies.js file in the extension build\
+  _e.g. /vendor/@eyeo/webext-ad-filtering-solution/heavy-dependencies.js_
+
 Note that in MV3 extensions, `EWE.start()` must be called in the first
 turn of the event loop of the service worker, so that it can attach
 event listeners.
@@ -265,14 +277,14 @@ Consequently, there won't be a global `EWE` object.
 
 ```
 const EWE = require("@eyeo/webext-ad-filtering-solution");
-EWE.start();
+EWE.start(addonInfo);
 ```
 
 #### ESM
 
 ```
 import * as EWE from "@eyeo/webext-ad-filtering-solution";
-EWE.start();
+EWE.start(addonInfo);
 ```
 
 You can also import the content script. This should only be included once by an

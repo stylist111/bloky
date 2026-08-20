@@ -23,6 +23,7 @@ export let addonName;
 export let addonVersion;
 export let addonBundledSubscriptions;
 export let addonBundledSubscriptionsPath;
+export let addonHeavyDependenciesPath;
 export let application;
 export let applicationVersion;
 export let platform;
@@ -120,11 +121,15 @@ function parseChromiumUserAgent() {
 export function setAddonInfo(addonInfo) {
   let warnings = [];
 
-  if (browser.declarativeNetRequest) {
-    if (!addonInfo) {
-      throw new Error("No addonInfo provided to EWE.start");
-    }
+  if (!addonInfo) {
+    throw new Error("No addonInfo provided to EWE.start");
+  }
 
+  if (!addonInfo.heavyDependenciesPath) {
+    throw new Error("No `heavyDependenciesPath` provided");
+  }
+
+  if (browser.declarativeNetRequest) {
     if (!addonInfo.bundledSubscriptions) {
       throw new Error("No `bundledSubscriptions` provided");
     }
@@ -132,10 +137,6 @@ export function setAddonInfo(addonInfo) {
     if (!addonInfo.bundledSubscriptionsPath) {
       throw new Error("No `bundledSubscriptionsPath` provided");
     }
-  }
-
-  if (!addonInfo) {
-    return {warnings};
   }
 
   if (addonInfo.name) {
@@ -150,6 +151,8 @@ export function setAddonInfo(addonInfo) {
 
   addonBundledSubscriptions = addonInfo.bundledSubscriptions;
   addonBundledSubscriptionsPath = addonInfo.bundledSubscriptionsPath;
+
+  addonHeavyDependenciesPath = addonInfo.heavyDependenciesPath;
 
   if (addonBundledSubscriptions &&
       addonBundledSubscriptions.length > 0) {

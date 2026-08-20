@@ -10,11 +10,23 @@
 - Updated snippets to 2.15.0
 - Added the `zero-delay-disabled-domains` experiment flag that can
   be used to disable Lightning Snippets for given domains.
+- Fixed heavy snippets (e.g. `hide-if-matches-xpath3`) failing to run, which
+  could surface as `ReferenceError: fontoxpath is not defined` on pages with
+  a matching circumvention filter.
 
 ## General
 
 - Inline CSS filters are now applied using CSS stylesheets where possible
   instead of element hiding emulation.
+
+## Breaking Changes
+
+- `ewe.start(addonInfo)` now requires `addonInfo.heavyDependenciesPath`, the
+  path at which the integrator must have copied this package's
+  `dist/ewe-heavy-dependencies.js` file, made web-accessible for injection.
+  **`ewe.start()` will throw if it is omitted**, regardless of manifest
+  version. This is required for every integrator, even ones that don't
+  expect to ever match a heavy-snippet filter.
 
 # 4.1.0 - 2026-06-18
 

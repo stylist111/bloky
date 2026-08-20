@@ -208,6 +208,7 @@ const start = async function () {
   let addonInfo = {
     bundledSubscriptions: rulesIndex,
     bundledSubscriptionsPath: "/data/rules/abp",
+    heavyDependenciesPath: "/vendor/@eyeo/webext-ad-filtering-solution/heavy-dependencies.js",
     name: info.addonName,
     version: info.addonVersion,
     remoteConfig: {

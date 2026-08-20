@@ -725,7 +725,7 @@ describe("Snippets", function() {
     ]);
 
     // Navigate to the test page
-    const tabId = await new Page("snippet-hide-if-matches-xpath3", forceBg).loaded;
+    const tabId = await new Page("snippet-hide-if-matches-xpath3.html", forceBg).loaded;
 
     // Check that elements indicating failure are hidden
     await checkElementsHidden(tabId, "#xpath-filter1[data-expectedresult='fail']");

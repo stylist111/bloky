@@ -441,7 +441,9 @@ function isMV3() {
   return typeof chrome.declarativeNetRequest != "undefined";
 }
 
-let startupInfo = {};
+let startupInfo = {
+  heavyDependenciesPath: "/ewe-heavy-dependencies.js"
+};
 
 if (isMV3()) {
   startupInfo.bundledSubscriptionsPath = "subscriptions";

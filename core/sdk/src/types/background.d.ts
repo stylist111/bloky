@@ -631,6 +631,11 @@ export interface AddonInfo {
    */
   bundledSubscriptionsPath?: string;
   /**
+   * Path, relative to the extension root, at which the integrator has made
+   * the heavy snippet dependencies bundle available for injection.
+   */
+  heavyDependenciesPath: string;
+  /**
    * Name of the addon/extension.
    */
   name?: string;

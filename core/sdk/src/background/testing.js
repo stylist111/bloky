@@ -31,7 +31,8 @@ import {default as subs, saveMigrationError as saveSubscriptionMigrationError,
        getDefaultSubscriptions, isSynchronizing} from "./subscriptions.js";
 import {clearSkipInitRulesets, checkAndInitSubscriptions} from "./index.js";
 import {default as initializer} from "./initializer.js";
-import {setAddonInfo, addonBundledSubscriptionsPath, initializeDefaultAddonInfo}
+import {setAddonInfo, addonBundledSubscriptionsPath,
+        addonHeavyDependenciesPath, initializeDefaultAddonInfo}
   from "./info.js";
 import {dnrDiffSubscriptionUpdate, dynamicRulesAvailable, getDynamicFilters,
         removeAllDynamicFilters, testSetDynamicRulesAvailable,
@@ -124,7 +125,8 @@ export default {
    */
   _setSubscriptions(subscriptions) {
     setAddonInfo({bundledSubscriptions: subscriptions,
-                  bundledSubscriptionsPath: addonBundledSubscriptionsPath});
+                  bundledSubscriptionsPath: addonBundledSubscriptionsPath,
+                  heavyDependenciesPath: addonHeavyDependenciesPath});
     setRecommendations(subscriptions);
     _cleanSubscriptionClassesCache();
   },

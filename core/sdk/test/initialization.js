@@ -29,6 +29,7 @@ import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const ADDON_NAME = "foo";
 const ADDON_VERSION = "2.1";
+const HEAVY_DEPENDENCIES_PATH = "/heavy-dependencies.js";
 
 describe("Initialization", function() {
   isFuzzingServiceWorker ?
@@ -67,6 +68,9 @@ describe("Initialization", function() {
 
     await runInBackgroundPage([
       {op: "getGlobal", arg: "EWE"},
+      {op: "pushArg", arg: {
+        heavyDependenciesPath: HEAVY_DEPENDENCIES_PATH
+      }},
       {op: "callMethod", arg: "start"},
       {op: "await"}
     ]);
@@ -257,6 +261,7 @@ describe("Initialization", function() {
     let result = await runInBackgroundPage([
       {op: "getGlobal", arg: "EWE"},
       {op: "pushArg", arg: {
+        heavyDependenciesPath: HEAVY_DEPENDENCIES_PATH,
         bundledSubscriptions: [subEasylistLocal, subAntiCVLocal,
                                subAcceptableAdsLive],
         bundledSubscriptionsPath: "subscriptions"}},
@@ -274,6 +279,7 @@ describe("Initialization", function() {
     result = await runInBackgroundPage([
       {op: "getGlobal", arg: "EWE"},
       {op: "pushArg", arg: {
+        heavyDependenciesPath: HEAVY_DEPENDENCIES_PATH,
         bundledSubscriptions: [subEasylistLocal, subAntiCVLocal,
                                subAcceptableAdsLive],
         bundledSubscriptionsPath: "subscriptions"}},
@@ -308,7 +314,11 @@ describe("Initialization", function() {
 
     await runInBackgroundPage([
       {op: "getGlobal", arg: "EWE"},
-      {op: "pushArg", arg: {name: ADDON_NAME, version: ADDON_VERSION}},
+      {op: "pushArg", arg: {
+        name: ADDON_NAME,
+        version: ADDON_VERSION,
+        heavyDependenciesPath: HEAVY_DEPENDENCIES_PATH
+      }},
       {op: "callMethod", arg: "start"},
       {op: "await"}
     ]);
@@ -331,8 +341,13 @@ describe("Initialization", function() {
       await expect(EWE.testing._setAddonInfo(null))
         .rejects.toThrow("Error: No addonInfo provided to EWE.start");
       await expect(EWE.testing._setAddonInfo({}))
+        .rejects.toThrow("Error: No `heavyDependenciesPath` provided");
+      await expect(EWE.testing._setAddonInfo(
+        {heavyDependenciesPath: HEAVY_DEPENDENCIES_PATH}))
         .rejects.toThrow("Error: No `bundledSubscriptions` provided");
-      await expect(EWE.testing._setAddonInfo({bundledSubscriptions: []}))
+      await expect(EWE.testing._setAddonInfo(
+        {heavyDependenciesPath: HEAVY_DEPENDENCIES_PATH,
+         bundledSubscriptions: []}))
         .rejects.toThrow("Error: No `bundledSubscriptionsPath` provided");
     });
 

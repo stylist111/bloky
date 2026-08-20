@@ -1,5 +1,9 @@
 # Unreleased
 
+- Fixed: Circumvention filters relying on the `hide-if-matches-xpath3`
+  snippet silently failed to hide anything and logged
+  `ReferenceError: fontoxpath is not defined` to the console.
+
 # 6.45.2 - 2026-08-18
 
 - Updated snippets to 2.15.0
