@@ -196,6 +196,106 @@ describe("client-ids", function() {
       });
   });
 
+  describe("getClientIdRotationFrequency()", function() {
+    // Seeded in chronological order (oldest first) - order matters here.
+    async function seed(clientIds) {
+      await env.browser.storage.local.set({
+        [STORAGE_KEY]: {clientIds}
+      });
+    }
+
+    it("returns 0 when fewer than 20 entries exist", async function() {
+      await seed([{date: daysAgo(0), clientId: "AAA"}]);
+      expect(await api.getClientIdRotationFrequency()).toBe(0);
+    });
+
+    it("returns 0 when history spans fewer than 3 days", async function() {
+      const clientIds = [];
+      for (let i = 0; i < 25; i++) {
+        clientIds.push({date: daysAgo(0), clientId: "AAA"});
+      }
+      await seed(clientIds);
+
+      expect(await api.getClientIdRotationFrequency()).toBe(0);
+    });
+
+    it("returns 0 when the same client ID appears in every entry",
+      async function() {
+        const clientIds = [];
+        for (let day = 24; day >= 0; day--) {
+          clientIds.push({date: daysAgo(day), clientId: "AAA"});
+        }
+        await seed(clientIds);
+
+        expect(await api.getClientIdRotationFrequency()).toBe(0);
+      });
+
+    it("returns 1 when the client ID rotates daily", async function() {
+      const clientIds = [];
+      for (let day = 24; day >= 0; day--) {
+        clientIds.push({date: daysAgo(day), clientId: `client-${day}`});
+      }
+      await seed(clientIds);
+
+      expect(await api.getClientIdRotationFrequency()).toBe(1);
+    });
+
+    it("returns 7 when the client ID rotates weekly", async function() {
+      const clientIds = [];
+      // 4 runs of 7 days each, oldest first.
+      for (let day = 27; day >= 0; day--) {
+        const week = Math.floor((27 - day) / 7);
+        clientIds.push({date: daysAgo(day), clientId: `week-${week}`});
+      }
+      await seed(clientIds);
+
+      expect(await api.getClientIdRotationFrequency()).toBe(7);
+    });
+
+    it("does not count a flicker back to the same client ID as a " +
+      "rotation", async function() {
+      const clientIds = [];
+      let day = 28;
+      // "AAA" 10d, blip "BBB" 2d, "AAA" 8d, "CCC" 9d.
+      for (; day >= 19; day--) {
+        clientIds.push({date: daysAgo(day), clientId: "AAA"});
+      }
+      for (day = 18; day >= 17; day--) {
+        clientIds.push({date: daysAgo(day), clientId: "BBB"});
+      }
+      for (day = 16; day >= 9; day--) {
+        clientIds.push({date: daysAgo(day), clientId: "AAA"});
+      }
+      for (day = 8; day >= 0; day--) {
+        clientIds.push({date: daysAgo(day), clientId: "CCC"});
+      }
+      await seed(clientIds);
+
+      // Blip merges into "AAA", leaving 1 real rotation (AAA -> CCC).
+      expect(await api.getClientIdRotationFrequency()).toBe(29);
+    });
+
+    it("counts a short-lived client ID as a real rotation when it " +
+      "doesn't flicker back", async function() {
+      const clientIds = [];
+      let day = 27;
+      // "AAA" 10d, "BBB" 2d (no flicker back), "CCC" 16d.
+      for (; day >= 18; day--) {
+        clientIds.push({date: daysAgo(day), clientId: "AAA"});
+      }
+      for (day = 17; day >= 16; day--) {
+        clientIds.push({date: daysAgo(day), clientId: "BBB"});
+      }
+      for (day = 15; day >= 0; day--) {
+        clientIds.push({date: daysAgo(day), clientId: "CCC"});
+      }
+      await seed(clientIds);
+
+      // 2 rotations; "BBB" is the only fully-bounded run, spanning 2 days.
+      expect(await api.getClientIdRotationFrequency()).toBe(2);
+    });
+  });
+
   describe("reset()", function() {
     it("clears the client ID history", async function() {
       global.__clientId = "AAA";

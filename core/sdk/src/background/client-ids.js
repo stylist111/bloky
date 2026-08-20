@@ -26,6 +26,7 @@ let clientIdData = new PersistentState("ewe:client_ids", browser.storage.local);
 
 const MIN_ENTRIES_FOR_STABILITY = 20;
 const MIN_DAYS_FOR_STABILITY = 3;
+const ROTATION_BLIP_TOLERANCE_DAYS = 2;
 
 /**
  * @ignore
@@ -90,6 +91,18 @@ export async function getClientIds() {
   return state.clientIds || [];
 }
 
+function hasSufficientHistory(history) {
+  if (history.length < MIN_ENTRIES_FOR_STABILITY) {
+    return false;
+  }
+
+  const days = new Set();
+  for (const entry of history) {
+    days.add(entry.date.slice(0, 10));
+  }
+  return days.size >= MIN_DAYS_FOR_STABILITY;
+}
+
 /**
  * Computes how stable the client's IP address hash has been recently:
  * the frequency of the most common client ID in the history, as a
@@ -103,21 +116,93 @@ export async function getClientIds() {
 export async function getClientIdStability() {
   const history = await getClientIds();
 
-  if (history.length < MIN_ENTRIES_FOR_STABILITY) {
+  if (!hasSufficientHistory(history)) {
     return 0;
   }
 
-  const days = new Set();
   const counts = new Map();
   for (const entry of history) {
-    days.add(entry.date.slice(0, 10));
     counts.set(entry.clientId, (counts.get(entry.clientId) || 0) + 1);
-  }
-
-  if (days.size < MIN_DAYS_FOR_STABILITY) {
-    return 0;
   }
 
   const mostCommonCount = Math.max(...counts.values());
   return (mostCommonCount / history.length) * 100;
+}
+
+function getDaySpan(startDate, endDate) {
+  const oneDay = 24 * 60 * 60 * 1000;
+  const start = new Date(startDate.slice(0, 10));
+  const end = new Date(endDate.slice(0, 10));
+  return Math.round((end - start) / oneDay) + 1;
+}
+
+// Groups history into runs per client ID, then absorbs short blips that
+// flicker back to the same ID (A -> blip -> A). A short run followed by a
+// different ID (A -> blip -> C) still counts as a real rotation.
+function buildRuns(history) {
+  const runs = [];
+  for (const entry of history) {
+    const lastRun = runs[runs.length - 1];
+    if (lastRun && lastRun.clientId === entry.clientId) {
+      lastRun.endDate = entry.date;
+    }
+    else {
+      runs.push({
+        clientId: entry.clientId,
+        startDate: entry.date,
+        endDate: entry.date
+      });
+    }
+  }
+
+  const merged = [];
+  for (let i = 0; i < runs.length; i++) {
+    const run = runs[i];
+    const prev = merged[merged.length - 1];
+    const next = runs[i + 1];
+    const isBlip =
+      getDaySpan(run.startDate, run.endDate) <= ROTATION_BLIP_TOLERANCE_DAYS;
+
+    if (isBlip && prev && next && prev.clientId === next.clientId) {
+      prev.endDate = next.endDate;
+      i++;
+      continue;
+    }
+    merged.push({...run});
+  }
+
+  return merged;
+}
+
+/**
+ * Computes how often the client's IP address hash rotates in days
+ * Returns 0 if there isn't enough history yet or no rotation was observed.
+ *
+ * @ignore
+ * @returns {Promise<number>}
+ */
+export async function getClientIdRotationFrequency() {
+  const history = await getClientIds();
+
+  if (!hasSufficientHistory(history)) {
+    return 0;
+  }
+
+  const runs = buildRuns(history);
+  const numRotations = runs.length - 1;
+  if (numRotations <= 0) {
+    return 0;
+  }
+
+  const completedRuns = runs.slice(1, -1);
+  if (completedRuns.length > 0) {
+    const avgDays = completedRuns.reduce(
+      (sum, run) => sum + getDaySpan(run.startDate, run.endDate), 0
+    ) / completedRuns.length;
+    return Math.max(1, Math.round(avgDays));
+  }
+
+  const lastDate = history[history.length - 1].date;
+  const totalSpanDays = getDaySpan(history[0].date, lastDate);
+  return Math.max(1, Math.round(totalSpanDays / numRotations));
 }

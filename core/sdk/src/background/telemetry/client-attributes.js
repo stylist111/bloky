@@ -67,5 +67,12 @@ export async function buildClientAttributes() {
     });
   }
 
+  if (facts.clientIdRotationFrequency) {
+    clientAttributes.push({
+      key: "client_id_rotation_frequency",
+      value: String(facts.clientIdRotationFrequency),
+    });
+  }
+
   return clientAttributes;
 }

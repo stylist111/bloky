@@ -804,6 +804,10 @@ export default {
           clientIdStability: {
             description: "Frequency of the most common client ID in the client ID history, as a percentage of all entries. 0 if there isn't enough history yet.",
             type: "number"
+          },
+          clientIdRotationFrequency: {
+            description: "How often the client ID rotates, in days (e.g. 1 for daily, 7 for weekly). 0 if there isn't enough history yet, or no rotation was observed.",
+            type: "number"
           }
         }
       }

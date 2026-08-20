@@ -270,7 +270,8 @@ describe("Cohorts", function() {
       dynamicRuleCount: expect.any(Number),
       staticRuleCount: expect.any(Number),
       filterLists: expect.any(Array),
-      clientIdStability: expect.any(Number)
+      clientIdStability: expect.any(Number),
+      clientIdRotationFrequency: expect.any(Number)
     };
 
     beforeEach(async function() {

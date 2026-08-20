@@ -258,7 +258,7 @@ async function getDefaultFacts() {
   );
   const [
     aaEnabled, trialDaysLeft, preferences, dynamicRules,
-    filterLists, clientIdStability
+    filterLists, clientIdStability, clientIdRotationFrequency
   ] = await Promise.all([
     hasAcceptableAdsEnabled(),
     getTrialDaysLeft(),
@@ -266,7 +266,8 @@ async function getDefaultFacts() {
     isMV3 ?
       browser.declarativeNetRequest.getDynamicRules() : Promise.resolve([]),
     Promise.all(activeFilterUrls.slice(0, 10).map(sha256Prefix)),
-    clientIds.getClientIdStability()
+    clientIds.getClientIdStability(),
+    clientIds.getClientIdRotationFrequency()
   ]);
 
   let pingIdMintCount;
@@ -307,7 +308,8 @@ async function getDefaultFacts() {
     staticRuleCount,
     pingIdMintCount,
     eventsIdMintCount,
-    clientIdStability
+    clientIdStability,
+    clientIdRotationFrequency
   };
 }
 
@@ -331,6 +333,9 @@ async function getDefaultFacts() {
  * @property {number} clientIdStability - Frequency of the most common
  *    client ID (IP address hash) in the client ID history, as a
  *    percentage of all entries. 0 if there isn't enough history yet.
+ * @property {number} clientIdRotationFrequency - How often the client ID
+ *    (IP address hash) rotates, in days (e.g. 1 for daily, 7 for weekly).
+ *    0 if there isn't enough history yet, or no rotation was observed.
  *
  * @returns {Promise<Facts>}
  */
