@@ -1162,6 +1162,120 @@ export default {
       }
     }
   },
+  persistent_opd: {
+    rendered: {
+      description: "The on-page dialog was rendered, recording which impression this was for the campaign. Every qualifying page load counts, including a refresh of the same page, so impressions are not the same as distinct visits",
+      data: {
+        description: "Impression details",
+        type: "object",
+        properties: {
+          ipmId: {
+            description: "The ID of the IPM OPD campaign",
+            type: "string"
+          },
+          displayCount: {
+            description: "Which impression this was for the campaign, 1-based",
+            type: "number"
+          }
+        }
+      }
+    },
+    clicked: {
+      description: "The user clicked the button on the dialog, recording which impression this was",
+      data: {
+        description: "Impression details",
+        type: "object",
+        properties: {
+          ipmId: {
+            description: "The ID of the IPM OPD campaign",
+            type: "string"
+          },
+          displayCount: {
+            description: "Which impression this was for the campaign, 1-based",
+            type: "number"
+          }
+        }
+      }
+    },
+    closed: {
+      description: "The user closed the dialog with the close icon, recording which impression this was",
+      data: {
+        description: "Impression details",
+        type: "object",
+        properties: {
+          ipmId: {
+            description: "The ID of the IPM OPD campaign",
+            type: "string"
+          },
+          displayCount: {
+            description: "Which impression this was for the campaign, 1-based",
+            type: "number"
+          }
+        }
+      }
+    },
+    ignored: {
+      description: "The impression ended without the user interacting with the dialog. Two code paths observe a tab navigating away and neither can claim the impression from the other, so a single impression can be reported more than once: deduplicate on campaign, impression and reason rather than summing events",
+      data: {
+        description: "Impression details",
+        type: "object",
+        properties: {
+          ipmId: {
+            description: "The ID of the IPM OPD campaign",
+            type: "string"
+          },
+          displayCount: {
+            description: "Which impression this was for the campaign, 1-based",
+            type: "number"
+          },
+          reason: {
+            description: "How the impression ended: display_duration_elapsed, tab_navigated or tab_removed",
+            type: "string",
+            enum: ["display_duration_elapsed", "tab_navigated", "tab_removed"]
+          }
+        }
+      }
+    },
+    exhausted: {
+      description: "The campaign reached its impression cap without the user ever interacting with the dialog. Can be reported more than once for the same campaign, when page loads in separate tabs observe the cap at the same time, so count distinct campaigns rather than events",
+      data: {
+        description: "Impression details",
+        type: "object",
+        properties: {
+          ipmId: {
+            description: "The ID of the IPM OPD campaign",
+            type: "string"
+          },
+          displayCount: {
+            description: "How many impressions the campaign had used when it was exhausted",
+            type: "number"
+          }
+        }
+      }
+    },
+    injection_failed: {
+      description: "An impression was counted but the dialog could not be injected into the page",
+      data: {
+        description: "Failure details",
+        type: "object",
+        properties: {
+          ipmId: {
+            description: "The ID of the IPM OPD campaign",
+            type: "string"
+          },
+          displayCount: {
+            description: "Which impression this was for the campaign, 1-based",
+            type: "number"
+          },
+          reason: {
+            description: "Classified failure reason: no_receiver, no_tab or other",
+            type: "string",
+            enum: ["no_receiver", "no_tab", "other"]
+          }
+        }
+      }
+    }
+  },
   test_ewe_background: {
     test_event: {
       description: "TEST: A logging test event for various types of data",

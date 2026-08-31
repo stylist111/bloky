@@ -1,5 +1,8 @@
 # Unreleased
 
+- Added the `persistent_opd` telemetry module for the on-page dialog impression
+  cap experiment, with the `rendered`, `clicked`, `closed`, `ignored`,
+  `exhausted` and `injection_failed` events.
 - Fixed the background service worker being able to terminate part way
   through `subscriptions.addDefaults()` or a filter list download on
   Manifest V3, which could leave subscriptions partially added or updated.

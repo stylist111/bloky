@@ -1,5 +1,6 @@
 # Unreleased
 
+- Added an experiment to test impression caps on on-page dialogs.
 - Fixed: The "An issue has caused your ABP settings to be reset to
   default" warning could appear even though nothing had actually been
   lost, on both new and existing installs. On Manifest V3, this also

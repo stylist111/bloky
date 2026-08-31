@@ -140,10 +140,16 @@ function initializeConfigs(): void {
  *
  * @param dialog - Dialog information
  * @param stats - On-page stats
+ * @param maxDisplayCountOverride - Display count to use instead of the one
+ *   from the timing configuration
  *
  * @returns whether command should be dismissed
  */
-export function shouldBeDismissed(dialog: Dialog, stats: Stats): boolean {
+export function shouldBeDismissed(
+  dialog: Dialog,
+  stats: Stats,
+  maxDisplayCountOverride?: number
+): boolean {
   if (typeof stats !== "object") {
     return false;
   }
@@ -154,15 +160,17 @@ export function shouldBeDismissed(dialog: Dialog, stats: Stats): boolean {
     return true;
   }
 
-  if (config.maxDisplayCount === 0) {
+  const maxDisplayCount = maxDisplayCountOverride ?? config.maxDisplayCount;
+
+  if (maxDisplayCount === 0) {
     return false;
   }
 
   logger.debug(
     "[onpage-dialog]: Display count",
-    `${stats.displayCount}/${config.maxDisplayCount}`
+    `${stats.displayCount}/${maxDisplayCount}`
   );
-  return stats.displayCount >= config.maxDisplayCount;
+  return stats.displayCount >= maxDisplayCount;
 }
 
 /**
