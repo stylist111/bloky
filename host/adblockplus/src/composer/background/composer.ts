@@ -27,6 +27,7 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { type Frame } from "./composer.types";
 
 import { addTrustedMessageTypes, port } from "~/core/messaging/background";
+import * as logger from "~/logger/background";
 import { getPage, pageEmitter } from "../../core/pages/background";
 import { SessionStorage } from "../../../adblockpluschrome/lib/storage/session.js";
 import { TabSessionStorage } from "../../../adblockpluschrome/lib/storage/tab-session.js";
@@ -506,11 +507,30 @@ async function showOrHideContextMenu(activePage): Promise<void> {
     Prefs.shouldShowBlockElementMenu && (await readyByPage.get(activePage.id));
 
   if (shouldShowContextMenu && !showingContextMenu) {
-    void browser.contextMenus.create({
-      id: "block_element",
-      title: browser.i18n.getMessage("block_element"),
-      contexts: ["image", "video", "audio"]
-    });
+    // The service worker can restart between showOrHideContextMenu() calls,
+    // which resets showingContextMenu even though a previously-created menu
+    // item is still registered with the browser. Unlike most browser APIs,
+    // contextMenus.create() doesn't return a Promise - it reports failure
+    // (e.g. the resulting "duplicate id" error) only via runtime.lastError
+    // in its callback, so read that here to prevent Chrome logging it as
+    // unchecked.
+    browser.contextMenus.create(
+      {
+        id: "block_element",
+        title: browser.i18n.getMessage("block_element"),
+        contexts: ["image", "video", "audio"]
+      },
+      () => {
+        // A duplicate-id error is expected here after a service worker
+        // restart, and means the menu item is already registered
+        const { lastError } = browser.runtime;
+        if (lastError && !/duplicate id/i.test(lastError.message ?? "")) {
+          logger.error(
+            `Failed to create "block element" context menu item: ${lastError.message}`
+          );
+        }
+      }
+    );
     showingContextMenu = true;
   } else if (!shouldShowContextMenu && showingContextMenu) {
     void browser.contextMenus.remove("block_element");

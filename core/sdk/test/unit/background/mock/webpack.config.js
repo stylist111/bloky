@@ -68,7 +68,8 @@ export function getConfig(filename) {
         "./safari-history.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "io$": path.resolve(dirname, "../../../../src/background/io.js"),
         "info$": path.resolve(dirname, "../../../../src/background/info.js"),
-        "prefs$": path.resolve(dirname, "./prefs.mock.js")
+        "prefs$": path.resolve(dirname, "./prefs.mock.js"),
+        "keepalive$": path.resolve(dirname, "../../../../src/background/keepalive.js")
       }
     },
     optimization: {

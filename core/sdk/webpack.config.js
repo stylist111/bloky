@@ -200,7 +200,8 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
       alias: {
         io$: path.resolve(dirname, "./src/background/io.js"),
         prefs$: path.resolve(dirname, "./src/background/prefs.js"),
-        info$: path.resolve(dirname, "./src/background/info.js")
+        info$: path.resolve(dirname, "./src/background/info.js"),
+        keepalive$: path.resolve(dirname, "./src/background/keepalive.js")
       }
     },
     module: {

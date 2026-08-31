@@ -36,6 +36,7 @@ import {disableDynamicRules} from "./dnr-filters.js";
 import {default as sentry} from "./sentry.js";
 import {Prefs} from "./prefs.js";
 import {ServerLogger} from "./telemetry/server-logger.js";
+import {withKeepAlive} from "./keepalive.js";
 
 const ACCEPTABLE_ADS_ID = "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F";
 const ACCEPTABLE_ADS_MV2_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
@@ -817,10 +818,16 @@ export default {
       subscriptions.push(...defaultSubscriptions.chosenSubscriptions);
     }
 
-    for (let subscription of subscriptions) {
-      await this.add(browser.declarativeNetRequest ?
-        subscription.url : subscription.mv2URL);
+    if (subscriptions.length === 0) {
+      return;
     }
+
+    await withKeepAlive(async () => {
+      for (let subscription of subscriptions) {
+        await this.add(browser.declarativeNetRequest ?
+          subscription.url : subscription.mv2URL);
+      }
+    });
   },
 
   /**

@@ -1045,7 +1045,7 @@ export default {
             type: "boolean"
           },
           errorMsg: {
-            description: "An error that occurred when readding subscriptions, if any",
+            description: "Errors that occurred when readding subscriptions, if any, joined together with \"; \" if there was more than one",
             type: ["string", "null"]
           },
           lastErrorMsg: {

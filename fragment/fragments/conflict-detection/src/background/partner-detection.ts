@@ -36,8 +36,20 @@ export async function sendPingToParterExtension(): Promise<string[]> {
   const promises: Array<Promise<boolean>> = [];
   const foundExtensionIds: string[] = [];
   for (const extensionId of PartnerExtensionIds) {
-    const response = browser.runtime
-      .sendMessage(extensionId, PingMessage, undefined)
+    // Some IDs in the list are only valid on other browsers - sendMessage()
+    // validates the ID synchronously and throws rather than rejecting, so the
+    // call itself is deferred into the promise chain below. Without this,
+    // that throw would escape the loop entirely, surfacing as an
+    // unhandled rejection and skipping every extension ID after it.
+    const response = Promise.resolve()
+      .then(
+        async () =>
+          await browser.runtime.sendMessage(
+            extensionId,
+            PingMessage,
+            undefined,
+          ),
+      )
       .then((result: any) => {
         const pingResult = result as PingResponse;
         if (pingResult?.pingResponse) {

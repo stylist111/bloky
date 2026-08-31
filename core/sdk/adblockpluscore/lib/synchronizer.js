@@ -24,6 +24,7 @@
  */
 
 const {Prefs} = require("prefs");
+const {keepAlive} = require("keepalive");
 
 const {MILLIS_IN_SECOND, MILLIS_IN_MINUTE, MILLIS_IN_HOUR,
        MILLIS_IN_DAY} = require("./time");
@@ -69,10 +70,63 @@ class Synchronizer {
      */
     this._downloader = new Downloader(this._getDownloadables.bind(this));
 
+    /**
+     * Keeps track of the still-running service worker keep-alive signal for
+     * each downloadable currently being downloaded, so it can be stopped
+     * once the download finishes, succeeds, or fails.
+     * @type {Map.<module:downloader.Downloadable, function>}
+     */
+    this._keepAliveStops = new Map();
+
     this._downloader.onExpirationChange = this._onExpirationChange.bind(this);
-    this._downloader.onDownloadStarted = this._onDownloadStarted.bind(this);
-    this._downloader.onDownloadSuccess = this._onDownloadSuccess.bind(this);
-    this._downloader.onDownloadError = this._onDownloadError.bind(this);
+    this._downloader.onDownloadStarted = downloadable => {
+      let stop = keepAlive(() => {
+        // Runs whenever this signal actually stops, whether via
+        // _detachKeepAlive() below, or on its own if the download never
+        // finishes (keepAlive()'s MAX_LIFETIME_MILLIS safety net). Only
+        // remove the entry if it's still this one - a retry
+        // (e.g. a redirect) may have already replaced it with its own,
+        // newer keep-alive signal for the same downloadable, which isn't
+        // ours to remove.
+        if (this._keepAliveStops.get(downloadable) === stop) {
+          this._keepAliveStops.delete(downloadable);
+        }
+      });
+      this._keepAliveStops.set(downloadable, stop);
+      this._onDownloadStarted(downloadable);
+    };
+    this._downloader.onDownloadSuccess = (downloadable, ...rest) => {
+      // Detached (removed from _keepAliveStops) up front, since
+      // _onDownloadSuccess() below can itself synchronously start a new
+      // download attempt on this same downloadable (e.g. a "!Redirect:"
+      // header, or a parse error escalating into onDownloadError's own
+      // fallback-URL retry) - which would otherwise overwrite
+      // _keepAliveStops's entry with that retry's own keep-alive signal
+      // before this one gets stopped below.
+      let stop = this._detachKeepAlive(downloadable);
+      try {
+        this._onDownloadSuccess(downloadable, ...rest);
+      }
+      finally {
+        if (stop) {
+          stop();
+        }
+      }
+    };
+    this._downloader.onDownloadError = async (downloadable, ...rest) => {
+      // Takes over whatever keep-alive signal is already running for this
+      // downloadable, for the same reason as onDownloadSuccess above - or
+      // starts a fresh one if none is running, e.g. if this was triggered
+      // reentrantly from onDownloadSuccess above, which had already
+      // detached its own before calling in here.
+      let stop = this._detachKeepAlive(downloadable) || keepAlive();
+      try {
+        await this._onDownloadError(downloadable, ...rest);
+      }
+      finally {
+        stop();
+      }
+    };
 
     this._filterStorage = filterStorage;
 
@@ -206,6 +260,26 @@ class Synchronizer {
     subscription.expires = Math.round(
       downloadable.hardExpiration / MILLIS_IN_SECOND
     );
+  }
+
+  /**
+   * Removes the service worker keep-alive signal started for a downloadable
+   * in `onDownloadStarted` from `_keepAliveStops`, without stopping it, so
+   * that a caller can hold onto it and stop it later - even if, in the
+   * meantime, the same downloadable is given a new keep-alive signal of its
+   * own (e.g. by a fallback-URL redirect starting a new download attempt
+   * before this one is done being handled).
+   * @param {module:downloader.Downloadable} downloadable
+   * @return {?function} The stop function to call, or null if none was
+   *   found.
+   */
+  _detachKeepAlive(downloadable) {
+    let stop = this._keepAliveStops.get(downloadable);
+    if (stop) {
+      this._keepAliveStops.delete(downloadable);
+      return stop;
+    }
+    return null;
   }
 
   _onDownloadStarted(downloadable) {
@@ -408,7 +482,10 @@ class Synchronizer {
           method: downloadable.method
         };
 
-        fetch(fallbackURL, initObj).then(response => response.text())
+        // Returned (rather than left dangling) so the onDownloadError
+        // wrapper's keep-alive signal in the constructor spans this
+        // fallback request too, not just the download that failed.
+        return fetch(fallbackURL, initObj).then(response => response.text())
           .then(responseText => {
             if (!this._filterStorage.hasSubscription(subscription)) {
               return;

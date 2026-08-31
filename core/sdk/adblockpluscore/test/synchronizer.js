@@ -33,6 +33,7 @@ let Subscription = null;
 let CountableSubscription = null;
 let FullUpdatableSubscription = null;
 let manifestVersion;
+let keepaliveStub;
 
 describe("Synchronizer", function() {
   let runner = {};
@@ -52,6 +53,7 @@ describe("Synchronizer", function() {
     ({FilterStorage} = sandboxedRequire(LIB_FOLDER + "/filterStorage"));
     ({Prefs} = sandboxedRequire("./stub-modules/prefs"));
     ({manifestVersion} = sandboxedRequire("./stub-modules/info"));
+    keepaliveStub = sandboxedRequire("./stub-modules/keepalive");
     ({Subscription, CountableSubscription, FullUpdatableSubscription} =
       sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"));
     ({setRecommendations} = sandboxedRequire(LIB_FOLDER + "/recommendations"));
@@ -356,6 +358,111 @@ describe("Synchronizer", function() {
           [24 + initialDelay, "GET", "/subscription"],
           [48 + initialDelay, "GET", "/subscription"]
         ], "Requests after 50 hours");
+      }).catch(error => unexpectedError.call(assert, error));
+    });
+
+    it("Keeps the service worker alive while a download is in flight, " +
+      "and stops once it's done", function() {
+      let subscription = Subscription.fromURL("https://example.com/subscription");
+      filterStorage.addSubscription(subscription);
+
+      runner.registerHandler("/subscription", () => {
+        // The download is in progress at this point, so the keep-alive
+        // signal should be engaged.
+        assert.equal(keepaliveStub._getActiveCount(), 1);
+        return [200, "[Adblock]\n! ExPiREs: 1day\nfoo\nbar"];
+      });
+
+      return runner.runScheduledTasks(1).then(() => {
+        assert.equal(keepaliveStub._getTotalStarts(), 1);
+        // The download has finished, so the keep-alive signal should have
+        // been stopped again.
+        assert.equal(keepaliveStub._getActiveCount(), 0);
+      }).catch(error => unexpectedError.call(assert, error));
+    });
+
+    it("Keeps the service worker alive while a download is in flight, " +
+      "and stops it if the download fails too", function() {
+      let subscription = Subscription.fromURL("https://example.com/subscription");
+      filterStorage.addSubscription(subscription);
+
+      runner.registerHandler("/subscription", () => {
+        // The download is in progress at this point, so the keep-alive
+        // signal should be engaged.
+        assert.equal(keepaliveStub._getActiveCount(), 1);
+        return [404, ""];
+      });
+
+      return runner.runScheduledTasks(1).then(() => {
+        assert.equal(keepaliveStub._getTotalStarts(), 1);
+        // The download failed, so the keep-alive signal should have been
+        // stopped again rather than left running.
+        assert.equal(keepaliveStub._getActiveCount(), 0);
+      }).catch(error => unexpectedError.call(assert, error));
+    });
+
+    it("Keeps the service worker alive across a fallback-URL redirect, " +
+      "without stopping it early or leaving it stuck on afterwards", function() {
+      Prefs.subscriptions_fallbackerrors = 1;
+      Prefs.subscriptions_fallbackurl =
+        "https://example.com/fallback?%SUBSCRIPTION%&%RESPONSESTATUS%";
+
+      let subscription = Subscription.fromURL("https://example.com/subscription");
+      filterStorage.addSubscription(subscription);
+
+      runner.registerHandler("/subscription", () => [404, ""]);
+      runner.registerHandler("/fallback", () => [200, "301 https://example.com/redirected"]);
+      runner.registerHandler("/redirected", () => {
+        // The redirected download (triggered by the fallback response
+        // above, on the same downloadable as the original failed one) is
+        // now the one in flight, so the keep-alive signal should still be
+        // engaged - not stopped early by the original download's error
+        // handling finishing around it.
+        assert.equal(keepaliveStub._getActiveCount(), 1);
+        return [200, "[Adblock]\n! ExPiREs: 1day\nfoo\nbar"];
+      });
+
+      return runner.runScheduledTasks(1).then(() => {
+        assert.equal(
+          [...filterStorage.subscriptions()][0].url,
+          "https://example.com/redirected",
+          "Redirect followed"
+        );
+        // The redirected download has finished, so the keep-alive signal
+        // should have been stopped again.
+        assert.equal(keepaliveStub._getActiveCount(), 0);
+      }).catch(error => unexpectedError.call(assert, error));
+    });
+
+    it("Keeps the service worker alive across a \"!Redirect:\" header, " +
+      "without stopping it early or leaving it stuck on afterwards", function() {
+      let subscription = Subscription.fromURL("https://example.com/subscription");
+      filterStorage.addSubscription(subscription);
+
+      runner.registerHandler(
+        "/subscription",
+        () => [200, "[Adblock]\n!Redirect: https://example.com/redirected\nbar"]
+      );
+      runner.registerHandler("/redirected", () => {
+        // The redirected download (triggered synchronously by the
+        // "!Redirect:" header above, on the same downloadable as the
+        // original) is now the one in flight, so the keep-alive signal
+        // should still be engaged - not stopped early by the original
+        // download's success handling finishing around it, nor left
+        // running twice over.
+        assert.equal(keepaliveStub._getActiveCount(), 1);
+        return [200, "[Adblock]\n! ExPiREs: 1day\nfoo\nbar"];
+      });
+
+      return runner.runScheduledTasks(1).then(() => {
+        assert.equal(
+          [...filterStorage.subscriptions()][0].url,
+          "https://example.com/redirected",
+          "Redirect followed"
+        );
+        // The redirected download has finished, so the keep-alive signal
+        // should have been stopped again.
+        assert.equal(keepaliveStub._getActiveCount(), 0);
       }).catch(error => unexpectedError.call(assert, error));
     });
 

@@ -95,6 +95,32 @@ describe("sendPingMessage", () => {
     );
   });
 
+  it(
+    "should still ping the remaining extensions when sendMessage throws " +
+      "synchronously for one of them (e.g. an ID only valid on another " +
+      "browser)",
+    async () => {
+      vi.mocked(browser.runtime.sendMessage).mockImplementation(
+        (extensionId) => {
+          if (extensionId === PartnerExtensionIds[0]) {
+            throw new TypeError(`Invalid extension id: '${extensionId}'`);
+          }
+          if (extensionId === PartnerExtensionIds[1]) {
+            return Promise.resolve({ pingResponse: true });
+          }
+          return Promise.reject();
+        },
+      );
+
+      const result = await sendPingToParterExtension();
+
+      expect(result).toEqual([PartnerExtensionIds[1]]);
+      expect(browser.runtime.sendMessage).toHaveBeenCalledTimes(
+        PartnerExtensionIds.length,
+      );
+    },
+  );
+
   it("should save 0 ping responses to preferences", async () => {
     setupMockOnMessageResponse([]);
 

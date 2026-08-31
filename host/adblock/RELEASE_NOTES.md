@@ -1,5 +1,17 @@
 # Unreleased
 
+- Fixed: A "settings reset to default" warning could appear even though
+  nothing had actually been lost, on both new and existing installs. On
+  Manifest V3, this also covered the browser terminating the background
+  service worker part way through adding or updating filter lists — a
+  genuine risk of ending up with subscriptions missing or incomplete —
+  which the extension now guards against by keeping the service worker
+  alive while this is in progress.
+- Fixed: The conflict-detection partner-extension ping could throw an
+  uncaught error on Chromium browsers when it reached a Firefox-only
+  extension ID in its list, which also silently skipped pinging every
+  extension listed after it.
+
 # 6.45.3 - 2026-08-25
 
 - Fixed: Circumvention filters relying on the `hide-if-matches-xpath3`
