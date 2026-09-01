@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.45.4 - 2026-09-01
+
 - Fixed: A "settings reset to default" warning could appear even though
   nothing had actually been lost, on both new and existing installs. On
   Manifest V3, this also covered the browser terminating the background
