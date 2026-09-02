@@ -163,6 +163,8 @@ export default {
       {
         dest: "",
         src: [
+          "COPYING",
+          "LICENSE-THIRD-PARTY",
           "src/composer/ui/composer.html",
           "src/desktop-options/ui/desktop-options.html",
           "src/devtools-panel/ui/devtools-panel.html",

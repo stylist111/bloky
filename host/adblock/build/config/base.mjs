@@ -184,6 +184,7 @@ export default {
         src: [
           "RELEASE_NOTES.md",
           "COPYING",
+          "LICENSE-THIRD-PARTY",
           "adblock-betafish/translators.json",
           "adblock-betafish/jquery/jquery-3.5.1.min.js",
           "adblock-betafish/lib/*",

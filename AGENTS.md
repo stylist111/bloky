@@ -2,7 +2,7 @@
 
 This file provides guidance to LLMs when working with code in this repository.
 
-See also: [README.md](README.md) in the root, [CONTRIBUTING.md](CONTRIBUTING.md), and [docs/](docs/) for detailed documentation. All code contributions must comply with licenses listed in `COPYING` and `LICENSE-3RD-PARTY.txt` files.
+See also: [README.md](README.md) in the root, [CONTRIBUTING.md](CONTRIBUTING.md), and [docs/](docs/) for detailed documentation. All code contributions must comply with licenses listed in `COPYING` and `LICENSE-THIRD-PARTY` files.
 
 ## Environment
 

@@ -6,6 +6,9 @@
 - Fixed the background service worker being able to terminate part way
   through `subscriptions.addDefaults()` or a filter list download on
   Manifest V3, which could leave subscriptions partially added or updated.
+- Added a `LICENSE-THIRD-PARTY` file listing the licenses of third-party code
+  included in the npm package.
+- Removed the unused `semver` dependency.
 - Dropped support for Chromium/Edge below 127.0, Firefox below 128.0, and Opera
   below 113.0 in accordance with the browser deprecation policy.
 - Added `browserVersion` fact (semver string) for use in remote configuration conditions.

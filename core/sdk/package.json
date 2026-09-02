@@ -28,6 +28,7 @@
   },
   "files": [
     "dist/*.js*",
+    "LICENSE-THIRD-PARTY",
     "adblockpluscore/data",
     "adblockpluscore/lib",
     "adblockpluscore/scripts",
@@ -45,7 +46,6 @@
     "json-rules-engine": "7.3.1",
     "jsonpath-plus": "10.3.0",
     "pako": "2.1.0",
-    "semver": "7.7.2",
     "tar": "7.5.19",
     "uuid": "9.0.1",
     "yargs": "17.7.2"

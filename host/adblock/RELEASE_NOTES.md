@@ -1,5 +1,9 @@
 # Unreleased
 
+- Added a `LICENSE-THIRD-PARTY` file listing the licenses of third-party code
+  included in the extension build, and added the missing MIT license text to
+  `croppie.js`/`croppie.css`.
+
 # 6.45.4 - 2026-09-01
 
 - Fixed: A "settings reset to default" warning could appear even though
