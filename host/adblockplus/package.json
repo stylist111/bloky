@@ -24,14 +24,14 @@
     "build": {
       "devenv": {
         "chrome": {
-          "mv2": "if [[ -z \"$1\" || \"$1\" == \"chrome\" && \"$2\" != \"3\" ]]; then $ create.devenv chrome 2; fi",
+          "mv2": "if [[ \"$1\" == \"chrome\" && \"$2\" == \"2\" ]]; then $ create.devenv chrome 2; fi",
           "mv3": "if [[ -z \"$1\" || \"$1\" == \"chrome\" && \"$2\" != \"2\" ]]; then $ create.devenv chrome 3; fi"
         },
         "firefox": "if [[ -z \"$1\" || \"$1\" == \"firefox\" ]]; then $ create.devenv firefox 2; fi"
       },
       "release": {
         "chrome": {
-          "mv2": "if [[ -z \"$1\" || \"$1\" == \"chrome\" && \"$2\" != \"3\" ]]; then $ create.release chrome 2; fi",
+          "mv2": "if [[ \"$1\" == \"chrome\" && \"$2\" == \"2\" ]]; then $ create.release chrome 2; fi",
           "mv3": "if [[ -z \"$1\" || \"$1\" == \"chrome\" && \"$2\" != \"2\" ]]; then $ create.release chrome 3; fi"
         },
         "firefox": "if [[ -z \"$1\" || \"$1\" == \"firefox\" ]]; then $ create.release firefox 2; fi"
@@ -55,7 +55,6 @@
       },
       "end-to-end": {
         "chromium": {
-          "mv2": "if [[ -z \"$1\" || \"$1\" == \"chromium\" && \"$2\" != \"3\" ]]; then MANIFEST_VERSION=2 BROWSER=chromium npm run test:end-to-end-local; fi",
           "mv3": "if [[ -z \"$1\" || \"$1\" == \"chromium\" && \"$2\" != \"2\" ]]; then MANIFEST_VERSION=3 BROWSER=chromium npm run test:end-to-end-local; fi"
         },
         "firefox": {
@@ -63,7 +62,6 @@
           "mv3": "if [[ -z \"$1\" || \"$1\" == \"firefox\" && \"$2\" == \"3\" ]]; then echo \"Firefox tests are not supported with extension in Manifest v3 \"; exit 1; fi"
         },
         "edge": {
-          "mv2": "if [[ -z \"$1\" || \"$1\" == \"edge\" && \"$2\" == \"2\" ]]; then MANIFEST_VERSION=2 BROWSER=edge npm run test:end-to-end-local; fi",
           "mv3": "if [[ -z \"$1\" || \"$1\" == \"edge\" && \"$2\" != \"2\" ]]; then MANIFEST_VERSION=3 BROWSER=edge npm run test:end-to-end-local; fi"
         },
         "chrome": {

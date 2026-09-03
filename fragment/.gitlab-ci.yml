@@ -65,12 +65,6 @@ functional:MV3:chrome:latest:
   rules:
     - !reference [.nightly-run, rules]
 
-functional:MV2:edge:latest:
-  extends: .functional-nightly
-  variables:
-    BROWSER: edge
-    MANIFEST_VERSION: 2
-
 functional:MV2:firefox:beta:
   extends: .functional-nightly
   variables:

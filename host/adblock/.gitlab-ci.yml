@@ -64,7 +64,6 @@ buildfromsource:
   artifacts:
     name: "adblock-source-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}"
     paths:
-      - host/adblock/dist/source/adblock-chrome-*-mv2.zip
       - host/adblock/dist/source/adblock-chrome-*-mv3.zip
       - host/adblock/dist/source/adblock-firefox-*-mv2.xpi
 
@@ -95,11 +94,6 @@ buildfromsource:
       echo 'All extension files are smaller than 4 MB' &&
       exit 0;
       fi
-
-check-source:files:MV2:chrome:
-  extends: .check-source-files
-  variables:
-    EXTENSION: adblock-chrome-*-mv2.zip
 
 check-source:files:MV3:chrome:
   extends: .check-source-files
@@ -142,12 +136,6 @@ check-source:builds:MV3:chrome:
   variables:
     REPOSITORY_BUILD: host/adblock/dist/release/adblock-chrome-*-mv3.zip
     SOURCE_BUILD: host/adblock/dist/source/adblock-chrome-*-mv3.zip
-
-check-source:builds:MV2:chrome:
-  extends: .check-source-builds
-  variables:
-    REPOSITORY_BUILD: host/adblock/dist/release/adblock-chrome-*-mv2.zip
-    SOURCE_BUILD: host/adblock/dist/source/adblock-chrome-*-mv2.zip
 
 check-source:builds:MV2:firefox:
   extends: .check-source-builds
@@ -193,23 +181,11 @@ comp:MV3:edge:latest:
     BROWSER: edge latest
     EXTENSION: adblock-chrome-*-mv3.zip
 
-comp:MV2:chromium:last-mv2-version:
-  extends: .compliance
-  variables:
-    BROWSER: chromium 128.0.6613.0
-    EXTENSION: adblock-chrome-*-mv2.zip
-
 comp:MV2:firefox:latest:
   extends: .compliance
   variables:
     BROWSER: firefox latest
     EXTENSION: adblock-firefox-*-mv2.xpi
-
-comp:MV2:chromium:oldest:
-  extends: .compliance
-  variables:
-    BROWSER: chromium 127.0.6533.0
-    EXTENSION: adblock-chrome-*-mv2.zip
 
 comp:MV2:firefox:oldest:
   extends: .compliance
@@ -264,12 +240,6 @@ end-to-end:MV3:chrome:latest:
   extends: .end-to-end
   rules:
     - !reference [.nightly-run, rules]
-
-end-to-end:MV2:edge:latest:
-  extends: .end-to-end-nightly
-  variables:
-    BROWSER: edge
-    MANIFEST_VERSION: 2
 
 end-to-end:MV2:firefox:beta:
   extends: .end-to-end-nightly

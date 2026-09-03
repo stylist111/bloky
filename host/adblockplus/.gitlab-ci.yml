@@ -80,7 +80,6 @@ buildfromsource:
   artifacts:
     name: "adblockplus-source-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}"
     paths:
-      - host/adblockplus/dist/source/adblockplus-chrome-*-mv2.zip
       - host/adblockplus/dist/source/adblockplus-chrome-*-mv3.zip
       - host/adblockplus/dist/source/adblockplus-firefox-*-mv2.xpi
 
@@ -116,11 +115,6 @@ check-source:files:MV3:chrome:
   extends: .check-source-files
   variables:
     EXTENSION: adblockplus-chrome-*-mv3.zip
-
-check-source:files:MV2:chrome:
-  extends: .check-source-files
-  variables:
-    EXTENSION: adblockplus-chrome-*-mv2.zip
 
 check-source:files:MV2:firefox:
   extends: .check-source-files
@@ -158,12 +152,6 @@ check-source:builds:MV3:chrome:
   variables:
     REPOSITORY_BUILD: host/adblockplus/dist/release/adblockplus-chrome-*-mv3.zip
     SOURCE_BUILD: host/adblockplus/dist/source/adblockplus-chrome-*-mv3.zip
-
-check-source:builds:MV2:chrome:
-  extends: .check-source-builds
-  variables:
-    REPOSITORY_BUILD: host/adblockplus/dist/release/adblockplus-chrome-*-mv2.zip
-    SOURCE_BUILD: host/adblockplus/dist/source/adblockplus-chrome-*-mv2.zip
 
 check-source:builds:MV2:firefox:
   extends: .check-source-builds
@@ -213,16 +201,6 @@ comp:MV3:edge:latest:
   variables:
     EXTENSION: adblockplus-chrome-*-mv2.zip
     MANIFEST: mv2
-
-comp:MV2:chromium:last-mv2-version:
-  extends: .compliance:MV2
-  variables:
-    BROWSER: chromium 128.0.6613.0
-
-comp:MV2:chromium:oldest:
-  extends: .compliance:MV2
-  variables:
-    BROWSER: chromium 127.0.6533.0
 
 comp:MV2:firefox:latest:
   extends: .compliance:MV2
@@ -287,12 +265,6 @@ end-to-end:MV3:chrome:latest:
   extends: .end-to-end
   rules:
     - !reference [.nightly-run, rules]
-
-end-to-end:MV2:edge:latest:
-  extends: .end-to-end-nightly
-  variables:
-    MANIFEST_VERSION: 2
-    BROWSER: edge
 
 end-to-end:MV2:firefox:beta:
   extends: .end-to-end-nightly

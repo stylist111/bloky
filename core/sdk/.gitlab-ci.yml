@@ -20,14 +20,8 @@ variables:
   npm_config_fund: "false"
   npm_config_prefer_offline: "true"
   # Oldest supported versions
-  OLDEST_CHROMIUM_MV2_VERSION: "127.0.6533.0"
   OLDEST_CHROMIUM_MV3_VERSION: "127.0.6533.0"
   OLDEST_FIREFOX_VERSION: "128.0"
-  # Oldest version get-browser-binary can install for Edge (numeric versions
-  # below this are rejected by the tooling, and only resolve on Linux)
-  OLDEST_EDGE_MV2_VERSION: "116.0.1938.54"
-  # Latest Chromium version that still supports MV2
-  LATEST_CHROMIUM_MV2_VERSION: "128.0.6613.0"
 
 # Pipeline rules
 workflow:
@@ -194,12 +188,6 @@ adblockpluscore:browser:
   parallel: $[[ inputs.job_runs ]]
 
 # Functional tests - MV2
-func:v2:chromium:oldest:
-  extends: .functional-n-times
-  variables:
-    BROWSER: chromium $OLDEST_CHROMIUM_MV2_VERSION
-    TEST_PARAMS: 2 $BROWSER
-
 func:v2:firefox:latest:
   extends: .functional-n-times
   variables:
@@ -299,13 +287,6 @@ func:v2:firefox:oldest:
   # Note that we cannot apply it ot the entire pipeline by adding it to the
   # "default" section: https://gitlab.com/gitlab-org/gitlab/-/issues/213634
   timeout: 2h
-
-func:v2:windows:edge:
-  extends: .functional-windows
-  rules:
-    - !reference [.nightly-run, rules]
-  script:
-    - npm run -w=@eyeo/webext-ad-filtering-solution test:functional "--" 2 edge latest --timeout=10000
 
 # Functional tests - MV3
 func:v3:chrome:latest:
@@ -415,12 +396,6 @@ func:v3:chrome:beta:
     BROWSER: chrome beta
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
 
-func:v2:edge:oldest:
-  extends: .functional-nightly
-  variables:
-    BROWSER: edge $OLDEST_EDGE_MV2_VERSION
-    TEST_PARAMS: 2 $BROWSER --testKinds functional reload
-
 # Fuzz tests
 .fuzz:
   extends: .functional
@@ -475,13 +450,6 @@ comp:v2:firefox:
   variables:
     VERSION: latest
     BROWSER: firefox
-    MANIFEST: mv2
-
-comp:v2:chromium:
-  extends: .compliance
-  variables:
-    VERSION: $LATEST_CHROMIUM_MV2_VERSION
-    BROWSER: chromium
     MANIFEST: mv2
 
 comp:v3:chrome:
