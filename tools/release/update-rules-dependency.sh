@@ -11,7 +11,9 @@ update_sdk_test_diff_url() {
 
     # Find the diff URL from the filterlist file
     local FILTERLIST_FILE="node_modules/@eyeo/filterlists/filterlists/$FILTERLIST_ID"
-    local DIFF_URL=$(grep "^! DiffUrl:" "$FILTERLIST_FILE" | sed 's/^! DiffUrl: *//')
+    # Declared separately so set -e sees sed's status and a missing file fails.
+    local DIFF_URL
+    DIFF_URL=$(sed -n 's/^! DiffUrl: *//p' "$FILTERLIST_FILE")
 
     if [ -z "$DIFF_URL" ]; then
         echo "Warning: Could not find DiffUrl in $FILTERLIST_FILE"
@@ -32,13 +34,23 @@ BRANCH_NAME="mr-automaton-latest-@eyeo-filterlists"
 git checkout -B $BRANCH_NAME HEAD
 
 TEMPDIR=$(mktemp -d)
+trap 'rm -rf "$TEMPDIR"' EXIT
 COMMIT_MSG="$TEMPDIR/commit_message.txt"
 
 OLD_MODULE="$TEMPDIR/filterlists"
 NEW_MODULE="node_modules/@eyeo/filterlists"
 
 cp -r "$NEW_MODULE" "$OLD_MODULE"
+
+OLD_VERSION=$(jq -r .version "$NEW_MODULE/package.json")
 npm install -w @eyeo/rules-utils --save-exact @eyeo/filterlists@latest
+NEW_VERSION=$(jq -r .version "$NEW_MODULE/package.json")
+
+# Passing silently here hides broken filter list generation until release day.
+if [ "$OLD_VERSION" = "$NEW_VERSION" ]; then
+    echo "No new @eyeo/filterlists version available (still $NEW_VERSION)" >&2
+    exit 1
+fi
 
 # The SDK has a few tests that the default live subscriptions can be added, and
 # updated using the diff URLs. On the server side, these diff URLs expire after
@@ -79,6 +91,3 @@ if [ "$(git status --porcelain)" ]; then
     glab mr close "$BRANCH_NAME" || true
     glab mr create --fill --squash-before-merge --remove-source-branch --yes
 fi
-
-# Clean up
-rm -rf "$TEMPDIR"
