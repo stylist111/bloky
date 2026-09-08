@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.45.5 - 2026-09-08
+
 - Added a `LICENSE-THIRD-PARTY` file listing the licenses of third-party code
   included in the extension build, and added the missing MIT license text to
   `croppie.js`/`croppie.css`.

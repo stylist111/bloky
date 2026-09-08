@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.43.5 - 2026-09-08
+
 - Renamed `LICENSE-3RD-PARTY.txt` to `LICENSE-THIRD-PARTY`, added the licenses
   of additional third-party code included in the extension build, and
   included the file in the build output.
