@@ -44,14 +44,59 @@ describe("Filter storage read/write", function() {
     filterStorage.addFilter(Filter.fromText("foobar"));
   });
 
-  async function readData() {
-    let dataPath = path.resolve(__dirname, "data", "patterns.ini");
-    let readFileAsync = promisify(fs.readFile);
-    let data = await readFileAsync(dataPath, "utf-8");
-    return data.split(/[\r\n]+/);
+  const readFileAsync = promisify(fs.readFile);
+
+  // Builds filter storage data from the @eyeo/filterlists package instead
+  // of relying on a static copy of filter list content checked into the
+  // repository.
+  async function generateTestData() {
+    let indexPath =
+      require.resolve("@eyeo/filterlists/filterlists/index.json");
+    let filterlistsDir = path.dirname(indexPath);
+    let index = JSON.parse(await readFileAsync(indexPath, "utf-8"));
+
+    let subscriptionIds = [
+      "8C13E995-8F06-4927-BEA7-6C845FB7EEBF", // EasyList
+      "D72B6F06-52B2-4FED-96A2-1BF59CDD7AEC" // EasyPrivacy
+    ];
+
+    let lines = ["# Adblock Plus preferences", "version=5"];
+
+    for (let id of subscriptionIds) {
+      let entry = index.find(candidate => candidate.id == id);
+      if (!entry) {
+        throw new Error(`Subscription ${id} was not found in ` +
+          "@eyeo/filterlists.");
+      }
+
+      let text = await readFileAsync(path.join(filterlistsDir, id), "utf-8");
+      let filterTexts = text.split(/[\r\n]+/)
+        .filter(rawLine => rawLine && !rawLine.startsWith("!") &&
+                            !/^\[.*\]$/.test(rawLine))
+        .slice(0, 50);
+
+      lines.push("[Subscription]");
+      lines.push("url=" + entry.url);
+      lines.push("title=" + entry.title);
+      lines.push("[Subscription filters]");
+      for (let filterText of filterTexts) {
+        lines.push(filterText.replace(/\[/g, "\\["));
+      }
+    }
+
+    // A special (user-created) subscription, exercising the compatibility
+    // handling for
+    // https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/issues/140
+    lines.push("[Subscription]");
+    lines.push("url=~user~12345");
+    lines.push("defaults=whitelist");
+    lines.push("[Subscription filters]");
+    lines.push("@@||example.com^$document");
+
+    return lines;
   }
 
-  let testData = readData();
+  let testData = generateTestData();
 
   function canonize(data) {
     let curSection = null;

@@ -16,12 +16,14 @@
  */
 
 import {runCommand} from "../utils.js";
+import {run as generateSafariTestRulesets} from "../generateSafariTestRulesets.js";
 
 export async function run() {
   if (!process.platform === "darwin") {
     throw new Error(`Unsupported platform: ${process.platform}`);
   }
 
+  await generateSafariTestRulesets();
   await runCommand(
     "npx", "webpack",
     "-c", "./scripts/safari/webpack.config.js",

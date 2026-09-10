@@ -18,19 +18,17 @@
 "use strict";
 
 const assert = require("assert");
-const fs = require("fs");
 const {LIB_FOLDER} = require("./_common");
 
 const {DnrMapper} = require(LIB_FOLDER + "/dnr/mapper");
 
 describe("DNR Mapper", function() {
-  function loader(filename) {
-    let data = fs.readFileSync(`test/data/rulesets/${filename}.map`, {encoding: "utf-8"});
-    return JSON.parse(data);
+  function loader() {
+    return [["-ad-button-", [454852]]];
   }
 
   it("finds the filter in the map", async function() {
-    let mapper = new DnrMapper(async() => loader("8C13E995-8F06-4927-BEA7-6C845FB7EEBF"));
+    let mapper = new DnrMapper(async() => loader());
     await mapper.load();
 
     let ids = mapper.get("-ad-button-");

@@ -80,6 +80,11 @@ core/sdk/scripts/safari/AuthKey.p8
 # Safari test app - generated Xcode project and build artifacts
 core/sdk/test/xcode/testSafariApp/
 
+# Safari test app - DNR rulesets and raw subscription text generated from
+# @eyeo/filterlists (see core/sdk/scripts/generateSafariTestRulesets.js)
+core/sdk/test/extension-safari/rulesets/
+core/sdk/test/extension-safari/subscriptions/
+
 # tools
 tools/test/extension-benchmark/extensions
 tools/test/extension-benchmark/results

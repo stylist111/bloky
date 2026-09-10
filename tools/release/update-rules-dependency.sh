@@ -43,7 +43,11 @@ NEW_MODULE="node_modules/@eyeo/filterlists"
 cp -r "$NEW_MODULE" "$OLD_MODULE"
 
 OLD_VERSION=$(jq -r .version "$NEW_MODULE/package.json")
-npm install -w @eyeo/rules-utils --save-exact @eyeo/filterlists@latest
+npm install \
+    -w @eyeo/rules-utils \
+    -w @eyeo/webext-ad-filtering-solution \
+    -w adblockpluscore \
+    --save-exact @eyeo/filterlists@latest
 NEW_VERSION=$(jq -r .version "$NEW_MODULE/package.json")
 
 # Passing silently here hides broken filter list generation until release day.
