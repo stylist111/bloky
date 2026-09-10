@@ -13,6 +13,7 @@ COPY core/sdk/scripts extensions/core/sdk/scripts
 COPY core/sdk/adblockpluscore extensions/core/sdk/adblockpluscore
 # .husky/install.mjs is invoked by the root postinstall script during `npm ci`
 COPY .husky extensions/.husky
+RUN npm install -g npm@11
 RUN cd extensions && npm ci
 
 COPY . extensions/

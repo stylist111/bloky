@@ -34,10 +34,20 @@ root of this repository. Any subfolder with a `package.json` might still have a
 local `node_modules` folder when different versions of the same dependency are
 used.
 
+The `.npmrc` file's `min-release-age` option prevents installing package
+versions that were released too recently, to give us time to react to
+malicious package versions. If you need to install an urgent security fix for
+a third-party package before that window has passed, override the option for
+that one command instead of editing `.npmrc`:
+
+```sh
+npm install <package>@<version> --min-release-age=0
+```
+
 ## Prerequisites
 
 - node >= 24
-- npm >= 11
+- npm >= 11.17.0
 
 On Windows, you need a [Linux environment running on
 WSL](https://docs.microsoft.com/windows/wsl/install-win10).

@@ -24,7 +24,7 @@ spec:
 include: "/.gitlab/ci-common.yml"
 
 default:
-  image: node:24.14.1
+  image: node:24.20.0
   cache: # Cache modules using lock file
     key:
       files:

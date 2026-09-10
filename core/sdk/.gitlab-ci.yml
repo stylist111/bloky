@@ -11,7 +11,7 @@ include: "/.gitlab/ci-common.yml"
 
 default:
   interruptible: true
-  image: node:24.14.1
+  image: node:24.20.0
   tags:
     - "GCP"
 
@@ -63,7 +63,8 @@ workflow:
   tags:
     - eyeo-macos-tart
   before_script:
-    - nvm use 24.8.0
+    - nvm install 24.20.0
+    - nvm use 24.20.0
 
 stages:
   - build
@@ -216,7 +217,7 @@ func:v2:firefox:oldest:
     # While eyeo-windows doesn't come with Node 24 out of the box yet, we need
     # to install it ourselves
     - choco uninstall -y nodejs nodejs.install
-    - choco install -y --no-progress nodejs-lts --version 24.14.1
+    - choco install -y --no-progress nodejs-lts --version 24.20.0
     - npm install
     # Edge 150 self-stages its AppX package on launch (StagePackageByUriAsync),
     # which runs setup.exe; on the runner that crashed with 0xc06d007e (a
