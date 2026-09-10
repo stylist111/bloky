@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.16.0
+
 # 4.43.5 - 2026-09-08
 
 - Renamed `LICENSE-3RD-PARTY.txt` to `LICENSE-THIRD-PARTY`, added the licenses

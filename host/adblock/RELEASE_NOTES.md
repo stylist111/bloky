@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.16.0
+
 # 6.45.5 - 2026-09-08
 
 - Added a `LICENSE-THIRD-PARTY` file listing the licenses of third-party code
