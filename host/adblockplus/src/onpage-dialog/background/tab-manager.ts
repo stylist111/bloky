@@ -43,7 +43,7 @@ import { type HideMessage, type StartInfo, isPingMessage } from "../shared";
 import {
   getCampaignConfig,
   start as setupCampaignConfigs
-} from "./campaign-config";
+} from "@eyeo-fragments/opd-persistence-experiment/background";
 import {
   isCookieBannerDialog,
   isDialog,
@@ -127,7 +127,7 @@ function logPersistentOpdEvent(
   displayCount: number,
   reason?: ImpressionEndReason | InjectionFailureReason
 ): void {
-  if (getCampaignConfig(dialog) === null) {
+  if (getCampaignConfig(dialog.ipmId) === null) {
     return;
   }
 
@@ -143,6 +143,31 @@ function logPersistentOpdEvent(
 }
 
 /**
+ * Extracts a message from a thrown value, whether it's an `Error` or a
+ * plain object with a `message` property.
+ *
+ * @param ex - Thrown value
+ *
+ * @returns the message, or an empty string if none could be found
+ */
+function getErrorMessage(ex: unknown): string {
+  if (ex instanceof Error) {
+    return ex.message;
+  }
+
+  if (
+    typeof ex === "object" &&
+    ex !== null &&
+    "message" in ex &&
+    typeof (ex as { message: unknown }).message === "string"
+  ) {
+    return (ex as { message: string }).message;
+  }
+
+  return "";
+}
+
+/**
  * Classifies an injection failure into one of a fixed set of reasons. The raw
  * error message is never reported, since it can contain the tab's URL.
  *
@@ -151,7 +176,7 @@ function logPersistentOpdEvent(
  * @returns classified failure reason
  */
 function classifyInjectionFailure(ex: unknown): InjectionFailureReason {
-  const message = ex instanceof Error ? ex.message : "";
+  const message = getErrorMessage(ex);
 
   if (
     message.includes("Receiving end does not exist") ||
@@ -277,7 +302,7 @@ async function removeDialog(
     return;
   }
 
-  const campaignConfig = getCampaignConfig(dialog);
+  const campaignConfig = getCampaignConfig(dialog.ipmId);
   const stats = getStats(dialog.id);
 
   // For campaigns that can be shown more than once, an explicit user action is
@@ -530,7 +555,7 @@ function handleTabNavigatedEvent(data: TabRemovedEventData): void {
 
   logDisplayDuration(dialog, "tab_navigated");
 
-  if (getCampaignConfig(dialog) === null) {
+  if (getCampaignConfig(dialog.ipmId) === null) {
     return;
   }
 
@@ -624,7 +649,7 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
   try {
     const assigned = await assignedDialogs.get(page.id);
     if (isDialog(assigned)) {
-      if (getCampaignConfig(assigned) === null) {
+      if (getCampaignConfig(assigned.ipmId) === null) {
         // keep dialogs whose communication with the extension is not lost
         // and ignore handling any other command in the extension
         logger.debug("[onpage-dialog]: Tab already contains dialog");
@@ -734,7 +759,7 @@ export async function showOnpageDialog(
     return ShowOnpageDialogResult.rejected;
   }
 
-  const campaignConfig = getCampaignConfig(dialog);
+  const campaignConfig = getCampaignConfig(dialog.ipmId);
 
   // Check if the global dialog cool down period is still ongoing.
   // Dialogs with "immediate" timing (e.g. the local YT dialog) ignore
@@ -973,7 +998,7 @@ export async function start(): Promise<void> {
   // registered only once they are in place: a campaign evaluated without its
   // configuration would run on the default cap of one impression and be
   // dismissed permanently, which is worse than the wait.
-  await setupCampaignConfigs();
+  await setupCampaignConfigs(logger);
 
   /* eslint-disable-next-line @typescript-eslint/no-misused-promises */
   setDialogCommandHandler(handleDialogCommand, clearCommands);

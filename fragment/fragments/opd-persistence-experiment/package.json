@@ -1,0 +1,34 @@
+{
+  "name": "@eyeo-fragments/opd-persistence-experiment",
+  "type": "module",
+  "license": "GPL-3.0",
+  "private": true,
+  "typesVersions": {
+    "*": {
+      "background": [
+        "./dist/background/index.d.ts"
+      ],
+      "shared": [
+        "./dist/shared/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "./dist/"
+  ],
+  "exports": {
+    "./background": "./dist/background/index.js",
+    "./shared": "./dist/shared/index.js"
+  },
+  "scripts": {
+    "build:types": "tsc --project tsconfig.json --emitDeclarationOnly",
+    "build": "tsc --project tsconfig.json",
+    "build:release": "tsc --project tsconfig.json",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@eyeo/webext-ad-filtering-solution": "*",
+    "typescript": "5.5.4",
+    "vitest": "4.1.5"
+  }
+}

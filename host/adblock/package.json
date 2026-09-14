@@ -120,6 +120,7 @@
     "@eyeo-fragments/debug-information": "*",
     "@eyeo-fragments/filter-experiments": "*",
     "@eyeo-fragments/in-product-messaging": "*",
+    "@eyeo-fragments/opd-persistence-experiment": "*",
     "@eyeo-fragments/public-api": "*",
     "@eyeo-fragments/reverse-trial": "*",
     "@eyeo-fragments/yt-wall-detection": "*",

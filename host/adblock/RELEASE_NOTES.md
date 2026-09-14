@@ -1,5 +1,6 @@
 # Unreleased
 
+- Added an experiment to test impression caps on on-page dialogs.
 - Updated snippets to 2.16.0
 
 # 6.45.5 - 2026-09-08

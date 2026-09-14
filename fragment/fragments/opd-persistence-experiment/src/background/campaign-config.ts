@@ -1,29 +1,41 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's OPD Persistence Experiment fragment,
+ * Copyright (C) 2026-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
-import * as logger from "../../logger/background";
-import { isObject } from "~/polyfills/shared";
 import {
   CAMPAIGN_CONFIG_FLAG_PREFIX,
-  type CampaignConfig
-} from "./campaign-config.types";
-import { type Dialog } from "./dialog.types";
+  type CampaignConfig,
+} from "../shared/campaign-config.types.js";
+
+/**
+ * Logger provided by the host, so this fragment's warnings and debug output
+ * go through whatever logging/reporting the host itself uses instead of the
+ * bare console.
+ */
+export interface Logger {
+  debug: (...data: unknown[]) => void;
+  warn: (...data: unknown[]) => void;
+}
+
+/**
+ * Logger provided by the host via `start()`
+ */
+let logger: Logger;
 
 /**
  * Campaign configurations, by IPM ID
@@ -36,6 +48,17 @@ const knownConfigs = new Map<string, CampaignConfig>();
  * is treated as a misconfiguration rather than an intent.
  */
 const maxImpressionsCeiling = 20;
+
+/**
+ * Checks whether given candidate is a non-null object
+ *
+ * @param candidate - Candidate
+ *
+ * @returns whether candidate is a non-null object
+ */
+function isObject(candidate: unknown): candidate is Record<string, unknown> {
+  return typeof candidate === "object" && candidate !== null;
+}
 
 /**
  * Checks whether given candidate is a valid impression cap. Zero is rejected
@@ -65,10 +88,13 @@ function isMaxImpressions(candidate: unknown): candidate is number {
  */
 function parseCampaignConfig(
   entry: unknown,
-  ipmId: string
+  ipmId: string,
 ): CampaignConfig | null {
   if (!isObject(entry)) {
-    logger.warn("[onpage-dialog]: Campaign config is not an object", ipmId);
+    logger.warn(
+      "[opd-persistence-experiment]: Campaign config is not an object",
+      ipmId,
+    );
     return null;
   }
 
@@ -76,7 +102,10 @@ function parseCampaignConfig(
 
   if (typeof entry.ignoreCooldown !== "undefined") {
     if (typeof entry.ignoreCooldown !== "boolean") {
-      logger.warn("[onpage-dialog]: Invalid ignoreCooldown", ipmId);
+      logger.warn(
+        "[opd-persistence-experiment]: Invalid ignoreCooldown",
+        ipmId,
+      );
       return null;
     }
 
@@ -85,7 +114,10 @@ function parseCampaignConfig(
 
   if (typeof entry.maxImpressions !== "undefined") {
     if (!isMaxImpressions(entry.maxImpressions)) {
-      logger.warn("[onpage-dialog]: Invalid maxImpressions", ipmId);
+      logger.warn(
+        "[opd-persistence-experiment]: Invalid maxImpressions",
+        ipmId,
+      );
       return null;
     }
 
@@ -96,7 +128,10 @@ function parseCampaignConfig(
   // is empty — leaves the campaign out of the experiment entirely rather than
   // enrolling it in the telemetry while it runs on the defaults
   if (Object.keys(config).length === 0) {
-    logger.warn("[onpage-dialog]: Campaign config has no known fields", ipmId);
+    logger.warn(
+      "[opd-persistence-experiment]: Campaign config has no known fields",
+      ipmId,
+    );
     return null;
   }
 
@@ -126,8 +161,8 @@ async function initializeConfigs(): Promise<void> {
     const value = flags[name];
     if (!isObject(value)) {
       logger.warn(
-        "[onpage-dialog]: Campaign config flag is not an object",
-        name
+        "[opd-persistence-experiment]: Campaign config flag is not an object",
+        name,
       );
       continue;
     }
@@ -144,28 +179,39 @@ async function initializeConfigs(): Promise<void> {
     }
   }
 
-  logger.debug("[onpage-dialog]: Known campaign configs", knownConfigs);
+  logger.debug(
+    "[opd-persistence-experiment]: Known campaign configs",
+    knownConfigs,
+  );
 }
 
 /**
- * Retrieves the campaign configuration for the given dialog
+ * Retrieves the campaign configuration for the given IPM campaign
  *
- * @param dialog - Dialog information
+ * @param ipmId - IPM ID of the campaign, or `undefined` for dialogs that
+ *   don't come from a campaign
  *
  * @returns campaign configuration, or `null` if the campaign isn't configured
  */
-export function getCampaignConfig(dialog: Dialog): CampaignConfig | null {
-  if (typeof dialog.ipmId !== "string") {
+export function getCampaignConfig(
+  ipmId: string | undefined,
+): CampaignConfig | null {
+  if (typeof ipmId !== "string") {
     return null;
   }
 
-  return knownConfigs.get(dialog.ipmId) ?? null;
+  return knownConfigs.get(ipmId) ?? null;
 }
 
 /**
  * Initializes campaign configurations
+ *
+ * @param hostLogger - Logger to use for this fragment's warnings and debug
+ *   output
  */
-export async function start(): Promise<void> {
+export async function start(hostLogger: Logger): Promise<void> {
+  logger = hostLogger;
+
   await initializeConfigs();
 
   ewe.experiments.onChanged.addListener(() => {

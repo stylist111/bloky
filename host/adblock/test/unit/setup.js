@@ -32,3 +32,15 @@ const mockStorage = {
 global.browser = {
   storage: mockStorage,
 };
+
+// Legacy background-page global, still referenced at module load time by
+// vendored adblockplusui code (e.g. tab-session.js registers its listeners
+// as soon as it's imported).
+global.ext = {
+  pages: {
+    onLoading: { addListener: vi.fn() },
+    onLoaded: { addListener: vi.fn() },
+    onRemoved: { addListener: vi.fn() },
+  },
+  addTrustedMessageTypes: vi.fn(),
+};

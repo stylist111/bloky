@@ -19,7 +19,7 @@ import { type Tabs } from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
-import { getCampaignConfig } from "./campaign-config";
+import { getCampaignConfig } from "@eyeo-fragments/opd-persistence-experiment/background";
 import * as dialogModule from "./dialog";
 import { type Dialog } from "./dialog.types";
 import { Timing } from "./timing.types";
@@ -47,7 +47,7 @@ import {
 import * as timing from "./timing";
 
 jest.mock("../../premium-subscriptions/background");
-jest.mock("./campaign-config");
+jest.mock("@eyeo-fragments/opd-persistence-experiment/background");
 
 jest.mock("../../../adblockpluschrome/lib/prefs", () => {
   const prefsData: Record<string, any> = {

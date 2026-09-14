@@ -1,18 +1,18 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's OPD Persistence Experiment fragment,
+ * Copyright (C) 2026-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
@@ -39,8 +39,9 @@ export interface CampaignConfig {
   ignoreCooldown?: boolean;
   /**
    * Maximum number of times the dialog can be shown for this campaign,
-   * replacing the display count from the timing configuration. Accepted values
-   * are 1 to 20; anything outside that leaves the campaign unconfigured.
+   * replacing the display count from the host's own timing configuration.
+   * Accepted values are 1 to 20; anything outside that leaves the campaign
+   * unconfigured.
    *
    * Every qualifying page load spends one impression, and the extension cannot
    * tell a fresh navigation from a refresh of the same page: reloading a

@@ -26,6 +26,10 @@ import {
   getContent,
   isCommandExpired,
 } from "@eyeo-fragments/in-product-messaging/background";
+import {
+  getCampaignConfig,
+  start as setupCampaignConfigs,
+} from "@eyeo-fragments/opd-persistence-experiment/background";
 
 import { Prefs } from "../../alias/prefs";
 import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
@@ -46,6 +50,10 @@ import {
   TabPage,
   coolDownPeriodKey,
   lastShownKey,
+  type ImpressionEndReason,
+  type InjectionFailureReason,
+  type PersistentOpdEvent,
+  type RemoveDialogOptions,
   type TerminationCause,
 } from "./tab-manager.types";
 import { shouldBeDismissed, shouldBeShown, start as setupTimings } from "./timing";
@@ -62,12 +70,12 @@ export const eventEmitter = new EventEmitter();
  * Queue of dialogs that haven't been assigned to a tab yet
  * Keys are dialog IDs
  */
-const unassignedDialogs = new Map<string, Dialog>();
+export const unassignedDialogs = new Map<string, Dialog>();
 
 /**
  * Pages where a cookie banner has been detected
  */
-const pagesWithCookieBanner = new Set<number>();
+export const pagesWithCookieBanner = new Set<number>();
 
 /**
  * Server logger instance for events related to the on-page dialog feature
@@ -78,6 +86,93 @@ const serverLogger = new ewe.telemetry.ServerLogger("onpage_dialog");
  * Server logger instance for events related to the on-page dialog UI
  */
 const uiServerLogger = new ewe.telemetry.ServerLogger("onpage_dialog_ui");
+
+/**
+ * Server logger instance for impression-level events of campaigns that carry
+ * per-campaign overrides
+ */
+const persistentOpdLogger = new ewe.telemetry.ServerLogger("persistent_opd");
+
+/**
+ * Emits an impression-level event for a campaign that carries per-campaign
+ * overrides. Campaigns without overrides aren't part of the experiment, so they
+ * emit nothing here and keep reporting through the on-page dialog UI events
+ * only.
+ *
+ * @param event - Event name
+ * @param dialog - Dialog information
+ * @param displayCount - Impression the event belongs to
+ * @param [reason] - How the impression ended, for the ignored event, or why
+ *   injection failed, for the injection_failed event
+ */
+function logPersistentOpdEvent(
+  event: PersistentOpdEvent,
+  dialog: Dialog,
+  displayCount: number,
+  reason?: ImpressionEndReason | InjectionFailureReason,
+): void {
+  if (getCampaignConfig(dialog.ipmId) === null) {
+    return;
+  }
+
+  const ipmId = dialog.ipmId ?? "";
+
+  persistentOpdLogger.behavior(
+    event,
+    typeof reason === "string" ? { ipmId, displayCount, reason } : { ipmId, displayCount },
+    dialog.ipmId,
+  );
+}
+
+/**
+ * Extracts a message from a thrown value, whether it's an `Error` or a
+ * plain object with a `message` property.
+ *
+ * @param ex - Thrown value
+ *
+ * @returns the message, or an empty string if none could be found
+ */
+function getErrorMessage(ex: unknown): string {
+  if (ex instanceof Error) {
+    return ex.message;
+  }
+
+  if (
+    typeof ex === "object" &&
+    ex !== null &&
+    "message" in ex &&
+    typeof (ex as { message: unknown }).message === "string"
+  ) {
+    return (ex as { message: string }).message;
+  }
+
+  return "";
+}
+
+/**
+ * Classifies an injection failure into one of a fixed set of reasons. The raw
+ * error message is never reported, since it can contain the tab's URL.
+ *
+ * @param ex - Error thrown while injecting the dialog
+ *
+ * @returns classified failure reason
+ */
+function classifyInjectionFailure(ex: unknown): InjectionFailureReason {
+  const message = getErrorMessage(ex);
+
+  if (
+    message.includes("Receiving end does not exist") ||
+    message.includes("Could not establish connection")
+  ) {
+    return "no_receiver";
+  }
+
+  if (message.includes("No tab with id")) {
+    return "no_tab";
+  }
+
+  return "other";
+}
 
 /**
  * Emits the dialog_display_duration telemetry event for a terminating dialog.
@@ -183,14 +278,19 @@ async function removeDialogFrame(tabId: number): Promise<void> {
  *
  * @param tabId - Tab ID
  * @param dialog - Dialog
- * @param [keepStorage=false] - Indicates whether the dialog should be kept
- *   in storage, so that it can be showed again later
+ * @param [options] - Removal options
+ * @param [options.keepStorage=false] - Indicates whether the dialog should be
+ *   kept in storage, so that it can be showed again later
+ * @param [options.userDismissed=false] - Indicates whether the user explicitly
+ *   dismissed the dialog, by closing it or by interacting with its button
  */
 async function removeDialog(
   tabId: number,
   dialog: Dialog,
-  keepStorage: boolean = false,
+  options: RemoveDialogOptions = {},
 ): Promise<void> {
+  const { keepStorage = false, userDismissed = false } = options;
+
   logger.debug("[onpage-dialog]: Remove dialog");
 
   if (!isDialog(dialog)) {
@@ -209,11 +309,29 @@ async function removeDialog(
     return;
   }
 
-  // Determine whether dialog should remain active
+  const campaignConfig = getCampaignConfig(dialog.ipmId);
   const stats = getStats(dialog.id);
-  if (!shouldBeDismissed(dialog, stats)) {
+
+  // For campaigns that can be shown more than once, an explicit user action is
+  // final: the dialog must not come back on a later page load
+  if (userDismissed && campaignConfig !== null) {
+    dismissDialog(dialog);
+    clearStats(dialog.id);
+    return;
+  }
+
+  // Determine whether dialog should remain active
+  if (!shouldBeDismissed(dialog, stats, campaignConfig?.maxImpressions)) {
     logger.debug("[onpage-dialog]: Keep dialog active");
     return;
+  }
+
+  // The cap was reached without the user ever acting on the dialog, which is
+  // what tells "we never reached them" apart from "they weren't interested".
+  // The other retirement path is the dismissal check in showOnpageDialog, for
+  // campaigns whose impressions ended by navigation instead.
+  if (!userDismissed) {
+    logPersistentOpdEvent("exhausted", dialog, stats.displayCount);
   }
 
   dismissDialog(dialog);
@@ -262,8 +380,11 @@ async function handleCloseMessage(message: Message, sender: MessageSender): Prom
     return;
   }
 
-  void removeDialog(sender.page.id, dialog);
+  const { displayCount } = getStats(dialog.id);
+
+  void removeDialog(sender.page.id, dialog, { userDismissed: true });
   uiServerLogger.behavior("dialog_closed", dialog.ipmId ?? "", dialog.ipmId);
+  logPersistentOpdEvent("closed", dialog, displayCount);
 }
 
 /**
@@ -289,8 +410,11 @@ async function handleContinueMessage(message: Message, sender: MessageSender): P
 
   void browser.tabs.create({ url: safeTargetUrl });
 
-  void removeDialog(sender.page.id, dialog);
+  const { displayCount } = getStats(dialog.id);
+
+  void removeDialog(sender.page.id, dialog, { userDismissed: true });
   uiServerLogger.behavior("dialog_button_clicked", dialog.ipmId ?? "", dialog.ipmId);
+  logPersistentOpdEvent("clicked", dialog, displayCount);
 }
 
 /**
@@ -348,8 +472,11 @@ async function handlePingMessage(message: Message, sender: MessageSender): Promi
     return;
   }
 
+  const { displayCount } = getStats(dialog.id);
+
   void removeDialog(sender.page.id, dialog);
   uiServerLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
+  logPersistentOpdEvent("ignored", dialog, displayCount, "display_duration_elapsed");
 }
 
 /**
@@ -365,9 +492,12 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
     return;
   }
 
+  const { displayCount } = getStats(dialog.id);
+
   logDisplayDuration(dialog, "tab_removed");
   void removeDialog(tabId, dialog);
   uiServerLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
+  logPersistentOpdEvent("ignored", dialog, displayCount, "tab_removed");
 }
 
 /**
@@ -378,13 +508,30 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
  * @param data - Event data
  */
 function handleTabNavigatedEvent(data: TabRemovedEventData): void {
-  const { value: dialog } = data;
+  const { tabId, value: dialog } = data;
 
   if (!isDialog(dialog)) {
     return;
   }
 
   logDisplayDuration(dialog, "tab_navigated");
+
+  if (getCampaignConfig(dialog.ipmId) === null) {
+    return;
+  }
+
+  // A dialog that stays up until the user acts can only end without an
+  // interaction by the tab navigating away or closing, so this is where most
+  // impressions of such a campaign end
+  logPersistentOpdEvent("ignored", dialog, getStats(dialog.id).displayCount, "tab_navigated");
+
+  // The document the dialog was shown on is gone, so the assignment is stale.
+  // The tab session is cleared right after this, but that delete is not part
+  // of the session's transaction queue and can be undone by a write from
+  // another namespace that read the session before it. A leftover assignment
+  // makes the next page load stop at "tab already contains dialog", which only
+  // matters for campaigns that are meant to be shown again.
+  void assignedDialogs.delete(tabId);
 }
 
 /**
@@ -475,19 +622,26 @@ export async function showOnpageDialog(
     return ShowOnpageDialogResult.rejected;
   }
 
-  // Check if the global dialog cool down period is still ongoing.
-  if (await isCoolDownPeriodOngoing()) {
+  const campaignConfig = getCampaignConfig(dialog.ipmId);
+
+  // Check if the global dialog cool down period is still ongoing. Campaigns
+  // configured to ignore it skip this check.
+  if (campaignConfig?.ignoreCooldown !== true && (await isCoolDownPeriodOngoing())) {
     logger.debug("[onpage-dialog]: Cool down period still ongoing");
     return ShowOnpageDialogResult.ignored;
   }
 
   const stats = getStats(dialog.id);
-  const shouldDialogBeDismissed = shouldBeDismissed(dialog, stats);
+  const shouldDialogBeDismissed = shouldBeDismissed(dialog, stats, campaignConfig?.maxImpressions);
   const shouldDialogBeShown = await shouldBeShown(tab, dialog, stats);
 
-  // Reject commands that should be dismissed
+  // Reject commands that should be dismissed. This is where a campaign whose
+  // impressions all ended by navigation reaches its cap: those impressions
+  // never go through removeDialog, so this is the only point at which the
+  // campaign is retired. Returning "rejected" makes the caller dismiss it.
   if (shouldDialogBeDismissed) {
     logger.debug("[onpage-dialog]: Reject dialog");
+    logPersistentOpdEvent("exhausted", dialog, stats.displayCount);
     return ShowOnpageDialogResult.rejected;
   }
 
@@ -522,21 +676,32 @@ export async function showOnpageDialog(
   }
 
   const now = Date.now();
-
+  // Read the count again rather than reusing the one from before the tab was
+  // claimed: another tab loading at the same time may have spent an impression
+  // in between. The cap was still checked against the earlier read, so two
+  // tabs claiming at once can take the campaign one impression past it.
+  const displayCount = getStats(dialog.id).displayCount + 1;
   setStats(dialog.id, {
-    displayCount: stats.displayCount + 1,
+    displayCount,
     lastDisplayTime: now,
   });
-  await Prefs.set(lastShownKey, now);
+
+  // Campaigns that ignore the cool down don't start one for other campaigns
+  // either, so they neither read nor write the shared timestamp
+  if (campaignConfig?.ignoreCooldown !== true) {
+    await Prefs.set(lastShownKey, now);
+  }
 
   try {
     await injectDialog(tabId);
   } catch (ex) {
     logger.reportAndLogError(ex, "[onpage-dialog] Injection of dialog failed");
+    logPersistentOpdEvent("injection_failed", dialog, displayCount, classifyInjectionFailure(ex));
     return ShowOnpageDialogResult.error;
   }
 
   uiServerLogger.behavior("dialog_injected", dialog.ipmId ?? "", dialog.ipmId);
+  logPersistentOpdEvent("rendered", dialog, displayCount);
   return ShowOnpageDialogResult.shown;
 }
 
@@ -627,11 +792,41 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
   // Clean any leftover dialog from pages being loaded in unusual ways,
   // e.g. pages that simulate navigation by changing browser session history
   try {
-    if (await assignedDialogs.has(page.id)) {
-      // keep dialogs whose communication with the extension is not lost
-      // and ignore handling any other command in the extension
-      logger.debug("[onpage-dialog]: Tab already contains dialog");
-      return;
+    const assigned = await assignedDialogs.get(page.id);
+    if (isDialog(assigned)) {
+      if (getCampaignConfig(assigned.ipmId) === null) {
+        // keep dialogs whose communication with the extension is not lost
+        // and ignore handling any other command in the extension
+        logger.debug("[onpage-dialog]: Tab already contains dialog");
+        return;
+      }
+
+      // A configured campaign is meant to come back on the next document, so
+      // an assignment left over from the document that just went away is
+      // stale rather than a dialog that is still on the page. Dropping it
+      // here keeps the campaign from depending on the navigation teardown
+      // having landed first.
+      await assignedDialogs.delete(page.id);
+
+      // The navigation handler reports the same impression, and neither path
+      // can claim it from the other: that one reads its dialog from the event
+      // payload rather than from storage, and the read here does not go
+      // through the session's transaction queue. In practice the tab session
+      // clean-up lands well after the next document has loaded, so the
+      // navigation handler finds nothing and this is the path that reports —
+      // but that is a property of the timing, not a guarantee, which is why
+      // the event is documented as needing deduplication.
+      //
+      // The duration this reports runs to the moment the next document
+      // finished loading rather than to the navigation itself, so it carries
+      // the page load with it.
+      logDisplayDuration(assigned, "tab_navigated");
+      logPersistentOpdEvent(
+        "ignored",
+        assigned,
+        getStats(assigned.id).displayCount,
+        "tab_navigated",
+      );
     }
     // remove dialogs whose communication is lost
     await removeDialogFrame(page.id);
@@ -668,7 +863,7 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
  * @param sender - Message sender
  * @param processCookieBannerDialogs - Callback to process cookie banner dialogs
  */
-async function handleCookieBannerDetected(
+export async function handleCookieBannerDetected(
   message: Message,
   sender: MessageSender,
   processCookieBannerDialogs = showDialogFromList,
@@ -714,7 +909,7 @@ async function clearCommands(): Promise<void> {
     }
 
     const dialog = await assignedDialogs.get(tab.id);
-    await removeDialog(tab.id, dialog, true);
+    await removeDialog(tab.id, dialog, { keepStorage: true });
   }
 }
 
@@ -722,6 +917,10 @@ async function clearCommands(): Promise<void> {
  * Initializes on-page manager
  */
 export async function start(): Promise<void> {
+  // Timing configurations have to be in place before any page load is handled.
+  // An unknown timing makes the dismissal check reject the dialog, and the
+  // caller then dismisses the campaign for good rather than skipping a single
+  // impression.
   await setupTimings();
 
   // Handle messages from content scripts
@@ -754,5 +953,14 @@ export async function start(): Promise<void> {
 
   // Handle commands
   ext.pages.onLoaded.addListener(handlePageLoadedEvent);
+
+  // Campaign configurations are read after the listeners are attached, because
+  // reading them waits on the experiments state and a page load arriving while
+  // that is pending would find no listener at all. The command handler is
+  // registered only once they are in place: a campaign evaluated without its
+  // configuration would run on the default cap of one impression and be
+  // dismissed permanently, which is worse than the wait.
+  await setupCampaignConfigs(logger);
+
   setDialogCommandHandler(handleDialogCommand, clearCommands);
 }

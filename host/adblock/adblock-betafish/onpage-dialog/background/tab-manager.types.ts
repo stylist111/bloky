@@ -30,6 +30,22 @@ export const lastShownKey = "onpage_dialog_last_shown";
 export const coolDownPeriodKey = "onpage_dialog_cool_down";
 
 /**
+ * Options for removing an on-page dialog
+ */
+export interface RemoveDialogOptions {
+  /**
+   * Whether the dialog should be kept in storage, so that it can be shown
+   * again later
+   */
+  keepStorage?: boolean;
+  /**
+   * Whether the user explicitly dismissed the dialog, by closing it or by
+   * interacting with its button
+   */
+  userDismissed?: boolean;
+}
+
+/**
  * Results when attempting to show on-page dialog
  */
 export enum ShowOnpageDialogResult {
@@ -64,3 +80,29 @@ export interface TabPage {
  * telemetry event
  */
 export type TerminationCause = "tab_navigated" | "tab_removed";
+
+/**
+ * Events of the persistent_opd telemetry module. Must match the event names
+ * declared for that module in the SDK's events registry, which the registry
+ * cannot enforce from here: an event it doesn't know is dropped when emitted.
+ */
+export type PersistentOpdEvent =
+  | "rendered"
+  | "clicked"
+  | "closed"
+  | "ignored"
+  | "exhausted"
+  | "injection_failed";
+
+/**
+ * How an impression ended, reported by the ignored event. A dialog with no
+ * display duration can only end by the tab going away, so the two termination
+ * causes carry over and only the timed case is added.
+ */
+export type ImpressionEndReason = TerminationCause | "display_duration_elapsed";
+
+/**
+ * Why the dialog could not be put on the page, reported by the
+ * injection_failed event
+ */
+export type InjectionFailureReason = "no_receiver" | "no_tab" | "other";
