@@ -65,7 +65,7 @@ Optional permission, requested when submitting issue reports to include addition
 ## Firefox AMO notes for reviewers
 
 ```md
-On Debian or Ubuntu: Run the following commands using Node 24.14.1 and npm 11.11.0:
+On Debian or Ubuntu: Run the following commands using Node 24.20.0 and npm 11.11.0:
 npm install
 npm run build:release -- --scope=adblockplus -- firefox 2
 
@@ -102,7 +102,7 @@ Merge request: https://github.com/mozilla/webextension-polyfill/pull/719
 ## Opera notes for reviewers
 
 ```md
-On Debian or Ubuntu: Run the following commands using Node 24.14.1 and npm 11.11.0:
+On Debian or Ubuntu: Run the following commands using Node 24.20.0 and npm 11.11.0:
 npm install
 npm run build:release -- --scope=adblockplus -- chrome 3
 ```
