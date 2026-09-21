@@ -55,7 +55,7 @@
     "webextension-polyfill": "*"
   },
   "devDependencies": {
-    "@eyeo/filterlists": "1.0.98",
+    "@eyeo/filterlists": "1.0.99",
     "@eyeo/get-browser-binary": "0.24.5",
     "@eyeo/snippets": "2.16.0",
     "@eyeo/test-utils": "*",
