@@ -48,6 +48,31 @@ one experiment each, so their entries can't collide in practice; if the same
 campaign is listed under two matching flags, the alphabetically first flag
 name wins.
 
+## Scoping a configuration to one extension
+
+Both AdBlock and Adblock Plus read these flags, and an experiment without
+`conditions` is assigned in both. A `crumbs-opd-config` flag written with one
+extension in mind therefore applies to the other one as well — check that the
+campaigns it lists are meant for both before shipping it.
+
+To target a single host, put an `extName` condition on the experiment:
+
+```json
+{
+  "experimentId": "opd_persistence_adblockplus",
+  "conditions": {
+    "all": [{ "fact": "extName", "operator": "equal", "value": "adblockplus" }]
+  },
+  "variants": [{ "variantId": "enabled", "mods": [0, 1000], "flags": {} }]
+}
+```
+
+`extName` is the manifest `short_name`, lowercased and with spaces removed:
+`adblock` or `adblockplus`. It supports `equal` and `notEqual` only, and
+`conditions` belongs on the experiment, not on a variant. Configuring both
+hosts with different values takes two experiments, one per `extName`, each
+with its own flag name.
+
 ## Building
 
 See the [readme at the root of the monorepo](../../README.md) for
