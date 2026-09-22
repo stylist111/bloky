@@ -38,6 +38,7 @@ import dialogHtml from "./dialog.html?text";
 import { isMessage } from "../../polyfills/shared/index";
 import { StartInfo } from "../shared/index";
 import * as api from "../../../adblockplusui/js/api/index";
+import { getDialogContainer } from "./dialog-container";
 
 /**
  * List of bundled fonts to load into the web page
@@ -266,7 +267,7 @@ const showDialog = async function (message: StartInfo) {
   }
 
   baseShadow.appendChild(dialogElement);
-  (document.body || document.documentElement).appendChild(dialogParentElement);
+  getDialogContainer().appendChild(dialogParentElement);
   // We're pinging the background page once per minute, so that it is aware
   // for how long the dialog has already been shown, in case it needs to
   // execute some actions with a delay

@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fixed: On-page dialogs failed to render on pages using a legacy `<frameset>`
+  layout instead of `<body>`.
+
 # 6.46.0 - 2026-09-15
 
 - Added an experiment to test impression caps on on-page dialogs.
