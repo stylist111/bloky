@@ -25,6 +25,7 @@ import * as cohorts from "../cohorts/index.js";
 import * as clientIds from "../client-ids.js";
 import * as serverLogConfig from "../telemetry/server-log-config.js";
 import {ServerLogger} from "../telemetry/server-logger.js";
+import sentry from "../sentry.js";
 import {
   getCohortsConfig,
   getConfig,
@@ -155,7 +156,8 @@ async function sync() {
   }
 
   if (errors.length > 0) {
-    logger.warn("validation_error", errors);
+    const e = new Error(`Invalid remote configuration: ${errors.join(", ")}`);
+    sentry.reportError(e);
     state.errors = errors;
     await remoteConfigState.save();
     return;

@@ -1,5 +1,7 @@
 # Unreleased
 
+- Remote configuration validation errors are now reported to Sentry instead
+  of being logged via the server logger.
 - Added the `persistent_opd` telemetry module for the on-page dialog impression
   cap experiment, with the `rendered`, `clicked`, `closed`, `ignored`,
   `exhausted` and `injection_failed` events.
