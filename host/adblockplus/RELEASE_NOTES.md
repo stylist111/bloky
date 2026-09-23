@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fixed a race condition that could cause an on-page dialog to silently fail to
+  reappear after same-tab navigation
+
 # 4.44.1 - 2026-09-22
 
 This release contains only minor updates and under-the-hood changes.

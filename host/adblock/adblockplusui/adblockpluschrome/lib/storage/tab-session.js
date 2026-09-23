@@ -114,6 +114,23 @@ export class TabSessionStorage extends EventEmitter {
   }
 
   /**
+   * Retrieves session storage content specific to given tab ID, ordered
+   * after any write or cleanup already queued for that tab. Use this
+   * instead of `get` when a stale read racing an in-flight `clearStorage`
+   * from a concurrent tab "loading"/"removed" event would be incorrect.
+   * @param {number} tabId
+   * @return {Promise<any>}
+   */
+  async getQueued(tabId) {
+    return sessionByTabId.transaction(async () => {
+      const session = await sessionByTabId.get(tabId);
+      if (!session) return;
+
+      return session[this._namespace];
+    });
+  }
+
+  /**
    * Indicates whether session storage content exists specific to given tab ID.
    * @param {number} tabId
    * @return {Promise<boolean>}
@@ -169,21 +186,27 @@ export class TabSessionStorage extends EventEmitter {
  * @return {Promise}
  */
 async function clearStorage(tabId, reason) {
-  // Provide stored data to listeners before removing it
-  const session = await sessionByTabId.get(tabId);
-  if (session) {
-    let eventName = null;
-    if (reason === clearStorageReason.tabRemoval) eventName = "tab-removed";
-    else if (reason === clearStorageReason.startup) eventName = "tab-navigated";
+  // Runs as a transaction so this can't interleave with a TabSessionStorage
+  // write (e.g. assigning a dialog to the tab) that reads the session before
+  // this deletes it: without that, the write can land between this
+  // function's own read and its delete below and get silently lost.
+  return sessionByTabId.transaction(async () => {
+    // Provide stored data to listeners before removing it
+    const session = await sessionByTabId.get(tabId);
+    if (session) {
+      let eventName = null;
+      if (reason === clearStorageReason.tabRemoval) eventName = "tab-removed";
+      else if (reason === clearStorageReason.startup) eventName = "tab-navigated";
 
-    if (eventName) {
-      for (const tabStorage of tabStorages) {
-        await tabStorage.emit(eventName, tabId);
+      if (eventName) {
+        for (const tabStorage of tabStorages) {
+          await tabStorage.emit(eventName, tabId);
+        }
       }
     }
-  }
 
-  await sessionByTabId.delete(tabId);
+    await sessionByTabId.delete(tabId);
+  });
 }
 
 /**

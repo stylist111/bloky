@@ -547,7 +547,7 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
  * @param data - Event data
  */
 function handleTabNavigatedEvent(data: TabRemovedEventData): void {
-  const { tabId, value: dialog } = data;
+  const { value: dialog } = data;
 
   if (!isDialog(dialog)) {
     return;
@@ -568,14 +568,6 @@ function handleTabNavigatedEvent(data: TabRemovedEventData): void {
     getStats(dialog.id).displayCount,
     "tab_navigated"
   );
-
-  // The document the dialog was shown on is gone, so the assignment is stale.
-  // The tab session is cleared right after this, but that delete is not part
-  // of the session's transaction queue and can be undone by a write from
-  // another namespace that read the session before it. A leftover assignment
-  // makes the next page load stop at "tab already contains dialog", which only
-  // matters for campaigns that are meant to be shown again.
-  void assignedDialogs.delete(tabId);
 }
 
 /**
@@ -645,9 +637,13 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
   }
 
   // Clean any leftover dialog from pages being loaded in unusual ways,
-  // e.g. pages that simulate navigation by changing browser session history
+  // e.g. pages that simulate navigation by changing browser session history.
+  // Reads via `getQueued` rather than `get` so this can't run ahead of the
+  // `clearStorage` cleanup this same navigation's "loading" event already
+  // queued, which would otherwise find a stale assignment here and bail out
+  // before ever handing the page to `showDialogFromList`.
   try {
-    const assigned = await assignedDialogs.get(page.id);
+    const assigned = await assignedDialogs.getQueued(page.id);
     if (isDialog(assigned)) {
       if (getCampaignConfig(assigned.ipmId) === null) {
         // keep dialogs whose communication with the extension is not lost
@@ -663,14 +659,11 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
       // having landed first.
       await assignedDialogs.delete(page.id);
 
-      // The navigation handler reports the same impression, and neither path
-      // can claim it from the other: that one reads its dialog from the event
-      // payload rather than from storage, and the read here does not go
-      // through the session's transaction queue. In practice the tab session
-      // clean-up lands well after the next document has loaded, so the
-      // navigation handler finds nothing and this is the path that reports —
-      // but that is a property of the timing, not a guarantee, which is why
-      // the event is documented as needing deduplication.
+      // For a regular navigation, the "loading" event's clearStorage already
+      // ran the "tab-navigated" listener and reported this impression before
+      // `getQueued` above could return an assignment here, so this branch
+      // only fires when no "loading" event preceded this one, e.g. a page
+      // simulating navigation via the History API.
       //
       // The duration this reports runs to the moment the next document
       // finished loading rather than to the navigation itself, so it carries

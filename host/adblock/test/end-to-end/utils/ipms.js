@@ -33,7 +33,7 @@ export const expectedIPMCommands = {
       command_name: "create_on_page_dialog",
       timing: "cookie_banner",
       version: 8,
-      domain_list: "dw.com,welt.de,example.com",
+      domain_list: "localhost",
       content: {
         en: {
           sub_title: "OPD cookie title",
@@ -61,7 +61,7 @@ export const expectedIPMCommands = {
       command_name: "create_on_page_dialog",
       timing: "after_navigation",
       version: 8,
-      domain_list: "~example.com",
+      domain_list: "~localhost",
       content: {
         en: {
           sub_title: "OPD exclusion title",
@@ -89,7 +89,7 @@ export const expectedIPMCommands = {
       command_name: "create_on_page_dialog",
       timing: "after_navigation",
       version: 8,
-      domain_list: "google.com,wikipedia.org,example.com",
+      domain_list: "localhost,testpages.eyeo.com",
       content: {
         en: {
           sub_title: "OPD navigation title",
@@ -144,7 +144,7 @@ export const expectedIPMCommands = {
       command_name: "create_on_page_dialog",
       timing: "after_navigation",
       version: 8,
-      domain_list: "google.com,wikipedia.org,example.com",
+      domain_list: "localhost",
       content: {
         "de-AT": {
           sub_title: "[de-AT] OPD translations title",

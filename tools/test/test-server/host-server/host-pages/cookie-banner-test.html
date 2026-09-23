@@ -1,0 +1,12 @@
+<h1>Cookie banner test page</h1>
+<script>
+  // Minimal stand-in for a real TCF v2 CMP: fires the "cmpuishown" event the
+  // cookie-banner-detection fragment listens for, without depending on any
+  // real consent-management vendor's page/script staying online or unchanged.
+  window.__tcfapi = function (command, version, callback) {
+    if (command === "addEventListener") {
+      // eslint-disable-next-line n/no-callback-literal
+      callback({ eventStatus: "cmpuishown", listenerId: 1 }, true);
+    }
+  };
+</script>

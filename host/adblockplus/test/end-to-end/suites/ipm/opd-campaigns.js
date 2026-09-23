@@ -39,8 +39,14 @@ import {
   getDisplayedElement,
   waitForNeverDisplayed,
   findUrl,
-  openNewTab
+  openNewTab,
+  navigateTo
 } from "@eyeo/test-utils/driver";
+import {
+  localTestPageUrl,
+  testPageUrl,
+  cookieBannerTestPageUrl
+} from "@eyeo/test-utils/host-urls";
 import { updateUrlNavigation } from "../../utils/urls.js";
 import {
   commandReceivedEvent,
@@ -110,7 +116,7 @@ export default () => {
 
     let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.navigation);
-    await openNewTab("https://www.example.com");
+    await openNewTab(localTestPageUrl);
 
     await switchToOPDiframe();
     const opdTitle = await getDisplayedElement("#title");
@@ -127,7 +133,7 @@ export default () => {
     await driver.switchTo().defaultContent();
 
     await findUrl(updateUrlNavigation);
-    await openNewTab("https://www.example.net");
+    await openNewTab(testPageUrl);
     await waitForNeverDisplayed("#__abp-overlay-onpage-dialog iframe", {
       checkDisplayed: false
     });
@@ -158,12 +164,12 @@ export default () => {
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.exclusion);
 
-    await openNewTab("https://www.example.org");
+    await openNewTab(localTestPageUrl);
     await waitForNeverDisplayed("#__abp-overlay-onpage-dialog iframe", {
       checkDisplayed: false
     });
 
-    await openNewTab("https://www.wikipedia.org");
+    await openNewTab(testPageUrl);
     await switchToOPDiframe();
     const opdTitle = await getDisplayedElement("#title");
     const ctaButton = await getDisplayedElement("#continue");
@@ -180,7 +186,7 @@ export default () => {
     // to show it again next
     await waitForIpmCooldown();
 
-    await driver.navigate().refresh();
+    await navigateTo(testPageUrl);
     await waitForNeverDisplayed("#__abp-overlay-onpage-dialog iframe", {
       checkDisplayed: false
     });
@@ -200,14 +206,6 @@ export default () => {
   });
 
   it("triggers an OPD campaign up to its experiment-configured impression cap and dismissed afterwards", async function () {
-    // TODO(OM-1641): unskip once fixed - flaky in CI (a duplicate "loaded"
-    // event for the same tab can get the campaign's dialog permanently
-    // dropped from `unassignedDialogs` via `showDialogFromList`'s dismissal
-    // path).
-    if (process.env.CI === "true") {
-      this.skip();
-    }
-
     const ipmId = "test_adblockplus_navigation";
     const maxImpressions = 3;
 
@@ -236,28 +234,26 @@ export default () => {
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.navigation);
 
+    // Every qualifying page load spends an impression, whether it's a reload
+    // of the same page or a navigation to a different one, so alternate
+    // between two qualifying domains in the same tab. This is what exercises
+    // the stale dialog assignment cleanup in handlePageLoadedEvent, which only
+    // a same-tab navigation - not a fresh tab - can trigger.
+    const qualifyingUrls = [localTestPageUrl, testPageUrl];
+
     try {
-      // Every qualifying page load spends an impression, so a fresh tab per
-      // impression is enough to exercise the cap.
-      //
-      // TODO(OM-1641): a same-tab navigation to a different qualifying domain
-      // is what actually exercises the stale dialog assignment cleanup in
-      // handlePageLoadedEvent, and is what originally found the
-      // TabSessionStorage race OM-1641 fixes. Reusing the same tab (via
-      // reload or navigation) re-triggers that race on every impression,
-      // since assignedDialogs' read in handlePageLoadedEvent isn't queued
-      // against the tab session's own writes - flaky until that fix lands.
-      // A fresh tab has no prior assignment to race against, so this uses one
-      // per impression in the meantime. Switch back to same-tab navigation
-      // once OM-1641 merges.
-      for (let shown = 0; shown < maxImpressions; shown += 1) {
-        await openNewTab("https://www.example.com");
+      await openNewTab(qualifyingUrls[0]);
+      await switchToOPDiframe();
+      await driver.switchTo().defaultContent();
+
+      for (let shown = 1; shown < maxImpressions; shown += 1) {
+        await navigateTo(qualifyingUrls[shown % qualifyingUrls.length]);
         await switchToOPDiframe();
         await driver.switchTo().defaultContent();
       }
 
-      // Cap reached: a fresh qualifying tab shows nothing.
-      await openNewTab("https://www.example.com");
+      // Cap reached: the next qualifying page load shows nothing.
+      await navigateTo(qualifyingUrls[maxImpressions % qualifyingUrls.length]);
       await waitForNeverDisplayed("#__abp-overlay-onpage-dialog iframe", {
         checkDisplayed: false
       });
@@ -276,12 +272,12 @@ export default () => {
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.cookie);
 
-    await openNewTab("https://www.example.org");
+    await openNewTab(localTestPageUrl);
     await waitForNeverDisplayed("#__abp-overlay-onpage-dialog iframe", {
       checkDisplayed: false
     });
 
-    await openNewTab("https://www.welt.de");
+    await openNewTab(cookieBannerTestPageUrl);
     await switchToOPDiframe();
     const opdTitle = await getDisplayedElement("#title");
     const ctaButton = await getDisplayedElement("#continue");
@@ -305,7 +301,7 @@ export default () => {
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.navigation);
-    await openNewTab("https://www.example.com");
+    await openNewTab(localTestPageUrl);
 
     await waitForNeverDisplayed("#__abp-overlay-onpage-dialog iframe", {
       checkDisplayed: false
@@ -323,7 +319,7 @@ export default () => {
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.translations);
-    await openNewTab("https://www.example.com");
+    await openNewTab(localTestPageUrl);
 
     await switchToOPDiframe();
     const opdTitle = await getDisplayedElement("#title");
@@ -352,7 +348,7 @@ export default () => {
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.translations);
-    await openNewTab("https://www.example.com");
+    await openNewTab(localTestPageUrl);
 
     await switchToOPDiframe();
     const opdTitle = await getDisplayedElement("#title");
@@ -381,7 +377,7 @@ export default () => {
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.translations);
-    await openNewTab("https://www.example.com");
+    await openNewTab(localTestPageUrl);
 
     await switchToOPDiframe();
     const opdTitle = await getDisplayedElement("#title");

@@ -10,7 +10,8 @@
       "WebFetch(domain:gitlab.com)",
       "WebFetch(domain:eyeo.atlassian.net)",
       "mcp__claude_ai_Atlassian__getConfluencePage",
-      "mcp__claude_ai_Atlassian__search"
+      "mcp__claude_ai_Atlassian__search",
+      "Bash(npm test *)"
     ],
     "ask": [
       "Bash(npm install:*)",
