@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed default filter lists not being restored on Firefox after they had all
+  been removed, if a filter had previously been added by an experiment
 - Fixed a race condition that could cause an on-page dialog to silently fail to
   reappear after same-tab navigation
 

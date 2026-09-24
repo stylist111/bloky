@@ -568,9 +568,9 @@ describe("subscriptionInit", () => {
         .fn()
         .mockReturnValue({ manifest_version: 2 });
 
-      // MV2 has no zero-subscriptions recovery step, and doesn't hit the
-      // DNR rule count limit that step exists for - a failure here should
-      // still abort initialization loudly, as it did before this fix.
+      // The proactive call under firstRun/reinitialized doesn't hit the DNR
+      // rule count limit the retry-and-report recovery step exists for -
+      // a failure here should abort initialization loudly.
       await expect(
         runStart(makeEweFirstRun(false, false), (eweMock) => {
           eweMock.subscriptions.addDefaults.mockRejectedValueOnce(
@@ -578,6 +578,50 @@ describe("subscriptionInit", () => {
           );
         })
       ).rejects.toThrow("some transient failure");
+    });
+
+    it("runs the recovery step and adds the defaults back when subscriptions are confirmed missing even though firstRun/reinitialized are both false", async () => {
+      (browser as any).runtime.getManifest = jest
+        .fn()
+        .mockReturnValue({ manifest_version: 2 });
+
+      // Not a first run, and nothing flagged this as reinitialized (e.g.
+      // firstRun was fooled by a subscription holding only non-genuine
+      // filters) - but getSubscriptions() confirms there's actually
+      // nothing there.
+      const { onNotifyUser, ewe } = await runStart(
+        makeEweFirstRun(true, true),
+        (eweMock) => {
+          eweMock.subscriptions.getSubscriptions
+            .mockResolvedValueOnce([])
+            .mockResolvedValue([{ id: "1", enabled: true }]);
+        }
+      );
+
+      expect(ewe.subscriptions.addDefaults).toHaveBeenCalledTimes(1);
+      expect(ewe.subscriptions.addDefaults).toHaveBeenCalledWith(null, true);
+      expect(onNotifyUser).toHaveBeenCalledWith(
+        expect.objectContaining({ reinitialized: true })
+      );
+    });
+
+    it("does not call the MV3-only declarativeNetRequest APIs during recovery", async () => {
+      (browser as any).runtime.getManifest = jest
+        .fn()
+        .mockReturnValue({ manifest_version: 2 });
+
+      await runStart(makeEweFirstRun(true, true), (eweMock) => {
+        eweMock.subscriptions.getSubscriptions
+          .mockResolvedValueOnce([])
+          .mockResolvedValue([{ id: "1", enabled: true }]);
+      });
+
+      expect(
+        (browser as any).declarativeNetRequest.getEnabledRulesets
+      ).not.toHaveBeenCalled();
+      expect(
+        (browser as any).declarativeNetRequest.getDynamicRules
+      ).not.toHaveBeenCalled();
     });
   });
 });

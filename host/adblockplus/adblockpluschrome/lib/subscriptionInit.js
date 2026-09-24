@@ -146,6 +146,143 @@ async function addAdditionalSubscriptions() {
   }
 }
 
+/**
+ * Attempts to fix the issue where the user has no subscriptions we expect
+ * them to have at least the default subscriptions. This runs regardless of
+ * firstRun/reinitialized, since those can be permanently stuck false by a
+ * subscription that only holds non-genuine filters (e.g. ones injected by
+ * the filter-experiments system), which getSubscriptions() below doesn't
+ * return but still counts towards them.
+ * See: https://eyeo.atlassian.net/browse/EXT-375
+ *
+ * @param {boolean} isMV3
+ * @param {?string} addDefaultsErrorMsg - The error message from the
+ *   proactive addDefaults() call above, or null if it wasn't attempted or
+ *   succeeded.
+ */
+async function recoverMissingSubscriptions(isMV3, addDefaultsErrorMsg) {
+  // If addDefaults() already failed above, that's confirmed evidence
+  // something is wrong, so skip the proactive check and go straight to
+  // the recovery attempt below. If the proactive check itself merely
+  // fails to run, that's not evidence of anything - unlike a confirmed
+  // empty read, it shouldn't trigger recovery and risk overwriting a
+  // subscription set the user may have deliberately chosen (e.g. only a
+  // non-default subscription enabled).
+  let subscriptionsMissing = addDefaultsErrorMsg !== null;
+  let subscriptionsConfirmedMissing = false;
+  let proactiveCheckErrorMsg = null;
+  if (addDefaultsErrorMsg === null) {
+    try {
+      subscriptionsMissing =
+        (await ewe.subscriptions.getSubscriptions()).length === 0;
+      // True only if we know subscriptions are missing, not merely that
+      // we failed to check - see the reinitialized check below.
+      subscriptionsConfirmedMissing = subscriptionsMissing;
+    } catch (ex) {
+      proactiveCheckErrorMsg = getErrorMessage(ex);
+      logger.error(
+        `Failed to check current subscriptions: ${proactiveCheckErrorMsg}`
+      );
+    }
+  }
+  if (!subscriptionsMissing) return;
+
+  let recoveryErrorMsg = null;
+  try {
+    // Enable default subscriptions: EasyList, Anti-CV and Acceptable Ads
+    await ewe.subscriptions.addDefaults(null, true);
+  } catch (e) {
+    recoveryErrorMsg = getErrorMessage(e);
+  }
+
+  // Use allSettled rather than all, so that a failure reading back one
+  // piece of post-recovery state (e.g. dynamic rules) doesn't discard
+  // the others (e.g. an accurate subscription count) - and so it
+  // doesn't abort the rest of initialization either. declarativeNetRequest
+  // is MV3-only, so those two reads are skipped on MV2.
+  const postRecoveryResults = await Promise.allSettled([
+    ewe.subscriptions.getSubscriptions(),
+    isMV3
+      ? browser.declarativeNetRequest.getEnabledRulesets()
+      : Promise.resolve([]),
+    ewe.filters.getUserFilters(),
+    isMV3
+      ? browser.declarativeNetRequest.getDynamicRules()
+      : Promise.resolve([])
+  ]);
+  const [subscriptionsResult] = postRecoveryResults;
+  const [newSubscriptions, enabledRulesets, userFilters, dynamicRules] =
+    postRecoveryResults.map((result) => settledValue(result, []));
+  const postRecoveryErrorMsgs = postRecoveryResults
+    .filter((result) => result.status === "rejected")
+    .map((result) => getErrorMessage(result.reason));
+  const enabledSubscriptions = newSubscriptions.filter(
+    (subscription) => subscription.enabled
+  );
+  const lastErrorMsg = (browser.runtime.lastError || {}).message || null;
+
+  // Same distinction as subscriptionsConfirmedMissing, applied to the
+  // post-recovery read.
+  const subscriptionsConfirmedStillMissing =
+    subscriptionsResult.status === "fulfilled" && newSubscriptions.length === 0;
+
+  // Only flag this as a reinitialization when there's actual evidence
+  // something is wrong: subscriptions were confirmed missing outside of
+  // a first run (nothing to lose there), the post-recovery read still
+  // confirms zero subscriptions, or the recovery attempt itself failed.
+  // A failure merely checking - before or after recovery - isn't
+  // evidence on its own; a failure reading the other, purely diagnostic,
+  // post-recovery state doesn't affect this either, it's still reported
+  // below but not treated as proof anything broke.
+  if (
+    (subscriptionsConfirmedMissing && !firstRun) ||
+    subscriptionsConfirmedStillMissing ||
+    recoveryErrorMsg !== null
+  )
+    reinitialized = true;
+
+  // Report every failure that occurred, rather than letting a later
+  // one hide an earlier, potentially more useful, one.
+  const errorMsgs = [
+    addDefaultsErrorMsg,
+    proactiveCheckErrorMsg,
+    recoveryErrorMsg,
+    ...postRecoveryErrorMsgs
+  ].filter((msg) => msg !== null && msg !== "");
+  const errorMsg = errorMsgs.length > 0 ? errorMsgs.join("; ") : null;
+  const params = {
+    subs: newSubscriptions.length,
+    enabledSubs: enabledSubscriptions.length,
+    enabledRulesets: enabledRulesets.length,
+    totalUserFilters: userFilters.length,
+    dynamicRules: dynamicRules.length,
+    dataCorrupted: isDataCorrupted(),
+    firstRun,
+    reinitialized,
+    errorMsg,
+    lastErrorMsg
+  };
+
+  // send a message to the log server with debug metadata
+  console.warn(
+    "Something is wrong with subscriptions, reset to defaults",
+    params
+  );
+  let initializationLogsEnabled = false;
+  try {
+    initializationLogsEnabled = await ewe.experiments.getFlag(
+      "initialization_logs"
+    );
+  } catch (ex) {
+    logger.error(
+      `Failed to check initialization_logs flag: ${getErrorMessage(ex)}`
+    );
+  }
+
+  if (initializationLogsEnabled)
+    serverLogger.debug("subscriptions_reset", params);
+}
+
 async function addSubscriptionsAndNotifyUser() {
   const isMV3 = browser.runtime.getManifest().manifest_version === 3;
   let addDefaultsErrorMsg = null;
@@ -165,128 +302,7 @@ async function addSubscriptionsAndNotifyUser() {
     }
   }
 
-  // Attempt to fix the issue where the user has no subscriptions we expect
-  // them to have at least the default subscriptions.
-  // See: https://eyeo.atlassian.net/browse/EXT-375
-  if (isMV3) {
-    // If addDefaults() already failed above, that's confirmed evidence
-    // something is wrong, so skip the proactive check and go straight to
-    // the recovery attempt below. If the proactive check itself merely
-    // fails to run, that's not evidence of anything - unlike a confirmed
-    // empty read, it shouldn't trigger recovery and risk overwriting a
-    // subscription set the user may have deliberately chosen (e.g. only a
-    // non-default subscription enabled).
-    let subscriptionsMissing = addDefaultsErrorMsg !== null;
-    let subscriptionsConfirmedMissing = false;
-    let proactiveCheckErrorMsg = null;
-    if (addDefaultsErrorMsg === null) {
-      try {
-        subscriptionsMissing =
-          (await ewe.subscriptions.getSubscriptions()).length === 0;
-        // True only if we know subscriptions are missing, not merely that
-        // we failed to check - see the reinitialized check below.
-        subscriptionsConfirmedMissing = subscriptionsMissing;
-      } catch (ex) {
-        proactiveCheckErrorMsg = getErrorMessage(ex);
-        logger.error(
-          `Failed to check current subscriptions: ${proactiveCheckErrorMsg}`
-        );
-      }
-    }
-    if (subscriptionsMissing) {
-      let recoveryErrorMsg = null;
-
-      try {
-        // Enable default subscriptions: EasyList, Anti-CV and Acceptable Ads
-        await ewe.subscriptions.addDefaults(null, true);
-      } catch (e) {
-        recoveryErrorMsg = getErrorMessage(e);
-      }
-
-      // Use allSettled rather than all, so that a failure reading back one
-      // piece of post-recovery state (e.g. dynamic rules) doesn't discard
-      // the others (e.g. an accurate subscription count) - and so it
-      // doesn't abort the rest of initialization either.
-      const postRecoveryResults = await Promise.allSettled([
-        ewe.subscriptions.getSubscriptions(),
-        browser.declarativeNetRequest.getEnabledRulesets(),
-        ewe.filters.getUserFilters(),
-        browser.declarativeNetRequest.getDynamicRules()
-      ]);
-      const [subscriptionsResult] = postRecoveryResults;
-      const [newSubscriptions, enabledRulesets, userFilters, dynamicRules] =
-        postRecoveryResults.map((result) => settledValue(result, []));
-      const postRecoveryErrorMsgs = postRecoveryResults
-        .filter((result) => result.status === "rejected")
-        .map((result) => getErrorMessage(result.reason));
-      const enabledSubscriptions = newSubscriptions.filter(
-        (subscription) => subscription.enabled
-      );
-      const lastErrorMsg = (browser.runtime.lastError || {}).message || null;
-
-      // Same distinction as subscriptionsConfirmedMissing, applied to the
-      // post-recovery read.
-      const subscriptionsConfirmedStillMissing =
-        subscriptionsResult.status === "fulfilled" &&
-        newSubscriptions.length === 0;
-
-      // Only flag this as a reinitialization when there's actual evidence
-      // something is wrong: subscriptions were confirmed missing outside of
-      // a first run (nothing to lose there), the post-recovery read still
-      // confirms zero subscriptions, or the recovery attempt itself failed.
-      // A failure merely checking - before or after recovery - isn't
-      // evidence on its own; a failure reading the other, purely diagnostic,
-      // post-recovery state doesn't affect this either, it's still reported
-      // below but not treated as proof anything broke.
-      if (
-        (subscriptionsConfirmedMissing && !firstRun) ||
-        subscriptionsConfirmedStillMissing ||
-        recoveryErrorMsg !== null
-      )
-        reinitialized = true;
-
-      // Report every failure that occurred, rather than letting a later
-      // one hide an earlier, potentially more useful, one.
-      const errorMsgs = [
-        addDefaultsErrorMsg,
-        proactiveCheckErrorMsg,
-        recoveryErrorMsg,
-        ...postRecoveryErrorMsgs
-      ].filter((msg) => msg !== null && msg !== "");
-      const errorMsg = errorMsgs.length > 0 ? errorMsgs.join("; ") : null;
-      const params = {
-        subs: newSubscriptions.length,
-        enabledSubs: enabledSubscriptions.length,
-        enabledRulesets: enabledRulesets.length,
-        totalUserFilters: userFilters.length,
-        dynamicRules: dynamicRules.length,
-        dataCorrupted: isDataCorrupted(),
-        firstRun,
-        reinitialized,
-        errorMsg,
-        lastErrorMsg
-      };
-
-      // send a message to the log server with debug metadata
-      console.warn(
-        "Something is wrong with subscriptions, reset to defaults",
-        params
-      );
-      let initializationLogsEnabled = false;
-      try {
-        initializationLogsEnabled = await ewe.experiments.getFlag(
-          "initialization_logs"
-        );
-      } catch (ex) {
-        logger.error(
-          `Failed to check initialization_logs flag: ${getErrorMessage(ex)}`
-        );
-      }
-
-      if (initializationLogsEnabled)
-        serverLogger.debug("subscriptions_reset", params);
-    }
-  }
+  await recoverMissingSubscriptions(isMV3, addDefaultsErrorMsg);
 
   await addAdditionalSubscriptions();
 
