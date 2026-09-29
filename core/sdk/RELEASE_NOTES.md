@@ -1,5 +1,13 @@
 # Unreleased
 
+- Added support for snippet exception filters (`domain#@$#command`). A snippet
+  exception disables any command of a snippet filter (`#$#`) that parses to
+  the same command and arguments, on the domains the exception is active on.
+  Snippet filters whose commands are all disabled are no longer returned by
+  `snippets.getFilters()`; filters with only some commands disabled are
+  returned with the remaining commands as their script. Unlike snippet
+  filters, snippet exceptions require neither a privileged subscription nor a
+  domain restriction.
 - Remote configuration validation errors are now reported to Sentry instead
   of being logged via the server logger.
 - Added the `persistent_opd` telemetry module for the on-page dialog impression

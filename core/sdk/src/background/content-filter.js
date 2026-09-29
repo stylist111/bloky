@@ -19,7 +19,7 @@ import browser from "./browser.js";
 
 import {createStyleSheet} from "#adblockpluscore/lib/elemHide.js";
 import {contentTypes} from "#adblockpluscore/lib/contentTypes.js";
-import {parseScript} from "#adblockpluscore/lib/snippets.js";
+import {parseScript} from "#adblockpluscore/lib/scriptParsing.js";
 
 import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";

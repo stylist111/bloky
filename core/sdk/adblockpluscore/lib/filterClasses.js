@@ -31,7 +31,7 @@ const {Pattern} = require("./patterns");
 const {parseDomains, domainSuffixes, isValidDomainWildcard,
        hasWildcard, matchesWildcards} = require("./url");
 const {verifyCSSProperties} = require("./filters/inlineCssValidation");
-const {parseScript} = require("./snippets");
+const {parseScript} = require("./scriptParsing");
 
 const {resources} = require("../data/resources.js");
 
@@ -68,8 +68,8 @@ let isActiveFilter =
  * Checks whether the given filter is an active filter.
  *
  * Filters of type `blocking`, `allowing`, `elemhide`, `elemhideexception`,
- * `elemhideemulation`, and `snippet` are considered active; filters of type
- * `invalid` and `comment` are not considered active.
+ * `elemhideemulation`, `snippet`, and `snippetexception` are considered
+ * active; filters of type `invalid` and `comment` are not considered active.
  *
  * @param {?Filter} filter The filter.
  *
@@ -99,7 +99,8 @@ exports.Filter = class Filter {
    * Filter type as a string, e.g. "blocking".
    *
    * Can be `blocking`, `allowing`, `elemhide`, `elemhideexception`,
-   * `elemhideemulation`, `snippet`, `comment` or `invalid`.
+   * `elemhideemulation`, `snippet`, `snippetexception`, `comment` or
+   * `invalid`.
    *
    * @type {string}
    */
@@ -929,6 +930,7 @@ exports.ContentFilter = class ContentFilter extends ActiveFilter {
    *     * "@" for an element hiding exception filter
    *     * "?" for an element hiding emulation filter
    *     * "$" for a snippet filter
+   *     * "@$" for a snippet exception filter
    * @param {string} body
    *   body part of the text representation, either a CSS selector or a snippet
    *   script
@@ -936,6 +938,7 @@ exports.ContentFilter = class ContentFilter extends ActiveFilter {
    *          module:filterClasses.ElemHideException|
    *          module:filterClasses.ElemHideEmulationFilter|
    *          module:filterClasses.SnippetFilter|
+   *          module:filterClasses.SnippetException|
    *          module:filterClasses.InvalidFilter}
    */
   static fromText(text, domains, type, body) {
@@ -963,6 +966,13 @@ exports.ContentFilter = class ContentFilter extends ActiveFilter {
         return new InvalidFilter(text, "filter_snippet_nodomain");
       }
       return snippetFilter;
+    }
+
+    if (type == "@$") {
+      // Unlike snippet filters, snippet exceptions only disable commands of
+      // existing snippet filters, so they're safe without a domain
+      // restriction.
+      return new SnippetException(text, domains, body);
     }
 
     let selector = body;
@@ -1167,6 +1177,25 @@ exports.SnippetFilter = class SnippetFilter extends ContentFilter {
 
   /**
    * Script that should be executed
+   * @type {string}
+   */
+  get script() {
+    return this.body;
+  }
+};
+
+let SnippetException =
+/**
+ * Class for snippet exceptions
+ * @extends module:filterClasses.ContentFilter
+ */
+exports.SnippetException = class SnippetException extends ContentFilter {
+  get type() {
+    return "snippetexception";
+  }
+
+  /**
+   * Script whose execution should be prevented
    * @type {string}
    */
   get script() {

@@ -24,7 +24,8 @@ const {contentTypes, RESOURCE_TYPES} = require(LIB_FOLDER + "/contentTypes");
 const {Filter, InvalidFilter, CommentFilter, ActiveFilter, URLFilter,
        BlockingFilter, AllowingFilter, ContentFilter, ElemHideBase,
        ElemHideFilter, ElemHideException, ElemHideEmulationFilter,
-       SnippetFilter, isActiveFilter} = require(LIB_FOLDER + "/filterClasses");
+       SnippetFilter, SnippetException,
+       isActiveFilter} = require(LIB_FOLDER + "/filterClasses");
 const {FilterState} = require(LIB_FOLDER + "/filterState");
 
 describe("Filter classes", function() {
@@ -124,7 +125,8 @@ describe("Filter classes", function() {
           }
         }
       }
-      else if (filter instanceof SnippetFilter) {
+      else if (filter instanceof SnippetFilter ||
+               filter instanceof SnippetException) {
         result.push("scriptDomains=" +
                     [...filter.domains || []]
                     .filter(([domain, isIncluded]) => isIncluded)
@@ -157,7 +159,7 @@ describe("Filter classes", function() {
 
     if (type == "allowing" || type == "blocking" || type == "elemhide" ||
         type == "elemhideexception" || type == "elemhideemulation" ||
-        type == "snippet") {
+        type == "snippet" || type == "snippetexception") {
       addProperty("disabled", "false");
       addProperty("lastHit", "0");
       addProperty("hitCount", "0");
@@ -187,7 +189,7 @@ describe("Filter classes", function() {
     if (type == "elemhideemulation") {
       addProperty("remove", "false");
     }
-    if (type == "snippet") {
+    if (type == "snippet" || type == "snippetexception") {
       addProperty("scriptDomains", "");
       addProperty("domains", "");
     }
@@ -673,6 +675,23 @@ describe("Filter classes", function() {
     compareFilter("~foo.com,bar.com#$#abc", ["type=snippet", "scriptDomains=bar.com", "script=abc", "domains=bar.com|~foo.com"]);
   });
 
+  it("Snippet exception filters", function() {
+    compareFilter("foo.com#@$#abc", ["type=snippetexception", "scriptDomains=foo.com", "script=abc", "domains=foo.com"]);
+    compareFilter("foo.com,~bar.com#@$#abc", ["type=snippetexception", "scriptDomains=foo.com", "script=abc", "domains=foo.com|~bar.com"]);
+    compareFilter("foo.com,~bar#@$#abc", ["type=snippetexception", "scriptDomains=foo.com", "script=abc", "domains=foo.com|~bar"]);
+    compareFilter("~foo.com,bar.com#@$#abc", ["type=snippetexception", "scriptDomains=bar.com", "script=abc", "domains=bar.com|~foo.com"]);
+    compareFilter("foo.*#@$#abc", ["type=snippetexception", "scriptDomains=foo.*", "script=abc", "domains=foo.*"]);
+
+    // Unlike snippet filters, snippet exceptions don't require a domain
+    // restriction
+    compareFilter("#@$#abc", ["type=snippetexception", "script=abc"]);
+    compareFilter("~foo.com#@$#abc", ["type=snippetexception", "script=abc", "domains=~foo.com"]);
+
+    let filter = Filter.fromText("foo.com#@$#abc");
+    assert.ok(filter instanceof SnippetException);
+    assert.equal(filter.requiresPrivilegedSubscription, false);
+  });
+
   it("Wildcard log-if snippet filters (no domain)", function() {
     // log-if-selector-exists: accepted without domain restriction
     compareFilter("#$#log-if-selector-exists .ad", ["type=snippet", "script=log-if-selector-exists .ad"]);
@@ -816,6 +835,14 @@ describe("Filter classes", function() {
     // Wildcard: "*" is allowed
     assert.equal(Filter.normalize("   domain.*#$#  sni pp  et   "),
                  "domain.*#$#sni pp  et");
+
+    // Snippet exception filters
+    assert.equal(Filter.normalize("   domain.c  om#@$#  sni pp  et   "),
+                 "domain.com#@$#sni pp  et");
+
+    // Wildcard: "*" is allowed
+    assert.equal(Filter.normalize("   domain.*#@$#  sni pp  et   "),
+                 "domain.*#@$#sni pp  et");
 
     // All lines that are purely whitespace are the same
     assert.equal(Filter.normalize(""),

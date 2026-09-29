@@ -437,6 +437,27 @@ describe("Running the filterEngine", function() {
       );
     });
 
+    it("should add a snippet exception", function() {
+      let exception = Filter.fromText("example.com#@$#snippet-1");
+
+      filterEngine.add(Filter.fromText("example.com#$#snippet-1"));
+      checkFilters({type: "snippet", expected: ["snippet-1"]});
+
+      filterEngine.add(exception);
+      assert.ok(filterEngine.has(exception));
+      assert.ok(filterEngine.snippetExceptions.has(exception));
+      checkFilters({type: "snippet", expected: []});
+
+      filterEngine.remove(exception);
+      assert.ok(!filterEngine.has(exception));
+      checkFilters({type: "snippet", expected: ["snippet-1"]});
+
+      filterEngine.add(exception);
+      filterEngine.clear();
+      assert.ok(!filterEngine.has(exception));
+      checkFilters({type: "snippet", expected: []});
+    });
+
     it("should do nothing for an existing filter", function() {
       checkFilters({type: "blocking", resource: "/foo.js", expected: null});
 

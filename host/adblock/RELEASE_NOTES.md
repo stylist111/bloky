@@ -1,5 +1,13 @@
 # Unreleased
 
+- Added support for snippet exception filters (`domain#@$#command`). A snippet
+  exception disables any command of a snippet filter (`#$#`) that parses to
+  the same command and arguments, on the domains the exception is active on.
+  Snippet filters whose commands are all disabled are no longer returned by
+  `snippets.getFilters()`; filters with only some commands disabled are
+  returned with the remaining commands as their script. Unlike snippet
+  filters, snippet exceptions require neither a privileged subscription nor a
+  domain restriction.
 - Fixed default filter lists not being restored on Firefox after they had all
   been removed, if a filter had previously been added by an experiment
 - Fixed a race condition that could cause an on-page dialog to silently fail to

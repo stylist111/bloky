@@ -28,6 +28,7 @@ const {ElemHideEmulation} = require("./elemHideEmulation");
 const {ElemHideExceptions} = require("./elemHideExceptions");
 const {setRecommendations} = require("./recommendations");
 const {Snippets} = require("./snippets");
+const {SnippetExceptions} = require("./snippetExceptions");
 const {Features} = require("./features");
 
 /**
@@ -71,10 +72,15 @@ class FilterEngine {
      * @type {module:elemHideEmulation.ElemHideEmulation}
      */
     this.elemHideEmulation = new ElemHideEmulation(this.elemHideExceptions);
+    /** The `{@link module:snippetExceptions.SnippetExceptions}` for
+     *    the engine.
+     * @type {module:snippetExceptions.SnippetExceptions}
+     */
+    this.snippetExceptions = new SnippetExceptions();
     /** The `{@link module:snippets.Snippets}` for the engine.
      * @type {module:snippets.Snippets}
      */
-    this.snippets = new Snippets();
+    this.snippets = new Snippets(this.snippetExceptions);
     /** The `{@link module:matcher.CombinedMatcher}` to use with the engine.
      * @type {module:matcher.CombinedMatcher}
      */
@@ -159,8 +165,8 @@ class FilterEngine {
    *
    * @param {string} type The type of a filter. This must be one of
    *   `"blocking"`, `"allowing"`, `"elemhide"`, `"elemhideemulation"`,
-   *   `"elemhideexception"`, and `"snippet"`; otherwise the function returns
-   *   `null`.
+   *   `"elemhideexception"`, `"snippet"`, and `"snippetexception"`; otherwise
+   *   the function returns `null`.
    *
    * @returns {?object} The appropriate module for the given filter type.
    */
@@ -177,6 +183,8 @@ class FilterEngine {
         return this.elemHideExceptions;
       case "snippet":
         return this.snippets;
+      case "snippetexception":
+        return this.snippetExceptions;
     }
 
     return null;
@@ -230,6 +238,7 @@ class FilterEngine {
     this.elemHideEmulation.clear();
     this.elemHideExceptions.clear();
     this.snippets.clear();
+    this.snippetExceptions.clear();
   }
 
   /**

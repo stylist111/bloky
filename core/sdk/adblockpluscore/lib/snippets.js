@@ -23,18 +23,25 @@
  * @file Snippets implementation.
  */
 
-let singleCharacterEscapes = new Map([
-  ["n", "\n"], ["r", "\r"], ["t", "\t"]
-]);
+const {parseScript, stringifyScript} = require("./scriptParsing");
+const {SnippetExceptions} = require("./snippetExceptions");
 
 /**
  * `{@link module:snippets.snippets snippets}` implementation.
  */
 class Snippets {
   /**
-   * @hideconstructor
+   * @param {SnippetExceptions} snippetExceptions The associated snippet
+   *   exceptions.
    */
-  constructor() {
+  constructor(snippetExceptions) {
+    if (!(snippetExceptions instanceof SnippetExceptions)) {
+      throw new Error("snippetExceptions must be a SnippetExceptions");
+    }
+
+    /** @type {SnippetExceptions} */
+    this.snippetExceptions = snippetExceptions;
+
     /**
      * All known snippet filters.
      * @type {Set.<module:filterClasses.SnippetFilter>}
@@ -82,17 +89,46 @@ class Snippets {
   }
 
   /**
-   * Returns a list of all snippet filters active on the given domain.
+   * Returns a list of all snippet filters active on the given domain,
+   * with any commands disabled by a matching snippet exception removed
+   * from their scripts.
    * @param {string} domain The domain.
    * @returns {Array.<module:filterClasses.SnippetFilter>} A list of snippet
-   *   filters.
+   *   filters. Filters whose script is only partially disabled are
+   *   represented by objects inheriting from the original filter, with the
+   *   remaining commands as their script.
    */
   getFilters(domain) {
     let result = [];
+    let hasExceptions = this.snippetExceptions.size > 0;
 
     for (let filter of this._filters) {
-      if (filter.isActiveOnDomain(domain)) {
+      if (!filter.isActiveOnDomain(domain)) {
+        continue;
+      }
+
+      if (!hasExceptions) {
         result.push(filter);
+        continue;
+      }
+
+      let commands = parseScript(filter.script);
+      let remaining = commands.filter(
+        command => !this.snippetExceptions.getException(command, domain)
+      );
+
+      if (remaining.length == commands.length) {
+        result.push(filter);
+      }
+      else if (remaining.length > 0) {
+        // Constructing a SnippetFilter here isn't possible without a
+        // circular dependency on filterClasses, so the partially disabled
+        // filter is represented by an object inheriting from the original
+        // filter. This also keeps the original filter's text, e.g. for hit
+        // logging.
+        let partial = Object.create(filter);
+        partial.body = stringifyScript(remaining);
+        result.push(partial);
       }
     }
 
@@ -118,81 +154,6 @@ class Snippets {
  * Container for snippet filters.
  */
 exports.Snippets = Snippets;
-
-let parseScript =
-/**
- * Parses a script and returns a list of all its commands and their arguments.
- * @param {string} script The script.
- * @returns {Array.<string[]>} A list of commands and their arguments.
- * @package
- */
-exports.parseScript = function parseScript(script) {
-  let tree = [];
-
-  let escape = false;
-  let withinQuotes = false;
-
-  let unicodeEscape = null;
-
-  let quotesClosed = false;
-
-  let call = [];
-  let argument = "";
-
-  for (let character of script.trim() + ";") {
-    let afterQuotesClosed = quotesClosed;
-    quotesClosed = false;
-
-    if (unicodeEscape != null) {
-      unicodeEscape += character;
-
-      if (unicodeEscape.length == 4) {
-        let codePoint = parseInt(unicodeEscape, 16);
-        if (!isNaN(codePoint)) {
-          argument += String.fromCodePoint(codePoint);
-        }
-
-        unicodeEscape = null;
-      }
-    }
-    else if (escape) {
-      escape = false;
-
-      if (character == "u") {
-        unicodeEscape = "";
-      }
-      else {
-        argument += singleCharacterEscapes.get(character) || character;
-      }
-    }
-    else if (character == "\\") {
-      escape = true;
-    }
-    else if (character == "'") {
-      withinQuotes = !withinQuotes;
-
-      if (!withinQuotes) {
-        quotesClosed = true;
-      }
-    }
-    else if (withinQuotes || character != ";" && !/\s/.test(character)) {
-      argument += character;
-    }
-    else {
-      if (argument || afterQuotesClosed) {
-        call.push(argument);
-        argument = "";
-      }
-
-      if (character == ";" && call.length > 0) {
-        tree.push(call);
-        call = [];
-      }
-    }
-  }
-
-  return tree;
-};
 
 /**
  * Compiles a script against a given list of libraries, passed as JSON

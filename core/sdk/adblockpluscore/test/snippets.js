@@ -23,18 +23,29 @@ const assert = require("assert");
 const {LIB_FOLDER} = require("./_common");
 
 const {Filter, SnippetFilter} = require(LIB_FOLDER + "/filterClasses");
-const {Snippets, parseScript, compileScript, prepareInlineScriptForInjection} =
+const {Snippets, compileScript, prepareInlineScriptForInjection} =
       require(LIB_FOLDER + "/snippets");
+const {parseScript, stringifyScript} =
+      require(LIB_FOLDER + "/scriptParsing");
+const {SnippetExceptions} = require(LIB_FOLDER + "/snippetExceptions");
 
 describe("Snippets", function() {
   let snippets = null;
+  let snippetExceptions = null;
 
   beforeEach(function() {
-    snippets = new Snippets();
+    snippetExceptions = new SnippetExceptions();
+    snippets = new Snippets(snippetExceptions);
   });
 
   afterEach(function() {
     snippets = null;
+    snippetExceptions = null;
+  });
+
+  it("Constructor requires snippet exceptions", function() {
+    assert.throws(() => new Snippets(),
+                  /snippetExceptions must be a SnippetExceptions/);
   });
 
   it("Domain restrictions", function() {
@@ -111,6 +122,275 @@ describe("Snippets", function() {
       "www.example.com",
       []
     );
+  });
+
+  it("Snippet exceptions", function() {
+    function compareRules(description, domain, expectedMatches) {
+      let result = snippets.getFilters(domain).map(filter => filter.script);
+      assert.deepEqual(result.sort(), expectedMatches.sort(), description);
+    }
+
+    snippets.add(Filter.fromText("example.com#$#foo 1"));
+    snippets.add(Filter.fromText("example.com#$#bar 2"));
+
+    let exception = Filter.fromText("example.com#@$#foo 1");
+    snippetExceptions.add(exception);
+
+    compareRules(
+      "Disable the snippet filter whose script matches exactly",
+      "example.com",
+      ["bar 2"]
+    );
+    compareRules(
+      "Apply the exception on subdomains",
+      "www.example.com",
+      ["bar 2"]
+    );
+
+    snippetExceptions.add(Filter.fromText("example.com#@$#foo"));
+    snippetExceptions.add(Filter.fromText("example.com#@$#foo 1 2"));
+    compareRules(
+      "Ignore exceptions whose script doesn't match exactly",
+      "example.com",
+      ["bar 2"]
+    );
+
+    snippetExceptions.add(Filter.fromText("other.example#@$#bar 2"));
+    compareRules(
+      "Ignore exceptions that aren't active on the domain",
+      "example.com",
+      ["bar 2"]
+    );
+
+    snippetExceptions.remove(exception);
+    compareRules(
+      "Re-enable the snippet filter after removing the exception",
+      "example.com",
+      ["foo 1", "bar 2"]
+    );
+
+    snippets.add(Filter.fromText("~www.example.com,example.com#$#baz 3"));
+    snippetExceptions.add(Filter.fromText("www.example.com#@$#baz 3"));
+    compareRules(
+      "Ignore exceptions for filters that aren't active on the domain",
+      "www.example.com",
+      ["foo 1", "bar 2"]
+    );
+    compareRules(
+      "Keep filters whose exception is restricted to another subdomain",
+      "example.com",
+      ["foo 1", "bar 2", "baz 3"]
+    );
+
+    snippetExceptions.clear();
+    compareRules(
+      "Re-enable all snippet filters after clearing the exceptions",
+      "www.example.com",
+      ["foo 1", "bar 2"]
+    );
+  });
+
+  it("Snippet exceptions for individual commands", function() {
+    function compareRules(description, domain, expectedMatches) {
+      let result = snippets.getFilters(domain).map(filter => filter.script);
+      assert.deepEqual(result.sort(), expectedMatches.sort(), description);
+    }
+
+    snippets.add(Filter.fromText("example.com#$#log 123; log 345"));
+
+    snippetExceptions.add(Filter.fromText("example.com#@$#log 123"));
+    compareRules(
+      "Disable only the command that matches the exception",
+      "example.com",
+      ["'log' '345'"]
+    );
+
+    snippetExceptions.add(Filter.fromText("example.com#@$#log 345"));
+    compareRules(
+      "Disable the whole filter once all its commands match exceptions",
+      "example.com",
+      []
+    );
+
+    snippetExceptions.clear();
+    snippets.clear();
+
+    snippets.add(Filter.fromText("example.com#$#foo 1; bar 2; baz 3"));
+    snippetExceptions.add(Filter.fromText("example.com#@$#bar 2"));
+    compareRules(
+      "Keep the remaining commands",
+      "example.com",
+      ["'foo' '1'; 'baz' '3'"]
+    );
+
+    snippetExceptions.add(Filter.fromText("example.com#@$#foo 1; baz 3"));
+    compareRules(
+      "Apply each command of a multi-command exception individually",
+      "example.com",
+      []
+    );
+
+    snippetExceptions.clear();
+    snippets.clear();
+
+    snippets.add(Filter.fromText("example.com#$#log 'a;b'; log 2"));
+    snippetExceptions.add(Filter.fromText("example.com#@$#log 2"));
+    compareRules(
+      "Treat quoted semicolons as part of a command",
+      "example.com",
+      ["'log' 'a;b'"]
+    );
+
+    snippetExceptions.add(Filter.fromText("example.com#@$#log 'a;b'"));
+    compareRules(
+      "Match commands containing quoted semicolons",
+      "example.com",
+      []
+    );
+
+    snippetExceptions.clear();
+    snippets.clear();
+
+    snippets.add(Filter.fromText("example.com#$#log a\\;b; log 2"));
+    snippetExceptions.add(Filter.fromText("example.com#@$#log a\\;b"));
+    compareRules(
+      "Match commands containing escaped semicolons",
+      "example.com",
+      ["'log' '2'"]
+    );
+
+    snippetExceptions.clear();
+    snippetExceptions.add(Filter.fromText("other.example#@$#log 123"));
+    snippets.clear();
+    snippets.add(Filter.fromText("example.com#$#log 123; log 345"));
+    compareRules(
+      "Ignore command exceptions that aren't active on the domain",
+      "example.com",
+      ["log 123; log 345"]
+    );
+
+    snippetExceptions.add(Filter.fromText("example.com#@$#log  '123'"));
+    compareRules(
+      "Match commands regardless of argument spacing and quoting",
+      "example.com",
+      ["'log' '345'"]
+    );
+
+    snippetExceptions.clear();
+    snippetExceptions.add(Filter.fromText("#@$#log 123"));
+    snippets.add(Filter.fromText("other.example#$#log 123"));
+    compareRules(
+      "Apply generic exceptions on any domain",
+      "example.com",
+      ["'log' '345'"]
+    );
+    compareRules(
+      "Apply generic exceptions on any domain (other domain)",
+      "other.example",
+      []
+    );
+
+    snippetExceptions.add(Filter.fromText("~example.com#@$#log 345"));
+    snippets.add(Filter.fromText("other.example#$#log 345"));
+    compareRules(
+      "Ignore exceptions that exclude the domain",
+      "example.com",
+      ["'log' '345'"]
+    );
+    compareRules(
+      "Apply exceptions that don't exclude the domain",
+      "www.other.example",
+      []
+    );
+  });
+
+  it("Snippet exceptions container", function() {
+    let exception = Filter.fromText("example.com#@$#foo 1");
+
+    assert.equal(snippetExceptions.has(exception), false);
+    assert.equal(snippetExceptions.size, 0);
+
+    snippetExceptions.add(exception);
+    snippetExceptions.add(exception);
+    assert.equal(snippetExceptions.has(exception), true);
+    assert.equal(snippetExceptions.size, 1);
+    assert.equal(
+      snippetExceptions.getException(["foo", "1"], "example.com"), exception
+    );
+    assert.equal(snippetExceptions.getException(["foo", "1"],
+                                                "other.example"),
+                 null);
+    assert.equal(snippetExceptions.getException(["foo"], "example.com"),
+                 null);
+
+    snippetExceptions.remove(exception);
+    assert.equal(snippetExceptions.has(exception), false);
+    assert.equal(snippetExceptions.size, 0);
+    assert.equal(snippetExceptions.getException(["foo", "1"], "example.com"),
+                 null);
+
+    snippetExceptions.remove(exception);
+    assert.equal(snippetExceptions.has(exception), false);
+
+    snippetExceptions.add(exception);
+    snippetExceptions.clear();
+    assert.equal(snippetExceptions.has(exception), false);
+    assert.equal(snippetExceptions.size, 0);
+    assert.equal(snippetExceptions.getException(["foo", "1"], "example.com"),
+                 null);
+
+    let multiCommandException =
+        Filter.fromText("example.com#@$#foo 1; bar 2;");
+    snippetExceptions.add(multiCommandException);
+    assert.equal(snippetExceptions.getException(["foo", "1"], "example.com"),
+                 multiCommandException);
+    assert.equal(snippetExceptions.getException(["bar", "2"], "example.com"),
+                 multiCommandException);
+
+    snippetExceptions.remove(multiCommandException);
+    assert.equal(snippetExceptions.getException(["foo", "1"], "example.com"),
+                 null);
+    assert.equal(snippetExceptions.getException(["bar", "2"], "example.com"),
+                 null);
+
+    let duplicateCommandException =
+        Filter.fromText("example.com#@$#foo 1; foo 1");
+    snippetExceptions.add(duplicateCommandException);
+    assert.equal(snippetExceptions.getException(["foo", "1"], "example.com"),
+                 duplicateCommandException);
+    snippetExceptions.remove(duplicateCommandException);
+    assert.equal(snippetExceptions.getException(["foo", "1"], "example.com"),
+                 null);
+  });
+
+  it("Script stringification", function() {
+    function checkStringifiedScript(description, script, expectedScript) {
+      assert.equal(stringifyScript(script), expectedScript, description);
+
+      assert.deepEqual(parseScript(expectedScript),
+                       script,
+                       `${description} (round trip)`);
+    }
+
+    checkStringifiedScript("Script with a single command",
+                           [["foo", "1"]],
+                           "'foo' '1'");
+    checkStringifiedScript("Script with two commands",
+                           [["foo", "1"], ["bar", "2"]],
+                           "'foo' '1'; 'bar' '2'");
+    checkStringifiedScript("Script with an argument containing a space",
+                           [["foo", "Hello world"]],
+                           "'foo' 'Hello world'");
+    checkStringifiedScript("Script with an argument containing a semicolon",
+                           [["foo", "a;b"], ["bar"]],
+                           "'foo' 'a;b'; 'bar'");
+    checkStringifiedScript("Script with an argument containing quotes and " +
+                           "backslashes",
+                           [["foo", "a'b\\c"]],
+                           "'foo' 'a\\'b\\\\c'");
+    checkStringifiedScript("Script with an empty argument",
+                           [["foo", "", "1"]],
+                           "'foo' '' '1'");
   });
 
   it("Script parsing", function() {

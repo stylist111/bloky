@@ -18,7 +18,7 @@
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
 import snippetsCallback from "@eyeo/snippets/isolated/lite";
-import {parseScript} from "#adblockpluscore/lib/snippets.js";
+import {parseScript} from "#adblockpluscore/lib/scriptParsing.js";
 import {ignoreNoConnectionError} from "../../../all/errors.js";
 import {
   CACHED_FILTERS_CONFIG_KEY,

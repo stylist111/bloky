@@ -25,7 +25,7 @@ const {contentTypes, RESOURCE_TYPES} = require("../contentTypes");
  * Regular expression that content filters should match
  * @type {RegExp}
  */
-const CONTENT_FILTER = /^([^/|@"!]*?)#([@?$])?#(.+)$/;
+const CONTENT_FILTER = /^([^/|@"!]*?)#(@\$|[@?$])?#(.+)$/;
 exports.CONTENT_FILTER = CONTENT_FILTER;
 
 /**
@@ -518,7 +518,7 @@ exports.normalize = function(text, dontSanitize = false) {
         "}";
     }
 
-    const [, domains, separator, body] = /^(.*?)(#[@?$]?#?)(.*)$/.exec(text);
+    const [, domains, separator, body] = /^(.*?)(#(?:@\$|[@?$])?#?)(.*)$/.exec(text);
     return removeSpaces(domains) + separator + body.trim();
   }
 
