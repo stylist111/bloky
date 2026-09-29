@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.45.0 - 2026-09-29
+
 - Added support for snippet exception filters (`domain#@$#command`). A snippet
   exception disables any command of a snippet filter (`#$#`) that parses to
   the same command and arguments, on the domains the exception is active on.
