@@ -106,6 +106,37 @@ check-source:files:MV2:firefox:
     EXTENSION: adblock-firefox-*-mv2.xpi
 
 ################################################################################
+# Check manifest
+################################################################################
+
+.check-source-manifest:
+  stage: check-source
+  needs:
+    - !reference [.needs-parent-build-release, needs]
+  script:
+    - unzip -p host/adblock/dist/release/$EXTENSION manifest.json > manifest.json
+    - node tools/release/check-manifest.js manifest.json
+
+check-source:manifest:MV3:chrome:
+  extends: .check-source-manifest
+  variables:
+    EXTENSION: adblock-chrome-*-mv3.zip
+    EXPECTED_PERMISSIONS: >-
+      alarms contextMenus declarativeNetRequestWithHostAccess idle notifications
+      scripting storage tabs unlimitedStorage webNavigation webRequest
+    EXPECTED_OPTIONAL_PERMISSIONS: "management"
+    EXPECTED_HOST_PERMISSIONS: "<all_urls>"
+
+check-source:manifest:MV2:firefox:
+  extends: .check-source-manifest
+  variables:
+    EXTENSION: adblock-firefox-*-mv2.xpi
+    EXPECTED_PERMISSIONS: >-
+      <all_urls> alarms contextMenus idle notifications storage tabs
+      unlimitedStorage webNavigation webRequest webRequestBlocking
+    EXPECTED_OPTIONAL_PERMISSIONS: "management"
+
+################################################################################
 # Check source archive builds
 ################################################################################
 
