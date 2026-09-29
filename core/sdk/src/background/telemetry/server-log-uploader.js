@@ -43,19 +43,6 @@ function onLogQueuedCallback() {
   }
 }
 
-async function cleanUpOldStorageData() {
-  let state = await storage.getStateLoaded();
-
-  // These fields have been moved to their own storage key in
-  // server-log-config.js, and so should no longer be tracked here. This cleanup
-  // can be removed after it has been live for a while.
-  if (state.nextRotationTime || state.rotatingClientId) {
-    delete state.nextRotationTime;
-    delete state.rotatingClientId;
-    await storage.save();
-  }
-}
-
 export function start(debugTelemetry, interval = 10 * MILLIS_IN_SECOND,
                       errorRetryDelay = 5 * MILLIS_IN_MINUTE) {
   if (!debugTelemetry.url) {
@@ -111,7 +98,6 @@ export function start(debugTelemetry, interval = 10 * MILLIS_IN_SECOND,
   });
 
   onLogQueued.addListener(onLogQueuedCallback);
-  void cleanUpOldStorageData();
 }
 
 export function stop() {
