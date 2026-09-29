@@ -1,9 +1,0 @@
-# Code owners for this monorepo, documented as part of the extensions project
-# handover to the Operational team. This is the point of contact for
-# questions the Operational team can't resolve on their own.
-#
-# Guild of Extensioneering Members (people with real context/opinions in the
-# domain who can act as mentors or reviewers). Guild Novices are intentionally
-# excluded, as they are still growing into the domain and the group rotates.
-# See: https://eyeo.atlassian.net/wiki/spaces/ENG/pages/2075951106/Guilds#Extensions
-* @92alexm @j.wernick @r.deysel @ThomasGreiner
