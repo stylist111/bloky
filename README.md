@@ -48,6 +48,8 @@ npm install <package>@<version> --min-release-age=0
 
 - node >= 24
 - npm >= 11.17.0
+- `unzip`, needed by get-browser-binary to install Chromium and Chrome for
+  Testing when running browser tests
 
 On Windows, you need a [Linux environment running on
 WSL](https://docs.microsoft.com/windows/wsl/install-win10).

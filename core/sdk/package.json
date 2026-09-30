@@ -56,7 +56,7 @@
   },
   "devDependencies": {
     "@eyeo/filterlists": "1.0.100",
-    "@eyeo/get-browser-binary": "0.25.0",
+    "@eyeo/get-browser-binary": "0.26.0",
     "@eyeo/snippets": "2.16.0",
     "@eyeo/test-utils": "*",
     "copy-webpack-plugin": "14.0.0",
