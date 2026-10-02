@@ -297,6 +297,16 @@ the documentation of the respective package.
 Please have a look at our [contribution guidelines](CONTRIBUTING.md) if you want
 to make some changes to this repository.
 
+## Getting Help
+
+If you're having problems with one of the extensions, see the
+[AdBlock Help Center](https://helpcenter.getadblock.com/adblock-help-center) or
+the [Adblock Plus Help Center](https://help.adblockplus.org/adblock-plus-help-center).
+
+For people from eyeo: You can ask in the `#extensions` Slack channel or reach
+out to [the Guild of
+Extensioneering](https://eyeo.atlassian.net/wiki/spaces/ENG/pages/2075951106/Guilds).
+
 ## Troubleshooting
 
 ### Windows Powershell errors
