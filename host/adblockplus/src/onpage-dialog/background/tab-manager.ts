@@ -702,6 +702,15 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
     return;
   }
 
+  // The tab may have moved on to another document while this event was being
+  // handled, e.g. a new tab's initial "about:blank" page navigated right away.
+  // That document gets its own "loaded" event, and handling it here as well
+  // would have both events compete for the same page.
+  if (new URL(tab.url).href !== page.url.href) {
+    logger.debug("[onpage-dialog]: Tab has navigated away from page");
+    return;
+  }
+
   // Sort the waiting dialogs by priority.
   const dialogs = Array.from(unassignedDialogs.values()).sort(
     compareDialogsByPriority
@@ -784,11 +793,18 @@ export async function showOnpageDialog(
     return ShowOnpageDialogResult.rejected;
   }
 
+  // A campaign that is meant to be shown more than once is only skipped on a
+  // tab that already contains a dialog, rather than dismissed for good
+  const busyTabResult =
+    campaignConfig === null
+      ? ShowOnpageDialogResult.rejected
+      : ShowOnpageDialogResult.ignored;
+
   // Ignore and dismiss dialog that should be shown in a given tab,
   // if such tab already contains a dialog
   if (shouldDialogBeShown && (await assignedDialogs.has(tabId))) {
     logger.debug("[onpage-dialog]: Tab already contains dialog");
-    return ShowOnpageDialogResult.rejected;
+    return busyTabResult;
   }
 
   // Ignore if on-page dialog should not be shown for this tab
@@ -810,7 +826,7 @@ export async function showOnpageDialog(
   // two "loaded" page events fire for the same tab in quick succession.
   if (!(await assignedDialogs.setIfAbsent(tabId, dialog))) {
     logger.debug("[onpage-dialog]: Tab already contains dialog");
-    return ShowOnpageDialogResult.rejected;
+    return busyTabResult;
   }
 
   // Sometimes dialog fails to be asssigned to the page,

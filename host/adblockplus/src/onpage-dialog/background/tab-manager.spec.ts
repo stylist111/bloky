@@ -290,6 +290,31 @@ describe("TabManager", () => {
       expect(eventsNamed(spy, "rendered")).toEqual([]);
     });
 
+    it("ignores a configured campaign on a tab that already contains a dialog", async () => {
+      (getCampaignConfig as jest.Mock).mockReturnValue({
+        ignoreCooldown: true
+      });
+      const tabId = nextTabId++;
+
+      await showOnpageDialog(tabId, tab, campaignDialog);
+
+      expect(await showOnpageDialog(tabId, tab, campaignDialog)).toBe(
+        ShowOnpageDialogResult.ignored
+      );
+    });
+
+    it("rejects a campaign without overrides on a tab that already contains a dialog", async () => {
+      (getCampaignConfig as jest.Mock).mockReturnValue(null);
+      void Prefs.set(coolDownPeriodKey, 0);
+      const tabId = nextTabId++;
+
+      await showOnpageDialog(tabId, tab, campaignDialog);
+
+      expect(await showOnpageDialog(tabId, tab, campaignDialog)).toBe(
+        ShowOnpageDialogResult.rejected
+      );
+    });
+
     it("passes the campaign's impression cap to the dismissal check", async () => {
       (getCampaignConfig as jest.Mock).mockReturnValue({
         ignoreCooldown: true,
