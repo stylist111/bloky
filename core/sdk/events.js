@@ -1276,6 +1276,14 @@ export default {
       }
     }
   },
+  crumbs_settings_banner: {
+    displayed: {
+      description: "The Crumbs banner was shown in place of the Premium upgrade banner on the Adblock Plus settings page, because the crumbs_settings_banner experiment flag is enabled. Reported once per settings page load"
+    },
+    clicked: {
+      description: "The user clicked the call-to-action button on the Crumbs banner on the Adblock Plus settings page"
+    }
+  },
   test_ewe_background: {
     test_event: {
       description: "TEST: A logging test event for various types of data",

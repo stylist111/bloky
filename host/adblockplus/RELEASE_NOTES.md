@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added an experiment that replaces the Premium banner on the settings page
+  with a Crumbs banner.
 - Fixed an issue where an on-page dialog meant to be shown on several page
   loads could stop being shown after its first impression when a new tab was
   opened and navigated right away.

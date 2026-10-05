@@ -52,8 +52,13 @@ import "../../io-toggle.mjs";
 const extensionsUIServerLogger = new ewe.telemetry.ServerLogger(
   "extensions_ui"
 );
+const crumbsBannerServerLogger = new ewe.telemetry.ServerLogger(
+  "crumbs_settings_banner"
+);
 
 const ALLOWED_PROTOCOLS = /^(?:data|https):/;
+const MIDDLE_MOUSE_BUTTON = 1;
+const CRUMBS_BANNER_ORIGIN = "https://adblockplus.org";
 
 export const emitter = new EventEmitter();
 
@@ -64,6 +69,8 @@ let acceptableAdsPrivacyUrl = null;
 let isCustomFiltersLoaded = false;
 let additionalSubscriptions = [];
 let premiumIsActive = null;
+let isCrumbsBannerEnabled = null;
+let isCrumbsBannerDisplayReported = false;
 let focusedBeforeDialog = null;
 let promisedDateFormat = null;
 let promisedResources = null;
@@ -1320,6 +1327,7 @@ function updatePremiumStateInPage() {
 
   setupFiltersBox();
   showUserAccount();
+  reportCrumbsBannerDisplayed();
 }
 
 function onFilterMessage(action, filter) {
@@ -1918,10 +1926,102 @@ async function startUnsupportedBrowserBanner() {
   document.body.classList.toggle("unsupported-browser", isUnsupported !== null);
 }
 
+/**
+ * Reports that the Crumbs banner was displayed, at most once per page load.
+ * Both the experiment flag and the Premium state are fetched asynchronously,
+ * so this is called once each of them is known, and only reports when the
+ * banner is actually visible to a free user.
+ */
+function reportCrumbsBannerDisplayed() {
+  if (
+    isCrumbsBannerDisplayReported ||
+    !isCrumbsBannerEnabled ||
+    premiumIsActive !== false
+  ) {
+    return;
+  }
+
+  isCrumbsBannerDisplayReported = true;
+  crumbsBannerServerLogger.behavior("displayed");
+}
+
+async function startCrumbsBanner() {
+  const crumbsButton = $(".crumbs.button");
+  const reportClick = () => crumbsBannerServerLogger.behavior("clicked");
+  crumbsButton.addEventListener("click", reportClick);
+  // Middle-clicking a link opens it in a new tab, but fires "auxclick"
+  // instead of "click". Right-clicks also fire "auxclick", so filter those out.
+  crumbsButton.addEventListener("auxclick", (event) => {
+    if (event.button === MIDDLE_MOUSE_BUTTON) {
+      reportClick();
+    }
+  });
+
+  isCrumbsBannerEnabled =
+    (await ewe.experiments.getFlag("crumbs_settings_banner")) === true;
+  if (isCrumbsBannerEnabled) {
+    applyCrumbsBannerConfig(
+      await ewe.experiments.getFlag("crumbs_settings_banner_config")
+    );
+  }
+  document.body.classList.toggle("crumbs-banner", isCrumbsBannerEnabled);
+  reportCrumbsBannerDisplayed();
+}
+
+/**
+ * Replaces the Crumbs banner defaults with the texts and link provided by the
+ * experiment, if any. The experiment texts aren't translated, so anything it
+ * doesn't provide, or provides in an invalid form, keeps its default.
+ *
+ * @param {any} config the value of the config experiment flag
+ */
+function applyCrumbsBannerConfig(config) {
+  if (!config || typeof config !== "object") {
+    return;
+  }
+
+  setCrumbsBannerText(".crumbs.banner p", config.description);
+  setCrumbsBannerText(".crumbs.button", config.button);
+  setCrumbsBannerPath(config.path);
+}
+
+function setCrumbsBannerText(selector, text) {
+  if (typeof text !== "string" || text.trim() === "") {
+    return;
+  }
+
+  $(selector).textContent = text;
+}
+
+/**
+ * The link comes from remote configuration, so like for IPMs, only a path on
+ * our own website is accepted, to keep a misconfigured experiment from sending
+ * users to an arbitrary site.
+ *
+ * @param {any} path the link path provided by the experiment
+ */
+function setCrumbsBannerPath(path) {
+  if (
+    typeof path !== "string" ||
+    !path.startsWith("/") ||
+    !URL.canParse(path, CRUMBS_BANNER_ORIGIN)
+  ) {
+    return;
+  }
+
+  const url = new URL(path, CRUMBS_BANNER_ORIGIN);
+  if (url.origin !== CRUMBS_BANNER_ORIGIN) {
+    return;
+  }
+
+  $(".crumbs.button").href = url.href;
+}
+
 export function start() {
   convertDoclinks();
   initI18n();
   void startUnsupportedBrowserBanner();
+  void startCrumbsBanner();
 
   promisedDateFormat = messaging.app
     .get("localeInfo")

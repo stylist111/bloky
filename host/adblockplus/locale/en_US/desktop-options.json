@@ -7,6 +7,14 @@
     "description": "https://gitlab.com/adblockinc/ext/adblockplus/spec/-/blob/346793c03b74f446073c6653bdb7f84c7f08f680/spec/abp/desktop-settings/index.md#free-users",
     "message": "Upgrade"
   },
+  "options_crumbs_banner_description": {
+    "description": "Text of the Crumbs banner shown instead of the Premium banner on the settings page. Crumbs is a privacy tool by the makers of Adblock Plus that blocks trackers on all devices on the home network.",
+    "message": "Blocking ads? Why not block the trackers on every device at home - free"
+  },
+  "options_crumbs_banner_button": {
+    "description": "Button on the Crumbs banner on the settings page that opens the Crumbs website",
+    "message": "Find out more"
+  },
   "options_premium_manage": {
     "description": "https://gitlab.com/adblockinc/ext/adblockplus/spec/-/blob/346793c03b74f446073c6653bdb7f84c7f08f680/spec/abp/desktop-settings/index.md#premium-users",
     "message": "Manage my subscription"

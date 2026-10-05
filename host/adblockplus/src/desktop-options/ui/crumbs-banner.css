@@ -1,0 +1,77 @@
+/*
+ * This file is part of Adblock Plus <https://adblockplus.org/>,
+ * Copyright (C) 2006-present eyeo GmbH
+ *
+ * Adblock Plus is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * Adblock Plus is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+  Crumbs banner
+  Replaces the Premium upgrade banner for free users when the
+  crumbs_settings_banner experiment flag is enabled.
+ */
+
+.premium-banner-container .crumbs.banner {
+  display: none;
+  padding: 1rem 1.5rem;
+  gap: 1.25rem;
+  border: 1px solid #cdcdcd;
+  color: #2b2b2b;
+}
+
+body.crumbs-banner .premium-banner-container .premium-upgrade.banner {
+  display: none;
+}
+
+body.crumbs-banner:not(.premium) .premium-banner-container .crumbs.banner {
+  display: flex;
+}
+
+.crumbs-lockup {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.crumbs-lockup img {
+  width: auto;
+  height: 52px;
+}
+
+.crumbs-lockup img.crumbs-wordmark {
+  height: 20px;
+  margin-left: 4px;
+}
+
+.crumbs.banner p {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.premium-banner-container .crumbs.button {
+  flex-shrink: 0;
+  padding: 13px 26px;
+  border-radius: 4px;
+  background-color: #6e30dc;
+  color: #fff;
+  font-size: 15px;
+}
+
+.premium-banner-container .crumbs.button:hover,
+.premium-banner-container .crumbs.button:focus {
+  background-color: #5825c8;
+}
