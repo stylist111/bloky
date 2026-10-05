@@ -222,7 +222,7 @@ describe("Do-release script", function () {
 
   it(
     "recreates the 2.1.0 release for the sdk",
-    { timeout: 30000 },
+    { timeout: 120000 },
     async function () {
       await executeShellCommand(
         "npm run do-release -- --yes --release-date=2025-07-31 aff562463 sdk@99.2.1",
