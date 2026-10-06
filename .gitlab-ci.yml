@@ -356,6 +356,51 @@ upload_sourcemaps:
     - VERSION=$VERSION npm run sentry:sourcemaps
     - VERSION=$VERSION npm run sentry:release-finalize
 
+# Authenticates to Google Cloud through Workload Identity Federation. Google
+# only accepts protected adblock-* and adblockplus-* tags of this project.
+.google-workload-identity:
+  cache: []
+  id_tokens:
+    GCP_ID_TOKEN:
+      aud: https://iam.googleapis.com/projects/15970330933/locations/global/workloadIdentityPools/gitlab/providers/gitlab-com
+  variables:
+    GCP_PROJECT_NUMBER: "15970330933"
+    GCP_WORKLOAD_IDENTITY_POOL_ID: gitlab
+    GCP_WORKLOAD_IDENTITY_PROVIDER_ID: gitlab-com
+
+# Store uploads are started by hand once the GitLab release exists and the
+# host pipelines, which check the extensions' permissions, have passed. They
+# download the release's Chrome (mv3) build.
+.store-upload:
+  extends: .google-workload-identity
+  stage: release
+  needs:
+    - job: create_release
+      artifacts: false
+    - job: adblock
+      artifacts: false
+    - job: adblockplus
+      artifacts: false
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^(adblock|adblockplus)-\d+(\.\d+)*$/'
+      when: manual
+      allow_failure: true
+    - when: never
+  interruptible: false
+  before_script:
+    - !reference [.on-host-release-tag, before_script]
+    - PACKAGE="host/$HOST/dist/release/$HOST-chrome-$VERSION-mv3.zip"
+    - mkdir -p "$(dirname "$PACKAGE")"
+    - echo "Downloading $PACKAGE from the $CI_COMMIT_TAG release"
+    - curl --fail --location --silent --show-error --output "$PACKAGE" "$CI_PROJECT_URL/-/releases/$CI_COMMIT_TAG/downloads/$HOST-chrome-$VERSION-mv3.zip"
+
+# Uploads to the Chrome Web Store as a draft, to be submitted for review in
+# the Developer Dashboard. See docs/GITLAB_RELEASES.md.
+upload_chrome_web_store:
+  extends: .store-upload
+  script:
+    - node tools/release/stores/chrome/upload.js "$HOST" "$VERSION" --draft-only
+
 ################################################################################
 # Overrides for jobs from included templates
 ################################################################################
