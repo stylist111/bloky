@@ -9,7 +9,7 @@
   },
   "options_crumbs_banner_description": {
     "description": "Text of the Crumbs banner shown instead of the Premium banner on the settings page. Crumbs is a privacy tool by the makers of Adblock Plus that blocks trackers on all devices on the home network.",
-    "message": "Blocking ads? Why not block the trackers on every device at home - free"
+    "message": "Blocking ads? Why not block trackers on every device at home - for free"
   },
   "options_crumbs_banner_button": {
     "description": "Button on the Crumbs banner on the settings page that opens the Crumbs website",
