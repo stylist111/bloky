@@ -401,6 +401,13 @@ upload_chrome_web_store:
   script:
     - node tools/release/stores/chrome/upload.js "$HOST" "$VERSION" --draft-only
 
+# Uploads to Microsoft Edge Add-ons as a draft, to be published in Partner
+# Center. See docs/GITLAB_RELEASES.md.
+upload_edge_add_ons:
+  extends: .store-upload
+  script:
+    - node tools/release/stores/edge/upload.js "$HOST" "$VERSION" --draft-only
+
 ################################################################################
 # Overrides for jobs from included templates
 ################################################################################

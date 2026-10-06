@@ -39,6 +39,28 @@ the extensions' permissions.
 3. In the [developer dashboard](https://chrome.google.com/webstore/developer/dashboard),
    check that the new version is shown and submit it for review.
 
+## Microsoft Edge Add-ons
+
+1. In the tag pipeline, start the `upload_edge_add_ons` job.
+2. The job downloads `<PRODUCT ID>-chrome-<VERSION>-mv3.zip` from the
+   GitLab release, checks that its `manifest.json` has `<VERSION>`, uploads
+   it to the product's draft and waits until Edge has verified the package.
+3. In [Partner Center](https://partner.microsoft.com/en-us/dashboard/microsoftedge/overview),
+   open the extension's draft and publish it.
+
+Edge authenticates with an API key instead of a service account. The secrets
+`edge-adblock-credentials` and `edge-abp-credentials` hold a JSON object with
+the product ID, client ID and API key; see
+`tools/release/stores/edge/config.js`. **API keys expire after 72 days.** To
+rotate one, create a new key in Partner Center → Microsoft Edge → Publish API
+and add a new secret version with the whole object.
+
+| The error mentions                             | Likely cause                                    |
+| ---------------------------------------------- | ----------------------------------------------- |
+| `api.addons.microsoftedge.microsoft.com` (401) | The API key has expired or is wrong             |
+| `[edge] InProgressSubmission`                  | The previous version is still in certification  |
+| `[edge] <other code>`                          | Edge rejected the package; check Partner Center |
+
 ## How the jobs authenticate
 
 The jobs hold no store credentials. GitLab issues each job an ID token,

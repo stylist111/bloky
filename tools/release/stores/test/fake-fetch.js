@@ -84,3 +84,13 @@ export function jsonResponse(body, { status = 200, headers = {} } = {}) {
 export function textResponse(text, { status = 200, headers = {} } = {}) {
   return new Response(text, { status, headers });
 }
+
+/**
+ * Creates a response without a body, e.g. Edge's `202 Accepted`.
+ *
+ * @param {{status?: number, headers?: Record<string, string>}} [init]
+ * @returns {Response} The response.
+ */
+export function emptyResponse({ status = 202, headers = {} } = {}) {
+  return new Response(null, { status, headers });
+}
