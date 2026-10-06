@@ -43,6 +43,7 @@ exports.MILLIS_IN_MINUTE = 60000;
  */
 exports.MILLIS_IN_HOUR = 3600000;
 
+const MILLIS_IN_DAY =
 /**
  * Number of milliseconds in a day.
  * @const {number}
@@ -66,3 +67,12 @@ exports.MINUTES_IN_HOUR = 60;
  * @package
  */
 exports.MINUTES_IN_DAY = 1440;
+
+/**
+ * Takes a timestamp and truncates it to only have day precision.
+ * @param {number} timestamp The original timestamp
+ * @returns {number} The truncated timestamp
+ */
+exports.truncateTimestampToDayStart = function(timestamp) {
+  return Math.floor(timestamp / MILLIS_IN_DAY) * MILLIS_IN_DAY;
+};

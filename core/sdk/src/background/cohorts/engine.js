@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 import {Engine} from "json-rules-engine";
 import {JSONPath} from "jsonpath-plus";
 import {EventEmitter} from "#adblockpluscore/lib/events.js";
-import {MILLIS_IN_HOUR} from "#adblockpluscore/lib/time.js";
+import {MILLIS_IN_HOUR, truncateTimestampToDayStart} from "#adblockpluscore/lib/time.js";
 import {PersistentState} from "../persistence.js";
 import {EventDispatcher} from "../types.js";
 import {debug, warn} from "../debugging.js";
@@ -43,6 +43,34 @@ const onChanged = new EventDispatcher(dispatch => {
 });
 
 /**
+ * Removes any high resolution indicators from the facts data, like reducing the
+ * precision of timestamps
+ *
+ * @param {Facts} facts - The facts to send.
+ * @returns {Facts} The same facts, but with high resolution indicators
+ * truncated.
+ */
+function reduceFactPrecision(facts) {
+  const timestampNames = [
+    "installDate",
+    "reverseTrialStartDate",
+    "lastBaitBlockedDate",
+    "lastBlockthroughTagDate"
+  ];
+
+  const anonymousFacts = {...facts};
+  for (const timestampName of timestampNames) {
+    if (anonymousFacts[timestampName]) {
+      anonymousFacts[timestampName] = truncateTimestampToDayStart(
+        anonymousFacts[timestampName]
+      );
+    }
+  }
+
+  return anonymousFacts;
+}
+
+/**
  * Sends a snapshot of the current facts to the event system. This will be used
  * for cohort estimation and debugging purposes.
  *
@@ -61,7 +89,7 @@ async function sendFactsSnapshot(facts) {
 
   // send a snapshot of facts for 1% to the event system and
   // update the last snapshot timestamp
-  logger.info("facts_snapshot", facts);
+  logger.info("facts_snapshot", reduceFactPrecision(facts));
   state.lastFactsSnapshotTimestamp = Date.now();
   await cohortsData.save();
 }

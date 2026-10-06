@@ -767,7 +767,7 @@ export default {
             type: "boolean"
           },
           installDate: {
-            description: "The timestamp when the extension was installed",
+            description: "The timestamp when the extension was installed. Truncated to the start of the day.",
             type: "number"
           },
           blockedCount: {

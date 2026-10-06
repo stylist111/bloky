@@ -17,7 +17,7 @@
 
 export const defaultFacts = {
   hasPremium: false,
-  installDate: new Date("2023-01-01T00:00:00Z").getTime(),
+  installDate: new Date("2023-01-01T01:23:45Z").getTime(),
   blockedCount: 12345,
   isTrial: false,
   trialDaysLeft: null,

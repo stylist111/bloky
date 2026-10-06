@@ -257,8 +257,10 @@ describe("Cohorts", function() {
 
   describe("Facts snapshot reporting", function() {
     let sandbox;
+
     const expectedFacts = {
       ...defaultFacts,
+      installDate: 1672531200000,
       aaEnabled: expect.any(Boolean),
       browserLanguage: expect.any(String),
       browserName: expect.any(String),
