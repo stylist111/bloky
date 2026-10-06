@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.48.0 - 2026-10-06
+
 - Fixed an issue where an on-page dialog meant to be shown on several page
   loads could stop being shown after its first impression when a new tab was
   opened and navigated right away.

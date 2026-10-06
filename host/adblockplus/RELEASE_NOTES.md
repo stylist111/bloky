@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.46.0 - 2026-10-06
+
 - Added an experiment that replaces the Premium banner on the settings page
   with a Crumbs banner.
 - Fixed an issue where an on-page dialog meant to be shown on several page
