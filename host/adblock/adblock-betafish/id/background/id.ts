@@ -19,6 +19,36 @@ import * as browser from "webextension-polyfill";
 const userIdStorageKey = "userid";
 let userIdPromise: Promise<string> | null = null;
 
+function generateRandomId(): string {
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const targetLength = 16;
+  const result: string[] = [];
+
+  // We're going to generate random Uint8 values, but our alphabet is 36
+  // characters long. We want to avoid having a modulo bias that picks the
+  // letters at the beginning of our alphabet more than the end, so we use
+  // rejection sampling. In other words, we skip values above a cutoff, and
+  // the cutoff is determined by how many times we can fit out whole alphabet
+  // sequence into the range.
+  const uint8Length = 256;
+  const maxUnbiased = uint8Length - (uint8Length % alphabet.length);
+
+  while (result.length < targetLength) {
+    const randomBytes = new Uint8Array(targetLength);
+    crypto.getRandomValues(randomBytes);
+    for (const byte of randomBytes) {
+      if (byte < maxUnbiased) {
+        result.push(alphabet[byte % alphabet.length]);
+        if (result.length === targetLength) {
+          break;
+        }
+      }
+    }
+  }
+
+  return result.join("");
+}
+
 /**
  * Generates a 16 character random string
  *
@@ -42,14 +72,7 @@ export function getUserId(): Promise<string> {
     }
 
     // The stored value is missing, generate a new one.
-    const timeSuffix = (Date.now() % 1e8).toString().padStart(8, "0"); // 8 digits from end of timestamp
-    const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
-    const result = [];
-    for (let i = 0; i < 8; i++) {
-      const choice = Math.floor(Math.random() * alphabet.length);
-      result.push(alphabet[choice]);
-    }
-    const newUserId = result.join("") + timeSuffix;
+    const newUserId = generateRandomId();
     await browser.storage.local.set({ [userIdStorageKey]: newUserId });
     return newUserId;
   })();
