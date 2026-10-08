@@ -65,6 +65,28 @@ export class ReleaseNotes {
     return /^# unreleased$/i.test(unreleasedNotes);
   }
 
+  ensureUnreleasedNotes(summary) {
+    if (!this.hasUnreleasedNotes()) {
+      return false;
+    }
+
+    const unreleasedLine = this.lines.findIndex((line) =>
+      /^# unreleased$/i.test(line.trim()),
+    );
+    this.lines.splice(unreleasedLine + 1, 0, "", summary);
+    return true;
+  }
+
+  latestVersionHeading() {
+    for (const line of this.lines) {
+      const match = /^# (\d+(?:\.\d+)+)/.exec(line);
+      if (match) {
+        return match[1];
+      }
+    }
+    throw new Error("No version heading found in the release notes");
+  }
+
   insertNewVersionHeading(version, now) {
     const unreleasedLine = this.lines.findIndex((currentLine) => {
       const line = currentLine.toLowerCase();

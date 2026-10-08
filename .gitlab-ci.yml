@@ -27,6 +27,12 @@ workflow:
     # Do not trigger merge request pipelines
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: never
+    # The tag_release job waits for the whole main pipeline. A newer commit on
+    # main must not auto-cancel it, or a release silently never gets tagged.
+    # Pipelines can still be cancelled and retried by hand.
+    - if: $CI_COMMIT_BRANCH == "main"
+      auto_cancel:
+        on_new_commit: none
     - when: always
 
 stages:
@@ -99,6 +105,9 @@ check_package_lock:
 update_rules:
   stage: root
   image: gitlab/glab
+  variables:
+    # prepare-release derives versions from tags and history, so it needs a full clone
+    GIT_DEPTH: 0
   before_script:
     - apk add bash git nodejs npm jq
     - npm install -g "npm@>=11.17.0"
@@ -328,6 +337,12 @@ create_release_mr_back_to_main:
   resource_group: merge-back-${CI_COMMIT_SHA}
   needs: []
   script:
+    - git fetch origin main
+    - |
+      if git merge-base --is-ancestor "$CI_COMMIT_SHA" origin/main; then
+        echo "Tagged commit is already on main, no merge back needed"
+        exit 0
+      fi
     - |
       if glab mr list --all --order created_at --output json | jq -r ".[].sha" | grep "$CI_COMMIT_SHA" ; then
         echo "MR already exists for commit $CI_COMMIT_SHA"
@@ -337,6 +352,46 @@ create_release_mr_back_to_main:
         # Using glab api because glab mr create doesn't support setting --squash=false. See https://gitlab.com/gitlab-org/cli/-/issues/8144
         glab api -X POST projects/:id/merge_requests -F source_branch="$CI_COMMIT_TAG-merge-back-to-main" -F target_branch="main" -F title="$CI_COMMIT_TITLE" -F description="Automatically bringing release changes back to the main branch" -F squash=false -F remove_source_branch=true
       fi
+
+tag_release:
+  stage: release
+  # No "needs", so this waits for every earlier stage on main to pass, including
+  # the child test pipelines. A red main pipeline does not get tagged.
+  rules:
+    - !reference [.never-run-on-update-rules-trigger, rules]
+    # "changes" is always true for scheduled pipelines, and nightly runs have nothing to tag
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    # A host version on main that has no tag yet gets tagged, which starts the
+    # existing tag pipeline. Merging the weekly release MR is what changes these files.
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        paths:
+          - host/adblock/build/config/base.mjs
+          - host/adblockplus/build/webext/config/base.mjs
+      when: on_success
+    - when: never
+  before_script:
+    - git config --global user.email "extensions-release-squad@eyeo.com"
+    - git config --global user.name "Eyeo Gitlab Automaton"
+    - git remote set-url --push origin "https://$GITLAB_TOKEN_RELEASE_NAME:$GITLAB_TOKEN_RELEASE@gitlab.com/$CI_PROJECT_PATH.git"
+  script:
+    - |
+      for HOST in adblock adblockplus; do
+        case "$HOST" in
+          adblock) CONFIG=host/adblock/build/config/base.mjs ;;
+          adblockplus) CONFIG=host/adblockplus/build/webext/config/base.mjs ;;
+        esac
+        VERSION=$(sed -n 's/^ *version: "\([^"]*\)",*$/\1/p' "$CONFIG" | head -1)
+        TAG="$HOST-$VERSION"
+        if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
+          echo "$TAG already exists, nothing to do"
+        else
+          git tag -a -m "" "$TAG"
+          git push origin "$TAG"
+          echo "Created and pushed $TAG"
+        fi
+      done
 
 upload_sourcemaps:
   stage: release

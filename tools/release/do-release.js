@@ -17,15 +17,21 @@
  */
 
 import { select, confirm, input, checkbox } from "@inquirer/prompts";
+import path from "path";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
 import { ReleaseNotes } from "./release-notes.js";
-import { updateVersionInConfig } from "./version-bump.js";
+import {
+  bumpTypeForTitles,
+  bumpVersion,
+  updateVersionInConfig,
+} from "./version-bump.js";
 import {
   executeShellCommand,
   gitRepoHasChanges,
   checkIfGitRefExists,
+  projectRootPath,
 } from "./utils.js";
 
 async function executeMaybe(command, dryRun) {
@@ -36,16 +42,67 @@ async function executeMaybe(command, dryRun) {
   }
 }
 
+const DEFAULT_RELEASE_NOTES_SUMMARY =
+  "This release contains only minor updates and under-the-hood changes.";
 const validHosts = ["adblock", "adblockplus", "sdk"];
+const AUTO_VERSION = "auto";
+const validVersionRegex = /^\d+(\.\d+){1,3}$/;
 const hostNames = {
   adblock: "AdBlock",
   adblockplus: "Adblock Plus",
   sdk: "SDK",
 };
 
-async function run() {
-  const validVersionRegex = /^\d+(\.\d+){1,3}$/;
+// Release tags live on release branches that get force pushed, so the tagged
+// commits are only reachable through the tags themselves.
+async function resolveAutoVersion(host, commit) {
+  await executeShellCommand("git fetch --tags --quiet origin");
 
+  const latestRef = await executeShellCommand(
+    `git ls-remote --tags --refs --sort=-v:refname origin 'refs/tags/${host}-[0-9]*' | head -1`,
+  );
+  if (latestRef === "") {
+    throw new Error(`No release tag found on origin for ${host}`);
+  }
+
+  // The tag name ends up in shell commands below, so accept nothing but a version
+  const latest = latestRef.replace(new RegExp(`.*refs/tags/${host}-`), "");
+  if (!validVersionRegex.test(latest)) {
+    throw new Error(
+      `Latest tag for ${host} is not a version: ${host}-${latest}`,
+    );
+  }
+
+  // If main and the tags disagree, bumping from the tag would release the wrong
+  // version or repeat already released notes. Stop and say which way it is.
+  const notesPath = path.relative(
+    projectRootPath(),
+    ReleaseNotes.hostFilePath(host),
+  );
+  const notesAtCommit = await executeShellCommand(
+    `git show ${commit}:${notesPath}`,
+  );
+  const newestInNotes = new ReleaseNotes(notesAtCommit).latestVersionHeading();
+  if (newestInNotes !== latest) {
+    throw new Error(
+      `${hostNames[host]}: the release notes end at ${newestInNotes} but the latest tag is ${host}-${latest}. ` +
+        "Merge the pending merge-back MR, or tag the newer version if it was released.",
+    );
+  }
+
+  const log = await executeShellCommand(
+    `git log --format=%s ${host}-${latest}..${commit}`,
+  );
+  const titles = log === "" ? [] : log.split("\n");
+  const version = bumpVersion(latest, bumpTypeForTitles(titles));
+
+  console.log(
+    `🤖 ${hostNames[host]}: ${titles.length} commit(s) since ${host}-${latest}, next version is ${version}`,
+  );
+  return version;
+}
+
+async function run() {
   const args = yargs(hideBin(process.argv))
     .version(false)
     .strict()
@@ -58,7 +115,7 @@ async function run() {
         })
         .positional("packageSpecs", {
           type: "array",
-          description: `The hosts to release, and their new version numbers. Must be in the format host@version, where host is one of ${validHosts} and version is a semver version.`,
+          description: `The hosts to release, and their new version numbers. Must be in the format host@version, where host is one of ${validHosts} and version is a semver version or "${AUTO_VERSION}". "${AUTO_VERSION}" bumps minor from the latest tag on origin if a feature landed since, otherwise patch.`,
           coerce: (arg) =>
             arg.map((a) => {
               const parts = a.split("@");
@@ -77,9 +134,12 @@ async function run() {
                 );
               }
 
-              if (!validVersionRegex.test(version)) {
+              if (
+                version !== AUTO_VERSION &&
+                !validVersionRegex.test(version)
+              ) {
                 throw new Error(
-                  `Invalid version ${version}: Version must be a semver version.`,
+                  `Invalid version ${version}: Version must be a semver version, or "${AUTO_VERSION}".`,
                 );
               }
 
@@ -112,6 +172,11 @@ async function run() {
     .option("skip-tag", {
       type: "boolean",
       description: "Do not create a tag for the release.",
+    })
+    .option("summary-if-empty", {
+      type: "boolean",
+      description:
+        "Only when a host has no unreleased notes: add the generic summary line instead of exiting. Existing notes are used as they are.",
     })
     .check((argv) => {
       if (
@@ -155,8 +220,11 @@ async function run() {
     for (const spec of args.packageSpecs) {
       spec.version = await input({
         message: `What is the new version number for ${hostNames[spec.host]}?`,
+        default: AUTO_VERSION,
         validate: (version) =>
-          validVersionRegex.test(version) || "Version must be a semver version",
+          version === AUTO_VERSION ||
+          validVersionRegex.test(version) ||
+          `Version must be a semver version, or "${AUTO_VERSION}"`,
       });
     }
   }
@@ -169,6 +237,12 @@ async function run() {
         (await checkIfGitRefExists(ref)) ||
         "That is not a known git reference.",
     }));
+
+  for (const spec of args.packageSpecs) {
+    if (spec.version === AUTO_VERSION) {
+      spec.version = await resolveAutoVersion(spec.host, args.commit);
+    }
+  }
 
   const hostArgs = args.packageSpecs.map((spec) => {
     return {
@@ -207,6 +281,15 @@ async function run() {
   for (const hostArg of hostArgs) {
     const releaseNotesPath = ReleaseNotes.hostFilePath(hostArg.host);
     let releaseNotes = await ReleaseNotes.readFromHostFilepath(hostArg.host);
+
+    if (
+      args.summaryIfEmpty &&
+      releaseNotes.ensureUnreleasedNotes(DEFAULT_RELEASE_NOTES_SUMMARY)
+    ) {
+      console.log(
+        `🤖 No release notes found for ${hostArg.hostName}, added the default summary`,
+      );
+    }
 
     if (!args.yes) {
       let shouldContinue = false;

@@ -58,3 +58,27 @@ export async function updateVersionInConfig(host, version) {
     await executeShellCommand("npm install --package-lock-only");
   }
 }
+
+const FEATURE_TITLE = /^feat(\([^)]*\))?!?:/;
+
+export function bumpTypeForTitles(titles) {
+  return titles.some((title) => FEATURE_TITLE.test(title)) ? "minor" : "patch";
+}
+
+export function bumpVersion(version, bumpType) {
+  const match = /^(\d+)\.(\d+)\.(\d+)(?:\.\d+)?$/.exec(version);
+  if (!match) {
+    throw new Error(`Cannot parse version: ${version}`);
+  }
+
+  const [major, minor, patch] = match.slice(1, 4).map(Number);
+
+  switch (bumpType) {
+    case "minor":
+      return `${major}.${minor + 1}.0`;
+    case "patch":
+      return `${major}.${minor}.${patch + 1}`;
+    default:
+      throw new Error(`Unknown bump type: ${bumpType}`);
+  }
+}

@@ -102,6 +102,24 @@ async function loadTestFile(relativePath) {
   );
 }
 
+// Makes the release notes look like this version was the last one released,
+// keeping whatever is under Unreleased as it is
+async function addReleasedHeading(repoDir, host, version) {
+  const notesPath = path.join(repoDir, "host", host, "RELEASE_NOTES.md");
+  const notes = await fs.readFile(notesPath, "utf8");
+  await fs.writeFile(
+    notesPath,
+    notes.replace(
+      /\n# (\d)/,
+      `\n# ${version} - 2026-01-01\n\n- Released\n\n# $1`,
+    ),
+  );
+  await executeShellCommand(
+    `git commit --all -m "build: Releasing ${host} ${version}"`,
+    repoDir,
+  );
+}
+
 async function configureTestGitUser(repoDir) {
   // This is needed for environments that don't have git identify set up, like
   // CI. Note that it does NOT change global git config, only local to the
@@ -378,6 +396,95 @@ describe("Do-release script", function () {
         checkoutDir,
       ),
     ).rejects.toThrowError("already exists");
+  });
+
+  it("adds the default summary with --summary-if-empty when no release notes exist", async function () {
+    // Same commit as the test above, which has no unreleased notes
+    await executeShellCommand(
+      "npm run do-release -- --yes --summary-if-empty --release-date=2024-12-16 4427af61a adblockplus@994.10.0.2",
+      checkoutDir,
+    );
+
+    const notes = await executeShellCommand(
+      "npm run --silent -w @eyeo/release-utils get-release-notes -- adblockplus 994.10.0.2",
+      checkoutDir,
+    );
+    expect(notes).toEqual(
+      "# 994.10.0.2 - 2024-12-16\n\nThis release contains only minor updates and under-the-hood changes.",
+    );
+  });
+
+  it("refuses @auto when the release notes do not end at the latest tag", async function () {
+    await executeShellCommand("git tag adblock-996.60.0", checkoutDir);
+    await executeShellCommand("git push origin adblock-996.60.0", checkoutDir);
+
+    await expect(() =>
+      executeShellCommand(
+        "npm run do-release -- --yes --skip-git HEAD adblock@auto",
+        checkoutDir,
+      ),
+    ).rejects.toThrowError("the latest tag is adblock-996.60.0");
+  });
+
+  it("refuses @auto when the latest tag is not a plain version", async function () {
+    // Tag names may contain shell syntax, and @auto puts the tag into a command
+    await executeShellCommand("git tag 'adblock-999$(ls)'", checkoutDir);
+    await executeShellCommand(
+      "git push origin 'adblock-999$(ls)'",
+      checkoutDir,
+    );
+
+    await expect(() =>
+      executeShellCommand(
+        "npm run do-release -- --yes --skip-git HEAD adblock@auto",
+        checkoutDir,
+      ),
+    ).rejects.toThrowError("is not a version");
+  });
+
+  it("picks a minor version with @auto when a feature landed since the latest tag", async function () {
+    await addReleasedHeading(checkoutDir, "adblock", "996.70.0");
+    await executeShellCommand("git tag adblock-996.70.0", checkoutDir);
+    await executeShellCommand("git push origin adblock-996.70.0", checkoutDir);
+    await executeShellCommand(
+      "git commit --allow-empty -m 'feat: Add a thing [noissue]'",
+      checkoutDir,
+    );
+
+    await executeShellCommand(
+      "npm run do-release -- --yes --skip-git --summary-if-empty HEAD adblock@auto",
+      checkoutDir,
+    );
+
+    const config = await fs.readFile(
+      path.join(checkoutDir, "host/adblock/build/config/base.mjs"),
+      "utf8",
+    );
+    expect(config).toContain('version: "996.71.0"');
+  });
+
+  it("picks a patch version with @auto when only fixes landed since the latest tag", async function () {
+    await addReleasedHeading(checkoutDir, "adblockplus", "994.70.0");
+    await executeShellCommand("git tag adblockplus-994.70.0", checkoutDir);
+    await executeShellCommand(
+      "git push origin adblockplus-994.70.0",
+      checkoutDir,
+    );
+    await executeShellCommand(
+      "git commit --allow-empty -m 'fix: Fix a thing [noissue]'",
+      checkoutDir,
+    );
+
+    await executeShellCommand(
+      "npm run do-release -- --yes --skip-git --summary-if-empty HEAD adblockplus@auto",
+      checkoutDir,
+    );
+
+    const config = await fs.readFile(
+      path.join(checkoutDir, "host/adblockplus/build/webext/config/base.mjs"),
+      "utf8",
+    );
+    expect(config).toContain('version: "994.70.1"');
   });
 
   it("exits if no release notes exist", async function () {

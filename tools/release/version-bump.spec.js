@@ -16,7 +16,11 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { updateVersionInConfigContent } from "./version-bump.js";
+import {
+  bumpTypeForTitles,
+  bumpVersion,
+  updateVersionInConfigContent,
+} from "./version-bump.js";
 
 describe("updateVersionInConfigContent", () => {
   it("updates the version number and preserves the rest of the file", () => {
@@ -48,5 +52,45 @@ describe("updateVersionInConfigContent", () => {
     expect(() => {
       updateVersionInConfigContent(configWithoutVersion, "7.0.0");
     }).toThrow("Could not find version field in the config file");
+  });
+});
+
+describe("bumpTypeForTitles", () => {
+  it("is patch when there are no commits", () => {
+    expect(bumpTypeForTitles([])).toBe("patch");
+  });
+
+  it("is patch for rules updates, fixes and other non-feature changes", () => {
+    expect(
+      bumpTypeForTitles([
+        "build: Updated filterlists dependency to update rules data",
+        "fix: Serialize tab-session cleanup [OM-1641]",
+      ]),
+    ).toBe("patch");
+  });
+
+  it("is minor when at least one commit is a feature", () => {
+    expect(bumpTypeForTitles(["fix: A [OM-1]", "feat: B [OM-2]"])).toBe(
+      "minor",
+    );
+    expect(bumpTypeForTitles(["feat(adblock): B [OM-2]"])).toBe("minor");
+    expect(bumpTypeForTitles(["feat!: B [OM-2]"])).toBe("minor");
+  });
+});
+
+describe("bumpVersion", () => {
+  it("bumps minor and patch", () => {
+    expect(bumpVersion("6.46.1", "minor")).toBe("6.47.0");
+    expect(bumpVersion("6.46.1", "patch")).toBe("6.46.2");
+  });
+
+  it("drops a legacy fourth segment", () => {
+    expect(bumpVersion("6.44.0.1", "patch")).toBe("6.44.1");
+    expect(bumpVersion("6.44.0.1", "minor")).toBe("6.45.0");
+  });
+
+  it("throws on a version it cannot parse", () => {
+    expect(() => bumpVersion("6.44", "patch")).toThrow();
+    expect(() => bumpVersion("nope", "patch")).toThrow();
   });
 });

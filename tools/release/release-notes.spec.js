@@ -104,6 +104,38 @@ describe("ReleaseNotes script", function () {
     });
   });
 
+  describe("ensuring unreleased notes exist", function () {
+    const SUMMARY =
+      "This release contains only minor updates and under-the-hood changes.";
+
+    it("adds the summary when the unreleased section is empty", function () {
+      const lines = [
+        "# Unreleased",
+        "",
+        "# 1.1.0 - 2023-10-10",
+        "",
+        "- Did some other stuff",
+        "",
+      ];
+      const releaseNotes = new ReleaseNotes(lines.join("\n"));
+      const changed = releaseNotes.ensureUnreleasedNotes(SUMMARY);
+      expect(changed).toBe(true);
+      expect(releaseNotes.unreleasedNotes()).toEqual(
+        ["# Unreleased", "", SUMMARY].join("\n"),
+      );
+      expect(releaseNotes.notesForVersion("1.1.0")).toEqual(
+        ["# 1.1.0 - 2023-10-10", "", "- Did some other stuff"].join("\n"),
+      );
+    });
+
+    it("leaves existing unreleased notes alone", function () {
+      const releaseNotes = new ReleaseNotes(NORMAL_FILE);
+      const changed = releaseNotes.ensureUnreleasedNotes(SUMMARY);
+      expect(changed).toBe(false);
+      expect(releaseNotes.toString()).toEqual(NORMAL_FILE);
+    });
+  });
+
   describe("inserting a new version heading", function () {
     it("inserts the new heading such that unreleased notes become the new version's notes", function () {
       const releaseNotes = new ReleaseNotes(NORMAL_FILE);
