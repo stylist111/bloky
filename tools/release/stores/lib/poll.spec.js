@@ -17,8 +17,8 @@
 
 import { describe, expect, it, vi } from "vitest";
 
-import { PollTimeoutError } from "./errors.js";
-import { pollUntil } from "./poll.js";
+import { HttpError, PollTimeoutError, StoreOperationError } from "./errors.js";
+import { pollUntil, retryStep } from "./poll.js";
 
 function sequence(...results) {
   const queue = [...results];
@@ -79,5 +79,102 @@ describe("pollUntil", () => {
       pollUntil(check, { sleep: vi.fn(async () => {}) }),
     ).rejects.toBe(failure);
     expect(check).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("retryStep", () => {
+  function storeError(code) {
+    return new StoreOperationError({ store: "edge", code, message: "failed" });
+  }
+
+  function httpError(status) {
+    return new HttpError({
+      method: "POST",
+      url: "https://x",
+      status,
+      body: "",
+    });
+  }
+
+  function failingTimes(count, error) {
+    let calls = 0;
+    return vi.fn(async () => {
+      calls++;
+      if (calls <= count) {
+        throw error;
+      }
+      return "done";
+    });
+  }
+
+  function options(overrides = {}) {
+    return {
+      description: "Uploading Adblock Plus 4.46.0",
+      retryCodes: ["FailedWithoutCode"],
+      sleep: vi.fn(async () => {}),
+      log: vi.fn(),
+      ...overrides,
+    };
+  }
+
+  it("returns the result without waiting when the step succeeds", async () => {
+    const step = failingTimes(0);
+    const opts = options();
+
+    expect(await retryStep(step, opts)).toBe("done");
+    expect(step).toHaveBeenCalledTimes(1);
+    expect(opts.sleep).not.toHaveBeenCalled();
+  });
+
+  it("tries again after a store failure with a retryable code", async () => {
+    const step = failingTimes(2, storeError("FailedWithoutCode"));
+    const opts = options();
+
+    expect(await retryStep(step, opts)).toBe("done");
+    expect(step).toHaveBeenCalledTimes(3);
+    expect(opts.sleep.mock.calls).toEqual([[60_000], [60_000]]);
+    expect(opts.log).toHaveBeenCalledWith(
+      "Uploading Adblock Plus 4.46.0 failed (attempt 1 of 10): " +
+        "[edge] FailedWithoutCode: failed. Trying again in 60 s.",
+    );
+  });
+
+  it("retries server errors, timeouts and network errors", async () => {
+    for (const error of [
+      httpError(503),
+      httpError(429),
+      new PollTimeoutError({ description: "x", timeoutMs: 1 }),
+      new Error("POST https://x failed: fetch failed"),
+    ]) {
+      const step = failingTimes(1, error);
+
+      expect(await retryStep(step, options())).toBe("done");
+      expect(step).toHaveBeenCalledTimes(2);
+    }
+  });
+
+  it("throws final errors at once", async () => {
+    for (const error of [
+      httpError(401),
+      httpError(501),
+      storeError("InProgressSubmission"),
+    ]) {
+      const step = failingTimes(1, error);
+      const opts = options();
+
+      await expect(retryStep(step, opts)).rejects.toBe(error);
+      expect(step).toHaveBeenCalledTimes(1);
+      expect(opts.sleep).not.toHaveBeenCalled();
+    }
+  });
+
+  it("throws the last error after the last attempt", async () => {
+    const error = storeError("FailedWithoutCode");
+    const step = failingTimes(Infinity, error);
+    const opts = options({ attempts: 3 });
+
+    await expect(retryStep(step, opts)).rejects.toBe(error);
+    expect(step).toHaveBeenCalledTimes(3);
+    expect(opts.log).toHaveBeenCalledTimes(2);
   });
 });

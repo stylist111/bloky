@@ -150,6 +150,52 @@ describe("uploadToChromeWebStore", () => {
     ]);
   });
 
+  it("uploads again when the store fails to process the package", async () => {
+    const { fetchImpl, log, run } = setup(
+      [
+        ...AUTH_RESPONSES(),
+        uploadResponse("FAILED"),
+        uploadResponse("SUCCEEDED", "4.46.0"),
+      ],
+      { draftOnly: true },
+    );
+
+    await run();
+
+    expect(fetchImpl.calls.map((call) => call.url).slice(3)).toEqual([
+      UPLOAD_URL,
+      UPLOAD_URL,
+    ]);
+    expect(log).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "Uploading Adblock Plus 4.46.0 failed (attempt 1 of 10)",
+      ),
+    );
+  });
+
+  it("gives up after 10 failed uploads", async () => {
+    const failedUploads = Array.from({ length: 10 }, () =>
+      uploadResponse("FAILED"),
+    );
+    const { fetchImpl, run } = setup([...AUTH_RESPONSES(), ...failedUploads], {
+      draftOnly: true,
+    });
+
+    await expect(run()).rejects.toMatchObject({ code: "FAILED" });
+    expect(fetchImpl.calls).toHaveLength(13);
+  });
+
+  it("doesn't submit again after a failed submission", async () => {
+    const { fetchImpl, run } = setup([
+      ...AUTH_RESPONSES(),
+      uploadResponse("SUCCEEDED", "4.46.0"),
+      textResponse("error", { status: 500 }),
+    ]);
+
+    await expect(run()).rejects.toMatchObject({ status: 500 });
+    expect(fetchImpl.calls).toHaveLength(5);
+  });
+
   it("refuses to upload a package with a different version", async () => {
     const { fetchImpl, readPackage, run } = setup([], {
       readVersion: vi.fn(async () => "4.45.0"),

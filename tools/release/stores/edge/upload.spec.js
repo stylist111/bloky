@@ -34,6 +34,7 @@ const PRODUCT = {
 const PRODUCT_URL = `https://api.addons.microsoftedge.microsoft.com/v1/products/${PRODUCT.productId}`;
 const PACKAGE_PATH =
   "/repo/host/adblockplus/dist/release/adblockplus-chrome-4.46.0-mv3.zip";
+const IRRECOVERABLE = "An error occurred while performing the operation";
 
 function secretResponse(product) {
   return jsonResponse({
@@ -83,7 +84,7 @@ function setup(responses, overrides = {}) {
 }
 
 describe("uploadToEdge", () => {
-  it("uploads the host's package and submits it for certification", async () => {
+  it("uploads the host's package and submits it for review", async () => {
     const { fetchImpl, pkg, readVersion, run } = setup([
       ...AUTH_RESPONSES(),
       accepted("upload-op"),
@@ -128,8 +129,63 @@ describe("uploadToEdge", () => {
     );
   });
 
-  it("reports a previous version that is still in certification", async () => {
+  it("uploads again when the store fails to process the package", async () => {
+    const { fetchImpl, log, run } = setup(
+      [
+        ...AUTH_RESPONSES(),
+        accepted("upload-1"),
+        operation("Failed", { message: IRRECOVERABLE }),
+        accepted("upload-2"),
+        operation("Succeeded"),
+      ],
+      { draftOnly: true },
+    );
+
+    await run();
+
+    expect(fetchImpl.calls.map((call) => call.url).slice(2)).toEqual([
+      `${PRODUCT_URL}/submissions/draft/package`,
+      `${PRODUCT_URL}/submissions/draft/package/operations/upload-1`,
+      `${PRODUCT_URL}/submissions/draft/package`,
+      `${PRODUCT_URL}/submissions/draft/package/operations/upload-2`,
+    ]);
+    expect(log).toHaveBeenCalledWith(
+      "Uploading Adblock Plus 4.46.0 failed (attempt 1 of 10): " +
+        `[edge] FailedWithoutCode: ${IRRECOVERABLE}. Trying again in 60 s.`,
+    );
+  });
+
+  it("gives up after 10 failed uploads", async () => {
+    const failedUploads = Array.from({ length: 10 }, (_, index) => [
+      accepted(`upload-${index}`),
+      operation("Failed", { message: IRRECOVERABLE }),
+    ]).flat();
+    const { fetchImpl, run } = setup([...AUTH_RESPONSES(), ...failedUploads], {
+      draftOnly: true,
+    });
+
+    await expect(run()).rejects.toMatchObject({ code: "FailedWithoutCode" });
+    expect(fetchImpl.calls).toHaveLength(22);
+  });
+
+  it("submits again when the store fails the submission", async () => {
     const { run } = setup([
+      ...AUTH_RESPONSES(),
+      accepted("upload-op"),
+      operation("Succeeded"),
+      accepted("publish-1"),
+      operation("Failed", { message: IRRECOVERABLE }),
+      accepted("publish-2"),
+      operation("Succeeded"),
+    ]);
+
+    const result = await run();
+
+    expect(result.submission.status).toBe("Succeeded");
+  });
+
+  it("doesn't submit again when the previous version is still in review", async () => {
+    const { fetchImpl, run } = setup([
       ...AUTH_RESPONSES(),
       accepted("upload-op"),
       operation("Succeeded"),
@@ -146,10 +202,11 @@ describe("uploadToEdge", () => {
       store: "edge",
       code: "InProgressSubmission",
     });
+    expect(fetchImpl.calls).toHaveLength(6);
   });
 
   it("refuses to upload a package with a different version", async () => {
-    const { fetchImpl, run } = setup([], {
+    const { fetchImpl, readPackage, run } = setup([], {
       readVersion: vi.fn(async () => "4.45.0"),
     });
 
@@ -157,15 +214,36 @@ describe("uploadToEdge", () => {
       `${PACKAGE_PATH} contains version 4.45.0, ` +
         "but 4.46.0 is being released. Not uploading.",
     );
+    expect(readPackage).not.toHaveBeenCalled();
+    expect(fetchImpl.calls).toHaveLength(0);
+  });
+
+  it("fails before any request when the version can't be read", async () => {
+    const unzipError = new Error(
+      "End-of-central-directory signature not found",
+    );
+    const { fetchImpl, run } = setup([], {
+      readVersion: vi.fn(async () => {
+        throw unzipError;
+      }),
+    });
+
+    const error = await run().catch((caught) => caught);
+
+    expect(error.message).toBe(
+      `Can't read the version from ${PACKAGE_PATH}: ${unzipError.message}`,
+    );
+    expect(error.cause).toBe(unzipError);
     expect(fetchImpl.calls).toHaveLength(0);
   });
 
   it("fails before any request for a host that isn't configured", async () => {
-    const { fetchImpl, run } = setup([], { host: "ublock" });
+    const { fetchImpl, readVersion, run } = setup([], { host: "ublock" });
 
     await expect(run()).rejects.toThrow(
       'No Edge Add-ons configuration for host "ublock"',
     );
+    expect(readVersion).not.toHaveBeenCalled();
     expect(fetchImpl.calls).toHaveLength(0);
   });
 
@@ -177,6 +255,37 @@ describe("uploadToEdge", () => {
 
     await expect(run()).rejects.toMatchObject({ status: 403 });
     expect(readPackage).not.toHaveBeenCalled();
+    expect(fetchImpl.calls).toHaveLength(2);
+  });
+
+  it("stops before uploading when the configuration is incomplete", async () => {
+    const { fetchImpl, run } = setup([
+      jsonResponse({ access_token: "federated-token" }),
+      secretResponse({ ...PRODUCT, apiKey: "" }),
+    ]);
+
+    await expect(run()).rejects.toThrow(
+      "Secret edge-abp-credentials: missing required option(s): apiKey",
+    );
+    expect(fetchImpl.calls).toHaveLength(2);
+  });
+
+  it("stops before uploading when the package is missing", async () => {
+    const missing = Object.assign(new Error("no such file or directory"), {
+      code: "ENOENT",
+    });
+    const { fetchImpl, run } = setup(AUTH_RESPONSES(), {
+      readPackage: vi.fn(async () => {
+        throw missing;
+      }),
+    });
+
+    const error = await run().catch((caught) => caught);
+
+    expect(error.message).toBe(
+      `Can't read the package at ${PACKAGE_PATH}: no such file or directory`,
+    );
+    expect(error.cause).toBe(missing);
     expect(fetchImpl.calls).toHaveLength(2);
   });
 

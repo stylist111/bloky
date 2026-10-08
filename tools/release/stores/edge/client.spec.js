@@ -164,6 +164,41 @@ describe("waitForUpload", () => {
   });
 });
 
+describe("uploadAndWait", () => {
+  it("uploads the package and polls the upload operation", async () => {
+    const { client, fetchImpl, sleep } = createClient([
+      accepted("op-1"),
+      operation(OperationStatus.IN_PROGRESS),
+      operation(OperationStatus.SUCCEEDED),
+    ]);
+    const pkg = new Blob(["zip"]);
+
+    const result = await client.uploadAndWait(pkg, { intervalMs: 20 });
+
+    expect(result.status).toBe(OperationStatus.SUCCEEDED);
+    expect(fetchImpl.calls.map((call) => [call.method, call.url])).toEqual([
+      ["POST", `${PRODUCT_URL}/submissions/draft/package`],
+      ["GET", `${PRODUCT_URL}/submissions/draft/package/operations/op-1`],
+      ["GET", `${PRODUCT_URL}/submissions/draft/package/operations/op-1`],
+    ]);
+    expect(fetchImpl.calls[0].body).toBe(pkg);
+    expect(sleep.mock.calls).toEqual([[20]]);
+  });
+
+  it("throws a StoreOperationError when processing fails", async () => {
+    const { client } = createClient([
+      accepted("op-1"),
+      operation(OperationStatus.FAILED, {
+        message: "An error occurred while performing the operation",
+      }),
+    ]);
+
+    await expect(client.uploadAndWait(new Blob(["zip"]))).rejects.toMatchObject(
+      { store: "edge", code: ErrorCode.FAILED_WITHOUT_CODE },
+    );
+  });
+});
+
 describe("publish", () => {
   it("sends the certification notes as plain text by default", async () => {
     const { client, fetchImpl } = createClient([accepted("op-3")]);
@@ -252,5 +287,36 @@ describe("waitForPublish", () => {
 
     expect(error.code).toBe(ErrorCode.UNEXPECTED_FAILURE);
     expect(error.message).toContain("Correlation ID: op-3");
+  });
+});
+
+describe("publishAndWait", () => {
+  it("submits the draft and polls the submission", async () => {
+    const { client, fetchImpl } = createClient([
+      accepted("op-3"),
+      operation(OperationStatus.SUCCEEDED),
+    ]);
+
+    const result = await client.publishAndWait("Build with npm ci");
+
+    expect(result.status).toBe(OperationStatus.SUCCEEDED);
+    expect(fetchImpl.calls.map((call) => [call.method, call.url])).toEqual([
+      ["POST", `${PRODUCT_URL}/submissions`],
+      ["GET", `${PRODUCT_URL}/submissions/operations/op-3`],
+    ]);
+    expect(fetchImpl.calls[0].body).toBe("Build with npm ci");
+  });
+
+  it("reports a previous version that is still in review", async () => {
+    const { client } = createClient([
+      accepted("op-3"),
+      operation(OperationStatus.FAILED, {
+        errorCode: "InProgressSubmission",
+      }),
+    ]);
+
+    await expect(client.publishAndWait()).rejects.toMatchObject({
+      code: ErrorCode.IN_PROGRESS_SUBMISSION,
+    });
   });
 });

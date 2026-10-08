@@ -16,8 +16,7 @@
  */
 
 // Uploads a host's Chrome (mv3) build to Microsoft Edge Add-ons and submits
-// it for certification. Meant to run in the release pipeline of a version
-// tag.
+// it for review. Meant to run in the release pipeline of a version tag.
 //
 // Usage: node tools/release/stores/edge/upload.js <host> <version> [--draft-only]
 //
@@ -26,7 +25,7 @@
 import url from "url";
 import { parseArgs } from "util";
 
-import { createEdgeClient } from "./client.js";
+import { ErrorCode, createEdgeClient } from "./client.js";
 import { getEdgeSecret, loadEdgeProduct } from "./config.js";
 import {
   exchangeIdToken,
@@ -40,6 +39,13 @@ import {
   readManifestVersion,
   readPackageFile,
 } from "../lib/package.js";
+import { retryStep } from "../lib/poll.js";
+
+// Upload and submission failures Edge reports without a reason
+const RETRY_CODES = [
+  ErrorCode.FAILED_WITHOUT_CODE,
+  ErrorCode.UNEXPECTED_FAILURE,
+];
 
 /**
  * @typedef {object} EdgeUploadResult
@@ -50,8 +56,8 @@ import {
  */
 
 /**
- * Uploads a host's release package to its Edge Add-ons product and submits
- * it for certification.
+ * Uploads a host's Chrome release package to its Edge Add-ons product and
+ * submits it for review.
  *
  * Steps:
  * 1. Find the host's configuration secret in `edge/config.js`.
@@ -61,12 +67,14 @@ import {
  * 3. Exchange the GitLab ID token for a federated token, and read the
  *    host's configuration secret with it.
  * 4. Upload the package to the product's draft and wait until Edge has
- *    processed it.
- * 5. Submit the draft for certification and wait until Edge has accepted
- *    the submission, unless `draftOnly` is set. This doesn't wait for the
- *    certification itself.
+ *    processed it. If Edge fails without a reason, try again up to 10
+ *    times, a minute apart (see `retryStep()`).
+ * 5. Submit the draft for review and wait until Edge has accepted the
+ *    submission, unless `draftOnly` is set. This doesn't wait for the
+ *    review itself. If Edge fails without a reason, try again the same way.
  *
- * Steps 1 to 3 fail before anything is uploaded.
+ * Steps 1 to 3 don't change anything in the store, so if one of them fails,
+ * nothing has been uploaded yet.
  *
  * @param {object & import("../lib/http.js").HttpOptions} options
  * @param {string} options.host Host ID, e.g. `adblockplus`.
@@ -98,8 +106,8 @@ import {
  * @throws {import("../lib/errors.js").HttpError} If Google or Edge rejects a
  *   request, e.g. HTTP 401 when the API key has expired.
  * @throws {import("../lib/errors.js").StoreOperationError} If Edge couldn't
- *   process the upload or the submission. Code `InProgressSubmission` means
- *   the previous version is still in certification.
+ *   process the upload or the submission in any attempt. Code
+ *   `InProgressSubmission` means the previous version is still in review.
  */
 export async function uploadToEdge(options) {
   requireOptions(
@@ -148,8 +156,12 @@ export async function uploadToEdge(options) {
   });
 
   log(`Uploading ${packagePath} to ${product.name} (${product.productId})`);
-  const uploadOperation = await client.uploadPackage(pkg);
-  const upload = await client.waitForUpload(uploadOperation);
+  const upload = await retryStep(() => client.uploadAndWait(pkg), {
+    description: `Uploading ${product.name} ${version}`,
+    retryCodes: RETRY_CODES,
+    sleep: httpOptions.sleep,
+    log,
+  });
 
   if (draftOnly) {
     log(
@@ -159,9 +171,13 @@ export async function uploadToEdge(options) {
     return { upload, submission: null };
   }
 
-  const publishOperation = await client.publish(notes);
-  const submission = await client.waitForPublish(publishOperation);
-  log(`Submitted ${product.name} ${version} for certification`);
+  const submission = await retryStep(() => client.publishAndWait(notes), {
+    description: `Submitting ${product.name} ${version}`,
+    retryCodes: RETRY_CODES,
+    sleep: httpOptions.sleep,
+    log,
+  });
+  log(`Submitted ${product.name} ${version} for review`);
   return { upload, submission };
 }
 

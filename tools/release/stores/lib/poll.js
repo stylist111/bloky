@@ -17,7 +17,8 @@
 
 import { setTimeout as delay } from "timers/promises";
 
-import { PollTimeoutError } from "./errors.js";
+import { HttpError, PollTimeoutError, StoreOperationError } from "./errors.js";
+import { isTransientStatus } from "./http.js";
 
 /**
  * @typedef {object} PollOptions
@@ -79,4 +80,76 @@ export async function pollUntil(check, options = {}) {
 
     await sleep(intervalMs);
   }
+}
+
+/**
+ * @typedef {object} RetryStepOptions
+ * @property {string} description What the step does, for the log, e.g.
+ *   `Uploading Adblock Plus 4.46.0`.
+ * @property {string[]} [retryCodes=[]] `StoreOperationError` codes that mean
+ *   the store failed without a reason, so trying again can help. Any other
+ *   code is final.
+ * @property {number} [attempts=10] How often the step runs at most.
+ * @property {number} [delayMs=60000] Pause between two attempts.
+ * @property {(ms: number) => Promise<void>} [sleep] Waits between attempts.
+ * @property {(message: string) => void} [log] Reports failed attempts.
+ */
+
+/**
+ * Runs a store step, such as uploading a package and waiting until the store
+ * has processed it, again when it fails on the store's side. Stores
+ * sometimes fail such steps without a reason and succeed on a later
+ * attempt.
+ *
+ * These errors are final and thrown at once:
+ * - `HttpError` with a status that `isTransientStatus()` doesn't accept,
+ *   e.g. 401 for an expired API key, or 501.
+ * - `StoreOperationError` with a code that isn't in `retryCodes`.
+ *
+ * Anything else is retried: temporary HTTP errors, timeouts while waiting
+ * for the store, network errors and unreadable responses. The step should
+ * only contain store requests, so mistakes on our side, like a package with
+ * the wrong version, are found before it.
+ *
+ * @template T
+ * @param {() => Promise<T>} step The store step.
+ * @param {RetryStepOptions} options Retry options.
+ * @returns {Promise<T>} The result of the first successful attempt.
+ * @throws {Error} The error of the last attempt, or the first final error.
+ */
+export async function retryStep(step, options) {
+  const {
+    description,
+    retryCodes = [],
+    attempts = 10,
+    delayMs = 60_000,
+    sleep = delay,
+    log = console.log, // allow-console
+  } = options;
+
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await step();
+    } catch (error) {
+      if (attempt >= attempts || !isRetryable(error, retryCodes)) {
+        throw error;
+      }
+
+      log(
+        `${description} failed (attempt ${attempt} of ${attempts}): ` +
+          `${error.message}. Trying again in ${delayMs / 1000} s.`,
+      );
+      await sleep(delayMs);
+    }
+  }
+}
+
+function isRetryable(error, retryCodes) {
+  if (error instanceof StoreOperationError) {
+    return retryCodes.includes(error.code);
+  }
+  if (error instanceof HttpError) {
+    return isTransientStatus(error.status);
+  }
+  return true;
 }

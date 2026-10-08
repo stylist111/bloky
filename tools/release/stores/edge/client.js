@@ -80,18 +80,20 @@ export const ErrorCode = Object.freeze({
  * @property {(pkg: Blob) => Promise<string>} uploadPackage
  * @property {(operationId: string) => Promise<Operation>} getUploadStatus
  * @property {(operationId: string, pollOptions?: import("../lib/poll.js").PollOptions) => Promise<Operation>} waitForUpload
+ * @property {(pkg: Blob, pollOptions?: import("../lib/poll.js").PollOptions) => Promise<Operation>} uploadAndWait
  * @property {(notes?: string) => Promise<string>} publish
  * @property {(operationId: string) => Promise<Operation>} getPublishStatus
  * @property {(operationId: string, pollOptions?: import("../lib/poll.js").PollOptions) => Promise<Operation>} waitForPublish
+ * @property {(notes?: string, pollOptions?: import("../lib/poll.js").PollOptions) => Promise<Operation>} publishAndWait
  */
 
 /**
  * Creates a client for one Edge Add-ons product.
  *
- * Typical release flow: `uploadPackage()`, `waitForUpload()`, `publish()`,
- * then `waitForPublish()`. If the previous version is still in review,
- * `waitForPublish()` throws a `StoreOperationError` with code
- * `InProgressSubmission`. The API can't cancel it, so retry later.
+ * Release flow: `uploadAndWait()` replaces the product's draft package, then
+ * `publishAndWait()` submits the draft for review. If the previous version
+ * is still in review, `publishAndWait()` throws a `StoreOperationError` with
+ * code `InProgressSubmission`. The API can't cancel it, so retry later.
  *
  * @param {object & import("../lib/http.js").HttpOptions} options
  * @param {string} options.apiKey API key from Partner Center → Publish API.
@@ -211,6 +213,26 @@ export function createEdgeClient(options) {
   }
 
   /**
+   * Uploads a package to the product's draft and waits until Edge has
+   * processed it.
+   *
+   * @param {Blob} pkg The mv3 zip, e.g. from `fs.openAsBlob(path)`.
+   * @param {import("../lib/poll.js").PollOptions} [pollOptions] Timing for
+   *   the wait.
+   * @returns {Promise<Operation>} The succeeded upload operation.
+   * @throws {StoreOperationError} If the upload failed. `code` holds Edge's
+   *   `errorCode`.
+   * @throws {import("../lib/errors.js").HttpError} If Edge rejects the
+   *   upload, e.g. HTTP 401 when the API key has expired.
+   * @throws {import("../lib/errors.js").PollTimeoutError} If processing takes
+   *   longer than the timeout.
+   */
+  async function uploadAndWait(pkg, pollOptions = {}) {
+    const operationId = await uploadPackage(pkg);
+    return waitForUpload(operationId, pollOptions);
+  }
+
+  /**
    * Submits the draft for certification.
    *
    * Not retried after a server error, because the submission may already
@@ -275,13 +297,36 @@ export function createEdgeClient(options) {
     );
   }
 
+  /**
+   * Submits the draft for review and waits until Edge has accepted the
+   * submission. This doesn't wait for the review itself.
+   *
+   * @param {string} [notes=""] Notes for certification, e.g. build
+   *   instructions for reviewers.
+   * @param {import("../lib/poll.js").PollOptions} [pollOptions] Timing for
+   *   the wait.
+   * @returns {Promise<Operation>} The succeeded submission operation.
+   * @throws {StoreOperationError} If the submission failed. Code
+   *   `InProgressSubmission` means the previous version is still in review.
+   * @throws {import("../lib/errors.js").HttpError} If Edge rejects the
+   *   request.
+   * @throws {import("../lib/errors.js").PollTimeoutError} If processing takes
+   *   longer than the timeout.
+   */
+  async function publishAndWait(notes = "", pollOptions = {}) {
+    const operationId = await publish(notes);
+    return waitForPublish(operationId, pollOptions);
+  }
+
   return Object.freeze({
     uploadPackage,
     getUploadStatus,
     waitForUpload,
+    uploadAndWait,
     publish,
     getPublishStatus,
     waitForPublish,
+    publishAndWait,
   });
 }
 

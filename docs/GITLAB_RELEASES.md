@@ -21,32 +21,38 @@
 # Uploading to the stores from the release pipeline
 
 Once the release exists, the tag pipeline offers manual jobs that upload the
-release's builds to the stores. They replace the upload steps of the
-[Host release process](https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/wikis/Host-release-process);
-submitting for review still happens in each store's dashboard. If a job isn't
-available or fails, upload by hand as described in the wiki.
+release's builds to the stores and submit them for review. They replace the
+upload and submit steps of the
+[Host release process](https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/wikis/Host-release-process).
+If a job isn't available or fails, upload by hand as described in the wiki.
 
-The jobs become available once `create_release` and the `adblock` and
-`adblockplus` child pipelines have passed, because the child pipelines check
-the extensions' permissions.
+The jobs become available once `create_release` has passed.
+
+Stores sometimes fail an upload without giving a reason and accept the same
+package on a later attempt. The jobs therefore try an upload up to 10 times,
+a minute apart, and log every failed attempt. Errors that won't go away, like
+an expired API key or a package with the wrong version, fail the job at once.
 
 ## Chrome Web Store
 
 1. In the tag pipeline, start the `upload_chrome_web_store` job.
 2. The job downloads `<PRODUCT ID>-chrome-<VERSION>-mv3.zip` from the
-   GitLab release, checks that its `manifest.json` has `<VERSION>`, and
-   uploads it as a draft.
+   GitLab release, checks that its `manifest.json` has `<VERSION>`, uploads
+   it and submits it for review. The version is published automatically once
+   it's approved.
 3. In the [developer dashboard](https://chrome.google.com/webstore/developer/dashboard),
-   check that the new version is shown and submit it for review.
+   check that the item's status is "Pending review".
 
 ## Microsoft Edge Add-ons
 
 1. In the tag pipeline, start the `upload_edge_add_ons` job.
 2. The job downloads `<PRODUCT ID>-chrome-<VERSION>-mv3.zip` from the
    GitLab release, checks that its `manifest.json` has `<VERSION>`, uploads
-   it to the product's draft and waits until Edge has verified the package.
+   it to the product's draft, waits until Edge has verified the package and
+   publishes the draft, without notes for testers. Edge then starts the
+   certification.
 3. In [Partner Center](https://partner.microsoft.com/en-us/dashboard/microsoftedge/overview),
-   open the extension's draft and publish it.
+   check that the review has started.
 
 Edge authenticates with an API key instead of a service account. The secrets
 `edge-adblock-credentials` and `edge-abp-credentials` hold a JSON object with
@@ -55,11 +61,12 @@ the product ID, client ID and API key; see
 rotate one, create a new key in Partner Center → Microsoft Edge → Publish API
 and add a new secret version with the whole object.
 
-| The error mentions                             | Likely cause                                    |
-| ---------------------------------------------- | ----------------------------------------------- |
-| `api.addons.microsoftedge.microsoft.com` (401) | The API key has expired or is wrong             |
-| `[edge] InProgressSubmission`                  | The previous version is still in certification  |
-| `[edge] <other code>`                          | Edge rejected the package; check Partner Center |
+| The error mentions                             | Likely cause                                                                                                |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `api.addons.microsoftedge.microsoft.com` (401) | The API key has expired or is wrong                                                                         |
+| `[edge] InProgressSubmission`                  | The previous version is still in certification; publish the uploaded draft in Partner Center once it's done |
+| `[edge] FailedWithoutCode`                     | Edge failed all 10 attempts without a reason; upload in Partner Center                                      |
+| `[edge] <other code>`                          | Edge rejected the package; check Partner Center                                                             |
 
 ## How the jobs authenticate
 

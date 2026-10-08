@@ -69,9 +69,7 @@ export const DEFAULT_RETRY = Object.freeze({
   maxDelayMs: 60_000,
 });
 
-// Statuses that usually mean "try again later". 429 is handled separately
-// because it is safe to retry even for requests that aren't idempotent.
-const TRANSIENT_STATUSES = new Set([408, 500, 502, 503, 504]);
+const TRANSIENT_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
 const MAX_ERROR_BODY_LENGTH = 1000;
 
 /**
@@ -209,12 +207,21 @@ export function parseRetryAfter(value, now = Date.now) {
   return Math.max(0, date - now());
 }
 
-function isRetryableStatus(status, idempotent) {
-  if (status === 429) {
-    return true;
-  }
+/**
+ * Whether an HTTP status usually means "try again later", e.g. throttling or
+ * a gateway timeout.
+ *
+ * @param {number} status HTTP status code.
+ * @returns {boolean} `true` for 408, 429, 500, 502, 503 and 504.
+ */
+export function isTransientStatus(status) {
+  return TRANSIENT_STATUSES.has(status);
+}
 
-  return idempotent && TRANSIENT_STATUSES.has(status);
+// 429 means the request wasn't processed, so it is safe to retry even for
+// requests that aren't idempotent.
+function isRetryableStatus(status, idempotent) {
+  return status === 429 || (idempotent && isTransientStatus(status));
 }
 
 function backoffDelay(attempt, { minDelayMs, maxDelayMs }) {

@@ -30,7 +30,7 @@
 import url from "url";
 import { parseArgs } from "util";
 
-import { createChromeWebStoreClient } from "./client.js";
+import { UploadState, createChromeWebStoreClient } from "./client.js";
 import {
   getChromeWebStoreSecret,
   loadChromeWebStoreProduct,
@@ -49,6 +49,10 @@ import {
   readManifestVersion,
   readPackageFile,
 } from "../lib/package.js";
+import { retryStep } from "../lib/poll.js";
+
+// Upload failures the store reports without a reason
+const RETRY_CODES = [UploadState.FAILED, UploadState.NOT_FOUND, "UNKNOWN"];
 
 /**
  * @typedef {object} UploadResult
@@ -72,8 +76,11 @@ import {
  * 3. Exchange the GitLab ID token for a federated token, and read the
  *    host's configuration secret with it.
  * 4. Get an access token for the host's service account.
- * 5. Upload the package and wait until the store has processed it.
- * 6. Submit the draft for review, unless `draftOnly` is set.
+ * 5. Upload the package and wait until the store has processed it. If the
+ *    store fails, try again up to 10 times, a minute apart (see
+ *    `retryStep()`).
+ * 6. Submit the draft for review, unless `draftOnly` is set. This isn't
+ *    retried, because a second attempt could submit twice.
  *
  * Steps 1 to 4 don't change anything in the store, so if one of them fails,
  * nothing has been uploaded yet.
@@ -107,7 +114,7 @@ import {
  * @throws {import("../lib/errors.js").HttpError} If Google or the store
  *   rejects a request.
  * @throws {import("../lib/errors.js").StoreOperationError} If the store
- *   couldn't process the upload.
+ *   couldn't process the upload in any attempt.
  */
 export async function uploadToChromeWebStore(options) {
   requireOptions(
@@ -161,7 +168,12 @@ export async function uploadToChromeWebStore(options) {
   });
 
   log(`Uploading ${packagePath} to ${product.name} (${product.itemId})`);
-  const upload = await client.uploadAndWait(pkg);
+  const upload = await retryStep(() => client.uploadAndWait(pkg), {
+    description: `Uploading ${product.name} ${version}`,
+    retryCodes: RETRY_CODES,
+    sleep: httpOptions.sleep,
+    log,
+  });
 
   if (draftOnly) {
     log(
