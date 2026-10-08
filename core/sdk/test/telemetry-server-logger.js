@@ -436,6 +436,39 @@ describe("Telemetry - Server Logging", function() {
       expect(payload.cohorts).toEqual([]);
     });
 
+    it("sends client_attributes with low precision values", async function() {
+      await EWE.testing.mockFacts({
+        installDate: new Date("2023-10-01T01:12:34Z").getTime(),
+        customFiltersCount: 53,
+        dynamicRuleCount: 143,
+        staticRuleCount: 789,
+        pingIdMintCount: 32,
+        eventsIdMintCount: 67,
+        clientIdRotationFrequency: 254
+      });
+      await EWE.testing.serverLogger.behavior("test_event_no_data");
+
+      let requestLogs;
+      await waitForAssertion(async() => {
+        requestLogs = await getRequestLogs(DEBUG_TELEMETRY_URL);
+        expect(requestLogs).toHaveLength(1);
+      });
+
+      let payload = requestLogs[0].body.payload;
+      expect(Array.isArray(payload.client_attributes)).toBe(true);
+      expect(payload.client_attributes).toEqual(
+        expect.arrayContaining([
+          {key: "install_time", value: String(new Date("2023-10-01T00:00:00Z").getTime())},
+          {key: "custom_filters_count", value: "50"},
+          {key: "dynamic_rule_count", value: "100"},
+          {key: "static_rule_count", value: "800"},
+          {key: "ping_id_mint_count", value: "30"},
+          {key: "events_id_mint_count", value: "70"},
+          {key: "client_id_rotation_frequency", value: "300"}
+        ])
+      );
+    });
+
     it("logs added while sending is in progress go into the next batch", async function() {
       let count = 10;
 

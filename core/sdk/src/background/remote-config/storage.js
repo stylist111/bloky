@@ -320,16 +320,38 @@ async function getDefaultFacts() {
  * @typedef {Object} Facts
  * @property {string} extName - The extension name.
  * @property {string} extVersion - The extension version (semver).
+ * @property {number} installDate - The timestamp when the extension was
+ *    installed, in milliseconds since the epoch.
  * @property {string} countryCode - The 2-letter country code of the user.
  * @property {string} browserName - The browser name.
+ * @property {string} browserVersion - The browser version.
  * @property {string} browserLanguage - The UI language.
  * @property {boolean} aaEnabled - Whether Acceptable Ads is enabled.
+ * @property {boolean} hasPremium - Whether the user has a premium license.
  * @property {management.ExtensionInstallType} installType - The installation
  *    type of the extension e.g. "normal", "sideload", "development", etc.
  * @property {boolean} isTrial - Whether the user is on a trial.
  * @property {number} trialDaysLeft - Days left in trial.
+ * @property {number} reverseTrialStartDate - The timestamp when the user
+ *    started the reverse trial for zero delay snippets, in milliseconds
+ *    since the epoch.
  * @property {boolean} marketingConsent - Whether the user consented to
  *    marketing emails.
+ * @property {number} blockedCount - The number of ads blocked by the extension.
+ * @property {number} customFiltersCount - The number of active custom
+ *    (user-added) filters.
+ * @property {number} dynamicRuleCount - The number of active dynamic
+ *    declarative net request rules (MV3 only).
+ * @property {number} staticRuleCount - The number of enabled static
+ *    declarative net request rulesets (MV3 only).
+ * @property {string[]} filterLists - 12-character SHA-256 hash prefixes of
+ *    active filter list subscription URLs.
+ * @property {number} lastBlockthroughTagDate - The timestamp when the
+ *    blockthrough tag was last seen, in milliseconds since the epoch.
+ * @property {number} lastBaitBlockedDate - The timestamp when a bait request
+ *    was last blocked, in milliseconds since the epoch.
+ * @property {boolean} partnerExtensionCoinstalled - Whether an ABP or AB
+ *    co-install has been detected.
  * @property {number} clientIdStability - Frequency of the most common
  *    client ID (IP address hash) in the client ID history, as a
  *    percentage of all entries. 0 if there isn't enough history yet.
