@@ -997,6 +997,15 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      */
     const getProfileSyncStatus: () => Promise<ProfileSyncStatus>;
 
+    /**
+     * Retrieves the time the access and refresh tokens were last saved, which
+     * happens on a successful login or token refresh. The value is kept after
+     * logging out.
+     *
+     * @returns Milliseconds since the Unix epoch, or null if tokens were never saved.
+     */
+    const getLastTokenUpdate: () => Promise<number | null>;
+
 
     /**
      * Emitted when the account status has changed

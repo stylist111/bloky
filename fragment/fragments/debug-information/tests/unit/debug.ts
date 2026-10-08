@@ -108,6 +108,9 @@ vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
         lastSuccessfulRequest: new Date().toISOString(),
       }),
     ),
+    getLastTokenUpdate: vi.fn(
+      (): Promise<number | null> => Promise.resolve(NOW_SECONDS * 1000),
+    ),
   },
   filters: {
     getUserFilters: vi.fn().mockImplementation(getDefaultUserFilters),
@@ -221,6 +224,17 @@ describe("pretty print debug data", () => {
     expect(debugData.account.syncStatus).toHaveProperty(
       "lastSuccessfulRequest",
     );
+    expect(debugData.account.lastTokenUpdate).toEqual(
+      new Date(NOW_SECONDS * 1000).toISOString(),
+    );
+  });
+
+  it("should report null last token update when tokens were never saved", async () => {
+    vi.mocked(ewe.account.getLastTokenUpdate).mockResolvedValueOnce(null);
+
+    const debugData = await getDebugInformation(defaultParameters);
+
+    expect(debugData.account.lastTokenUpdate).toBeNull();
   });
 
   it("should return default test debug data for MV3 installation of AdBlock", async () => {

@@ -1,5 +1,8 @@
 # Unreleased
 
+- Added `account.getLastTokenUpdate()`, which returns when the account tokens
+  were last saved, i.e. the last successful login or token refresh.
+
 - Added the `crumbs_settings_banner` telemetry module for the Adblock Plus
   settings page Crumbs banner experiment, with the `displayed` and `clicked`
   events.

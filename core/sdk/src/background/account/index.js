@@ -21,6 +21,7 @@ import {
   hasPremium,
   getProfile,
   getProfileSync,
+  getLastTokenUpdate,
   isLoggedIn,
   clearUserData,
   clearStorage,
@@ -280,5 +281,17 @@ export default {
    * @memberof account
    * @returns {Promise<ProfileSyncStatus>}
    */
-  getProfileSyncStatus: getProfileSync
+  getProfileSyncStatus: getProfileSync,
+
+  /**
+   * Retrieves the time the access and refresh tokens were last saved, which
+   * happens on a successful login or token refresh. The value is kept after
+   * logging out.
+   *
+   * @function
+   * @memberof account
+   * @returns {Promise<number|null>} Milliseconds since the Unix epoch, or
+   *   null if tokens were never saved.
+   */
+  getLastTokenUpdate
 };

@@ -112,6 +112,7 @@ export interface AccountInfo {
   isLoggedIn: boolean;
   user?: ewe.UserProfile | null;
   syncStatus?: ewe.ProfileSyncStatus | null;
+  lastTokenUpdate: string | null;
 }
 
 /**

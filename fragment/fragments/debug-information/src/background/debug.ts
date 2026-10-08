@@ -116,18 +116,23 @@ async function getMigrationMessages(): Promise<MigrationErrors> {
  * Returns the account information needed to debug potential issues
  */
 async function getAccountInfo(): Promise<AccountInfo> {
-  const [hasPremium, isLoggedIn, user, syncStatus] = await Promise.all([
-    ewe.account.hasPremium(),
-    ewe.account.isLoggedIn(),
-    ewe.account.getProfile(),
-    ewe.account.getProfileSyncStatus(),
-  ]);
+  const [hasPremium, isLoggedIn, user, syncStatus, lastTokenUpdate] =
+    await Promise.all([
+      ewe.account.hasPremium(),
+      ewe.account.isLoggedIn(),
+      ewe.account.getProfile(),
+      ewe.account.getProfileSyncStatus(),
+      ewe.account.getLastTokenUpdate(),
+    ]);
 
   return {
     hasPremium,
     isLoggedIn,
     user,
     syncStatus,
+    lastTokenUpdate: lastTokenUpdate
+      ? new Date(lastTokenUpdate).toISOString()
+      : null,
   };
 }
 

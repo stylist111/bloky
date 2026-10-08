@@ -199,11 +199,13 @@ describe("Account", function() {
 
   it("returns valid data when user is logged out", async function() {
     await assertLogOutUser();
+    expect(await EWE.account.getLastTokenUpdate()).toBeNull();
     // No events should be emitted when the user is logged out
     await expectTestEvents("account.onChanged", onChangedEvents);
   });
 
   it("successfully logs in the user", async function() {
+    const beforeLogIn = Date.now();
     await logInUser();
 
     await waitForAssertion(async() => {
@@ -211,6 +213,10 @@ describe("Account", function() {
       expect(await EWE.account.hasPremium()).toBe(false);
       expect(await EWE.account.getProfile()).toBeNull();
       expect(await EWE.account.getProfileSyncStatus()).toEqual({});
+
+      const lastTokenUpdate = await EWE.account.getLastTokenUpdate();
+      expect(lastTokenUpdate).toBeGreaterThanOrEqual(beforeLogIn);
+      expect(lastTokenUpdate).toBeLessThanOrEqual(Date.now());
     });
     // No events should be emitted until the profile is fetched
     await expectTestEvents("account.onChanged", onChangedEvents);
@@ -237,6 +243,8 @@ describe("Account", function() {
     await EWE.account.logOut();
 
     await assertLogOutUser();
+    // The last token update is kept after logging out
+    expect(await EWE.account.getLastTokenUpdate()).not.toBeNull();
 
     // Check that the logout event was emitted
     onChangedEvents.push([{user: null}]);

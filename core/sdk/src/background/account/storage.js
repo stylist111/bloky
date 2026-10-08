@@ -70,6 +70,20 @@ export async function getTokens() {
 }
 
 /**
+ * Retrieves the time the access and refresh tokens were last saved, which
+ * happens on a successful login or token refresh. The value is kept after
+ * logging out.
+ *
+ * @returns {Promise<number|null>} Milliseconds since the Unix epoch, or null
+ *   if tokens were never saved.
+ */
+export async function getLastTokenUpdate() {
+  const {lastTokenUpdate} = await accountData.getStateLoaded();
+
+  return lastTokenUpdate || null;
+}
+
+/**
  * Checks if the user has a premium account based on the features
  * @param {Array<string>} features - The features array from the user profile.
  * @returns {boolean} - Returns true if the user has a premium account,

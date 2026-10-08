@@ -1,5 +1,8 @@
 # Unreleased
 
+- Added the time of the last successful account login or token refresh to
+  the debug information.
+
 # 4.46.0 - 2026-10-06
 
 - Added an experiment that replaces the Premium banner on the settings page

@@ -1,5 +1,8 @@
 # Unreleased
 
+- Added the time of the last successful account login or token refresh to
+  the debug information.
+
 # 6.48.0 - 2026-10-06
 
 - Fixed an issue where an on-page dialog meant to be shown on several page
