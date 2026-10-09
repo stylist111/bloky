@@ -355,8 +355,10 @@ create_release_mr_back_to_main:
 
 tag_release:
   stage: release
-  # No "needs", so this waits for every earlier stage on main to pass, including
-  # the child test pipelines. A red main pipeline does not get tagged.
+  # Runs as soon as the pipeline starts. The merged commit is the one the MR
+  # pipeline already tested, because main only fast-forwards, so waiting for the
+  # tests to run again on main would only delay the release.
+  needs: []
   rules:
     - !reference [.never-run-on-update-rules-trigger, rules]
     # "changes" is always true for scheduled pipelines, and nightly runs have nothing to tag

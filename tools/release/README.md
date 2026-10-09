@@ -31,11 +31,12 @@ Merge the bot's merge request soon after it opens. If other changes land on
 `main` first, the notes file can conflict. Re-run the scheduled pipeline and it
 opens a fresh merge request from the current `main`.
 
-To delay a release, do not merge. The tags are only created once the whole
-`main` pipeline is green. If it is red, retry the failed job, or tag the merged
-commit by hand with `git tag -a <host>-<version> <commit>` and push it. To
-release by hand, or outside Monday, run `do-release` as before. A version that
-already has a tag is never tagged again, so nothing is released twice.
+To delay a release, do not merge. The tags are created as soon as the merge
+lands on `main`; the merge request's own pipeline is the test gate. If the tag
+job fails, tag the merged commit by hand with
+`git tag -a <host>-<version> <commit>` and push it. To release by hand, or
+outside Monday, run `do-release` as before. A version that already has a tag is
+never tagged again, so nothing is released twice.
 
 The pieces, in the order they run:
 
