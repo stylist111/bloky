@@ -56,8 +56,8 @@ const RETRY_CODES = [UploadState.FAILED, UploadState.NOT_FOUND, "UNKNOWN"];
 
 /**
  * @typedef {object} UploadResult
- * @property {import("./client.js").UploadResponse} upload Result
- *   of the upload.
+ * @property {import("./client.js").UploadResponse} uploadResponse
+ *   Result of the upload.
  * @property {import("./client.js").PublishResponse|null} submission
  *   The new submission, or `null` in draft-only mode.
  */
@@ -168,7 +168,7 @@ export async function uploadToChromeWebStore(options) {
   });
 
   log(`Uploading ${packagePath} to ${product.name} (${product.itemId})`);
-  const upload = await retryStep(() => client.uploadAndWait(pkg), {
+  const uploadResponse = await retryStep(() => client.uploadAndWait(pkg), {
     description: `Uploading ${product.name} ${version}`,
     retryCodes: RETRY_CODES,
     sleep: httpOptions.sleep,
@@ -180,7 +180,7 @@ export async function uploadToChromeWebStore(options) {
       `Uploaded ${product.name} ${version} as a draft. ` +
         "Submit it for review in the Developer Dashboard.",
     );
-    return { upload, submission: null };
+    return { uploadResponse, submission: null };
   }
 
   const submission = await client.publish();
@@ -188,7 +188,7 @@ export async function uploadToChromeWebStore(options) {
     `Submitted ${product.name} ${version} for review ` +
       `(state: ${submission?.state})`,
   );
-  return { upload, submission };
+  return { uploadResponse, submission };
 }
 
 async function run() {

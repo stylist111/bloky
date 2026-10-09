@@ -49,8 +49,8 @@ const RETRY_CODES = [
 
 /**
  * @typedef {object} EdgeUploadResult
- * @property {import("./client.js").Operation} upload The finished package
- *   upload.
+ * @property {import("./client.js").Operation} uploadResponse The finished
+ *   package upload.
  * @property {import("./client.js").Operation|null} submission The accepted
  *   submission, or `null` in draft-only mode.
  */
@@ -156,7 +156,7 @@ export async function uploadToEdge(options) {
   });
 
   log(`Uploading ${packagePath} to ${product.name} (${product.productId})`);
-  const upload = await retryStep(() => client.uploadAndWait(pkg), {
+  const uploadResponse = await retryStep(() => client.uploadAndWait(pkg), {
     description: `Uploading ${product.name} ${version}`,
     retryCodes: RETRY_CODES,
     sleep: httpOptions.sleep,
@@ -168,7 +168,7 @@ export async function uploadToEdge(options) {
       `Uploaded ${product.name} ${version} as a draft. ` +
         "Publish it in Partner Center.",
     );
-    return { upload, submission: null };
+    return { uploadResponse, submission: null };
   }
 
   const submission = await retryStep(() => client.publishAndWait(notes), {
@@ -178,7 +178,7 @@ export async function uploadToEdge(options) {
     log,
   });
   log(`Submitted ${product.name} ${version} for review`);
-  return { upload, submission };
+  return { uploadResponse, submission };
 }
 
 async function run() {

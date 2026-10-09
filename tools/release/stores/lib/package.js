@@ -24,6 +24,11 @@ import { promisify } from "util";
 
 import { projectRootPath } from "../../utils.js";
 
+// Host IDs and versions end up in file paths, so only plain values like
+// the ones in release tags are accepted, e.g. `adblockplus` and `4.46.0`.
+const HOST_PATTERN = /^[a-z]+$/;
+const VERSION_PATTERN = /^\d+(\.\d+)*$/;
+
 /**
  * Returns the path of a host's Chrome (mv3) release package, as built by
  * the `build:release` CI job. The Chrome Web Store and Microsoft Edge
@@ -34,16 +39,58 @@ import { projectRootPath } from "../../utils.js";
  * @param {string} [rootPath] Repository root. Defaults to this repository.
  * @returns {string} Absolute path, e.g.
  *   `<root>/host/adblockplus/dist/release/adblockplus-chrome-4.46.0-mv3.zip`.
+ * @throws {Error} If the host or version isn't a plain value like `4.46.0`.
  */
 export function chromePackagePath(host, version, rootPath = projectRootPath()) {
-  return path.join(
-    rootPath,
-    "host",
-    host,
-    "dist",
-    "release",
-    `${host}-chrome-${version}-mv3.zip`,
-  );
+  const fileName = `${host}-chrome-${version}-mv3.zip`;
+  return releaseFilePath(host, version, fileName, rootPath);
+}
+
+/**
+ * Returns the path of a host's Firefox (mv2) release package, as built by
+ * the `build:release` CI job.
+ *
+ * @param {string} host Host ID, e.g. `adblockplus`.
+ * @param {string} version Version being released, e.g. `4.46.0`.
+ * @param {string} [rootPath] Repository root. Defaults to this repository.
+ * @returns {string} Absolute path, e.g.
+ *   `<root>/host/adblockplus/dist/release/adblockplus-firefox-4.46.0-mv2.xpi`.
+ * @throws {Error} If the host or version isn't a plain value like `4.46.0`.
+ */
+export function firefoxPackagePath(
+  host,
+  version,
+  rootPath = projectRootPath(),
+) {
+  const fileName = `${host}-firefox-${version}-mv2.xpi`;
+  return releaseFilePath(host, version, fileName, rootPath);
+}
+
+/**
+ * Returns the path of a host's source code archive, as built by the
+ * `build:release` CI job. Firefox reviewers build the extension from it.
+ *
+ * @param {string} host Host ID, e.g. `adblockplus`.
+ * @param {string} version Version being released, e.g. `4.46.0`.
+ * @param {string} [rootPath] Repository root. Defaults to this repository.
+ * @returns {string} Absolute path, e.g.
+ *   `<root>/host/adblockplus/dist/release/adblockplus-4.46.0.tar.gz`.
+ * @throws {Error} If the host or version isn't a plain value like `4.46.0`.
+ */
+export function sourcePackagePath(host, version, rootPath = projectRootPath()) {
+  const fileName = `${host}-${version}.tar.gz`;
+  return releaseFilePath(host, version, fileName, rootPath);
+}
+
+function releaseFilePath(host, version, fileName, rootPath) {
+  if (!HOST_PATTERN.test(host)) {
+    throw new Error(`Invalid host "${host}"`);
+  }
+  if (!VERSION_PATTERN.test(version)) {
+    throw new Error(`Invalid version "${version}"`);
+  }
+
+  return path.join(rootPath, "host", host, "dist", "release", fileName);
 }
 
 /**

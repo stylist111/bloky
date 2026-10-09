@@ -164,6 +164,22 @@ describe("request", () => {
     expect(fetchImpl.calls).toHaveLength(1);
   });
 
+  it("builds headers before every attempt when given a function", async () => {
+    const fetchImpl = createFakeFetch([
+      textResponse("unavailable", { status: 503 }),
+      jsonResponse({}),
+    ]);
+    let attempt = 0;
+    const headers = () => ({ Authorization: `JWT token-${attempt++}` });
+
+    await request(URL, { headers, fetchImpl, sleep: noSleep() });
+
+    expect(fetchImpl.calls.map((call) => call.headers.Authorization)).toEqual([
+      "JWT token-0",
+      "JWT token-1",
+    ]);
+  });
+
   it("truncates long error bodies", async () => {
     const fetchImpl = createFakeFetch([
       textResponse("x".repeat(5000), { status: 400 }),

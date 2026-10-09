@@ -426,7 +426,8 @@ upload_sourcemaps:
     GCP_WORKLOAD_IDENTITY_PROVIDER_ID: gitlab-com
 
 # Store uploads are started by hand once the GitLab release exists. They
-# download the release's Chrome (mv3) build.
+# download the release files in RELEASE_FILES, where VERSION stands for the
+# release's version.
 .store-upload:
   extends: .google-workload-identity
   stage: release
@@ -441,15 +442,20 @@ upload_sourcemaps:
   interruptible: false
   before_script:
     - !reference [.on-host-release-tag, before_script]
-    - PACKAGE="host/$HOST/dist/release/$HOST-chrome-$VERSION-mv3.zip"
-    - mkdir -p "$(dirname "$PACKAGE")"
-    - echo "Downloading $PACKAGE from the $CI_COMMIT_TAG release"
-    - curl --fail --location --silent --show-error --output "$PACKAGE" "$CI_PROJECT_URL/-/releases/$CI_COMMIT_TAG/downloads/$HOST-chrome-$VERSION-mv3.zip"
+    - mkdir -p "host/$HOST/dist/release"
+    - |
+      for FILE in $RELEASE_FILES; do
+        FILE="$HOST-${FILE//VERSION/$VERSION}"
+        echo "Downloading $FILE from the $CI_COMMIT_TAG release"
+        curl --fail --location --silent --show-error --output "host/$HOST/dist/release/$FILE" "$CI_PROJECT_URL/-/releases/$CI_COMMIT_TAG/downloads/$FILE"
+      done
 
 # Uploads to the Chrome Web Store and submits for review. See
 # docs/GITLAB_RELEASES.md.
 upload_chrome_web_store:
   extends: .store-upload
+  variables:
+    RELEASE_FILES: chrome-VERSION-mv3.zip
   script:
     - node tools/release/stores/chrome/upload.js "$HOST" "$VERSION"
 
@@ -457,8 +463,20 @@ upload_chrome_web_store:
 # docs/GITLAB_RELEASES.md.
 upload_edge_add_ons:
   extends: .store-upload
+  variables:
+    RELEASE_FILES: chrome-VERSION-mv3.zip
   script:
     - node tools/release/stores/edge/upload.js "$HOST" "$VERSION"
+
+# Uploads to Firefox Add-ons and submits the version for review, with its
+# source code. Not needed for rules-only releases. See
+# docs/GITLAB_RELEASES.md.
+upload_firefox_add_ons:
+  extends: .store-upload
+  variables:
+    RELEASE_FILES: firefox-VERSION-mv2.xpi VERSION.tar.gz
+  script:
+    - node tools/release/stores/firefox/upload.js "$HOST" "$VERSION"
 
 ################################################################################
 # Overrides for jobs from included templates

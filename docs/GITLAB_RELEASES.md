@@ -68,6 +68,38 @@ and add a new secret version with the whole object.
 | `[edge] FailedWithoutCode`                     | Edge failed all 10 attempts without a reason; upload in Partner Center                                      |
 | `[edge] <other code>`                          | Edge rejected the package; check Partner Center                                                             |
 
+## Firefox Add-ons
+
+Not needed for rules-only releases.
+
+1. In the tag pipeline, start the `upload_firefox_add_ons` job.
+2. The job downloads `<PRODUCT ID>-firefox-<VERSION>-mv2.xpi` and
+   `<PRODUCT ID>-<VERSION>.tar.gz` from the GitLab release, checks that the
+   xpi's `manifest.json` has `<VERSION>`, uploads it and waits for AMO's
+   validation.
+3. If there are no validation errors and only the accepted warnings (see
+   `tools/release/stores/firefox/upload.js`), the job submits the
+   version for review. It sets the release notes from `RELEASE_NOTES.md`,
+   the notes for reviewers from `STORE_LISTING.md` and, for Adblock Plus,
+   Firefox for Android compatibility, then attaches the source code.
+4. Check the version in the
+   [AMO developer hub](https://addons.mozilla.org/en-US/developers/addons).
+
+AMO has no drafts, so the job checks everything it can before submitting.
+
+Both add-ons are uploaded with the API key of one AMO account, so a single
+secret, `amo-credentials`, holds the JWT issuer and secret and each host's
+add-on; see `tools/release/stores/firefox/config.js`. The account has to have
+accepted AMO's distribution agreement.
+
+| The error mentions                 | Likely cause                                                           |
+| ---------------------------------- | ---------------------------------------------------------------------- |
+| `addons.mozilla.org` (401)         | The JWT issuer or secret is wrong, or the runner's clock is off        |
+| `addons.mozilla.org` (429)         | AMO throttled the uploads; try again later                             |
+| `[amo] ValidationFailed`           | The package has validation errors; nothing was submitted               |
+| `[amo] UnexpectedWarnings`         | Validation reported a new kind of warning; nothing was submitted       |
+| `attaching the source code failed` | Upload the `.tar.gz` to the version in the developer hub before review |
+
 ## How the jobs authenticate
 
 The jobs hold no store credentials. GitLab issues each job an ID token,

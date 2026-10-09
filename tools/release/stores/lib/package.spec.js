@@ -22,7 +22,9 @@ import { projectRootPath } from "../../utils.js";
 import {
   checkPackageVersion,
   chromePackagePath,
+  firefoxPackagePath,
   readPackageFile,
+  sourcePackagePath,
 } from "./package.js";
 
 const PACKAGE_PATH =
@@ -40,6 +42,39 @@ describe("chromePackagePath", () => {
         "host/adblockplus/dist/release/adblockplus-chrome-4.46.0-mv3.zip",
       ),
     );
+  });
+});
+
+describe("firefoxPackagePath", () => {
+  it("points to the Firefox release build of the host", () => {
+    expect(firefoxPackagePath("adblock", "6.47.0", "/repo")).toBe(
+      "/repo/host/adblock/dist/release/adblock-firefox-6.47.0-mv2.xpi",
+    );
+  });
+});
+
+describe("sourcePackagePath", () => {
+  it("points to the source archive of the host", () => {
+    expect(sourcePackagePath("adblockplus", "4.46.0", "/repo")).toBe(
+      "/repo/host/adblockplus/dist/release/adblockplus-4.46.0.tar.gz",
+    );
+  });
+});
+
+describe("release paths", () => {
+  it("reject a host or version that could change the path", () => {
+    for (const releasePath of [
+      chromePackagePath,
+      firefoxPackagePath,
+      sourcePackagePath,
+    ]) {
+      expect(() => releasePath("../../etc", "4.46.0", "/repo")).toThrow(
+        'Invalid host "../../etc"',
+      );
+      expect(() => releasePath("adblock", "99;ls", "/repo")).toThrow(
+        'Invalid version "99;ls"',
+      );
+    }
   });
 });
 

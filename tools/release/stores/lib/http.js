@@ -46,9 +46,11 @@ import { HttpError } from "./errors.js";
 /**
  * @typedef {object} RequestOptions
  * @property {string} [method="GET"] HTTP method.
- * @property {Record<string, string>} [headers] Request headers.
- * @property {string|Blob} [body] Request body. It must be re-readable so a
- *   retry can send it again, which rules out streams.
+ * @property {Record<string, string>|(() => Record<string, string>)} [headers]
+ *   Request headers, or a function that returns them. A function is called
+ *   before every attempt, e.g. to sign each request with a fresh token.
+ * @property {string|Blob|FormData} [body] Request body. It must be
+ *   re-readable so a retry can send it again, which rules out streams.
  * @property {boolean} [idempotent] Whether sending the request twice is
  *   safe. Defaults to `true` for GET and `false` otherwise. Requests that
  *   aren't idempotent are only retried on HTTP 429.
@@ -120,10 +122,15 @@ export async function request(url, options = {}) {
 
   for (let attempt = 0; ; attempt++) {
     const isLastAttempt = attempt >= retries;
+    const attemptHeaders = typeof headers === "function" ? headers() : headers;
 
     let response;
     try {
-      response = await fetchImpl(url, { method, headers, body });
+      response = await fetchImpl(url, {
+        method,
+        headers: attemptHeaders,
+        body,
+      });
     } catch (error) {
       if (!idempotent || isLastAttempt) {
         throw new Error(`${method} ${url} failed: ${error.message}`, {
