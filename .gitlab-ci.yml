@@ -395,6 +395,17 @@ tag_release:
         fi
       done
 
+# Prints the #releases Slack message for both extensions once the release is
+# tagged. See tools/release/README.md.
+announce_release:
+  stage: notifications
+  cache: []
+  needs: [tag_release]
+  rules:
+    - !reference [tag_release, rules]
+  script:
+    - node tools/release/announcement.js
+
 upload_sourcemaps:
   stage: release
   needs: ["build:release"]

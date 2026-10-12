@@ -14,7 +14,8 @@ release.
 After the merge, CI waits for the tests on `main` to pass, then creates the two
 release tags. The tag pipeline builds the extensions and publishes the GitLab
 releases. A human downloads the builds, uploads them to the stores, and posts
-in #releases.
+in #releases. The `announce_release` job prints that message for both
+extensions, with their release notes, ready to copy from its log.
 
 Versions: if any commit since the last release has a `feat` title, the minor
 number goes up. Otherwise the patch number does. Both extensions get the same
@@ -45,6 +46,7 @@ The pieces, in the order they run:
 | `update-rules-dependency.sh` | scheduled CI job, Monday             | bumps filter lists, runs do-release, opens the MR            |
 | `do-release.js`              | inside that job, with `--skip-git`   | picks versions, moves release notes, writes versions, no git |
 | `tag_release` CI job         | `main`, after merge, when tests pass | tags any host version that has no tag yet                    |
+| `announce_release` CI job    | `main`, right after `tag_release`    | prints the #releases message for both extensions             |
 | tag pipeline                 | on the new tags                      | builds and publishes, unchanged                              |
 
 ## Usage
