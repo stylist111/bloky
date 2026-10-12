@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.49.0 - 2026-10-12
+
 - Updated snippets to 2.17.0
 
 - Added the time of the last successful account login or token refresh to
