@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.17.0
+
 - Added the time of the last successful account login or token refresh to
   the debug information.
 
