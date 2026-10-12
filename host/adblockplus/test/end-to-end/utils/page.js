@@ -297,16 +297,39 @@ export async function getPopupBlockedAdsTotalCount() {
   return parseInt(totalCount, 10);
 }
 
+export async function clickAAAndCheck({ enable = true } = {}) {
+  const checkboxSelector = "#acceptable-ads-allow";
+  const privacyCheckboxSelector = "#acceptable-ads-privacy-allow";
+
+  await clickFLCheckboxAndCheck(checkboxSelector, {
+    enable,
+    name: "Acceptable Ads"
+  });
+
+  // The AA checkbox is a native input, so its "checked" property changes on
+  // click before the background has processed the change. The options page
+  // only enables the privacy-friendly AA checkbox once the background
+  // confirms that AA is active, so wait for that to make sure the
+  // subscription was actually added or removed.
+  await wait(
+    async () => {
+      const privacyDisabled = await driver.executeScript((selector) => {
+        return document.querySelector(selector).disabled;
+      }, privacyCheckboxSelector);
+      return privacyDisabled === !enable;
+    },
+    5000,
+    `Acceptable Ads was not ${enable ? "enabled" : "disabled"} in the background`
+  );
+}
+
 export async function setAADefaultState() {
   const checkboxSelector = "#acceptable-ads-allow";
 
   await initOptionsGeneralTab(getOptionsHandle());
   const aaEnabled = await isCheckboxPropertyEnabled(checkboxSelector);
   if (!aaEnabled) {
-    await clickFLCheckboxAndCheck(checkboxSelector, {
-      enable: true,
-      name: "Acceptable Ads"
-    });
+    await clickAAAndCheck({ enable: true });
   }
 }
 
@@ -534,6 +557,7 @@ export function getFLSelectors(name, { isOptionsGeneralTab = false } = {}) {
   const flSelector = `${tableSelector} [aria-label="${name}"]`;
 
   return {
+    table: tableSelector,
     filterlist: flSelector,
     toggle: `${flSelector} io-toggle`,
     title: `${flSelector} span[data-display]`,
@@ -686,15 +710,39 @@ async function checkLanguageFilterList(
   { isAdded = true, isOptionsGeneralTab = true } = {}
 ) {
   const timeout = 7000;
-  const { filterlist } = getFLSelectors(langName, { isOptionsGeneralTab });
+  const { table, filterlist } = getFLSelectors(langName, {
+    isOptionsGeneralTab
+  });
   if (isAdded) {
     try {
       await getDisplayedElement(filterlist, { timeout });
     } catch (err) {
+      // Log what is actually in the table, to help debugging the flakiness
+      let actualLabels;
+      try {
+        actualLabels = await driver.executeScript((tableSelector) => {
+          return Array.from(
+            document.querySelectorAll(`${tableSelector} [aria-label]`),
+            (elem) => elem.getAttribute("aria-label")
+          );
+        }, table);
+      } catch (e) {
+        actualLabels = `not available (${e.name})`;
+      }
       console.warn(
-        "Language filterlist not shown, reloading the page as a workaround"
+        `Language filterlist "${langName}" not shown ` +
+          `(table contains: ${JSON.stringify(actualLabels)}), ` +
+          "reloading the page as a workaround"
       );
       await driver.navigate().refresh();
+      // Refreshing resets the driver to the top-level options.html document,
+      // so the options page content frame has to be entered again before
+      // looking for the filterlist
+      if (isOptionsGeneralTab) {
+        await initOptionsGeneralTab(getOptionsHandle());
+      } else {
+        await initOptionsAdvancedTab(getOptionsHandle());
+      }
       await getDisplayedElement(filterlist, {
         timeout: 15000,
         forceRefresh: false

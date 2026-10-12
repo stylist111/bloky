@@ -42,7 +42,7 @@ import {
   clickOnCustomFilterToggleAndCheck,
   setPausedStateFromPopup,
   getPopupBlockedAdsTotalCount,
-  clickFLCheckboxAndCheck,
+  clickAAAndCheck,
   clickFLAndCheck
 } from "../utils/page.js";
 import { premiumFilterLists, freeFilterLists } from "../utils/dataset.js";
@@ -104,11 +104,7 @@ export default () => {
 
       await clickFLAndCheck(name, { enable: true, stepsAfterClick });
     }
-    const aaSelector = "#acceptable-ads-allow";
-    await clickFLCheckboxAndCheck(aaSelector, {
-      enable: false,
-      name: "Acceptable Ads"
-    });
+    await clickAAAndCheck({ enable: false });
     const defaultLangName = "English";
     const changedLangName1 = "Deutsch + English";
     const changedLangName2 = "italiano + English";
@@ -165,10 +161,7 @@ export default () => {
     }
 
     // check if AA is still disabled and can be enabled
-    await clickFLCheckboxAndCheck(aaSelector, {
-      enable: true,
-      name: "Acceptable Ads"
-    });
+    await clickAAAndCheck({ enable: true });
 
     // check if language filter list can be changed again
     await changeLanguageFilterList(changedLangName1, changedLangName2);
