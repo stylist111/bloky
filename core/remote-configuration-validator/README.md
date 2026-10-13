@@ -34,6 +34,8 @@ command.
 
 Whenever a change to the package.json file lands in the main branch, a CI job will automatically attempt to publish a new package version to the [GitLab package registry](https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/packages).
 
+The new version also needs to be published to the [npm registry](https://www.npmjs.com/package/@eyeo/remote-configuration-validator) manually, because some projects depend on it being available there. To do so, check out the main branch after the change has landed, and run `npm publish -w @eyeo/remote-configuration-validator` from the root of the repository. This requires an npm account with publishing access to the `@eyeo` organization.
+
 In order for schema changes to take effect, this package needs to be updated accordingly in other projects, which then need to be published separately, such as:
 
 - For validation on the server: Deploy a new version of the [remote configuration](https://gitlab.com/eyeo/filters/ab-testing-config)
