@@ -40,6 +40,7 @@ import {arraysDiff} from "./set-operations.js";
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
 import {isFirefox, getBrowserVersion, isSafari} from "./info.js";
+import {withKeepAlive} from "./keepalive.js";
 
 const ERROR_DISABLED_RULE_LIMIT_REACHED = "The number of disabled static " +
       "rules exceeds the disabled rule count limit.";
@@ -191,7 +192,7 @@ export function clearIsDnrSubscriptionUpdating() {
  *
  * @private
  */
-async function dnrFullSubscriptionUpdate(subscription, lines) {
+export async function dnrFullSubscriptionUpdate(subscription, lines) {
   debug("Full update started");
 
   lines.shift();
@@ -205,7 +206,9 @@ async function dnrFullSubscriptionUpdate(subscription, lines) {
   }
 
   try {
-    await _dnrFullSubscriptionUpdate(subscription, filterText);
+    await withKeepAlive(
+      () => _dnrFullSubscriptionUpdate(subscription, filterText)
+    );
   }
   catch (e) {
     error(`Failed to full update: ${e.message}`);
@@ -241,7 +244,9 @@ export async function dnrDiffSubscriptionUpdate(subscription, updates) {
   dnrSubscriptionUpdating.add(subscription.url);
 
   try {
-    await _dnrDiffSubscriptionUpdate(subscription, updates);
+    await withKeepAlive(
+      () => _dnrDiffSubscriptionUpdate(subscription, updates)
+    );
   }
   catch (e) {
     error(`Failed to diff update: ${e.message}`);

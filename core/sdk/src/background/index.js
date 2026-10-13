@@ -61,6 +61,7 @@ import {migrateCustomFilters, clearRulesetUpdates,
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3, Prefs} from "./prefs.js";
 import {isRunningInServiceWorker} from "./browser-features.js";
 import {default as sentry} from "./sentry.js";
+import {withKeepAlive} from "./keepalive.js";
 
 // "Allowlisting" might be used before EWE is actually started
 // and it does not require pre- and post- actions.
@@ -320,6 +321,10 @@ async function onInstalled(details) {
  *                                 is completed.
  */
 export async function start(addonInfo) {
+  return withKeepAlive(() => startEngine(addonInfo));
+}
+
+async function startEngine(addonInfo) {
   performance.mark("sdk.start");
 
   if (isSafari()) {

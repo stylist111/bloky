@@ -1,5 +1,9 @@
 # Unreleased
 
+- Fixed the background service worker being able to stop part way through
+  `start()`, or while applying a downloaded filter list update, on Manifest
+  V3. This could leave subscriptions partly initialized or updated.
+
 - Added an optional `reason` to `subscriptions.add()`, `enable()`, `disable()`,
   `remove()` and `addDefaults()`, with the possible values in
   `subscriptions.REASONS`. The latest change of every subscription is now

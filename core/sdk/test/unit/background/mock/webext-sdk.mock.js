@@ -49,7 +49,9 @@ export let addonBundledSubscriptionsPath;
 export default {
   start() {}
 };
-export function readFileContent() {}
+export function readFileContent() {
+  return globalThis.fileContent;
+}
 export class EventDispatcher {}
 
 export function getFilterTextByRuleId(id) {
@@ -65,3 +67,14 @@ export function isDnrSubscriptionUpdating(url) {}
 export async function _awaitSavingComplete() {}
 export function shouldNotifyActive(tabId, frames) {}
 export async function patchSender() {}
+
+export const ERROR_FILTER_NOT_FOUND = "filter_not_found";
+export const ERROR_TOO_MANY_FILTERS = "too_many_filters";
+export function onChangedFilter() {}
+export function disableFilter() {}
+export class FilterError extends Error {
+  constructor(type) {
+    super(type);
+    this.type = type;
+  }
+}

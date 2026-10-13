@@ -1,5 +1,9 @@
 # Unreleased
 
+- Fixed an issue on Manifest V3 where the browser could stop the background
+  service worker part way through startup or while applying a filter list
+  update, which could leave filter lists missing or only partly updated.
+
 # 6.49.0 - 2026-10-12
 
 - Updated snippets to 2.17.0
