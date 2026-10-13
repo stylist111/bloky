@@ -53,6 +53,7 @@ import {validate as validateSubscriptions,
         migrate as migrateSubscriptions, ensureDNRRulesetsEnabled,
         updateSubscriptionInformation, recoverMigrationErrorSubscriptions}
   from "./subscriptions.js";
+import {start as startSubscriptionLedger} from "./subscription-ledger.js";
 import {migrateCustomFilters, clearRulesetUpdates,
         removeSubscriptionsDynamicFilters, enableAllDisabledStaticRules,
         recreateDNRRulesIfNecessary}
@@ -361,6 +362,9 @@ export async function start(addonInfo) {
     await patchForSafari();
   }
   await startSubmodules(addonInfo);
+  // The ledger must be seeded before the subscriptions get migrated or
+  // updated, since those changes are recorded too.
+  await startSubscriptionLedger();
 
   let {filterStorage} = filterEngine;
   let firstRun = {

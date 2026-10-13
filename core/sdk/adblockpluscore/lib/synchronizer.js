@@ -329,6 +329,9 @@ class Synchronizer {
 
       if (listed) {
         this._filterStorage.addSubscription(subscription);
+        filterNotifier.emit(
+          "subscription.redirected", oldSubscription, subscription
+        );
       }
     }
 

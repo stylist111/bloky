@@ -20,6 +20,20 @@ export let filterEngine = {
     subscriptions() {
       // eslint-disable-next-line no-undef
       return global.filterStorageSubscriptions;
+    },
+    hasSubscription(subscription) {
+      // eslint-disable-next-line no-undef
+      return global.filterStorageSubscriptions.includes(subscription);
+    },
+    addSubscription(subscription) {
+      // eslint-disable-next-line no-undef
+      global.filterStorageSubscriptions.push(subscription);
+    },
+    removeSubscription(subscription) {
+      // eslint-disable-next-line no-undef
+      global.filterStorageSubscriptions =
+        // eslint-disable-next-line no-undef
+        global.filterStorageSubscriptions.filter(it => it !== subscription);
     }
   },
   defaultMatcher: {

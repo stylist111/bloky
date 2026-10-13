@@ -871,4 +871,332 @@ describe("Subscriptions", function() {
       await expectTestEvents("subscriptions.onChanged", []);
     });
   });
+
+  describe("Subscription ledger", function() {
+    const LEDGER_KEY = "ewe:subscriptionLedger";
+
+    async function getStoredLedger() {
+      let items = await browser.storage.local.get(LEDGER_KEY);
+      return items[LEDGER_KEY] || {};
+    }
+
+    function entry(state, reason) {
+      return {state, reason, ts: expect.any(Number)};
+    }
+
+    beforeEach(async function() {
+      await EWE.testing._resetSubscriptionLedger();
+    });
+
+    afterEach(async function() {
+      await clearEndpointResponse(USER_SUBSCRIPTION_URL);
+      await clearEndpointResponse(USER_SUBSCRIPTION_URL_2);
+    });
+
+    it("records an added subscription with its reason", async function() {
+      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL,
+                                  {reason: "user_action"});
+
+      expect(await getStoredLedger()).toEqual({
+        [USER_SUBSCRIPTION_URL]: entry("enabled", "user_action")
+      });
+    });
+
+    it("records an unknown reason if none or an invalid one is provided", async function() {
+      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
+      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL_2,
+                                  {reason: "not_a_reason"});
+
+      expect(await getStoredLedger()).toEqual({
+        [USER_SUBSCRIPTION_URL]: entry("enabled", "unknown"),
+        [USER_SUBSCRIPTION_URL_2]: entry("enabled", "unknown")
+      });
+    });
+
+    it("doesn't record adding a subscription that already exists", async function() {
+      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL,
+                                  {reason: "user_action"});
+      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL,
+                                  {reason: "admin_policy"});
+
+      expect(await getStoredLedger()).toEqual({
+        [USER_SUBSCRIPTION_URL]: entry("enabled", "user_action")
+      });
+    });
+
+    it("records disabling and enabling a subscription", async function() {
+      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL,
+                                  {reason: "user_action"});
+
+      await EWE.subscriptions.disable(USER_SUBSCRIPTION_URL,
+                                      {reason: "plan_change"});
+      expect(await getStoredLedger()).toEqual({
+        [USER_SUBSCRIPTION_URL]: entry("disabled", "plan_change")
+      });
+
+      await EWE.subscriptions.enable(USER_SUBSCRIPTION_URL,
+                                     {reason: "user_action"});
+      expect(await getStoredLedger()).toEqual({
+        [USER_SUBSCRIPTION_URL]: entry("enabled", "user_action")
+      });
+    });
+
+    it("doesn't record enabling or disabling without a state change", async function() {
+      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL,
+                                  {reason: "user_action"});
+      await EWE.subscriptions.enable(USER_SUBSCRIPTION_URL,
+                                     {reason: "recovery"});
+      expect(await getStoredLedger()).toEqual({
+        [USER_SUBSCRIPTION_URL]: entry("enabled", "user_action")
+      });
+
+      await EWE.subscriptions.disable(USER_SUBSCRIPTION_URL,
+                                      {reason: "user_action"});
+      await EWE.subscriptions.disable(USER_SUBSCRIPTION_URL,
+                                      {reason: "plan_change"});
+      expect(await getStoredLedger()).toEqual({
+        [USER_SUBSCRIPTION_URL]: entry("disabled", "user_action")
+      });
+    });
+
+    it("keeps a removed subscription in the ledger", async function() {
+      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL,
+                                  {reason: "default"});
+      await EWE.subscriptions.remove(USER_SUBSCRIPTION_URL,
+                                     {reason: "user_action"});
+
+      expect(await EWE.subscriptions.has(USER_SUBSCRIPTION_URL)).toBe(false);
+      expect(await getStoredLedger()).toEqual({
+        [USER_SUBSCRIPTION_URL]: entry("removed", "user_action")
+      });
+    });
+
+    it("doesn't lose changes made at the same time", async function() {
+      await Promise.all([
+        EWE.subscriptions.add(USER_SUBSCRIPTION_URL, {reason: "user_action"}),
+        EWE.subscriptions.add(USER_SUBSCRIPTION_URL_2, {reason: "admin_policy"}),
+        EWE.subscriptions.add(VALID_SUBSCRIPTION_URL, {reason: "plan_change"})
+      ]);
+
+      expect(await getStoredLedger()).toEqual({
+        [USER_SUBSCRIPTION_URL]: entry("enabled", "user_action"),
+        [USER_SUBSCRIPTION_URL_2]: entry("enabled", "admin_policy"),
+        [VALID_SUBSCRIPTION_URL]: entry("enabled", "plan_change")
+      });
+    });
+
+    it("records the default subscriptions with the default reason", async function() {
+      setMinTimeout(this, 15000);
+
+      await EWE.subscriptions.addDefaults("en");
+
+      let urls = (await EWE.subscriptions.getSubscriptions()).map(
+        ({url}) => url);
+      let ledger = await getStoredLedger();
+      expect(Object.keys(ledger).sort()).toEqual(urls.sort());
+      for (let url of urls) {
+        expect(ledger[url]).toEqual(entry("enabled", "default"));
+      }
+    });
+
+    it("records the default subscriptions with the provided reason", async function() {
+      setMinTimeout(this, 20000);
+
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL,
+                                  {reason: "user_action"});
+      await EWE.subscriptions.addDefaults(null, true, {reason: "recovery"});
+
+      let ledger = await getStoredLedger();
+      let antiCVUrl = isMV3() ? subAntiCVLocal.url : subAntiCVLive.mv2_url;
+      expect(ledger).toEqual(expect.objectContaining({
+        [VALID_SUBSCRIPTION_URL]: entry("enabled", "user_action"),
+        [antiCVUrl]: entry("enabled", "recovery")
+      }));
+    });
+
+    it("exposes the recorded changes through getLedger()", async function() {
+      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL,
+                                  {reason: "user_action"});
+      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL_2,
+                                  {reason: "default"});
+      await EWE.subscriptions.remove(USER_SUBSCRIPTION_URL_2,
+                                     {reason: "user_action"});
+
+      let ledger = await EWE.subscriptions.getLedger();
+      expect(ledger).toHaveLength(2);
+      expect(ledger).toEqual(expect.arrayContaining([
+        {url: USER_SUBSCRIPTION_URL, ...entry("enabled", "user_action")},
+        {url: USER_SUBSCRIPTION_URL_2, ...entry("removed", "user_action")}
+      ]));
+    });
+
+    it("exposes the reasons", async function() {
+      let reasons = await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "getProp", arg: "subscriptions"},
+        {op: "getProp", arg: "REASONS"}
+      ]);
+
+      expect(reasons).toEqual({
+        DEFAULT: "default",
+        USER_ACTION: "user_action",
+        ADMIN_POLICY: "admin_policy",
+        MIGRATION: "migration",
+        REDIRECT: "redirect",
+        PLAN_CHANGE: "plan_change",
+        RECOVERY: "recovery",
+        SNAPSHOT: "snapshot",
+        UNKNOWN: "unknown"
+      });
+    });
+
+    it("records a subscription redirected by its server", async function() {
+      setMinTimeout(this, 15000);
+
+      await setEndpointResponse(
+        USER_SUBSCRIPTION_URL,
+        `[Adblock Plus 2.0]\n! Redirect: ${USER_SUBSCRIPTION_URL_2}\nimage.png`
+      );
+      await setEndpointResponse(USER_SUBSCRIPTION_URL_2,
+                                "[Adblock Plus 2.0]\nimage.png");
+
+      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL,
+                                  {reason: "user_action"});
+
+      await waitForAssertion(async() => {
+        expect(await getStoredLedger()).toEqual({
+          [USER_SUBSCRIPTION_URL]: entry("removed", "redirect"),
+          [USER_SUBSCRIPTION_URL_2]: entry("enabled", "redirect")
+        });
+      }, 10000, 200);
+
+      let subs = await EWE.subscriptions.getSubscriptions();
+      expect(subs).toEqual([
+        expect.objectContaining({url: USER_SUBSCRIPTION_URL_2, enabled: true})
+      ]);
+    });
+
+    describe("Snapshot", function() {
+      it("records the existing subscriptions if nothing was recorded yet", async function() {
+        await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
+        await EWE.subscriptions.add(USER_SUBSCRIPTION_URL_2);
+        await EWE.subscriptions.disable(USER_SUBSCRIPTION_URL_2);
+        await EWE.testing._resetSubscriptionLedger();
+
+        await EWE.testing._seedSubscriptionLedger();
+
+        expect(await getStoredLedger()).toEqual({
+          [USER_SUBSCRIPTION_URL]: entry("enabled", "snapshot"),
+          [USER_SUBSCRIPTION_URL_2]: entry("disabled", "snapshot")
+        });
+      });
+
+      it("doesn't overwrite recorded changes", async function() {
+        await EWE.subscriptions.add(USER_SUBSCRIPTION_URL,
+                                    {reason: "user_action"});
+
+        await EWE.testing._seedSubscriptionLedger();
+
+        expect(await getStoredLedger()).toEqual({
+          [USER_SUBSCRIPTION_URL]: entry("enabled", "user_action")
+        });
+      });
+
+      it("doesn't record anything if there are no subscriptions", async function() {
+        await EWE.testing._seedSubscriptionLedger();
+
+        expect(await getStoredLedger()).toEqual({});
+      });
+    });
+
+    describe("restoreFromLedger()", function() {
+      it("restores a lost subscription that was enabled", async function() {
+        await EWE.subscriptions.add(USER_SUBSCRIPTION_URL,
+                                    {reason: "user_action"});
+        await EWE.testing._removeSubscriptionFromStorage(USER_SUBSCRIPTION_URL);
+        expect(await EWE.subscriptions.has(USER_SUBSCRIPTION_URL)).toBe(false);
+
+        let result = await EWE.subscriptions.restoreFromLedger();
+
+        expect(result).toEqual({
+          restored: [USER_SUBSCRIPTION_URL], skipped: [], errors: []
+        });
+        expect(await EWE.subscriptions.getSubscriptions()).toEqual([
+          expect.objectContaining({url: USER_SUBSCRIPTION_URL, enabled: true})
+        ]);
+        expect(await getStoredLedger()).toEqual({
+          [USER_SUBSCRIPTION_URL]: entry("enabled", "recovery")
+        });
+      });
+
+      it("restores a lost subscription that was disabled as disabled", async function() {
+        await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
+        await EWE.subscriptions.disable(USER_SUBSCRIPTION_URL,
+                                        {reason: "user_action"});
+        await EWE.testing._removeSubscriptionFromStorage(USER_SUBSCRIPTION_URL);
+
+        let result = await EWE.subscriptions.restoreFromLedger();
+
+        expect(result).toEqual({
+          restored: [USER_SUBSCRIPTION_URL], skipped: [], errors: []
+        });
+        expect(await EWE.subscriptions.getSubscriptions()).toEqual([
+          expect.objectContaining({url: USER_SUBSCRIPTION_URL, enabled: false})
+        ]);
+        expect(await getStoredLedger()).toEqual({
+          [USER_SUBSCRIPTION_URL]: entry("disabled", "recovery")
+        });
+      });
+
+      it("re-enables a subscription that was disabled without being recorded", async function() {
+        await EWE.subscriptions.add(USER_SUBSCRIPTION_URL,
+                                    {reason: "user_action"});
+        await EWE.testing._setSubscriptionProperties(USER_SUBSCRIPTION_URL,
+                                                     {disabled: true});
+
+        let result = await EWE.subscriptions.restoreFromLedger();
+
+        expect(result).toEqual({
+          restored: [USER_SUBSCRIPTION_URL], skipped: [], errors: []
+        });
+        expect(await EWE.subscriptions.getSubscriptions()).toEqual([
+          expect.objectContaining({url: USER_SUBSCRIPTION_URL, enabled: true})
+        ]);
+        expect(await getStoredLedger()).toEqual({
+          [USER_SUBSCRIPTION_URL]: entry("enabled", "recovery")
+        });
+      });
+
+      it("doesn't restore removed subscriptions", async function() {
+        await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
+        await EWE.subscriptions.remove(USER_SUBSCRIPTION_URL,
+                                       {reason: "user_action"});
+
+        let result = await EWE.subscriptions.restoreFromLedger();
+
+        expect(result).toEqual({restored: [], skipped: [], errors: []});
+        expect(await EWE.subscriptions.getSubscriptions()).toEqual([]);
+        expect(await getStoredLedger()).toEqual({
+          [USER_SUBSCRIPTION_URL]: entry("removed", "user_action")
+        });
+      });
+
+      it("doesn't change subscriptions that match the ledger", async function() {
+        await EWE.subscriptions.add(USER_SUBSCRIPTION_URL,
+                                    {reason: "user_action"});
+        await EWE.subscriptions.add(USER_SUBSCRIPTION_URL_2,
+                                    {reason: "user_action"});
+        await EWE.subscriptions.disable(USER_SUBSCRIPTION_URL_2,
+                                        {reason: "user_action"});
+
+        let result = await EWE.subscriptions.restoreFromLedger();
+
+        expect(result).toEqual({restored: [], skipped: [], errors: []});
+        expect(await getStoredLedger()).toEqual({
+          [USER_SUBSCRIPTION_URL]: entry("enabled", "user_action"),
+          [USER_SUBSCRIPTION_URL_2]: entry("disabled", "user_action")
+        });
+      });
+    });
+  });
 });

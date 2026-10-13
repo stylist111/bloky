@@ -363,6 +363,71 @@ export interface Recommendation {
 }
 
 /**
+ * Why a subscription is added, enabled, disabled or removed.
+ */
+export type SubscriptionChangeReason =
+  | "default"
+  | "user_action"
+  | "admin_policy"
+  | "migration"
+  | "redirect"
+  | "plan_change"
+  | "recovery"
+  | "snapshot"
+  | "unknown";
+
+/**
+ * Options for adding, enabling, disabling or removing a subscription.
+ */
+export interface SubscriptionChangeOptions {
+  /**
+   * Why the subscription is changed.
+   */
+  reason?: SubscriptionChangeReason;
+}
+
+/**
+ * The latest recorded change of a subscription.
+ */
+export interface SubscriptionLedgerEntry {
+  /**
+   * The URL of the subscription.
+   */
+  url: string;
+  /**
+   * The state the subscription was changed to.
+   */
+  state: "enabled" | "disabled" | "removed";
+  /**
+   * Why the subscription was changed.
+   */
+  reason: SubscriptionChangeReason;
+  /**
+   * Epoch time in milliseconds when the change was recorded.
+   */
+  ts: number;
+}
+
+/**
+ * Properties to set on a newly added subscription.
+ */
+export interface SubscriptionAddProperties extends SubscriptionChangeOptions {
+  /**
+   * The display name of the subscription. If not provided, falls back to
+   * the URL.
+   */
+  title?: string;
+  /**
+   * Website of the project that manages this filter list.
+   */
+  homepage?: string;
+  /**
+   * Whether or not this subscription is allowed to run snippets.
+   */
+  privileged?: boolean;
+}
+
+/**
  * A resource that provides a list of filters that decide what to block.
  */
 export interface Subscription {
@@ -1175,9 +1240,50 @@ declare module "@eyeo/webext-ad-filtering-solution" {
     const ACCEPTABLE_ADS_URL: string;
 
     /**
+     * The reasons that can be passed when adding, enabling, disabling or
+     * removing a subscription.
+     */
+    const REASONS: {
+      readonly DEFAULT: SubscriptionChangeReason;
+      readonly USER_ACTION: SubscriptionChangeReason;
+      readonly ADMIN_POLICY: SubscriptionChangeReason;
+      readonly MIGRATION: SubscriptionChangeReason;
+      readonly REDIRECT: SubscriptionChangeReason;
+      readonly PLAN_CHANGE: SubscriptionChangeReason;
+      readonly RECOVERY: SubscriptionChangeReason;
+      readonly SNAPSHOT: SubscriptionChangeReason;
+      readonly UNKNOWN: SubscriptionChangeReason;
+    };
+
+    /**
      * The URL of the Acceptable Ads Privacy subscription.
      */
     const ACCEPTABLE_ADS_PRIVACY_URL: string;
+    /**
+     * Creates a new subscription from a given URL. The subscription also gets
+     * synchronised if it had not been previously downloaded.
+     *
+     * @param url - The URL of the subscription to be added.
+     * @param properties - Properties to set on the new subscription.
+     */
+    const add: (
+      url: string,
+      properties?: SubscriptionAddProperties
+    ) => Promise<void>;
+    /**
+     * Adds a list of default subscriptions based on the bundled
+     * subscriptions provided to `start()`.
+     *
+     * @param uiLanguage - The language used for choosing the subscriptions.
+     *   Defaults to the browser's UI language.
+     * @param force - Add the defaults even if subscriptions already exist.
+     * @param options - Why the subscriptions are added.
+     */
+    const addDefaults: (
+      uiLanguage?: string | null,
+      force?: boolean,
+      options?: SubscriptionChangeOptions
+    ) => Promise<void>;
     /**
      * Checks if a subscription has been added.
      *
@@ -1189,8 +1295,12 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * any effect.
      *
      * @param url - The URL of the subscription to be removed.
+     * @param options - Why the subscription is removed.
      */
-    const remove: (url: string) => Promise<void>;
+    const remove: (
+      url: string,
+      options?: SubscriptionChangeOptions
+    ) => Promise<void>;
     /**
      * Returns an array of all recommended subscriptions.
      */
@@ -1200,9 +1310,42 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      */
     const getSubscriptions: () => Promise<Subscription[]>;
     /**
-     * Enables a previously disabled subscription. Has no effect otherwise.
+     * Disables a subscription so that it doesn't have any effect until it
+     * gets enabled again.
+     *
+     * @param url - The URL of the subscription to be disabled.
+     * @param options - Why the subscription is disabled.
      */
-    const enable: (url: string) => Promise<void>;
+    const disable: (
+      url: string,
+      options?: SubscriptionChangeOptions
+    ) => Promise<void>;
+    /**
+     * Enables a previously disabled subscription. Has no effect otherwise.
+     *
+     * @param url - The URL of the subscription to be enabled.
+     * @param options - Why the subscription is enabled.
+     */
+    const enable: (
+      url: string,
+      options?: SubscriptionChangeOptions
+    ) => Promise<void>;
+    /**
+     * Returns the latest recorded change of every subscription, including
+     * subscriptions that have since been removed.
+     */
+    const getLedger: () => Promise<SubscriptionLedgerEntry[]>;
+    /**
+     * Restores the subscriptions that were recorded as enabled or disabled
+     * but are missing, and re-enables the ones that were recorded as enabled
+     * but are disabled. Premium subscriptions are only restored if the user
+     * has a premium plan.
+     */
+    const restoreFromLedger: () => Promise<{
+      restored: string[];
+      skipped: Array<{ url: string; reason: "no_premium" }>;
+      errors: Array<{ url: string; error: string }>;
+    }>;
     /**
      * Emitted when a new subscription is added.
      */

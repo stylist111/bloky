@@ -138,6 +138,23 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
     let subscriptions = await EWE.subscriptions.getForFilter(
       "/image-from-subscription.png^$image");
     expect(subscriptions).toHaveLength(1);
+
+    let ledgerKey = "ewe:subscriptionLedger";
+    let ledger = (await browser.storage.local.get(ledgerKey))[ledgerKey];
+    let migrated = {state: "removed", reason: "migration",
+                    ts: expect.any(Number)};
+    expect(ledger).toEqual(expect.objectContaining({
+      [subTestCustom1.mv2_url]: migrated,
+      [subEasylistLive.mv2_url]: migrated,
+      [subEasylistPlusGermanyLive.mv2_url]: migrated,
+      [subTestCustom1.url]: {state: "enabled", reason: "migration",
+                             ts: expect.any(Number)},
+      [subEasylistLive.url]: {state: "enabled", reason: "migration",
+                              ts: expect.any(Number)},
+      [subEasylistPlusGermanyLive.url]: {state: "disabled",
+                                         reason: "migration",
+                                         ts: expect.any(Number)}
+    }));
   });
 
   it("migrates custom user subscriptions", async function() {

@@ -19,6 +19,9 @@ export let Subscription = {
   fromURL(url) {
     // eslint-disable-next-line no-undef
     return global.fromURL(url);
+  },
+  isValidURL() {
+    return true;
   }
 };
 export class RegularSubscription {}
@@ -26,3 +29,14 @@ export class FullUpdatableSubscription {}
 export class SpecialSubscription {}
 export class CountableSubscription {}
 export class DiffUpdatableSubscription {}
+
+// Exposed so that tests can create instances of the classes bundled with the
+// module under test, which its `instanceof` checks compare against.
+// eslint-disable-next-line no-undef
+global.subscriptionClasses = {
+  RegularSubscription,
+  FullUpdatableSubscription,
+  SpecialSubscription,
+  CountableSubscription,
+  DiffUpdatableSubscription
+};

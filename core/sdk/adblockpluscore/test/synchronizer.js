@@ -869,6 +869,32 @@ describe("Synchronizer", function() {
       }).catch(error => unexpectedError.call(assert, error));
     });
 
+    it("Emits subscription.redirected when a redirect is followed", function() {
+      let subscription = Subscription.fromURL("https://example.com/subscription");
+      filterStorage.addSubscription(subscription);
+
+      runner.registerHandler("/subscription", metadata => {
+        return [200, "[Adblock]\n!Redirect: https://example.com/redirected\nbar"];
+      });
+      runner.registerHandler("/redirected", metadata => {
+        return [200, "[Adblock]\n! Expires: 8 hours\nbar"];
+      });
+
+      let redirects = [];
+      filterNotifier.on("subscription.redirected", (oldSub, newSub) => {
+        redirects.push([oldSub.url, newSub.url]);
+      });
+
+      return runner.runScheduledTasks(1).then(() => {
+        assert.deepEqual(redirects, [[
+          "https://example.com/subscription",
+          "https://example.com/redirected"
+        ]]);
+        assert.equal([...filterStorage.subscriptions()][0].url,
+                     "https://example.com/redirected");
+      }).catch(error => unexpectedError.call(assert, error));
+    });
+
     it("Fallback", function() {
       Prefs.subscriptions_fallbackerrors = 3;
       Prefs.subscriptions_fallbackurl = "https://example.com/fallback?%SUBSCRIPTION%&%RESPONSESTATUS%";

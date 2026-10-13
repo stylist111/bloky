@@ -37,6 +37,9 @@ import {default as sentry} from "./sentry.js";
 import {Prefs} from "./prefs.js";
 import {ServerLogger} from "./telemetry/server-logger.js";
 import {withKeepAlive} from "./keepalive.js";
+import account from "./account/index.js";
+import {REASONS, STATES, record as recordChange,
+        getEntries as getLedgerEntries} from "./subscription-ledger.js";
 
 const ACCEPTABLE_ADS_ID = "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F";
 const ACCEPTABLE_ADS_MV2_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
@@ -45,6 +48,12 @@ const ACCEPTABLE_ADS_MV3_URL = "https://easylist-downloads.adblockplus.org/v3/fu
 const ACCEPTABLE_ADS_PRIVACY_ID = "F12E0801-A00B-49DE-B1E3-52C9C4F90C8C";
 const ACCEPTABLE_ADS_PRIVACY_MV2_URL = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
 const ACCEPTABLE_ADS_PRIVACY_MV3_URL = "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules-privacy-friendly.txt";
+
+// Subscriptions that are only meant to be active with a premium plan.
+const PREMIUM_SUBSCRIPTION_IDS = [
+  "CDAD4CF5-2706-42CB-B404-F5B9B61B8CAA", // Distraction Control
+  "588470E8-E163-4CD9-A909-521B2A3BE73F" // Cookie consent pop-ups
+];
 
 function convertSubscription(subscription) {
   const {
@@ -345,7 +354,7 @@ export async function validate(bundledSubscriptions,
     bundledSubscriptions, bundledSubscriptionsPath);
 }
 
-async function remove(url) {
+async function remove(url, {reason} = {}) {
   let subscription = getSubscription(url);
 
   if (!subscription) {
@@ -361,7 +370,11 @@ async function remove(url) {
     }
   }
 
+  // The change is made before the ledger is written, so that anything
+  // observing the subscriptions sees it right away. The ledger is still
+  // persisted first, since the subscriptions are only saved later.
   filterEngine.filterStorage.removeSubscription(subscription);
+  await recordChange(subscription, STATES.REMOVED, reason);
 }
 
 async function migrateSubscriptionToMv3(subscription) {
@@ -370,10 +383,11 @@ async function migrateSubscriptionToMv3(subscription) {
   let url = subscriptionInfo ? subscriptionInfo.url : subscription.url;
   await add(url, {
     downloadCount: subscription.downloadCount,
-    version: subscription.version
+    version: subscription.version,
+    reason: REASONS.MIGRATION
   });
   if (!subscription.enabled) {
-    await disable(url);
+    await disable(url, {reason: REASONS.MIGRATION});
   }
 }
 
@@ -448,20 +462,21 @@ export async function updateSubscriptionInformation() {
         // Existing custom user subscription, after the update it's now bundled
         // so we should migrate to the bundled one.
 
-        await remove(subscription.url);
+        await remove(subscription.url, {reason: REASONS.MIGRATION});
         await add(subscriptionInfo.url, {
           downloadCount: subscription.downloadCount,
-          version: subscription.version
+          version: subscription.version,
+          reason: REASONS.MIGRATION
         });
         if (!subscription.enabled) {
-          await disable(subscriptionInfo.url);
+          await disable(subscriptionInfo.url, {reason: REASONS.MIGRATION});
         }
       }
     }
   }
 
   for (let url of removeUrls) {
-    await remove(url);
+    await remove(url, {reason: REASONS.MIGRATION});
   }
 }
 
@@ -541,7 +556,15 @@ async function add(url, properties = {}) {
     subscription.lastModified = properties.lastModified;
   }
 
+  let isNew = !filterStorage.hasSubscription(subscription);
   filterStorage.addSubscription(subscription);
+  if (isNew) {
+    await recordChange(
+      subscription,
+      subscription.disabled ? STATES.DISABLED : STATES.ENABLED,
+      properties.reason
+    );
+  }
 
   if (browser.declarativeNetRequest && !subscription.downloadable) {
     await enableRuleset(subscription.id);
@@ -553,14 +576,18 @@ async function add(url, properties = {}) {
   }
 }
 
-async function disable(url) {
+async function disable(url, {reason} = {}) {
   let subscription = getSubscription(url);
 
   if (!subscription) {
     throw new Error(`Subscription does not exist: ${url}`);
   }
 
+  let wasDisabled = subscription.disabled;
   subscription.disabled = true;
+  if (!wasDisabled) {
+    await recordChange(subscription, STATES.DISABLED, reason);
+  }
 
   if (browser.declarativeNetRequest) {
     if (subscription instanceof FullUpdatableSubscription) {
@@ -615,7 +642,7 @@ export async function migrate() {
       continue;
     }
 
-    await remove(downloadable.url); // MV2 URL
+    await remove(downloadable.url, {reason: REASONS.MIGRATION}); // MV2 URL
     try {
       migrateSubscriptionToMv3(downloadable);
     }
@@ -694,6 +721,27 @@ export default {
    * @type {string}
    */
   ACCEPTABLE_ADS_PRIVACY_ID,
+
+  /**
+   * The reasons that can be passed when adding, enabling, disabling or
+   * removing a subscription. The latest change of every subscription is
+   * recorded together with its reason, also after the subscription has
+   * been removed.
+   * - `DEFAULT` - Added as one of the default subscriptions.
+   * - `USER_ACTION` - Changed by the user.
+   * - `ADMIN_POLICY` - Changed by an administrator policy.
+   * - `MIGRATION` - Changed while migrating or updating the extension's
+   *   subscriptions.
+   * - `REDIRECT` - Replaced because the subscription's server redirected it
+   *   to another URL.
+   * - `PLAN_CHANGE` - Changed because the user's plan changed.
+   * - `RECOVERY` - Restored after being lost.
+   * - `SNAPSHOT` - Recorded from the existing subscriptions when nothing had
+   *   been recorded yet. Not meant to be passed by callers.
+   * - `UNKNOWN` - No reason was provided.
+   * @type {Object<string, string>}
+   */
+  REASONS,
 
   /**
    * A resource that provides a list of filters that decide what to block.
@@ -777,6 +825,8 @@ export default {
    *                                       manages this filter list.
    * @param {boolean} [properties.privileged] Whether or not this subscription
    *                                          is allowed to run snippets.
+   * @param {string} [properties.reason] Why the subscription is added.
+   *                                     One of `REASONS`.
    * @return {Promise}
    * @throws {Error} Invalid subscription URL provided.
    */
@@ -792,13 +842,17 @@ export default {
    * will be used. If browser.i18n.getUILanguage is unavailable,
    * navigator.language is used.
    * @param {bool} [force = false]
+   * @param {object} [options]
+   * @param {string} [options.reason = REASONS.DEFAULT] Why the subscriptions
+   *   are added. One of `REASONS`.
    * @throws {Error} No default language subscription
    * @throws {Error} No anti-circumvention subscription
    * @throws {Error} No allowing subscription
    * @see {@link #start|start()}
    * @return {Promise}
    */
-  async addDefaults(uiLanguage, force = false) {
+  async addDefaults(uiLanguage, force = false,
+                    {reason = REASONS.DEFAULT} = {}) {
     let subscriptions = [];
 
     if (force || shouldAddDefaultSubscriptions()) {
@@ -825,7 +879,7 @@ export default {
     await withKeepAlive(async () => {
       for (let subscription of subscriptions) {
         await this.add(browser.declarativeNetRequest ?
-          subscription.url : subscription.mv2URL);
+          subscription.url : subscription.mv2URL, {reason});
       }
     });
   },
@@ -895,10 +949,13 @@ export default {
   /**
    * Enables a previously disabled subscription. Has no effect otherwise.
    * @param {string} url The URL of the subscription to be enabled.
+   * @param {object} [options]
+   * @param {string} [options.reason] Why the subscription is enabled.
+   *                                  One of `REASONS`.
    * @return {Promise}
    * @throws {Error} Subscription does not exist.
    */
-  async enable(url) {
+  async enable(url, {reason} = {}) {
     let subscription = getSubscription(url);
 
     if (!subscription) {
@@ -914,13 +971,20 @@ export default {
     // as marking subscription as enabled triggers the subscription update,
     // and the diff update processing which includes dynamic rules operations
     // can happen in parallel with restoring of dynamic rules here.
+    let wasDisabled = subscription.disabled;
     subscription.disabled = false;
+    if (wasDisabled) {
+      await recordChange(subscription, STATES.ENABLED, reason);
+    }
   },
 
   /**
    * Disables a subscription so that it doesn't have any
    * effect until it gets enabled again.
    * @param {string} url The URL of the subscription to be disabled.
+   * @param {object} [options]
+   * @param {string} [options.reason] Why the subscription is disabled.
+   *                                  One of `REASONS`.
    * @return {Promise}
    * @throws {Error} Subscription does not exist.
    */
@@ -930,10 +994,97 @@ export default {
    * Removes the subscription for the given URL.
    * It will no longer have any effect.
    * @param {string} url The URL of the subscription to be removed.
+   * @param {object} [options]
+   * @param {string} [options.reason] Why the subscription is removed.
+   *                                  One of `REASONS`.
    * @return {Promise}
    * @throws {Error} Subscription does not exist.
    */
   remove,
+
+  /**
+   * The latest recorded change of a subscription.
+   * @typedef {Object} SubscriptionLedgerEntry
+   * @property {string} url The URL of the subscription.
+   * @property {string} state The state the subscription was changed to:
+   *                          `enabled`, `disabled` or `removed`.
+   * @property {string} reason Why the subscription was changed. One of
+   *                           `REASONS`.
+   * @property {number} ts Epoch time in milliseconds when the change was
+   *                       recorded.
+   */
+
+  /**
+   * Returns the latest recorded change of every subscription, including
+   * subscriptions that have since been removed.
+   * @return {Promise<Array<SubscriptionLedgerEntry>>}
+   */
+  async getLedger() {
+    let entries = await getLedgerEntries();
+    return Object.entries(entries).map(([url, entry]) => ({url, ...entry}));
+  },
+
+  /**
+   * Restores the subscriptions that were recorded as enabled or disabled but
+   * are missing, and re-enables the ones that were recorded as enabled but
+   * are disabled. Subscriptions recorded as removed are left untouched, and
+   * no subscription is ever removed or disabled unless it is being restored
+   * in its disabled state. Premium subscriptions are only restored if the
+   * user has a premium plan. Restored subscriptions are recorded with
+   * `REASONS.RECOVERY`.
+   * @return {Promise<{restored: Array<string>,
+   *   skipped: Array<{url: string, reason: string}>,
+   *   errors: Array<{url: string, error: string}>}>} The URLs of the restored
+   *   subscriptions, the ones that needed restoring but were skipped and why
+   *   (`no_premium`), and the errors of the ones that couldn't be restored.
+   */
+  async restoreFromLedger() {
+    let restored = [];
+    let skipped = [];
+    let errors = [];
+    let options = {reason: REASONS.RECOVERY};
+    let entries = await getLedgerEntries();
+    let hasPremium = await account.hasPremium();
+
+    await withKeepAlive(async () => {
+      for (let [url, {state}] of Object.entries(entries)) {
+        if (state === STATES.REMOVED) {
+          continue;
+        }
+
+        try {
+          let subscription = getSubscription(url);
+          let needsRestoring = !subscription ||
+            (state === STATES.ENABLED && subscription.disabled);
+          if (!needsRestoring) {
+            continue;
+          }
+
+          let {id} = subscription || Subscription.fromURL(url);
+          if (!hasPremium && PREMIUM_SUBSCRIPTION_IDS.includes(id)) {
+            skipped.push({url, reason: "no_premium"});
+            continue;
+          }
+
+          if (!subscription) {
+            await add(url, options);
+            if (state === STATES.DISABLED) {
+              await disable(url, options);
+            }
+          }
+          else {
+            await this.enable(url, options);
+          }
+          restored.push(url);
+        }
+        catch (e) {
+          errors.push({url, error: e.message});
+        }
+      }
+    });
+
+    return {restored, skipped, errors};
+  },
 
   /**
    * Forces a new version of a subscription with the

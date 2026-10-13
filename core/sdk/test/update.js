@@ -30,6 +30,15 @@ import {MILLIS_IN_DAY, MILLIS_IN_SECOND} from "#adblockpluscore/lib/time.js";
 let start = new URLSearchParams(document.location.search).get("start");
 let phase = start ? "preparation" : "check";
 
+const LEDGER_KEY = "ewe:subscriptionLedger";
+
+async function expectLedgerEntry(url, state, reason) {
+  let ledger = (await browser.storage.local.get(LEDGER_KEY))[LEDGER_KEY];
+  expect(ledger).toEqual(expect.objectContaining({
+    [url]: {state, reason, ts: expect.any(Number)}
+  }));
+}
+
 const filter = "someFilterAddedInANewWebExtentionRelease";
 
 describe(`Update (${phase}) [runner-only]`, function() {
@@ -261,6 +270,8 @@ describe(`Update (${phase}) [runner-only]`, function() {
     expect(migrationErrors).not.toContainEqual(expect.objectContaining({
       subscription: expect.objectContaining({url})
     }));
+
+    await expectLedgerEntry(url, "enabled", "migration");
   });
 
   it("recovers bundled subscriptions which previously failed to migrate [mv3-only]", async function() {
@@ -298,6 +309,8 @@ describe(`Update (${phase}) [runner-only]`, function() {
     expect(migrationErrors).not.toContainEqual(expect.objectContaining({
       subscription: expect.objectContaining({url})
     }));
+
+    await expectLedgerEntry(url, "disabled", "migration");
   });
 
   it("unrecoverable migration errors are not removed [mv3-only]", async function() {
@@ -365,6 +378,12 @@ describe(`Update (${phase}) [runner-only]`, function() {
         url: newBundledSubscription.url,
         updatable: false // no diff URL, and isn't a custom sub anymore
       }));
+
+      // The converted subscription currently ends up disabled, since the
+      // conversion checks `enabled` on a core subscription object, which
+      // only has `disabled`.
+      await expectLedgerEntry(newBundledSubscription.url, "disabled",
+                              "migration");
     });
 
     it("removes bundled subscriptions which are no longer bundled after an update [mv3-only]", async function() {
@@ -394,6 +413,9 @@ describe(`Update (${phase}) [runner-only]`, function() {
       expect(subs).not.toContainEqual(expect.objectContaining({
         url: oldBundledSubscription.url
       }));
+
+      await expectLedgerEntry(oldBundledSubscription.url, "removed",
+                              "migration");
     });
   });
 

@@ -1,5 +1,16 @@
 # Unreleased
 
+- Added an optional `reason` to `subscriptions.add()`, `enable()`, `disable()`,
+  `remove()` and `addDefaults()`, with the possible values in
+  `subscriptions.REASONS`. The latest change of every subscription is now
+  recorded locally together with its reason, including subscriptions that
+  have been removed or replaced by a redirect, and can be read with
+  `subscriptions.getLedger()`. Existing subscriptions are recorded once when
+  nothing has been recorded yet.
+- Added `subscriptions.restoreFromLedger()`, which restores subscriptions that
+  were recorded as enabled or disabled but have gone missing, and re-enables
+  the ones that were recorded as enabled but are disabled. Premium
+  subscriptions are only restored if the user has a premium plan.
 - Added `account.getLastTokenUpdate()`, which returns when the account tokens
   were last saved, i.e. the last successful login or token refresh.
 

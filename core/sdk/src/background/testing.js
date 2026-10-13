@@ -58,6 +58,7 @@ import {_clear} from "./frame-state.js";
 import * as account from "./account/index.js";
 import * as remoteConfig from "./remote-config/index.js";
 import * as cohorts from "./cohorts/index.js";
+import * as subscriptionLedger from "./subscription-ledger.js";
 import * as experiments from "./experiments.js";
 import * as sentry from "./sentry.js";
 import {hashString} from "../all/hashing.js";
@@ -290,6 +291,30 @@ export default {
 
   async _waitForInitialization() {
     await initializer.start();
+  },
+
+  /**
+   * @ignore
+   * Clears the recorded subscription changes.
+   */
+  _resetSubscriptionLedger: subscriptionLedger.reset,
+
+  /**
+   * @ignore
+   * Records the current subscriptions if nothing has been recorded yet.
+   */
+  _seedSubscriptionLedger: subscriptionLedger.seedForTesting,
+
+  /**
+   * @ignore
+   * Removes a subscription from the filter storage without going through
+   * `subscriptions.remove()`, so that it gets lost without being recorded.
+   * @param {string} url Subscription URL
+   */
+  async _removeSubscriptionFromStorage(url) {
+    let {filterStorage} = filterEngine;
+    filterStorage.removeSubscription(Subscription.fromURL(url));
+    await filterStorage.saveToDisk();
   },
 
   clearIsDnrSubscriptionUpdating,

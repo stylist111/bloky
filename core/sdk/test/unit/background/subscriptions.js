@@ -31,6 +31,47 @@ describe("EWE.subscriptions", function() {
     subscriptions = (await mock("subscriptions.js")).default;
   }
 
+  const LEDGER_KEY = "ewe:subscriptionLedger";
+  const SUBSCRIPTION_URL = "https://example.com/subscription.txt";
+  const RULESET_ID = "ruleset-id";
+
+  async function getLedger() {
+    let items = await env.browser.storage.local.get(LEDGER_KEY);
+    return items[LEDGER_KEY] || {};
+  }
+
+  function entry(state, reason) {
+    return {state, reason, ts: expect.any(Number)};
+  }
+
+  // Sets up a single bundled subscription whose DNR ruleset can be
+  // enabled and disabled in the test environment.
+  function setupDnrSubscription(properties = {}) {
+    // eslint-disable-next-line no-undef
+    let {RegularSubscription} = global.subscriptionClasses;
+    let subscription = Object.assign(new RegularSubscription(), {
+      url: SUBSCRIPTION_URL,
+      id: RULESET_ID,
+      disabled: false,
+      ...properties
+    });
+    // eslint-disable-next-line no-undef
+    global.fromURL = () => subscription;
+    env.setFilterStorageSubscriptions([subscription]);
+    env.navigator.userAgent = "Mozilla/5.0 Chrome/130.0";
+
+    env.browser.runtime.manifest.declarative_net_request.rule_resources =
+      [{id: subscription.id}];
+    Object.assign(env.browser.declarativeNetRequest, {
+      getEnabledRulesets: () => Promise.resolve([]),
+      updateEnabledRulesets: () => Promise.resolve(),
+      getDisabledRuleIds: () => Promise.resolve([]),
+      updateStaticRules: () => Promise.resolve()
+    });
+
+    return subscription;
+  }
+
   beforeEach(async function() {
     env.configure();
     await mockAndImport();
@@ -55,6 +96,191 @@ describe("EWE.subscriptions", function() {
       env.setRecommendations([subEasylistLocal, subAntiCVLocal]);
       await expect(subscriptions.addDefaults("en"))
         .rejects.toThrow("No allowing subscription");
+    });
+  });
+
+  describe("ledger when enabling or disabling DNR rulesets", function() {
+    const DNR_ERROR = "Internal error";
+
+    let subscription;
+
+    beforeEach(function() {
+      subscription = setupDnrSubscription();
+    });
+
+    it("records enabling a subscription once its ruleset is enabled", async function() {
+      subscription.disabled = true;
+
+      await subscriptions.enable(SUBSCRIPTION_URL, {reason: "user_action"});
+
+      expect(subscription.disabled).toBe(false);
+      expect(await getLedger()).toEqual({
+        [SUBSCRIPTION_URL]: entry("enabled", "user_action")
+      });
+    });
+
+    it("doesn't record enabling a subscription if enabling its ruleset fails", async function() {
+      subscription.disabled = true;
+      env.browser.declarativeNetRequest.updateEnabledRulesets =
+        () => Promise.reject(new Error(DNR_ERROR));
+
+      await expect(subscriptions.enable(SUBSCRIPTION_URL,
+                                        {reason: "user_action"}))
+        .rejects.toThrow(DNR_ERROR);
+
+      expect(subscription.disabled).toBe(true);
+      expect(await getLedger()).toEqual({});
+    });
+
+    it("records removing a subscription once its ruleset is disabled", async function() {
+      env.browser.declarativeNetRequest.getEnabledRulesets =
+        () => Promise.resolve([RULESET_ID]);
+
+      await subscriptions.remove(SUBSCRIPTION_URL);
+
+      // eslint-disable-next-line no-undef
+      expect(global.filterStorageSubscriptions).toEqual([]);
+      expect(await getLedger()).toEqual({
+        [SUBSCRIPTION_URL]: entry("removed", "unknown")
+      });
+    });
+
+    it("changes the subscription before writing the ledger", async function() {
+      // Anything observing the subscriptions, e.g. the UI asking for them
+      // right after adding one, must see the change without waiting for
+      // the ledger to be written to storage.
+      const NEW_URL = "https://example.com/new-subscription.txt";
+      // eslint-disable-next-line no-undef
+      let {RegularSubscription} = global.subscriptionClasses;
+      let newSubscription = Object.assign(new RegularSubscription(), {
+        url: NEW_URL,
+        downloadable: true,
+        lastDownload: 1,
+        disabled: false
+      });
+      // eslint-disable-next-line no-undef
+      global.fromURL = url => (url == NEW_URL ? newSubscription : subscription);
+
+      let adding = subscriptions.add(NEW_URL, {reason: "user_action"});
+      // eslint-disable-next-line no-undef
+      expect(global.filterStorageSubscriptions).toContain(newSubscription);
+      await adding;
+
+      let disabling = subscriptions.disable(NEW_URL, {reason: "user_action"});
+      expect(newSubscription.disabled).toBe(true);
+      await disabling;
+
+      expect(await getLedger()).toEqual({
+        [NEW_URL]: entry("disabled", "user_action")
+      });
+    });
+
+    it("doesn't record removing a subscription if disabling its ruleset fails", async function() {
+      env.browser.declarativeNetRequest.getEnabledRulesets =
+        () => Promise.resolve([RULESET_ID]);
+      env.browser.declarativeNetRequest.updateEnabledRulesets =
+        () => Promise.reject(new Error(DNR_ERROR));
+
+      await expect(subscriptions.remove(SUBSCRIPTION_URL,
+                                        {reason: "user_action"}))
+        .rejects.toThrow(DNR_ERROR);
+
+      // eslint-disable-next-line no-undef
+      expect(global.filterStorageSubscriptions).toEqual([subscription]);
+      expect(await getLedger()).toEqual({});
+    });
+  });
+
+  describe("restoreFromLedger()", function() {
+    const PREMIUM_ID = "CDAD4CF5-2706-42CB-B404-F5B9B61B8CAA";
+
+    let subscription;
+
+    async function setLedger(entries) {
+      await env.browser.storage.local.set({[LEDGER_KEY]: entries});
+    }
+
+    beforeEach(async function() {
+      // eslint-disable-next-line no-undef
+      global.__hasPremium = false;
+      subscription = setupDnrSubscription({disabled: true});
+      await setLedger({
+        [SUBSCRIPTION_URL]: {state: "enabled", reason: "user_action", ts: 1}
+      });
+    });
+
+    afterEach(function() {
+      // eslint-disable-next-line no-undef
+      delete global.__hasPremium;
+    });
+
+    it("restores a subscription recorded as enabled", async function() {
+      let result = await subscriptions.restoreFromLedger();
+
+      expect(result).toEqual({
+        restored: [SUBSCRIPTION_URL], skipped: [], errors: []
+      });
+      expect(subscription.disabled).toBe(false);
+      expect(await getLedger()).toEqual({
+        [SUBSCRIPTION_URL]: entry("enabled", "recovery")
+      });
+    });
+
+    it("skips a premium subscription without a premium plan", async function() {
+      subscription = setupDnrSubscription({disabled: true, id: PREMIUM_ID});
+
+      let result = await subscriptions.restoreFromLedger();
+
+      expect(result).toEqual({
+        restored: [],
+        skipped: [{url: SUBSCRIPTION_URL, reason: "no_premium"}],
+        errors: []
+      });
+      expect(subscription.disabled).toBe(true);
+      expect(await getLedger()).toEqual({
+        [SUBSCRIPTION_URL]: {state: "enabled", reason: "user_action", ts: 1}
+      });
+    });
+
+    it("restores a premium subscription with a premium plan", async function() {
+      // eslint-disable-next-line no-undef
+      global.__hasPremium = true;
+      subscription = setupDnrSubscription({disabled: true, id: PREMIUM_ID});
+
+      let result = await subscriptions.restoreFromLedger();
+
+      expect(result).toEqual({
+        restored: [SUBSCRIPTION_URL], skipped: [], errors: []
+      });
+      expect(subscription.disabled).toBe(false);
+      expect(await getLedger()).toEqual({
+        [SUBSCRIPTION_URL]: entry("enabled", "recovery")
+      });
+    });
+
+    it("doesn't report a premium subscription that needs no change", async function() {
+      subscription = setupDnrSubscription({disabled: false, id: PREMIUM_ID});
+
+      let result = await subscriptions.restoreFromLedger();
+
+      expect(result).toEqual({restored: [], skipped: [], errors: []});
+    });
+
+    it("reports a failure to restore a subscription", async function() {
+      env.browser.declarativeNetRequest.updateEnabledRulesets =
+        () => Promise.reject(new Error("Internal error"));
+
+      let result = await subscriptions.restoreFromLedger();
+
+      expect(result).toEqual({
+        restored: [],
+        skipped: [],
+        errors: [{
+          url: SUBSCRIPTION_URL,
+          error: expect.stringContaining("Internal error")
+        }]
+      });
+      expect(subscription.disabled).toBe(true);
     });
   });
 });
