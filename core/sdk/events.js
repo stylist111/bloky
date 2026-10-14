@@ -795,7 +795,7 @@ export default {
             type: ["number", "null"]
           },
           filterLists: {
-            description: "Hashes of the first 10 active filter list URLs",
+            description: "12-character SHA-256 hash prefixes of active filter list subscription URLs. Filtered to only easylist, acceptable ads, privacy friendly acceptable ads, anti-cv, easyprivacy, and premium. Language lists that include easylist report as easylist. Maximum length of 10.",
             type: "array",
             items: {
               type: "string"

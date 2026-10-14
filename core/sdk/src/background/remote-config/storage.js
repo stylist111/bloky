@@ -25,6 +25,7 @@ import experiments from "../experiments.js";
 import * as clientIds from "../client-ids.js";
 import {sha256Prefix} from "../../all/hashing.js";
 import sentry from "../sentry.js";
+import {toTrackedFilterListUrl} from "./filter-list-urls.js";
 
 const UNKNOWN_COUNTRY_CODE = "unknown";
 let _getFacts = async() => ({});
@@ -256,6 +257,9 @@ async function getDefaultFacts() {
   const activeFilterUrls = allSubscriptions.flatMap(
     s => s.enabled && s.downloadCount > 0 && s.url ? [s.url] : []
   );
+  const normalizedFilterUrls = [
+    ...new Set(activeFilterUrls.flatMap(toTrackedFilterListUrl))
+  ];
   const [
     aaEnabled, trialDaysLeft, preferences, dynamicRules,
     filterLists, clientIdStability, clientIdRotationFrequency
@@ -265,7 +269,8 @@ async function getDefaultFacts() {
     getPreferences(),
     isMV3 ?
       browser.declarativeNetRequest.getDynamicRules() : Promise.resolve([]),
-    Promise.all(activeFilterUrls.slice(0, 10).map(sha256Prefix)),
+    Promise.all(normalizedFilterUrls.slice(0, 10).map(sha256Prefix))
+      .then(h => h.sort()),
     clientIds.getClientIdStability(),
     clientIds.getClientIdRotationFrequency()
   ]);
@@ -345,7 +350,10 @@ async function getDefaultFacts() {
  * @property {number} staticRuleCount - The number of enabled static
  *    declarative net request rulesets (MV3 only).
  * @property {string[]} filterLists - 12-character SHA-256 hash prefixes of
- *    active filter list subscription URLs.
+ *    active filter list subscription URLs. Filtered to only easylist,
+ *    acceptable ads, privacy friendly acceptable ads, anti-cv, easyprivacy, and
+ *    premium. Language lists that include easylist report as easylist. Maximum
+ *    length of 10.
  * @property {number} lastBlockthroughTagDate - The timestamp when the
  *    blockthrough tag was last seen, in milliseconds since the epoch.
  * @property {number} lastBaitBlockedDate - The timestamp when a bait request

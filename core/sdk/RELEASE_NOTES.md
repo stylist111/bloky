@@ -1,5 +1,9 @@
 # Unreleased
 
+- In the cohort system, reduced the `filterLists` fact to only include a
+  specific list of common filterlists (easylist, acceptable ads, privacy
+  friendly acceptable ads, anti-cv, easyprivacy, premium). All
+  variants that include easylist are now reported as easylist.
 - Fixed the background service worker being able to stop part way through
   `start()`, or while applying a downloaded filter list update, on Manifest
   V3. This could leave subscriptions partly initialized or updated.
