@@ -78,6 +78,38 @@ describe("releaseNotesBody", () => {
     );
   });
 
+  it("drops blank lines between changes", () => {
+    const releaseNotes = new ReleaseNotes(
+      [
+        "# 4.47.0 - 2026-10-12",
+        "",
+        "- Updated snippets to 2.17.0",
+        "",
+        "- Added the time of the last account login to",
+        "  the debug information.",
+        "",
+        "- Fixed a crash on start",
+        "",
+        "## Filter changes",
+        "",
+        "- Updated filter lists",
+      ].join("\n"),
+    );
+
+    expect(releaseNotesBody(releaseNotes, "4.47.0")).toBe(
+      [
+        "- Updated snippets to 2.17.0",
+        "- Added the time of the last account login to",
+        "  the debug information.",
+        "- Fixed a crash on start",
+        "",
+        "## Filter changes",
+        "",
+        "- Updated filter lists",
+      ].join("\n"),
+    );
+  });
+
   it("works for versions without a summary", () => {
     expect(releaseNotesBody(new ReleaseNotes(RELEASE_NOTES), "4.45.0")).toBe(
       "- Older change",

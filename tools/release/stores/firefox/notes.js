@@ -31,8 +31,16 @@ import { projectRootPath } from "../../utils.js";
 export const REVIEWER_NOTES_HEADING = "## Firefox AMO notes for reviewers";
 
 /**
+ * A blank line between two changes, e.g. between `- Updated snippets` and
+ * `- Fixed a crash`. The line before it has to belong to a change (`- ` or
+ * its indented continuation), so the blank line after a summary is kept.
+ */
+const BLANK_LINE_BETWEEN_CHANGES = /^((?:- | {2}).*)\n\n(?=- )/gm;
+
+/**
  * Returns a version's release notes without their `# <version>` heading:
- * the summary line, if there is one, and the list of changes.
+ * the summary line, if there is one, and the list of changes. Blank lines
+ * between changes are dropped, since AMO would show them as gaps in the list.
  *
  * @param {ReleaseNotes} releaseNotes Parsed RELEASE_NOTES.md.
  * @param {string} version Version being released, e.g. `4.46.0`.
@@ -41,7 +49,7 @@ export const REVIEWER_NOTES_HEADING = "## Firefox AMO notes for reviewers";
  */
 export function releaseNotesBody(releaseNotes, version) {
   const [, ...body] = releaseNotes.notesForVersion(version).split("\n");
-  return body.join("\n").trim();
+  return body.join("\n").trim().replace(BLANK_LINE_BETWEEN_CHANGES, "$1\n");
 }
 
 /**
