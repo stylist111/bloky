@@ -227,6 +227,10 @@ a .link-text-color:hover {
   text-indent: -35px;
 }
 
+#general-option-list .extra-info {
+  padding-left: 35px;
+}
+
 .bottom-line {
   border-bottom-width: 1px;
   border-bottom-style: solid;
@@ -467,6 +471,7 @@ button {
 #btnShowLinks {
   opacity: 0.7;
   padding-left: 3px;
+  align-self: flex-start;
 }
 
 #btnShowLinks:hover {
@@ -548,6 +553,11 @@ select#language_select optgroup {
   width: 100%;
   display: flex;
   justify-content: space-between;
+  cursor: default;
+}
+
+#general-option-list label:not(.switch) {
+  cursor: default;
 }
 
 #ad_blocking_list label h1,
@@ -1517,7 +1527,6 @@ section .theme-section-row {
 
 .filter-subscription-wrapper {
   display: block;
-  cursor: pointer;
 }
 
 .premium_subscription_description {
@@ -1528,6 +1537,18 @@ section .theme-section-row {
 
 .premium_subscription_description .checkbox {
   flex-shrink: 0;
+}
+
+.premium_subscription.locked {
+  cursor: pointer;
+}
+
+.premium_subscription:not(.locked) label {
+  cursor: default;
+}
+
+.premium_disclaimer > .link-text-color {
+  cursor: pointer;
 }
 
 .premium_image_wrapper {
@@ -1913,6 +1934,7 @@ section#rate-us-cta > section#rate-us-tooltip:hover {
 .switch span:last-child {
   padding-left: 4.5em;
   padding-right: 4.5em;
+  cursor: default;
 }
 
 .slider {
@@ -2043,4 +2065,9 @@ html[dir="rtl"] .checkbox-indentation {
   padding-right: 35px;
   padding-left: 0px;
   text-indent: -35px;
+}
+
+html[dir="rtl"] #general-option-list .extra-info {
+  padding-right: 35px;
+  padding-left: 0px;
 }

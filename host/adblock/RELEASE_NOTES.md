@@ -1,5 +1,10 @@
 # Unreleased
 
+- Fixed links in explanatory texts on the options page reacting to clicks on
+  the whole text instead of just the link text.
+- Fixed an issue on the options page where clicking anywhere on a settings or
+  filter list row, including its name and description, toggled the setting or
+  subscription. Only the checkbox or switch toggles it now.
 - Added the latest recorded change of each filter list subscription, including
   removed ones, to the debug information included in bug reports.
 - Fixed an issue on Manifest V3 where the browser could stop the background

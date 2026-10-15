@@ -128,6 +128,10 @@ const initialize = async function init() {
     });
   };
 
+  // Cancelling the click keeps the label from activating the checkbox, so
+  // only the switch itself toggles the setting, not its text.
+  $("label.switch > span:not(.slider)").on("click", (event) => event.preventDefault());
+
   $("input.feature[type='checkbox']").on("change", async function onOptionSelectionChange() {
     let isEnabled = $(this).is(":checked");
     const isInverted = $(this).is("[data-pref-transform='invert']");

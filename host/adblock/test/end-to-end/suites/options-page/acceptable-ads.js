@@ -57,7 +57,7 @@ export default () => {
     await initOptionsGeneralTab(getOptionsHandle());
     let aaPrivacyEnabled = await isCheckboxPropertyEnabled("#acceptable_ads_privacy");
     expect(aaPrivacyEnabled).toEqual(false);
-    await clickOnDisplayedElement("label:has(> #acceptable_ads_privacy)");
+    await clickOnDisplayedElement("label:has(> #acceptable_ads_privacy) > .slider");
     aaPrivacyEnabled = await isCheckboxPropertyEnabled("#acceptable_ads_privacy");
     expect(aaPrivacyEnabled).toEqual(true);
     const aaPrivacyHelper = await getDisplayedElement("#aa-privacy-helper > span", {

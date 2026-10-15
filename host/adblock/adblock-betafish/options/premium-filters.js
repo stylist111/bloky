@@ -43,12 +43,18 @@ const premiumFiltersUIitems = [
 ];
 
 async function getDefaultPFFilterUI(entry, isActiveLicense) {
-  const $filterTitle = $("<span>").addClass("premium_filter_list_title").text(entry.title);
+  const titleID = `${entry.id}_title`;
+  const $filterTitle = $("<span>")
+    .addClass("premium_filter_list_title")
+    .attr("id", titleID)
+    .text(entry.title);
 
   const $extraInformation = $("<div>").addClass("premium_extra_info").text(entry.description);
 
   const $filterInfo = $("<div>").append($filterTitle).append($extraInformation);
 
+  // Intentionally not associated with the checkbox: the label spans the whole
+  // row, so clicking the name or the description must not toggle the list.
   const $label = $("<label>").append($filterInfo);
 
   if (entry.disclaimer) {
@@ -69,7 +75,7 @@ async function getDefaultPFFilterUI(entry, isActiveLicense) {
         .addClass("link-text-color");
       $premiumDisclaimer.append($replacementEl);
       processReplacementChildrenInContent($premiumDisclaimer);
-      $premiumDisclaimer.on("click", () => {
+      $replacementEl.on("click", () => {
         send("openTab", { urlToOpen: entry.urlToOpen });
       });
     }
@@ -105,6 +111,7 @@ async function getDefaultPFFilterUI(entry, isActiveLicense) {
       .attr("type", "checkbox")
       .attr("data-url", entry.url)
       .attr("id", entry.id)
+      .attr("aria-labelledby", titleID)
       .prop("checked", entry.isSelected);
 
     const $lensIcon = $("<i>lens</i>")
@@ -140,7 +147,6 @@ async function getDefaultPFFilterUI(entry, isActiveLicense) {
     });
 
     $checkBox.prop("checked", subscribed);
-    $label.attr("for", entry.id);
   } else {
     const $checkBoxIcons = $("<i>lock</i>")
       .attr("role", "img")
@@ -175,8 +181,8 @@ async function getDefaultPFFilterUI(entry, isActiveLicense) {
     $filterWrapper.addClass("locked");
     $premiumSubscription.addClass("locked");
     $premiumSubscription.click((e) => {
-      // ignore clicks when the premium_disclaimer text has a hyperlink
-      if ($(e.target).is(".premium_disclaimer") && $(e.target).find(".link-text-color").length) {
+      // ignore clicks on the premium_disclaimer link, which opens its own page
+      if ($(e.target).is(".premium_disclaimer .link-text-color")) {
         return;
       }
       browser.tabs.create({ url: License.MAB_CONFIG.payURL });

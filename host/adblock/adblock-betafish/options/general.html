@@ -62,7 +62,12 @@
         <div class="add-space-between section-padding bottom-line">
           <div>
             <span class="checkbox md-stack -mt-1.5">
-              <input type="checkbox" class="feature" id="acceptable_ads" />
+              <input
+                type="checkbox"
+                class="feature"
+                id="acceptable_ads"
+                aria-labelledby="acceptable_ads_label"
+              />
               <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
               <i
                 class="checked material-icons circle-icon-bg-24 checkbox-icon"
@@ -71,7 +76,7 @@
                 >check_circle</i
               >
             </span>
-            <label for="acceptable_ads" i18n="acceptableadsoption"></label>
+            <label id="acceptable_ads_label" i18n="acceptableadsoption"></label>
           </div>
           <a
             class="help-link-icon"
@@ -112,7 +117,12 @@
 
       <li class="section-padding checkbox-indentation">
         <span class="checkbox md-stack -mt-1.5">
-          <input type="checkbox" class="feature" id="prefs__shouldShowBlockElementMenu" />
+          <input
+            type="checkbox"
+            class="feature"
+            id="prefs__shouldShowBlockElementMenu"
+            aria-labelledby="prefs__shouldShowBlockElementMenu_label"
+          />
           <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
           <i
             class="checked material-icons circle-icon-bg-24 checkbox-icon"
@@ -121,12 +131,17 @@
             >check_circle</i
           >
         </span>
-        <label for="prefs__shouldShowBlockElementMenu" i18n="showcontextmenus2"></label>
+        <label id="prefs__shouldShowBlockElementMenu_label" i18n="showcontextmenus2"></label>
       </li>
 
       <li class="section-padding checkbox-indentation">
         <span class="checkbox md-stack -mt-1.5">
-          <input type="checkbox" class="feature" id="prefs__show_statsinicon" />
+          <input
+            type="checkbox"
+            class="feature"
+            id="prefs__show_statsinicon"
+            aria-labelledby="prefs__show_statsinicon_label"
+          />
           <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
           <i
             class="checked material-icons circle-icon-bg-24 checkbox-icon"
@@ -135,12 +150,17 @@
             >check_circle</i
           >
         </span>
-        <label for="prefs__show_statsinicon" i18n="show_on_adblock_button"></label>
+        <label id="prefs__show_statsinicon_label" i18n="show_on_adblock_button"></label>
       </li>
 
       <li class="section-padding checkbox-indentation">
         <span class="checkbox md-stack -mt-1.5">
-          <input type="checkbox" class="feature" id="enable_display_menu_stats" />
+          <input
+            type="checkbox"
+            class="feature"
+            id="enable_display_menu_stats"
+            aria-labelledby="enable_display_menu_stats_label"
+          />
           <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
           <i
             class="checked material-icons circle-icon-bg-24 checkbox-icon"
@@ -149,12 +169,17 @@
             >check_circle</i
           >
         </span>
-        <label for="enable_display_menu_stats" i18n="show_on_adblock_menu"></label>
+        <label id="enable_display_menu_stats_label" i18n="show_on_adblock_menu"></label>
       </li>
 
       <li class="section-padding checkbox-indentation">
         <span class="checkbox md-stack -mt-1.5">
-          <input type="checkbox" class="feature" id="prefs__show_devtools_panel" />
+          <input
+            type="checkbox"
+            class="feature"
+            id="prefs__show_devtools_panel"
+            aria-labelledby="prefs__show_devtools_panel_label"
+          />
           <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
           <i
             class="checked material-icons circle-icon-bg-24 checkbox-icon"
@@ -163,12 +188,17 @@
             >check_circle</i
           >
         </span>
-        <label for="prefs__show_devtools_panel" i18n="show_devtools_panel"></label>
+        <label id="prefs__show_devtools_panel_label" i18n="show_devtools_panel"></label>
       </li>
 
       <li id="main_opt_out" class="section-padding checkbox-indentation">
         <span class="checkbox md-stack -mt-1.5">
-          <input type="checkbox" class="feature" id="prefs__data_collection_opt_out" />
+          <input
+            type="checkbox"
+            class="feature"
+            id="prefs__data_collection_opt_out"
+            aria-labelledby="prefs__data_collection_opt_out_label"
+          />
           <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
           <i
             class="checked material-icons circle-icon-bg-24 checkbox-icon"
@@ -177,7 +207,7 @@
             >check_circle</i
           >
         </span>
-        <label for="prefs__data_collection_opt_out" i18n="data_collection_opt_out"></label>
+        <label id="prefs__data_collection_opt_out_label" i18n="data_collection_opt_out"></label>
       </li>
 
       <li
@@ -185,7 +215,12 @@
       >
         <div>
           <span class="checkbox md-stack -mt-1.5">
-            <input type="checkbox" class="feature" id="enable_data_collection_v2" />
+            <input
+              type="checkbox"
+              class="feature"
+              id="enable_data_collection_v2"
+              aria-labelledby="enable_data_collection_v2_label"
+            />
             <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
             <i
               class="checked material-icons circle-icon-bg-24 checkbox-icon"
@@ -194,7 +229,7 @@
               >check_circle</i
             >
           </span>
-          <label for="enable_data_collection_v2" i18n="datacollectionoption"></label>
+          <label id="enable_data_collection_v2_label" i18n="datacollectionoption"></label>
         </div>
         <a
           class="help-link-icon"
@@ -213,6 +248,7 @@
             type="checkbox"
             class="feature"
             id="prefs__marketing_opt_out"
+            aria-labelledby="prefs__marketing_opt_out_label"
             data-pref-transform="invert"
           />
           <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
@@ -223,12 +259,17 @@
             >check_circle</i
           >
         </span>
-        <label for="prefs__marketing_opt_out" i18n="marketing_opt_out"></label>
+        <label id="prefs__marketing_opt_out_label" i18n="marketing_opt_out"></label>
       </li>
 
       <li class="section-padding checkbox-indentation">
         <span class="checkbox md-stack -mt-1.5">
-          <input type="checkbox" class="feature" id="enable_show_advanced_options" />
+          <input
+            type="checkbox"
+            class="feature"
+            id="enable_show_advanced_options"
+            aria-labelledby="enable_show_advanced_options_label"
+          />
           <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
           <i
             class="checked material-icons circle-icon-bg-24 checkbox-icon"
@@ -237,13 +278,18 @@
             >check_circle</i
           >
         </span>
-        <label for="enable_show_advanced_options" i18n="advanced_options2"></label>
+        <label id="enable_show_advanced_options_label" i18n="advanced_options2"></label>
       </li>
 
       <li class="section-padding advanced light-grey-text">
         <div class="checkbox-indentation forDebug">
           <span class="checkbox md-stack -mt-1.5">
-            <input type="checkbox" class="feature" id="enable_debug_logging" />
+            <input
+              type="checkbox"
+              class="feature"
+              id="enable_debug_logging"
+              aria-labelledby="enable_debug_logging_label"
+            />
             <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
             <i
               class="checked material-icons circle-icon-bg-24 checkbox-icon"
@@ -252,7 +298,7 @@
               >check_circle</i
             >
           </span>
-          <label for="enable_debug_logging" i18n="debuginlogoption2"></label>
+          <label id="enable_debug_logging_label" i18n="debuginlogoption2"></label>
         </div>
         <div class="extra-info">
           <div i18n="slows_down_extension" class="italic"></div>

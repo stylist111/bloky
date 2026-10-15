@@ -31,7 +31,7 @@ export default () => {
     await initOptionsGeneralTab(getOptionsHandle());
     const dataCollectionOptOut = await isCheckboxPropertyEnabled("#prefs__data_collection_opt_out");
     expect(dataCollectionOptOut).toEqual(true);
-    await waitForNotDisplayed("//label[@for='enable_data_collection_v2']");
+    await waitForNotDisplayed("//label[@id='enable_data_collection_v2_label']");
     await waitForNotDisplayed("//label[@for='enable_onpageMessages']");
 
     const optOutFlag = await driver.executeScript(() =>

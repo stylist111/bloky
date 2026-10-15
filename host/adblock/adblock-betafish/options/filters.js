@@ -563,6 +563,7 @@ function getDefaultFilterUI(filterList, checkboxID, filterListType) {
   const isLanguageFilter = filterListType === "languageFilterList";
   const aaPrivacy = FilterListUtil.cachedSubscriptions.acceptable_ads_privacy;
   const testId = `filters_${filterList.adblockId}`;
+  const titleID = `${checkboxID}_title`;
   let isSelected = filterList.subscribed;
   let filterListUrl = filterList.url;
 
@@ -582,6 +583,7 @@ function getDefaultFilterUI(filterList, checkboxID, filterListType) {
     .attr("type", "checkbox")
     .attr("adblockId", checkboxID)
     .attr("id", checkboxID)
+    .attr("aria-labelledby", titleID)
     .attr("data-testid", testId)
     .prop("checked", isSelected);
 
@@ -596,12 +598,14 @@ function getDefaultFilterUI(filterList, checkboxID, filterListType) {
     .append($checkBox)
     .append($checkBoxIcons);
 
-  const $filterTitle = $("<h1>").text(
-    filterList.label ||
-      filterList.title ||
-      filterList._title ||
-      `${filterList.url.substr(0, 40)}...`,
-  );
+  const $filterTitle = $("<h1>")
+    .attr("id", titleID)
+    .text(
+      filterList.label ||
+        filterList.title ||
+        filterList._title ||
+        `${filterList.url.substr(0, 40)}...`,
+    );
 
   const $link = $("<a>")
     .addClass("filter-list-link")
@@ -626,9 +630,10 @@ function getDefaultFilterUI(filterList, checkboxID, filterListType) {
 
   const $filterInfo = $("<div>").append($filterHeader).append($extraInformation);
 
+  // Intentionally not associated with the checkbox: the label spans the whole
+  // row, so clicking the name or the update status must not toggle the list.
   const $label = $("<label>")
     .attr("title", filterList.correctedURL)
-    .attr("for", checkboxID)
     .append($filterInfo)
     .append($infoSection);
 
@@ -684,7 +689,11 @@ function getToggleFilterUI(filterList, checkboxID) {
 
   const $spanSlider = $("<span>").addClass("slider").addClass("round");
 
-  const $spanText = $("<span>").text(translate("acceptable_ads_privacy"));
+  // Cancelling the click keeps the label from activating the checkbox, so
+  // only the switch itself toggles the list, not its text.
+  const $spanText = $("<span>")
+    .text(translate("acceptable_ads_privacy"))
+    .on("click", (event) => event.preventDefault());
 
   const $label = $("<label>")
     .addClass("switch")

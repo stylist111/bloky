@@ -230,7 +230,7 @@ export async function getUserIdFromStorage(optionsHandle) {
 
 // This function assumes initOptionsFiltersTab() being called beforehand
 export async function clickFilterlist(name, checkboxSelector, enabledAfterClick) {
-  await clickOnDisplayedElement(`[name="${name}"]`);
+  await clickOnDisplayedElement(`[name="${name}"] > .checkbox`);
 
   // Language filter lists get removed from the UI after disabling them.
   // In that case no further checks are done here

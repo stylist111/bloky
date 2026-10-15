@@ -712,7 +712,7 @@ label[i18n="delete_all_stats_data"] {
     display: inline;
     float: left;
   }
-  #opt_in_data_collection a {
+  #opt_in_data_collect_text {
     display: block;
     margin-left: 36px;
     margin-bottom: 16px;
@@ -874,7 +874,7 @@ label[i18n="delete_all_stats_data"] {
     display: inline;
     float: left;
   }
-  #opt_in_data_collection a {
+  #opt_in_data_collect_text {
     display: block;
     margin-left: 36px;
     margin-bottom: 16px;
