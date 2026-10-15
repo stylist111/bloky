@@ -139,7 +139,9 @@ async function addAdditionalSubscriptions() {
     try {
       if (await ewe.subscriptions.has(url)) continue;
 
-      await ewe.subscriptions.add(url);
+      await ewe.subscriptions.add(url, {
+        reason: ewe.subscriptions.REASONS.ADMIN_POLICY
+      });
     } catch (ex) {
       logger.error(`Failed to add additional subscription: ${url}\n${ex}`);
     }
@@ -190,7 +192,9 @@ async function recoverMissingSubscriptions(isMV3, addDefaultsErrorMsg) {
   let recoveryErrorMsg = null;
   try {
     // Enable default subscriptions: EasyList, Anti-CV and Acceptable Ads
-    await ewe.subscriptions.addDefaults(null, true);
+    await ewe.subscriptions.addDefaults(null, true, {
+      reason: ewe.subscriptions.REASONS.RECOVERY
+    });
   } catch (e) {
     recoveryErrorMsg = getErrorMessage(e);
   }

@@ -143,7 +143,7 @@ const SubscriptionAdapter = (function getSubscriptionAdapter() {
     const subscriptionUrl = getUrlFromId(options.adblockId);
     if (subscriptionUrl !== "") {
       try {
-        await ewe.subscriptions.remove(subscriptionUrl);
+        await ewe.subscriptions.remove(subscriptionUrl, { reason: options.reason });
       } catch (e) {
         // do nothing
       }
@@ -252,7 +252,7 @@ const SubscriptionAdapter = (function getSubscriptionAdapter() {
     if (options && options.adblockId) {
       const subscriptionUrl = getUrlFromId(options.adblockId);
       if (subscriptionUrl) {
-        ewe.subscriptions.add(subscriptionUrl);
+        ewe.subscriptions.add(subscriptionUrl, { reason: options.reason });
       }
     }
   };

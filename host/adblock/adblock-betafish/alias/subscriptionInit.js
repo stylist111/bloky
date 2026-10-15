@@ -133,7 +133,9 @@ function removeSubscriptions() {
             if (key === "remove_subscriptions" && Array.isArray(items[key]) && items[key].length) {
               for (let inx = 0; inx < items[key].length; inx++) {
                 if (await ewe.subscriptions.has(items[key][inx])) {
-                  await ewe.subscriptions.remove(items[key][inx]);
+                  await ewe.subscriptions.remove(items[key][inx], {
+                    reason: ewe.subscriptions.REASONS.ADMIN_POLICY,
+                  });
                 }
               }
             }
@@ -171,7 +173,9 @@ async function addAdditionalSubscriptions() {
         continue;
       }
 
-      await ewe.subscriptions.add(url);
+      await ewe.subscriptions.add(url, {
+        reason: ewe.subscriptions.REASONS.ADMIN_POLICY,
+      });
     } catch (ex) {
       logger.error(`Failed to add additional subscription: ${url}\n${ex}`);
     }
@@ -221,7 +225,9 @@ async function recoverMissingSubscriptions(isMV3, addDefaultsErrorMsg) {
   let recoveryErrorMsg = null;
   try {
     // Enable default subscriptions: EasyList, Anti-CV and Acceptable Ads
-    await ewe.subscriptions.addDefaults(null, true);
+    await ewe.subscriptions.addDefaults(null, true, {
+      reason: ewe.subscriptions.REASONS.RECOVERY,
+    });
   } catch (e) {
     recoveryErrorMsg = getErrorMessage(e);
   }

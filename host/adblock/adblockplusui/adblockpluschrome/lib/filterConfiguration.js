@@ -48,7 +48,10 @@ export async function addFilter(filterText, origin) {
 
 async function addSubscription(details) {
   try {
-    await ewe.subscriptions.add(details.url, details);
+    await ewe.subscriptions.add(details.url, {
+      ...details,
+      reason: ewe.subscriptions.REASONS.USER_ACTION,
+    });
   } catch (ex) {
     return false;
   }
@@ -306,7 +309,9 @@ port.on("subscriptions.getRecommendations", async (message, sender) => {
  * @property {string} url - The subscription's URL.
  */
 port.on("subscriptions.remove", async (message, sender) => {
-  await ewe.subscriptions.remove(message.url);
+  await ewe.subscriptions.remove(message.url, {
+    reason: ewe.subscriptions.REASONS.USER_ACTION,
+  });
 });
 
 /**
@@ -333,11 +338,12 @@ port.on("subscriptions.toggle", async (message, sender) => {
     }
 
     if (subscription) {
+      const options = { reason: ewe.subscriptions.REASONS.USER_ACTION };
       if (!subscription.enabled || message.keepInstalled) {
-        if (subscription.enabled) await ewe.subscriptions.disable(message.url);
-        else await ewe.subscriptions.enable(message.url);
+        if (subscription.enabled) await ewe.subscriptions.disable(message.url, options);
+        else await ewe.subscriptions.enable(message.url, options);
       } else {
-        await ewe.subscriptions.remove(subscription.url);
+        await ewe.subscriptions.remove(subscription.url, options);
       }
       return true;
     }

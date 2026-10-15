@@ -33,6 +33,17 @@ export type SubscriptionDetails = Array<{
 }>;
 
 /**
+ * The latest recorded change of each filter list subscription, including
+ * subscriptions that have since been removed
+ */
+export type SubscriptionLedger = Array<{
+  reason: string;
+  state: string;
+  time: string;
+  url: string;
+}>;
+
+/**
  * The debug data (summary) for extension alarms
  */
 export type AlarmInfo = Array<{
@@ -101,6 +112,7 @@ export interface DeviceSpecificInformation {
   otherInfo?: any;
   remoteConfigurationInformation: RemoteConfigurationData;
   subscriptions?: SubscriptionDetails;
+  subscriptionLedger?: SubscriptionLedger;
   userFilters?: RuleMetaData[];
 }
 

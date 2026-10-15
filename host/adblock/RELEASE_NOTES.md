@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added the latest recorded change of each filter list subscription, including
+  removed ones, to the debug information included in bug reports.
 - Fixed an issue on Manifest V3 where the browser could stop the background
   service worker part way through startup or while applying a filter list
   update, which could leave filter lists missing or only partly updated.

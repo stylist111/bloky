@@ -316,11 +316,17 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const { command } = message;
     switch (command) {
       case "subscribe":
-        SubscriptionAdapter.subscribe({ adblockId: message.id });
+        SubscriptionAdapter.subscribe({
+          adblockId: message.id,
+          reason: ewe.subscriptions.REASONS.USER_ACTION,
+        });
         sendResponse({});
         break;
       case "unsubscribe":
-        SubscriptionAdapter.unsubscribe({ adblockId: message.adblockId });
+        SubscriptionAdapter.unsubscribe({
+          adblockId: message.adblockId,
+          reason: ewe.subscriptions.REASONS.USER_ACTION,
+        });
         sendResponse({});
         break;
       case "getIdFromURL":

@@ -280,8 +280,14 @@ export const License = (function getLicense() {
       setSetting("picreplacement", false);
       licenseNotifier.emit("license.expired");
       setSetting("color_themes", { popup_menu: "default_theme", options_page: "default_theme" });
-      SubscriptionAdapter.unsubscribe({ adblockId: "distraction-control" });
-      SubscriptionAdapter.unsubscribe({ adblockId: "cookies-premium" });
+      SubscriptionAdapter.unsubscribe({
+        adblockId: "distraction-control",
+        reason: ewe.subscriptions.REASONS.PLAN_CHANGE,
+      });
+      SubscriptionAdapter.unsubscribe({
+        adblockId: "cookies-premium",
+        reason: ewe.subscriptions.REASONS.PLAN_CHANGE,
+      });
     },
     ready() {
       return licensePromise;
@@ -415,8 +421,14 @@ ewe.account.onChanged.addListener(async ({ user, oldUser }) => {
   // activate
   if (hasPremium && !oldUserHadPremium) {
     if (await ewe.account.isTrial()) {
-      SubscriptionAdapter.subscribe({ adblockId: "distraction-control" });
-      SubscriptionAdapter.subscribe({ adblockId: "cookies-premium" });
+      SubscriptionAdapter.subscribe({
+        adblockId: "distraction-control",
+        reason: ewe.subscriptions.REASONS.PLAN_CHANGE,
+      });
+      SubscriptionAdapter.subscribe({
+        adblockId: "cookies-premium",
+        reason: ewe.subscriptions.REASONS.PLAN_CHANGE,
+      });
     }
     reloadOptionsPageTabs();
   }

@@ -10,6 +10,7 @@ Returns the following information in human readable JSON object that can be 'str
 - Extension info (version, ID, manifest version)
 - Device-specific info (premium license information, preferences, settings)
 - Subscription Details: Gathers information about filter list subscriptions, including status and download history.
+- Subscription Ledger: The latest recorded change of each filter list subscription (state, reason and time), including subscriptions that have since been removed.
 - Custom Filter Metadata: Collects user-defined filter rules and their metadata.
 - Remote Configuration Data, including cohort, and other experiment assignments and flags from the extension’s experiment system.
 - Host Permissions: Retrieves all permissions granted to the extension.

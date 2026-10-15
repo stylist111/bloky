@@ -26,6 +26,10 @@ jest.mock("@eyeo/webext-ad-filtering-solution", () => ({
     getUserFilters: jest.fn().mockResolvedValue([])
   },
   subscriptions: {
+    REASONS: {
+      ADMIN_POLICY: "admin_policy",
+      RECOVERY: "recovery"
+    },
     getMigrationErrors: jest.fn().mockResolvedValue([]),
     addDefaults: jest.fn().mockResolvedValue(undefined),
     getSubscriptions: jest.fn().mockResolvedValue([])
@@ -215,7 +219,8 @@ describe("subscriptionInit", () => {
       expect(ewe.subscriptions.addDefaults).toHaveBeenCalledTimes(2);
       expect(ewe.subscriptions.addDefaults).toHaveBeenLastCalledWith(
         null,
-        true
+        true,
+        { reason: "recovery" }
       );
     });
 
@@ -599,7 +604,9 @@ describe("subscriptionInit", () => {
       );
 
       expect(ewe.subscriptions.addDefaults).toHaveBeenCalledTimes(1);
-      expect(ewe.subscriptions.addDefaults).toHaveBeenCalledWith(null, true);
+      expect(ewe.subscriptions.addDefaults).toHaveBeenCalledWith(null, true, {
+        reason: "recovery"
+      });
       expect(onNotifyUser).toHaveBeenCalledWith(
         expect.objectContaining({ reinitialized: true })
       );

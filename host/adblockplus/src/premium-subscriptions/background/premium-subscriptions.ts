@@ -76,7 +76,10 @@ async function addDefaultPremiumSubscriptions(): Promise<void> {
 
   for (const subscription of subscriptions) {
     if (!(await ewe.subscriptions.has(subscription.url))) {
-      await addSubscription(subscription);
+      await addSubscription(
+        subscription,
+        ewe.subscriptions.REASONS.PLAN_CHANGE
+      );
     }
   }
 }
@@ -92,7 +95,9 @@ async function removePremiumSubscriptions(): Promise<void> {
 
   for (const subscription of subscriptions) {
     if (await ewe.subscriptions.has(subscription.url)) {
-      await ewe.subscriptions.remove(subscription.url);
+      await ewe.subscriptions.remove(subscription.url, {
+        reason: ewe.subscriptions.REASONS.PLAN_CHANGE
+      });
     }
   }
 }
@@ -128,8 +133,9 @@ export async function addPremiumSubscription(
   );
 
   if (subscription !== undefined) {
-    await addSubscription(subscription);
-    void ewe.subscriptions.enable(subscription.url);
+    const reason = ewe.subscriptions.REASONS.USER_ACTION;
+    await addSubscription(subscription, reason);
+    void ewe.subscriptions.enable(subscription.url, { reason });
   }
 }
 
@@ -147,7 +153,9 @@ export async function removePremiumSubscription(
   const hasSubscription = await ewe.subscriptions.has(subscription.url);
 
   if (hasSubscription) {
-    void ewe.subscriptions.remove(subscription.url);
+    void ewe.subscriptions.remove(subscription.url, {
+      reason: ewe.subscriptions.REASONS.USER_ACTION
+    });
   }
 }
 

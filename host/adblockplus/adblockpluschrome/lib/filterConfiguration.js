@@ -61,9 +61,12 @@ export async function addFilter(filterText, origin, expiresAt, autoExtendMs) {
   return null;
 }
 
-export async function addSubscription(details) {
+export async function addSubscription(
+  details,
+  reason = ewe.subscriptions.REASONS.USER_ACTION
+) {
   try {
-    await ewe.subscriptions.add(details.url, details);
+    await ewe.subscriptions.add(details.url, { ...details, reason });
   } catch (ex) {
     return false;
   }
@@ -433,7 +436,9 @@ export function start() {
    * @property {string} url - The subscription's URL.
    */
   port.on("subscriptions.remove", async (message, sender) => {
-    await ewe.subscriptions.remove(message.url);
+    await ewe.subscriptions.remove(message.url, {
+      reason: ewe.subscriptions.REASONS.USER_ACTION
+    });
   });
 
   /**
@@ -460,12 +465,13 @@ export function start() {
       }
 
       if (subscription) {
+        const options = { reason: ewe.subscriptions.REASONS.USER_ACTION };
         if (!subscription.enabled || message.keepInstalled) {
           if (subscription.enabled)
-            await ewe.subscriptions.disable(message.url);
-          else await ewe.subscriptions.enable(message.url);
+            await ewe.subscriptions.disable(message.url, options);
+          else await ewe.subscriptions.enable(message.url, options);
         } else {
-          await ewe.subscriptions.remove(subscription.url);
+          await ewe.subscriptions.remove(subscription.url, options);
         }
         return true;
       }

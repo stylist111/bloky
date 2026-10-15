@@ -44,6 +44,21 @@ const defaultSubscriptionData = [
 ];
 const defaultFilters = [{ text: "oneFilter" }, { text: "twoFilter" }];
 
+const defaultLedgerData = [
+  {
+    url: "https://example.com/sub1.txt",
+    state: "enabled",
+    reason: "default",
+    ts: NOW_SECONDS * 1000,
+  },
+  {
+    url: "https://example.com/sub2.txt",
+    state: "removed",
+    reason: "user_action",
+    ts: NOW_SECONDS * 1000,
+  },
+];
+
 const defaultPremiumData = {
   hasPremium: "true",
   licenseID: "licenseIDvalue",
@@ -76,12 +91,14 @@ const defaultUser: UserProfile = {
 // temporal-dead-zone guard ("Cannot access ... before initialization").
 const {
   getDefaultSubscriptions,
+  getDefaultLedger,
   getDefaultUserFilters,
   getDefaultMetadata,
   getDefaultFlags,
   getDefaultAssignments,
 } = vi.hoisted(() => ({
   getDefaultSubscriptions: () => Promise.resolve(defaultSubscriptionData),
+  getDefaultLedger: () => Promise.resolve(defaultLedgerData),
   getDefaultUserFilters: () => Promise.resolve(defaultFilters),
   getDefaultMetadata: (ruleText?: string) => {
     if (!ruleText || ruleText === "nometa") {
@@ -123,6 +140,7 @@ vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
   },
   subscriptions: {
     getSubscriptions: vi.fn().mockImplementation(getDefaultSubscriptions),
+    getLedger: vi.fn().mockImplementation(getDefaultLedger),
     getMigrationErrors: vi.fn().mockReturnValue(""),
   },
 }));
@@ -179,6 +197,7 @@ describe("pretty print debug data", () => {
     vi.mocked(ewe.subscriptions.getSubscriptions).mockImplementation(
       getDefaultSubscriptions,
     );
+    vi.mocked(ewe.subscriptions.getLedger).mockImplementation(getDefaultLedger);
     vi.mocked(ewe.filters.getUserFilters).mockImplementation(
       getDefaultUserFilters,
     );
@@ -200,6 +219,26 @@ describe("pretty print debug data", () => {
     // Regression guard for the 1970 bug caused by treating seconds as milliseconds
     expect(sub1.lastSuccess.startsWith("1970")).toBe(false);
     expect(sub1.lastDownload.startsWith("1970")).toBe(false);
+  });
+
+  it("should include the latest recorded change of each subscription", async () => {
+    const debugData = await getDebugInformation(defaultParameters);
+    const ledger = debugData.deviceSpecificInformation.subscriptionLedger;
+
+    expect(ledger).toEqual([
+      {
+        url: defaultLedgerData[0].url,
+        state: "enabled",
+        reason: "default",
+        time: new Date(defaultLedgerData[0].ts).toISOString(),
+      },
+      {
+        url: defaultLedgerData[1].url,
+        state: "removed",
+        reason: "user_action",
+        time: new Date(defaultLedgerData[1].ts).toISOString(),
+      },
+    ]);
   });
 
   it("should report alarm scheduled time as an ISO string", async () => {
@@ -379,6 +418,11 @@ describe("pretty print debug data", () => {
       mockGetSubscriptions,
     );
 
+    const mockGetLedger = vi.fn().mockImplementation(() => {
+      return Promise.resolve([]);
+    });
+    vi.spyOn(ewe.subscriptions, "getLedger").mockImplementation(mockGetLedger);
+
     const debugData = await getDebugInformation(noDataParameters);
     expect(debugData).toHaveProperty("deviceSpecificInformation");
     expect(debugData).toHaveProperty("hostSpecificInformation");
@@ -399,6 +443,7 @@ describe("pretty print debug data", () => {
     expect(debugData.deviceSpecificInformation.subscriptions?.length).toEqual(
       0,
     );
+    expect(debugData.deviceSpecificInformation.subscriptionLedger).toEqual([]);
 
     expect(debugData.deviceSpecificInformation).toHaveProperty("userFilters");
     expect(debugData.deviceSpecificInformation.userFilters).toEqual([]);

@@ -25,6 +25,7 @@ import type {
   RemoteConfigurationData,
   RuleMetaData,
   SubscriptionDetails,
+  SubscriptionLedger,
   AlarmInfo,
   AccountInfo,
 } from "./debug.types.js";
@@ -77,6 +78,16 @@ async function getSubscriptionInfo(): Promise<SubscriptionDetails> {
     return subscription;
   });
   return response;
+}
+
+async function getSubscriptionLedger(): Promise<SubscriptionLedger> {
+  const entries = await ewe.subscriptions.getLedger();
+  return entries.map(({ url, state, reason, ts }) => ({
+    url,
+    state,
+    reason,
+    time: new Date(ts).toISOString(),
+  }));
 }
 
 async function getCustomFilterMetaData(): Promise<RuleMetaData[]> {
@@ -149,6 +160,7 @@ async function getAccountInfo(): Promise<AccountInfo> {
  *  - Alarm information
  *  - Cohort, Experiment, IPM & Logging information
  *  - Filter list subscriptions
+ *  - Latest recorded change of each filter list subscription
  *  - Custom / user rules & metadata
  *  - Other preferences and settings
  *  - Premium license information
@@ -166,6 +178,7 @@ export async function getDebugInformation(
     migrationErrors,
     remoteConfigurationInformation,
     subscriptions,
+    subscriptionLedger,
     userFilters,
   ] = await Promise.all([
     getAccountInfo(),
@@ -175,6 +188,7 @@ export async function getDebugInformation(
     getMigrationMessages(),
     getExperimentData(),
     getSubscriptionInfo(),
+    getSubscriptionLedger(),
     getCustomFilterMetaData(),
   ]);
 
@@ -187,6 +201,7 @@ export async function getDebugInformation(
       alarmInformation,
       remoteConfigurationInformation,
       subscriptions,
+      subscriptionLedger,
       userFilters,
     },
     errors,

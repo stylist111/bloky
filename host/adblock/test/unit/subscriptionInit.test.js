@@ -32,6 +32,10 @@ vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
     getUserFilters: vi.fn().mockResolvedValue([]),
   },
   subscriptions: {
+    REASONS: {
+      ADMIN_POLICY: "admin_policy",
+      RECOVERY: "recovery",
+    },
     getMigrationErrors: vi.fn().mockResolvedValue([]),
     addDefaults: vi.fn().mockResolvedValue(undefined),
     getSubscriptions: vi.fn().mockResolvedValue([]),
@@ -185,7 +189,9 @@ describe("subscriptionInit", () => {
 
       // Once for the proactive first-run call, once for the MV3 recovery.
       expect(ewe.subscriptions.addDefaults).toHaveBeenCalledTimes(2);
-      expect(ewe.subscriptions.addDefaults).toHaveBeenLastCalledWith(null, true);
+      expect(ewe.subscriptions.addDefaults).toHaveBeenLastCalledWith(null, true, {
+        reason: "recovery",
+      });
     });
 
     it("does not abort initialization if the proactive addDefaults() call throws", async () => {
@@ -447,7 +453,9 @@ describe("subscriptionInit", () => {
       });
 
       expect(ewe.subscriptions.addDefaults).toHaveBeenCalledTimes(1);
-      expect(ewe.subscriptions.addDefaults).toHaveBeenCalledWith(null, true);
+      expect(ewe.subscriptions.addDefaults).toHaveBeenCalledWith(null, true, {
+        reason: "recovery",
+      });
       expect(initIssues).toEqual(expect.objectContaining({ reinitialized: true }));
     });
 

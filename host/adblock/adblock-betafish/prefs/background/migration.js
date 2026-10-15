@@ -24,7 +24,7 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 async function unsubscribeToFilterList(url) {
   if (await ewe.subscriptions.has(url)) {
-    await ewe.subscriptions.remove(url);
+    await ewe.subscriptions.remove(url, { reason: ewe.subscriptions.REASONS.MIGRATION });
     return true;
   }
   return false;
@@ -80,11 +80,14 @@ async function migrateUserData() {
 
   if (subscribedTODC) {
     if (browser.runtime.getManifest().manifest_version === 2) {
-      ewe.subscriptions.add("https://easylist-downloads.adblockplus.org/adblock_premium.txt");
+      ewe.subscriptions.add("https://easylist-downloads.adblockplus.org/adblock_premium.txt", {
+        reason: ewe.subscriptions.REASONS.MIGRATION,
+      });
     }
     if (browser.runtime.getManifest().manifest_version === 3) {
       ewe.subscriptions.add(
         "https://easylist-downloads.adblockplus.org/v3/full/adblock_premium.txt",
+        { reason: ewe.subscriptions.REASONS.MIGRATION },
       );
     }
   }
