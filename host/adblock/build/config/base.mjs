@@ -33,7 +33,7 @@ export default {
           "adblock-betafish/alias/subscriptionInit.js",
           "adblockplusui/adblockpluschrome/lib/messageResponder.js",
           "adblockplusui/adblockpluschrome/lib/filterConfiguration.js",
-          "adblock-betafish/jquery/jquery-3.5.1.min.js",
+          "../../node_modules/jquery/dist/jquery.min.js",
           "adblock-betafish/errorreporting.js",
           "adblock-betafish/alias/parseFilter.js",
           "adblock-betafish/background.js",
@@ -165,10 +165,6 @@ export default {
       },
       {
         dest: "fonts/",
-        src: "adblock-betafish/fonts/*.woff",
-      },
-      {
-        dest: "fonts/",
         src: "adblock-betafish/fonts/font-face.css",
       },
       {
@@ -186,8 +182,6 @@ export default {
           "COPYING",
           "LICENSE-THIRD-PARTY",
           "adblock-betafish/translators.json",
-          "adblock-betafish/jquery/jquery-3.5.1.min.js",
-          "adblock-betafish/lib/*",
           "adblock-betafish/adblock.css",
           "adblock-betafish/picreplacement/contentscript-loader.js",
           "adblock-betafish/picreplacement/premium.preload.js",
@@ -205,6 +199,71 @@ export default {
         dest: "data/rules/index.json",
         package: "@eyeo/rules-utils",
         src: "dist/adblock/index/adblock.json",
+      },
+      {
+        dest: "icons/MaterialIcons-Regular.woff2",
+        package: "@eyeo/material-icons",
+        src: "src/MaterialIcons-Regular.woff2",
+      },
+      {
+        dest: "jquery-3.5.1.min.js",
+        package: "jquery",
+        src: "dist/jquery.min.js",
+      },
+      {
+        dest: "Chart.min.js",
+        package: "chart.js",
+        src: "dist/Chart.min.js",
+      },
+      {
+        dest: "croppie.js",
+        package: "@eyeo/croppie",
+        src: "src/croppie.js",
+      },
+      {
+        dest: "croppie.css",
+        package: "@eyeo/croppie",
+        src: "src/croppie.css",
+      },
+      {
+        dest: "fonts/lato-regular.woff",
+        package: "@fontsource/lato",
+        src: "files/lato-latin-400-normal.woff",
+      },
+      {
+        dest: "fonts/lato-ext-regular.woff",
+        package: "@fontsource/lato",
+        src: "files/lato-latin-ext-400-normal.woff",
+      },
+      {
+        dest: "fonts/lato-italic.woff",
+        package: "@fontsource/lato",
+        src: "files/lato-latin-400-italic.woff",
+      },
+      {
+        dest: "fonts/lato-ext-italic.woff",
+        package: "@fontsource/lato",
+        src: "files/lato-latin-ext-400-italic.woff",
+      },
+      {
+        dest: "fonts/lato-bold.woff",
+        package: "@fontsource/lato",
+        src: "files/lato-latin-700-normal.woff",
+      },
+      {
+        dest: "fonts/lato-ext-bold.woff",
+        package: "@fontsource/lato",
+        src: "files/lato-latin-ext-700-normal.woff",
+      },
+      {
+        dest: "fonts/lato-bolditalic.woff",
+        package: "@fontsource/lato",
+        src: "files/lato-latin-700-italic.woff",
+      },
+      {
+        dest: "fonts/lato-ext-bolditalic.woff",
+        package: "@fontsource/lato",
+        src: "files/lato-latin-ext-700-italic.woff",
       },
       {
         dest: "adblock-errorreporting.js",

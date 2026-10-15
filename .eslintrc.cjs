@@ -7,6 +7,7 @@ module.exports = {
   ignorePatterns: [
     // Vendored in libraries, don't need to follow our linting standards
     "/vendor/",
+    "**/vendor/",
   ],
   env: {
     browser: true,

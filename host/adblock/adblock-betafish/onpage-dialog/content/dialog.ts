@@ -20,15 +20,15 @@
 
 import * as browser from "webextension-polyfill";
 import DOMPurify from "dompurify";
-import latoRegular from "../../fonts/lato.woff?uri";
-import latoExtRegular from "../../fonts/lato-ext-regular.woff?uri";
-import latoExtItalic from "../../fonts/lato-ext-italic.woff?uri";
-import latoItalic from "../../fonts/lato-italic.woff?uri";
-import latoExtBoldItalic from "../../fonts/lato-ext-bolditalic.woff?uri";
-import latoBoldItalic from "../../fonts/lato-bolditalic.woff?uri";
-import latoExtBold from "../../fonts/lato-ext-bold.woff?uri";
-import latoBold from "../../fonts/lato-bold.woff?uri";
-import materialIconsRegular from "../../../icons/MaterialIcons-Regular.woff2?uri";
+import latoRegular from "@fontsource/lato/files/lato-latin-400-normal.woff?uri";
+import latoExtRegular from "@fontsource/lato/files/lato-latin-ext-400-normal.woff?uri";
+import latoExtItalic from "@fontsource/lato/files/lato-latin-ext-400-italic.woff?uri";
+import latoItalic from "@fontsource/lato/files/lato-latin-400-italic.woff?uri";
+import latoExtBoldItalic from "@fontsource/lato/files/lato-latin-ext-700-italic.woff?uri";
+import latoBoldItalic from "@fontsource/lato/files/lato-latin-700-italic.woff?uri";
+import latoExtBold from "@fontsource/lato/files/lato-latin-ext-700-normal.woff?uri";
+import latoBold from "@fontsource/lato/files/lato-latin-700-normal.woff?uri";
+import materialIconsRegular from "@eyeo/material-icons/src/MaterialIcons-Regular.woff2?uri";
 
 import dialogLogo from "../../../icons/adblock-20.svg?uri";
 

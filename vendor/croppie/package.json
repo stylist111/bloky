@@ -1,0 +1,7 @@
+{
+  "name": "@eyeo/croppie",
+  "version": "2.6.4",
+  "license": "MIT",
+  "private": true,
+  "main": "src/croppie.js"
+}

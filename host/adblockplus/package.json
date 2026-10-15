@@ -86,6 +86,7 @@
     "@eyeo-fragments/reverse-trial": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/rules-utils": "*",
+    "@eyeo/source-sans-pro": "*",
     "@eyeo/webext-ad-filtering-solution": "*",
     "@types/webextension-polyfill": "0.12.0",
     "argparse": "1.0.10",

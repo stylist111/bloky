@@ -1,5 +1,8 @@
 # Unreleased
 
+- Moved the vendored Source Sans Pro font files into a local vendor
+  directory, continuing the third-party dependency cleanup started with the
+  `LICENSE-THIRD-PARTY` work.
 - Added the latest recorded change of each filter list subscription, including
   removed ones, to the debug information included in bug reports.
 - Fixed an issue on Manifest V3 where the browser could stop the background

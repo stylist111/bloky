@@ -1,5 +1,11 @@
 # Unreleased
 
+- Replaced vendored copies of `jquery`, `chart.js` and the Lato font with
+  their npm packages, moved the modified `croppie` fork into
+  `vendor/croppie`, and kept the Material Icons font vendored (the npm
+  package's un-subsetted font measurably slowed down page load), continuing
+  the third-party dependency cleanup started with the `LICENSE-THIRD-PARTY`
+  work.
 - Fixed links in explanatory texts on the options page reacting to clicks on
   the whole text instead of just the link text.
 - Fixed an issue on the options page where clicking anywhere on a settings or

@@ -18,9 +18,9 @@
 import "webextension-polyfill";
 
 import { $ } from "../../../js/dom.mjs";
-import font300 from "../../../skin/fonts/source-sans-pro-300.woff2?uri";
-import font400 from "../../../skin/fonts/source-sans-pro-400.woff2?uri";
-import font700 from "../../../skin/fonts/source-sans-pro-700.woff2?uri";
+import font300 from "@eyeo/source-sans-pro/src/source-sans-pro-300.woff2?uri";
+import font400 from "@eyeo/source-sans-pro/src/source-sans-pro-400.woff2?uri";
+import font700 from "@eyeo/source-sans-pro/src/source-sans-pro-700.woff2?uri";
 import dialogLogo from "../../../skin/icons/logo/abp-full.svg?uri";
 import { type Message } from "~/core/messaging/shared";
 import {

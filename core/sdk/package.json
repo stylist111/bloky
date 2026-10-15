@@ -32,6 +32,7 @@
     "adblockpluscore/data",
     "adblockpluscore/lib",
     "adblockpluscore/scripts",
+    "adblockpluscore/vendor",
     "adblockpluscore/package.json",
     "RELEASE_NOTES.md",
     "scripts",
@@ -46,6 +47,7 @@
     "json-rules-engine": "7.3.1",
     "jsonpath-plus": "10.3.0",
     "pako": "2.1.0",
+    "rusha": "0.8.14",
     "tar": "7.5.21",
     "uuid": "9.0.1",
     "yargs": "17.7.2"

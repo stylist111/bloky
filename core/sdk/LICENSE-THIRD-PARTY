@@ -213,7 +213,7 @@ Vitaly Puzrin and Andrei Tuputcyn
 ________________________________________________________________________________
 
 Sam Rijs
-- adblockpluscore/lib/rusha.js
+- rusha
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Rusha, a JavaScript implementation of the Secure Hash Algorithm, SHA-1,
   as defined in FIPS PUB 180-1, tuned for high performance with large inputs.
@@ -272,7 +272,7 @@ ________________________________________________________________________________
 The below license applies to the following projects:
 
 Tom Wu
-- adblockpluscore/lib/jsbn.js
+- adblockpluscore/vendor/jsbn/jsbn.js
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Copyright (c) 2003-2005  Tom Wu
   All Rights Reserved.

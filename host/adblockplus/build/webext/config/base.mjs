@@ -183,6 +183,21 @@ export default {
     ],
     rename: [
       {
+        dest: "skin/fonts/source-sans-pro-300.woff2",
+        package: "@eyeo/source-sans-pro",
+        src: "src/source-sans-pro-300.woff2"
+      },
+      {
+        dest: "skin/fonts/source-sans-pro-400.woff2",
+        package: "@eyeo/source-sans-pro",
+        src: "src/source-sans-pro-400.woff2"
+      },
+      {
+        dest: "skin/fonts/source-sans-pro-700.woff2",
+        package: "@eyeo/source-sans-pro",
+        src: "src/source-sans-pro-700.woff2"
+      },
+      {
         dest: "icons/abp-16-notification.png",
         src: "skin/icons/toolbar/notification-16.png"
       },

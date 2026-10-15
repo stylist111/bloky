@@ -1,5 +1,9 @@
 # Unreleased
 
+- Replaced the vendored copy of `rusha` with the npm package, and moved the
+  vendored, eyeo-modified copy of `jsbn` into a local vendor directory,
+  continuing the third-party dependency cleanup started with the
+  `LICENSE-THIRD-PARTY` work.
 - In the cohort system, reduced the `filterLists` fact to only include a
   specific list of common filterlists (easylist, acceptable ads, privacy
   friendly acceptable ads, anti-cv, easyprivacy, premium). All
@@ -25,7 +29,6 @@
 - Added the `crumbs_settings_banner` telemetry module for the Adblock Plus
   settings page Crumbs banner experiment, with the `displayed` and `clicked`
   events.
-
 - Added support for snippet exception filters (`domain#@$#command`). A snippet
   exception disables any command of a snippet filter (`#$#`) that parses to
   the same command and arguments, on the domains the exception is active on.

@@ -19,8 +19,8 @@
 
 "use strict";
 
-const Rusha = require("./rusha.js");
-const {BigInteger} = require("./jsbn.js");
+const Rusha = require("rusha");
+const {BigInteger} = require("../vendor/jsbn/jsbn.js");
 
 /**
  * @file Provides ASN.1 sitekeys verifications.
