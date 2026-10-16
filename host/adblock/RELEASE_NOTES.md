@@ -1,5 +1,10 @@
 # Unreleased
 
+- Fixed: Several issues with the blocked-request count shown on the toolbar
+  icon. It could reset to zero partway through loading a page, or include
+  requests blocked on the previous page. After allowlisting a site, the badge
+  is now hidden straight away instead of continuing to count up or showing a
+  stale number.
 - Replaced vendored copies of `jquery`, `chart.js` and the Lato font with
   their npm packages, moved the modified `croppie` fork into
   `vendor/croppie`, and kept the Material Icons font vendored (the npm

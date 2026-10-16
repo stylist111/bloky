@@ -141,9 +141,13 @@ activeTab
     document.body.hidden = false;
   });
 
+let receivedBlockedPerPageUpdate = false;
+
 function updateBlockedPerPage(blockedPage) {
   $("#stats-page .amount").textContent = blockedPage.toLocaleString();
 }
+
+let receivedBlockedTotalUpdate = false;
 
 function updateBlockedTotal(blockedTotal) {
   const total = blockedTotal.toLocaleString();
@@ -205,29 +209,31 @@ function setPremiumState(premiumIsActive) {
 }
 
 function setupStats(tab) {
-  messaging.stats.getBlockedPerPage(tab).then((blockedPage) => {
-    updateBlockedPerPage(blockedPage);
-  });
-  messaging.stats.getBlockedTotal().then((blockedTotal) => {
-    updateBlockedTotal(blockedTotal);
-  });
-
   messaging.addMessageListener((msg) => {
     if (msg.type !== "stats.respond") return;
 
     switch (msg.action) {
       case "blocked_per_page":
         if (msg.args[0].tabId === tab.id) {
+          receivedBlockedPerPageUpdate = true;
           updateBlockedPerPage(msg.args[0].blocked);
         }
         break;
       case "blocked_total":
+        receivedBlockedTotalUpdate = true;
         updateBlockedTotal(msg.args[0]);
         break;
     }
   });
 
   messaging.stats.listen(["blocked_per_page", "blocked_total"]);
+
+  messaging.stats.getBlockedPerPage(tab).then((blockedPage) => {
+    if (!receivedBlockedPerPageUpdate) updateBlockedPerPage(blockedPage);
+  });
+  messaging.stats.getBlockedTotal().then((blockedTotal) => {
+    if (!receivedBlockedTotalUpdate) updateBlockedTotal(blockedTotal);
+  });
 }
 
 function setupFooter() {

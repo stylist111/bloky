@@ -414,6 +414,29 @@ describe("showOnpageDialog with per-campaign overrides", () => {
     expect(eventsNamed(spy, "rendered")).toEqual([]);
   });
 
+  it("ignores a configured campaign on a tab that already contains a dialog", async () => {
+    vi.mocked(getCampaignConfig).mockReturnValue({ ignoreCooldown: true });
+    const tabId = nextTabId;
+    nextTabId += 1;
+
+    await showOnpageDialog(tabId, tab, campaignDialog);
+
+    expect(await showOnpageDialog(tabId, tab, campaignDialog)).toBe(ShowOnpageDialogResult.ignored);
+  });
+
+  it("rejects a campaign without overrides on a tab that already contains a dialog", async () => {
+    vi.mocked(getCampaignConfig).mockReturnValue(null);
+    void Prefs.set(coolDownPeriodKey, 0);
+    const tabId = nextTabId;
+    nextTabId += 1;
+
+    await showOnpageDialog(tabId, tab, campaignDialog);
+
+    expect(await showOnpageDialog(tabId, tab, campaignDialog)).toBe(
+      ShowOnpageDialogResult.rejected,
+    );
+  });
+
   it("passes the campaign's impression cap to the dismissal check", async () => {
     vi.mocked(getCampaignConfig).mockReturnValue({ ignoreCooldown: true, maxImpressions: 3 });
     setStats(campaignDialog.id, { displayCount: 1, lastDisplayTime: 0 });

@@ -22,9 +22,13 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { port } from "./messaging/port.js";
 import { EventEmitter } from "./events.js";
 import { addFilter } from "./filterConfiguration.js";
+import { TabSessionStorage } from "./storage/tab-session.js";
 
 let allowlistedDomainRegexp = /^@@\|\|([^/:]+)\^\$document$/;
 let eventEmitter = new EventEmitter();
+let allowlistedByPage = new TabSessionStorage("allowlisting:allowlisted");
+// Pending re-check per tab, so each tab's re-checks apply in order.
+let revalidationByTabId = new Map();
 
 /**
  * @typedef {object} filtersIsAllowlistedResult
@@ -155,19 +159,46 @@ export let allowlistingState = {
   removeListener: eventEmitter.off.bind(eventEmitter),
 };
 
+/**
+ * Returns the given tab's allowlisting state as of the last "changed" event
+ *
+ * @param {number} tabId - Tab ID
+ *
+ * @returns {Promise<boolean>} whether the given tab is allowlisted
+ */
+export async function getAllowlistedState(tabId) {
+  return allowlistedByPage.has(tabId);
+}
+
 async function revalidateAllowlistingState(page) {
   const allowingFilters = await ewe.filters.getAllowingFilters(page.id);
-  eventEmitter.emit("changed", page, allowingFilters.length > 0);
+  const isAllowlisted = allowingFilters.length > 0;
+  const wasAllowlisted = (await allowlistedByPage.getQueued(page.id)) === true;
+  if (isAllowlisted !== wasAllowlisted) await allowlistedByPage.setFlag(page.id, isAllowlisted);
+  eventEmitter.emit("changed", page, isAllowlisted, wasAllowlisted);
+}
+
+async function queueRevalidateAllowlistingState(page) {
+  const previous = revalidationByTabId.get(page.id) || Promise.resolve();
+  const revalidation = previous.catch(() => {}).then(() => revalidateAllowlistingState(page));
+  revalidationByTabId.set(page.id, revalidation);
+
+  try {
+    await revalidation;
+  } finally {
+    if (revalidationByTabId.get(page.id) === revalidation) revalidationByTabId.delete(page.id);
+  }
 }
 
 export async function revalidateAllowlistingStates() {
   let tabs = await browser.tabs.query({});
   for (let tab of tabs) {
-    revalidateAllowlistingState(new ext.Page(tab));
+    queueRevalidateAllowlistingState(new ext.Page(tab));
   }
 }
 
-ext.pages.onLoaded.addListener(revalidateAllowlistingState);
+ext.pages.onLoaded.addListener(queueRevalidateAllowlistingState);
+ext.pages.onCommitted.addListener(queueRevalidateAllowlistingState);
 ewe.filters.onAdded.addListener(revalidateAllowlistingStates);
 ewe.filters.onChanged.addListener(async (filter, property) => {
   if (property !== "enabled") return;

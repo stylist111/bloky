@@ -12,6 +12,7 @@ export default defineConfig({
       "~/picreplacement/check": path.resolve(__dirname, "./adblock-betafish/picreplacement/check"),
       "~/utilities/background": path.resolve(__dirname, "./adblock-betafish/utilities/background"),
       info: path.resolve(__dirname, "./test/unit/mocks/info"),
+      "./prefs.js": path.resolve(__dirname, "./adblock-betafish/alias/prefs.js"),
     },
   },
 });

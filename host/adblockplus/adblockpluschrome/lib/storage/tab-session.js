@@ -48,6 +48,31 @@ const sessionByTabId = new SessionStorage("_tabs");
 const tabStorages = new Set();
 
 /**
+ * Closed tabs, so a late `set` or `update` can't recreate their data.
+ * Not applied to `setIfAbsent`, as OPDs dismiss a dialog it rejects.
+ * @type {Set<number>}
+ */
+const removedTabIds = new Set();
+
+/**
+ * Number of closed tabs remembered in `removedTabIds`. Late writes land
+ * shortly after a tab closes, so only the most recent ones are needed.
+ */
+export const maxRemovedTabIds = 1000;
+
+/**
+ * Remembers a closed tab, forgetting the oldest one once over the limit.
+ * @param {number} tabId
+ */
+function addRemovedTabId(tabId) {
+  removedTabIds.add(tabId);
+  if (removedTabIds.size > maxRemovedTabIds) {
+    const [oldestTabId] = removedTabIds;
+    removedTabIds.delete(oldestTabId);
+  }
+}
+
+/**
  * Session storage for storing tab-specific in-memory data in a way that's safe
  * to use in a service worker context.
  */
@@ -112,7 +137,8 @@ export class TabSessionStorage extends EventEmitter {
    * Retrieves session storage content specific to given tab ID, ordered
    * after any write or cleanup already queued for that tab. Use this
    * instead of `get` when a stale read racing an in-flight `clearStorage`
-   * from a concurrent tab "loading"/"removed" event would be incorrect.
+   * from a concurrent top-level navigation or tab removal would be
+   * incorrect.
    * @param {number} tabId
    * @return {Promise<any>}
    */
@@ -132,7 +158,7 @@ export class TabSessionStorage extends EventEmitter {
    */
   async has(tabId) {
     const session = await sessionByTabId.get(tabId);
-    return session && this._namespace in session;
+    return !!session && this._namespace in session;
   }
 
   /**
@@ -143,6 +169,8 @@ export class TabSessionStorage extends EventEmitter {
    */
   async set(tabId, value) {
     return sessionByTabId.transaction(async () => {
+      if (removedTabIds.has(tabId)) return;
+
       const session = (await sessionByTabId.get(tabId)) || {};
       session[this._namespace] = value;
       await sessionByTabId.set(tabId, session);
@@ -168,6 +196,26 @@ export class TabSessionStorage extends EventEmitter {
       session[this._namespace] = value;
       await sessionByTabId.set(tabId, session);
       return true;
+    });
+  }
+
+  /**
+   * Atomically updates the tab's value, queued with every other write and
+   * cleanup.
+   * @param {number} tabId
+   * @param {function(any): any} fn - receives the current value and returns
+   *   the new one
+   * @return {Promise<any>} the new value, or undefined if the tab was closed
+   */
+  async update(tabId, fn) {
+    return sessionByTabId.transaction(async () => {
+      if (removedTabIds.has(tabId)) return;
+
+      const session = (await sessionByTabId.get(tabId)) || {};
+      const value = fn(session[this._namespace]);
+      session[this._namespace] = value;
+      await sessionByTabId.set(tabId, session);
+      return value;
     });
   }
 
@@ -208,6 +256,8 @@ async function clearStorage(tabId, reason) {
   // session before this deletes it: without that, the write can land between
   // this function's own read and its delete below and get silently lost.
   return sessionByTabId.transaction(async () => {
+    if (reason === clearStorageReason.tabRemoval) addRemovedTabId(tabId);
+
     // Provide stored data to listeners before removing it
     const session = await sessionByTabId.get(tabId);
     if (session) {
@@ -231,7 +281,7 @@ async function clearStorage(tabId, reason) {
  */
 export function start() {
   // Clear tab-specific data when the tab's content changes
-  pageEmitter.on("loading", (page) => {
+  pageEmitter.on("committed", (page) => {
     void clearStorage(page.id, clearStorageReason.startup);
   });
 

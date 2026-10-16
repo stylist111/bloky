@@ -50,6 +50,7 @@
 
   ext.pages = {
     onActivated: new ext._EventTarget(),
+    onCommitted: new ext._EventTarget(),
     onLoaded: new ext._EventTarget(),
     onLoading: new ext._EventTarget(),
     onRemoved: new ext._EventTarget(),
@@ -209,6 +210,10 @@
     // [1] - https://bugs.chromium.org/p/chromium/issues/detail?id=908380
     let { frameId, tabId, parentFrameId, url } = details;
     if (typeof parentFrameId == "undefined") parentFrameId = frameId == 0 ? -1 : 0;
+
+    // Unlike onLoading, which Firefox can fire again for a navigation that has
+    // already committed, fires once per top-level navigation.
+    if (frameId == 0) ext.pages.onCommitted._dispatch(new Page({ id: tabId, url }));
 
     // We have to update the frame structure for documents that weren't
     // loaded over HTTP (including documents cached by Service Workers),

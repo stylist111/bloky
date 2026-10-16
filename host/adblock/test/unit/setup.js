@@ -38,6 +38,7 @@ global.browser = {
 // as soon as it's imported).
 global.ext = {
   pages: {
+    onCommitted: { addListener: vi.fn() },
     onLoading: { addListener: vi.fn() },
     onLoaded: { addListener: vi.fn() },
     onRemoved: { addListener: vi.fn() },

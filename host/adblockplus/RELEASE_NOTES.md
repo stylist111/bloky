@@ -1,5 +1,11 @@
 # Unreleased
 
+- Fixed: Several issues with the blocked-request count for the current page,
+  shown on the toolbar icon and in the popup. It could reset to zero partway
+  through loading a page, include requests blocked on the previous page, or
+  show a lower number in the popup than on the badge. After allowlisting a
+  site, the badge is now hidden straight away instead of continuing to count
+  up or showing a stale number.
 - Moved the vendored Source Sans Pro font files into a local vendor
   directory, continuing the third-party dependency cleanup started with the
   `LICENSE-THIRD-PARTY` work.

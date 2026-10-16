@@ -73,8 +73,19 @@ export async function getPage(tab: TabDescriptor): Promise<TabPage | null> {
     url = "about:blank";
   }
 
+  return getPageFromUrl(tab.id, url);
+}
+
+/**
+ * Retrieves information about page shown in tab from a known URL
+ *
+ * @param tabId - Tab ID
+ * @param url - URL of the page shown in tab
+ * @returns information about page shown in tab
+ */
+export function getPageFromUrl(tabId: number, url: string): TabPage {
   return {
-    id: tab.id,
+    id: tabId,
     url: new URL(url)
   };
 }
@@ -100,6 +111,13 @@ async function handleNavigationCommitted(
     return;
   }
 
+  // Unlike "loading", which Firefox can fire again for a navigation that has
+  // already committed, fires once per top-level navigation. Emitted
+  // synchronously, so listeners run before any later browser event for this
+  // tab is handled.
+  const page = getPageFromUrl(tabId, url);
+  pageEmitter.emit("committed", page);
+
   try {
     await browser.tabs.get(tabId);
   } catch (ex) {
@@ -109,7 +127,6 @@ async function handleNavigationCommitted(
     // tabs. However, we have to keep relying on the onUpdated event for
     // tabs that are already visible. Otherwise browser action changes get
     // overridden when Chrome automatically resets them on navigation.
-    const page = await getPage({ id: tabId, url });
     pageEmitter.emit("loading", page);
   }
 }

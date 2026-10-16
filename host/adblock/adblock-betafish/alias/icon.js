@@ -26,8 +26,10 @@
  */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import { TabSessionStorage } from "../../adblockplusui/adblockpluschrome/lib/storage/tab-session.js";
-import { allowlistingState } from "../../adblockplusui/adblockpluschrome/lib/allowlisting";
+import {
+  allowlistingState,
+  getAllowlistedState,
+} from "../../adblockplusui/adblockpluschrome/lib/allowlisting";
 import {
   setIconPath,
   setIconImageData,
@@ -46,7 +48,6 @@ import { getUserAgentInfo } from "~/utilities/background/index";
 export const statsInIconKey = "current_show_statsinicon";
 
 let canUpdateIcon = true;
-let allowlistedByPage = new TabSessionStorage("icon:allowlisted");
 
 let icons = [null, null];
 
@@ -81,7 +82,7 @@ async function renderIcons() {
 }
 
 async function setIcon(page) {
-  const allowlisted = !!(await allowlistedByPage.get(page.id));
+  const allowlisted = await getAllowlistedState(page.id);
 
   if (icons[allowlisted | 0]) {
     setIconImageData(page.id, icons[allowlisted | 0]);
@@ -90,18 +91,14 @@ async function setIcon(page) {
   }
 }
 
-allowlistingState.addListener("changed", (page, isAllowlisted) => {
-  void allowlistedByPage.transaction(async () => {
-    const wasAllowlisted = await allowlistedByPage.get(page.id);
-    if (wasAllowlisted === isAllowlisted) {
-      return;
-    }
+allowlistingState.addListener("changed", (page, isAllowlisted, wasAllowlisted) => {
+  if (isAllowlisted && wasAllowlisted) {
+    return;
+  }
 
-    await allowlistedByPage.setFlag(page.id, isAllowlisted);
-    if (canUpdateIcon) {
-      await setIcon(page);
-    }
-  });
+  if (canUpdateIcon) {
+    void setIcon(page);
+  }
 });
 
 renderIcons();

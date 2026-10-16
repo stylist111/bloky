@@ -786,10 +786,6 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
 
   // Clean any leftover dialog from pages being loaded in unusual ways,
   // e.g. pages that simulate navigation by changing browser session history.
-  // Reads via `getQueued` rather than `get` so this can't run ahead of the
-  // `clearStorage` cleanup this same navigation's "loading" event already
-  // queued, which would otherwise find a stale assignment here and bail out
-  // before ever handing the page to `showDialogFromList`.
   try {
     const assigned = await assignedDialogs.getQueued(page.id);
     if (isDialog(assigned)) {
@@ -807,10 +803,10 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
       // having landed first.
       await assignedDialogs.delete(page.id);
 
-      // For a regular navigation, the "loading" event's clearStorage already
+      // For a regular navigation, the "committed" event's clearStorage already
       // ran the "tab-navigated" listener and reported this impression before
       // `getQueued` above could return an assignment here, so this branch
-      // only fires when no "loading" event preceded this one, e.g. a page
+      // only fires when no "committed" event preceded this one, e.g. a page
       // simulating navigation via the History API.
       //
       // The duration this reports runs to the moment the next document

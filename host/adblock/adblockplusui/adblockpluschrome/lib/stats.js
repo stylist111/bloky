@@ -25,6 +25,7 @@ import { TabSessionStorage } from "./storage/tab-session.js";
 import { setBadge } from "./action.js";
 import { EventEmitter } from "./events.js";
 import { Prefs } from "./prefs.js";
+import { allowlistingState, getAllowlistedState } from "./allowlisting.js";
 import * as scheduledEventEmitter from "../../src/core/scheduled-event-emitter/background/scheduled-event-emitter.ts"; // eslint-disable-next-line max-len
 
 const badgeColor = "#646464";
@@ -41,7 +42,7 @@ let blockedByPage = new TabSessionStorage("stats:blocked");
  * @return {Number}
  */
 export async function getBlockedPerPage(page) {
-  return (await blockedByPage.get(page.id)) || 0;
+  return (await blockedByPage.getQueued(page.id)) || 0;
 }
 
 let activeTabIds = new Set();
@@ -53,7 +54,13 @@ async function updateBadge(tabId) {
   if (!Prefs.show_statsinicon) return;
 
   for (let id of typeof tabId == "undefined" ? activeTabIds : [tabId]) {
-    let blockedCount = await blockedByPage.get(id);
+    let blockedCount = await blockedByPage.getQueued(id);
+
+    // Checked after the read, in case the tab was allowlisted meanwhile.
+    if (await getAllowlistedState(id)) {
+      setBadge(id, null);
+      continue;
+    }
 
     setBadge(
       id,
@@ -81,27 +88,39 @@ scheduledEventEmitter.setListener(badgeUpdateTopic, async () => {
   await updateBadge();
 });
 
-// Once nagivation for the tab has been committed to (e.g. it's no longer
-// being prerendered) we clear its badge, or if some requests were already
-// blocked beforehand we display those on the badge now.
-browser.webNavigation.onCommitted.addListener(async (details) => {
-  if (details.frameId == 0) await updateBadge(details.tabId);
+// On navigation, start a new batch so the new page's count starts from zero.
+ext.pages.onCommitted.addListener(async (page) => {
+  unwrittenBlockedByTabId.delete(page.id);
+  await updateBadge(page.id);
 });
 
-async function onBlockableItem({ filter, request }) {
-  if (!filter || filter.type != "blocking") return;
+allowlistingState.addListener("changed", (page, isAllowlisted, wasAllowlisted) => {
+  if (isAllowlisted !== wasAllowlisted) void updateBadge(page.id);
+});
 
-  let { tabId } = request;
+// Blocked counts per tab not yet written, so blocks are written in batches.
+let unwrittenBlockedByTabId = new Map();
 
-  await blockedByPage.transaction(async () => {
-    let blocked = (await blockedByPage.get(tabId)) || 0;
-    ++blocked;
+function closeBatch(tabId, unwritten) {
+  if (unwrittenBlockedByTabId.get(tabId) === unwritten) unwrittenBlockedByTabId.delete(tabId);
+}
 
-    await blockedByPage.set(tabId, blocked);
-    scheduleBadgeUpdate(tabId);
+async function writeBlocked(tabId, unwritten) {
+  let blocked;
+  try {
+    blocked = await blockedByPage.update(tabId, (count) => {
+      closeBatch(tabId, unwritten);
+      return (count || 0) + unwritten.count;
+    });
+  } finally {
+    closeBatch(tabId, unwritten);
+  }
+  // The tab was closed.
+  if (typeof blocked == "undefined") return;
 
-    eventEmitter.emit("blocked_per_page", { tabId, blocked });
-  });
+  scheduleBadgeUpdate(tabId);
+
+  eventEmitter.emit("blocked_per_page", { tabId, blocked });
 
   try {
     // Don't update the total for incognito tabs.
@@ -115,8 +134,28 @@ async function onBlockableItem({ filter, request }) {
   // Make sure blocked_total is only read after the storage was loaded.
   await Prefs.untilLoaded;
 
-  Prefs.blocked_total++;
+  Prefs.blocked_total += unwritten.count;
   eventEmitter.emit("blocked_total", Prefs.blocked_total);
+}
+
+async function onBlockableItem({ filter, request }) {
+  if (!filter || filter.type != "blocking") return;
+
+  let { tabId } = request;
+  if (tabId === browser.tabs.TAB_ID_NONE) return;
+
+  let unwritten = unwrittenBlockedByTabId.get(tabId);
+  let isFirst = !unwritten;
+  if (isFirst) {
+    // An object, so closeBatch() can tell this batch apart from a newer one
+    // with the same count, and the pending write sees later increments.
+    unwritten = { count: 0 };
+    unwrittenBlockedByTabId.set(tabId, unwritten);
+  }
+
+  unwritten.count++;
+
+  if (isFirst) await writeBlocked(tabId, unwritten);
 }
 
 ewe.reporting.onBlockableItem.addListener(onBlockableItem);
