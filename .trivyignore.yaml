@@ -5,3 +5,22 @@ vulnerabilities:
   - id: CVE-2026-59887
     statement: >
       linkify-it is only used for linting Markdown files contained in this repo
+  - id: CVE-2026-93687
+    statement: >
+      braces has no fixed release and is only used by build and test tooling to expand glob patterns defined in this repo
+  - id: CVE-2026-106445
+    statement: >
+      handlebars only compiles templates from this repo at build time; fixed version is blocked by min-release-age until 2026-10-19
+    expired_at: 2026-10-19
+  - id: CVE-2026-106446
+    statement: >
+      handlebars only compiles templates from this repo at build time; fixed version is blocked by min-release-age until 2026-10-19
+    expired_at: 2026-10-19
+  - id: CVE-2026-93748
+    statement: >
+      http-cache-semantics is only used by build and publishing tooling without a shared cache; fixed version is blocked by min-release-age until 2026-10-18
+    expired_at: 2026-10-18
+  - id: CVE-2026-104852
+    statement: >
+      @graphql-tools/utils is only used by the mockttp test server; mockttp release with the fix is blocked by min-release-age until 2026-10-30
+    expired_at: 2026-10-30
