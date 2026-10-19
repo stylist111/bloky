@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.50.0 - 2026-10-19
+
 - Fixed: Several issues with the blocked-request count shown on the toolbar
   icon. It could reset to zero partway through loading a page, or include
   requests blocked on the previous page. After allowlisting a site, the badge

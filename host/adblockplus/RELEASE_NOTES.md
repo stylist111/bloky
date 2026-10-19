@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.48.0 - 2026-10-19
+
 - Fixed: Several issues with the blocked-request count for the current page,
   shown on the toolbar icon and in the popup. It could reset to zero partway
   through loading a page, include requests blocked on the previous page, or
