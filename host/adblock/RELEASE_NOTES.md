@@ -1,5 +1,9 @@
 # Unreleased
 
+- Fixed new installs sometimes showing the "settings reset to default" warning,
+  or only getting the default filter lists on a second attempt, when a filter
+  from an experiment was added during startup.
+
 # 6.50.0 - 2026-10-19
 
 - Fixed: Several issues with the blocked-request count shown on the toolbar

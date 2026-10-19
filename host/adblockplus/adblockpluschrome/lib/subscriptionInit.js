@@ -34,6 +34,7 @@ import { ORIGIN_ID as EXPERIMENT_FILTER_ORIGIN } from "@eyeo-fragments/filter-ex
 const serverLogger = new ewe.telemetry.ServerLogger("startup");
 
 let firstRun;
+let onlyExperimentFilters = false;
 let userNotificationCallback = null;
 let reinitialized = false;
 let dataCorrupted = false;
@@ -91,7 +92,12 @@ async function detectFirstRun(foundSubscriptions, foundStorage) {
   let genuineUserFilters = userFilters.filter(
     (filter) => filter.metadata?.origin !== EXPERIMENT_FILTER_ORIGIN
   );
-  firstRun = !foundSubscriptions && !genuineUserFilters.length;
+  onlyExperimentFilters =
+    userFilters.length > 0 && genuineUserFilters.length === 0;
+  // Without stored data, anything found was added during this startup, such
+  // as the subscription holding experiment filters.
+  let foundPriorSubscriptions = foundSubscriptions && foundStorage;
+  firstRun = !foundPriorSubscriptions && !genuineUserFilters.length;
 
   if (firstRun && (foundStorage || Prefs.currentVersion)) {
     reinitialized = true;
@@ -100,6 +106,7 @@ async function detectFirstRun(foundSubscriptions, foundStorage) {
         "but storage or a previous version marker was found",
       {
         foundSubscriptions,
+        foundPriorSubscriptions,
         foundStorage,
         currentVersion: Prefs.currentVersion,
         totalUserFilters: userFilters.length,
@@ -292,7 +299,9 @@ async function addSubscriptionsAndNotifyUser() {
   let addDefaultsErrorMsg = null;
   if (firstRun || reinitialized) {
     try {
-      await ewe.subscriptions.addDefaults();
+      // Without force, an experiment filter added during startup stops the
+      // defaults from being added.
+      await ewe.subscriptions.addDefaults(null, onlyExperimentFilters);
     } catch (ex) {
       if (!isMV3) throw ex;
 

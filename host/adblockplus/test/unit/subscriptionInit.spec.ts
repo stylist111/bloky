@@ -567,6 +567,66 @@ describe("subscriptionInit", () => {
     );
   });
 
+  describe("fresh install where an experiment filter was added first", () => {
+    // Mirrors the SDK: the experiment filter's subscription counts towards
+    // `foundSubscriptions`, and addDefaults() without `force` adds nothing
+    // while any user filter exists.
+    function emulateSdkWithExperimentFilter(eweMock: any): void {
+      let subscriptions: unknown[] = [];
+      eweMock.filters.getUserFilters.mockResolvedValue([
+        makeUserFilter("example.com#$#some-snippet", EXPERIMENT_FILTER_ORIGIN)
+      ]);
+      eweMock.subscriptions.getSubscriptions.mockImplementation(
+        async () => subscriptions
+      );
+      eweMock.subscriptions.addDefaults.mockImplementation(
+        async (_uiLanguage: unknown, force: boolean) => {
+          if (force) {
+            subscriptions = [{ id: "1", enabled: true }];
+          }
+        }
+      );
+    }
+
+    it(
+      "treats the run as a first run when the experiment filter was " +
+        "added before the SDK started",
+      async () => {
+        const { onNotifyUser } = await runStart(
+          makeEweFirstRun(true, false),
+          emulateSdkWithExperimentFilter
+        );
+
+        expect(onNotifyUser).toHaveBeenCalledWith(
+          expect.objectContaining({ firstRun: true, reinitialized: false })
+        );
+      }
+    );
+
+    it(
+      "adds the defaults without needing the recovery step when the " +
+        "experiment filter was added after the SDK started",
+      async () => {
+        const { ewe } = await runStart(
+          makeEweFirstRun(false, false),
+          emulateSdkWithExperimentFilter
+        );
+
+        expect(ewe.subscriptions.addDefaults).toHaveBeenCalledTimes(1);
+      }
+    );
+
+    it("does not force the defaults when there are no experiment filters", async () => {
+      const { ewe } = await runStart(makeEweFirstRun(false, false));
+
+      expect(ewe.subscriptions.addDefaults).toHaveBeenNthCalledWith(
+        1,
+        null,
+        false
+      );
+    });
+  });
+
   describe("on MV2", () => {
     it("aborts initialization if the proactive addDefaults() call throws", async () => {
       (browser as any).runtime.getManifest = jest
