@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed an error when the browser reported a page navigation without a URL,
+  which could stop the blocked-request count from resetting for the new page.
 - Fixed new installs sometimes showing the "settings reset to default" warning,
   or only getting the default filter lists on a second attempt, when a filter
   from an experiment was added during startup.

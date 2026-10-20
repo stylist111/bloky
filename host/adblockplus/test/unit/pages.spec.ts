@@ -75,6 +75,16 @@ describe("page committed event", () => {
     expect(events).toEqual([["committed", { id: 1, url: new URL(url) }]]);
   });
 
+  it("treats a commit without a URL as about:blank", async () => {
+    const { events, trigger } = await loadModule();
+
+    trigger("onCommitted", { tabId: 1, frameId: 0, url: "" });
+
+    expect(events).toEqual([
+      ["committed", { id: 1, url: new URL("about:blank") }]
+    ]);
+  });
+
   it("ignores sub-frame navigations", async () => {
     const { events, trigger } = await loadModule();
 

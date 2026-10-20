@@ -69,10 +69,6 @@ export async function getPage(tab: TabDescriptor): Promise<TabPage | null> {
     }
   }
 
-  if (!url) {
-    url = "about:blank";
-  }
-
   return getPageFromUrl(tab.id, url);
 }
 
@@ -83,7 +79,11 @@ export async function getPage(tab: TabDescriptor): Promise<TabPage | null> {
  * @param url - URL of the page shown in tab
  * @returns information about page shown in tab
  */
-export function getPageFromUrl(tabId: number, url: string): TabPage {
+export function getPageFromUrl(tabId: number, url?: string): TabPage {
+  if (!url) {
+    url = "about:blank";
+  }
+
   return {
     id: tabId,
     url: new URL(url)

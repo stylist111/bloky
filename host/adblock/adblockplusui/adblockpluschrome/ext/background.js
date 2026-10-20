@@ -96,7 +96,7 @@
 
     // Update frame URL and parent in frame structure
     let frame = createFrame(tabId, frameId);
-    frame.url = new URL(url);
+    frame.url = new URL(url || "about:blank");
 
     let frames = framesOfTabs.get(tabId);
     let parentFrame;

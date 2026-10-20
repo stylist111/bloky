@@ -86,6 +86,17 @@ describe("ext.pages committed event", () => {
     expect((events[0][1] as any).url.href).toBe(url);
   });
 
+  it("treats a commit without a URL as about:blank", async () => {
+    const { events, trigger } = await loadModule();
+
+    trigger("onCommitted", { tabId: 1, frameId: 0, parentFrameId: -1, url: "" });
+
+    expect(events).toHaveLength(1);
+    expect(events[0][0]).toBe("committed");
+    expect((events[0][1] as any).id).toBe(1);
+    expect((events[0][1] as any).url.href).toBe("about:blank");
+  });
+
   it("ignores sub-frame navigations", async () => {
     const { events, trigger } = await loadModule();
     const url = "https://example.com/iframe";
