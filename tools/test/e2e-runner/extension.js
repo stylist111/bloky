@@ -87,7 +87,7 @@ export async function extractExtension(buildsDirPath, unpackedDirPath) {
  */
 export async function getExtensionInfo() {
   const info = await driver.executeAsyncScript(async (callback) => {
-    if (typeof browser !== "undefined" && browser.management !== "undefined") {
+    if (typeof browser !== "undefined" && typeof browser.management !== "undefined") {
       const { shortName, version, optionsUrl } = await browser.management.getSelf();
       const origin = optionsUrl ? location.origin : null;
       const manifest = await browser.runtime.getManifest();

@@ -87,6 +87,10 @@ async function startBrowser(extensionPath, retry = 0) {
       // access (used for navigating to moz-extension:// URLs via setContext).
       // Required for all Firefox versions when using geckodriver 0.36.0+.
       extraArgs.push("-remote-allow-system-access");
+      // Firefox 159+ ignores the flag above and only reads this env variable,
+      // which geckodriver and Firefox inherit from this process.
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=2054896
+      process.env.MOZ_REMOTE_ALLOW_SYSTEM_ACCESS = "1";
       // EXT-497: we need to bind "testpages.eyeo.com" to "localhost"
       // to be able to test with locally hosted page. For FF we use PAC file
       // to set proxy
