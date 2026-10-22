@@ -188,6 +188,9 @@ check-source:builds:MV2:firefox:
 .compliance:
   stage: compliance
   extends: .docker
+  rules:
+    - !reference [.never-run-on-release-branch, rules]
+    - when: on_success
   before_script:
     - apk add bash git
   script:
@@ -231,6 +234,9 @@ comp:MV2:firefox:oldest:
 .end-to-end:
   stage: end-to-end
   extends: .docker
+  rules:
+    - !reference [.never-run-on-release-branch, rules]
+    - when: on_success
   script:
     - echo "EYEOMETRY_BEARER=\"$ADBLOCK_EYEOMETRY_BEARER\"" >> host/adblock/.env
     - docker build -t end-to-end -f host/adblock/test/end-to-end/Dockerfile .
@@ -265,6 +271,23 @@ end-to-end:MV3:chrome:latest:
   variables:
     BROWSER: chrome
     MANIFEST_VERSION: 3
+
+end-to-end:upgrade:
+  extends: .end-to-end
+  parallel:
+    matrix:
+      - BROWSER: chrome
+        MANIFEST_VERSION: "3"
+      - BROWSER: edge
+        MANIFEST_VERSION: "3"
+      - BROWSER: firefox
+        MANIFEST_VERSION: "2"
+  script:
+    - echo "EYEOMETRY_BEARER=\"$ADBLOCK_EYEOMETRY_BEARER\"" >> host/adblock/.env
+    - docker build -t end-to-end -f host/adblock/test/end-to-end/Dockerfile .
+    - docker run --shm-size=2g -t -e BROWSER -e MANIFEST_VERSION -e CI --entrypoint npm end-to-end run --workspace adblock test:end-to-end-local -- --grep "Upgrade extension"
+  rules:
+    - !reference [.only-run-on-release-branch, rules]
 
 # End-to-end tests - nightly run
 .end-to-end-nightly:

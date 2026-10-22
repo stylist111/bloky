@@ -1,3 +1,7 @@
+variables:
+  # Branch of the weekly release MR, pushed by tools/release/prepare-release.sh
+  RELEASE_BRANCH: mr-automaton-release
+
 .needs-parent-build:
   needs:
     - pipeline: $PARENT_PIPELINE_ID
@@ -14,10 +18,27 @@
       when: on_success
     - when: never
 
-.never-run-on-update-rules-trigger:
+.only-run-on-prepare-release-trigger:
   rules:
-    - if: $UPDATE_RULES == "true"
+    - if: $PREPARE_RELEASE == "true"
+      when: on_success
+    - when: never
+
+.never-run-on-bot-trigger:
+  rules:
+    - if: $UPDATE_RULES == "true" || $PREPARE_RELEASE == "true"
       when: never
+
+.never-run-on-release-branch:
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $RELEASE_BRANCH
+      when: never
+
+.only-run-on-release-branch:
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $RELEASE_BRANCH
+      when: on_success
+    - when: never
 
 # Full set of tests. Some regular jobs run multiple times, additional jobs use
 # other browser versions (i.e. beta)

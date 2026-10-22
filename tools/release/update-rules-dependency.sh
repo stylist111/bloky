@@ -69,15 +69,8 @@ update_sdk_test_diff_url "8C13E995-8F06-4927-BEA7-6C845FB7EEBF"
 update_sdk_test_diff_url "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F"
 update_sdk_test_diff_url "D4028CDD-3D39-4624-ACC7-8140F4EC3238"
 
-# Versions: minor if a feature landed since the latest release tag, else patch.
-node tools/release/do-release.js --yes --skip-git --summary-if-empty HEAD \
-    adblock@auto adblockplus@auto
-ADBLOCK_VERSION=$(sed -n 's/^ *version: "\([^"]*\)",*$/\1/p' host/adblock/build/config/base.mjs | head -1)
-ADBLOCKPLUS_VERSION=$(sed -n 's/^ *version: "\([^"]*\)",*$/\1/p' host/adblockplus/build/webext/config/base.mjs | head -1)
-
 if [ "$(git status --porcelain)" ]; then
-    echo -e "build: Release AdBlock $ADBLOCK_VERSION and Adblock Plus $ADBLOCKPLUS_VERSION\n" > "$COMMIT_MSG"
-    echo -e "Merging this merge request releases both hosts. It contains the version bumps, the release notes headings and the latest filterlists.\n" >> "$COMMIT_MSG"
+    echo -e "build: Updated filterlists dependency to update rules data\n" > "$COMMIT_MSG"
 
     echo -e "## Index changes:\n\`\`\`" >> "$COMMIT_MSG"
     if git diff --no-index -- "$OLD_MODULE/filterlists/index.json" "$NEW_MODULE/filterlists/index.json" >> "$COMMIT_MSG"; then
@@ -93,14 +86,6 @@ if [ "$(git status --porcelain)" ]; then
     if [ -n "$WARNINGS" ]; then
         echo -e "## Warnings:\n" >> "$COMMIT_MSG"
         echo -e "$WARNINGS" >> "$COMMIT_MSG"
-    fi
-
-    # Run the scheduled pipeline by hand with DRY_RUN=true to see the MR
-    # without pushing anything.
-    if [ "${DRY_RUN:-false}" = "true" ]; then
-        cat "$COMMIT_MSG"
-        git --no-pager diff --stat
-        exit 0
     fi
 
     git add --update

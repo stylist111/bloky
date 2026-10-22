@@ -48,7 +48,7 @@ stages:
     - npm ci --cache .npm --prefer-offline
     - if [[ "$CI_COMMIT_REF_NAME" != "main" ]]; then SINCE="--since origin/main"; fi
   rules:
-    - !reference [.never-run-on-update-rules-trigger, rules]
+    - !reference [.never-run-on-bot-trigger, rules]
     - when: on_success
   needs: []
 
@@ -105,9 +105,6 @@ check_package_lock:
 update_rules:
   stage: root
   image: gitlab/glab
-  variables:
-    # prepare-release derives versions from tags and history, so it needs a full clone
-    GIT_DEPTH: 0
   before_script:
     - apk add bash git nodejs npm jq
     - npm install -g "npm@>=11.17.0"
@@ -122,6 +119,16 @@ update_rules:
   rules:
     - !reference [.only-run-on-update-rules-trigger, rules]
   needs: []
+
+prepare_release:
+  extends: update_rules
+  variables:
+    # do-release derives versions from tags and history, so it needs a full clone
+    GIT_DEPTH: 0
+  script:
+    - ./tools/release/prepare-release.sh
+  rules:
+    - !reference [.only-run-on-prepare-release-trigger, rules]
 
 tools:
   extends: .base
@@ -155,7 +162,7 @@ tools:
 .child-host:
   extends: .child
   rules:
-    - !reference [.never-run-on-update-rules-trigger, rules]
+    - !reference [.never-run-on-bot-trigger, rules]
     # Always run everything on the main branch and tags
     - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
@@ -178,7 +185,7 @@ tools:
 .child-core:
   extends: .child
   rules:
-    - !reference [.never-run-on-update-rules-trigger, rules]
+    - !reference [.never-run-on-bot-trigger, rules]
     # Always run everything on the main branch and tags
     - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
@@ -225,7 +232,7 @@ publish-remote-validation:
     - echo "//gitlab.com/api/v4/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
     - npm publish --workspace=core/remote-configuration-validator
   rules:
-    - !reference [.never-run-on-update-rules-trigger, rules]
+    - !reference [.never-run-on-bot-trigger, rules]
     # Do not trigger for schedule pipelines
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
@@ -254,7 +261,7 @@ notify_events_schema_change:
   script:
     - 'curl -X POST -H "Content-type: application/json" --data "{\"text\":\"events.js has been updated on main by ${CI_COMMIT_AUTHOR%% <*} - ${CI_PIPELINE_URL}\"}" $SLACK_WEBHOOK_EVENTS_SCHEMA'
   rules:
-    - !reference [.never-run-on-update-rules-trigger, rules]
+    - !reference [.never-run-on-bot-trigger, rules]
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
     - if: $CI_COMMIT_BRANCH == "main"
@@ -360,7 +367,7 @@ tag_release:
   # tests to run again on main would only delay the release.
   needs: []
   rules:
-    - !reference [.never-run-on-update-rules-trigger, rules]
+    - !reference [.never-run-on-bot-trigger, rules]
     # "changes" is always true for scheduled pipelines, and nightly runs have nothing to tag
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never

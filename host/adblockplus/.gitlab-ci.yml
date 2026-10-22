@@ -209,6 +209,7 @@ check-source:builds:MV2:firefox:
     when: on_failure
     expire_in: 1 month
   rules:
+    - !reference [.never-run-on-release-branch, rules]
     - !reference [.always, rules]
 
 .compliance:MV3:
@@ -267,6 +268,7 @@ comp:MV2:firefox:oldest:
     when: on_failure
     expire_in: 1 mo
   rules:
+    - !reference [.never-run-on-release-branch, rules]
     - !reference [.always, rules]
 
 .end-to-end-n-times:
@@ -290,6 +292,22 @@ end-to-end:MV3:chrome:latest:
   variables:
     MANIFEST_VERSION: 3
     BROWSER: chrome
+
+end-to-end:upgrade:
+  extends: .end-to-end
+  parallel:
+    matrix:
+      - BROWSER: chrome
+        MANIFEST_VERSION: "3"
+      - BROWSER: edge
+        MANIFEST_VERSION: "3"
+      - BROWSER: firefox
+        MANIFEST_VERSION: "2"
+  script:
+    - docker build -t end-to-end -f host/adblockplus/test/end-to-end/Dockerfile .
+    - docker run --shm-size=2g -t -e MANIFEST_VERSION -e BROWSER -e CI -e EYEOMETRY_BEARER="$ADBLOCKPLUS_EYEOMETRY_BEARER" --entrypoint npm end-to-end run --workspace adblockplus test:end-to-end-local -- --grep "Upgrade extension"
+  rules:
+    - !reference [.only-run-on-release-branch, rules]
 
 # End-to-end tests - nightly run
 .end-to-end-nightly:
