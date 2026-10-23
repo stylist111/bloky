@@ -70,7 +70,7 @@ We support browser versions according to the manifest.json file of the respectiv
 | MV2      | Firefox for Android | not supported | 128.0         | 128.0      |
 | MV2      | Microsoft Edge      | 127.0         | 127.0         | 127.0      |
 | MV3      | Chrome              | 127.0         | 127.0         | 127.0      |
-| MV3      | Microsoft Edge      | 124.0         | 124.0         | 124.0      |
+| MV3      | Microsoft Edge      | 127.0         | 127.0         | 127.0      |
 | MV3      | Opera               | not supported | 113.0         | 113.0      |
 | MV3      | Yandex Browser      | 127.0         | 127.0         | 127.0      |
 
@@ -92,6 +92,7 @@ Dropping support for a browser version for a given host extension means:
 - Updating versions in CI configuration.
 - Mentioning the change in the RELEASE_NOTES.md file.
 - Updating the above table.
+- Updating the "Unsupported browser version" experiment in the [remote configuration][repo-ab-testing-config], so that users on the dropped browser versions are notified.
 
 ## Supported Node.js version
 
@@ -127,6 +128,7 @@ Dropping support for a Node.js version means:
 [node-upgrade-extensions-example]: https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/commit/487ba9cc65682a3a47b3aeef25e0008f63bab6a1
 [node-upgrade-filterlists-delivery-example]: https://gitlab.com/eyeo/filters/filterlists-delivery/-/commit/94fcbc4825b77850bcec5ccbcb96cd58cc1704a8
 [node-upgrade-windows-example]: https://gitlab.com/eyeo/devops/terraform/projects/gitlab-runners/terraform-eyeo-windows-runner/-/merge_requests/21
+[repo-ab-testing-config]: https://gitlab.com/eyeo/filters/ab-testing-config
 [repo-abp2dnr]: https://gitlab.com/eyeo/adblockplus/abc/abp2dnr
 [repo-docker]: https://gitlab.com/eyeo/docker
 [repo-filterlists-delivery]: https://gitlab.com/eyeo/filters/filterlists-delivery
