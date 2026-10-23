@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.18.0
+
 - Fixed an error when the browser reported a page navigation without a URL.
 - Fixed new installs sometimes showing the "settings reset to default" warning,
   or only getting the default filter lists on a second attempt, when a filter

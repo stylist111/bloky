@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.18.0
+
 - Fixed an error when the browser reported a page navigation without a URL,
   which could stop the blocked-request count from resetting for the new page.
 - Fixed new installs sometimes showing the "settings reset to default" warning,
