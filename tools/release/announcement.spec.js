@@ -62,8 +62,8 @@ describe("formatReleaseNotes", () => {
     ].join("\n");
 
     expect(formatReleaseNotes(notes)).toBe(
-      "• Fixed an issue where an on-page dialog could stop being shown after its first impression.\n" +
-        "• Updated snippets to 2.16.0",
+      "- Fixed an issue where an on-page dialog could stop being shown after its first impression.\n" +
+        "- Updated snippets to 2.16.0",
     );
   });
 
@@ -80,7 +80,7 @@ describe("formatReleaseNotes", () => {
 
     expect(formatReleaseNotes(notes)).toBe(
       "This release contains bugfixes and under-the-hood changes.\n" +
-        "• Fixed: On-page dialogs failed to render on pages using a legacy `<frameset>` layout instead of `<body>`.",
+        "- Fixed: On-page dialogs failed to render on pages using a legacy `<frameset>` layout instead of `<body>`.",
     );
   });
 });
@@ -104,13 +104,14 @@ describe("createAnnouncement", () => {
 
     expect(message).toBe(
       [
-        ":rocket: AdBlock 6.48.0 and Adblock Plus 4.46.0 are on their way to the stores! :tada:",
+        ":jigsaw: _Extension_",
+        ":star: AdBlock 6.48.0 and Adblock Plus 4.46.0 are on their way to the stores! :tada:",
         "",
         `AdBlock release notes: ${RELEASES_URL}/adblock-6.48.0`,
-        "• Updated snippets to 2.16.0",
+        "- Updated snippets to 2.16.0",
         "",
         `Adblock Plus release notes: ${RELEASES_URL}/adblockplus-4.46.0`,
-        "• Added a Crumbs banner experiment",
+        "- Added a Crumbs banner experiment",
         "",
         "You can monitor the status here: https://extension-info-monitoring.vercel.app/",
         "Thanks to everyone who made this release happen! :raised_hands:",

@@ -57,7 +57,7 @@ export function latestVersion(releaseNotes) {
 
 /**
  * Turns a version's section of RELEASE_NOTES.md into text for Slack: drops
- * the version heading, joins hard-wrapped lines and uses Slack's bullet.
+ * the version heading and joins hard-wrapped lines.
  *
  * @param {string} notes The version's section, as returned by
  *   `ReleaseNotes.notesForVersion()`.
@@ -73,7 +73,7 @@ export function formatReleaseNotes(notes) {
     if (text === "") {
       continuesLastLine = false;
     } else if (text.startsWith("- ")) {
-      lines.push(`• ${text.slice(2)}`);
+      lines.push(text);
       continuesLastLine = true;
     } else if (continuesLastLine) {
       lines[lines.length - 1] += ` ${text}`;
@@ -104,7 +104,8 @@ export function createAnnouncement(releases) {
   const titles = releases.map(({ name, version }) => `${name} ${version}`);
 
   return [
-    `:rocket: ${titles.join(" and ")} are on their way to the stores! :tada:`,
+    ":jigsaw: _Extension_",
+    `:star: ${titles.join(" and ")} are on their way to the stores! :tada:`,
     ...releases.flatMap(({ name, releaseUrl, notes }) => [
       "",
       `${name} release notes: ${releaseUrl}`,
