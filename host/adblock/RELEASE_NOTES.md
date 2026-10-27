@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.51.0 - 2026-10-27
+
 - Updated snippets to 2.18.0
 
 - Fixed an error when the browser reported a page navigation without a URL.
