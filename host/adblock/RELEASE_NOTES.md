@@ -1,5 +1,6 @@
 # Unreleased
 
+- Updated DOMPurify to 3.4.17.
 - Fixed the popup briefly widening when opening the More menu and other popup
   subpages in Chrome and Edge.
 

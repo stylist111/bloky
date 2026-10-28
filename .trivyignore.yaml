@@ -8,19 +8,32 @@ vulnerabilities:
   - id: CVE-2026-93687
     statement: >
       braces has no fixed release and is only used by build and test tooling to expand glob patterns defined in this repo
-  - id: CVE-2026-106445
-    statement: >
-      handlebars only compiles templates from this repo at build time; fixed version is blocked by min-release-age until 2026-10-19
-    expired_at: 2026-10-19
-  - id: CVE-2026-106446
-    statement: >
-      handlebars only compiles templates from this repo at build time; fixed version is blocked by min-release-age until 2026-10-19
-    expired_at: 2026-10-19
-  - id: CVE-2026-93748
-    statement: >
-      http-cache-semantics is only used by build and publishing tooling without a shared cache; fixed version is blocked by min-release-age until 2026-10-18
-    expired_at: 2026-10-18
   - id: CVE-2026-104852
     statement: >
       @graphql-tools/utils is only used by the mockttp test server; mockttp release with the fix is blocked by min-release-age until 2026-10-30
     expired_at: 2026-10-30
+  - id: CVE-2026-111758
+    statement: >
+      markdown-it is only used for linting Markdown files and generating docs from this repo; markdownlint pins a version without the fix
+  - id: CVE-2026-111759
+    statement: >
+      markdown-it is only used for linting Markdown files and generating docs from this repo; markdownlint pins a version without the fix
+  - id: CVE-2023-54404
+    statement: >
+      zod is only used by test tooling (via chromium-bidi), which requires zod 3; the fix is only in zod 4
+  - id: CVE-2026-109383
+    statement: >
+      undici is only used by node-gyp when building native modules; fixed version is blocked by min-release-age until 2026-10-29
+    expired_at: 2026-10-29
+  - id: CVE-2026-109869
+    statement: >
+      undici is only used by node-gyp when building native modules; fixed version is blocked by min-release-age until 2026-10-29
+    expired_at: 2026-10-29
+  - id: CVE-2026-87018
+    statement: >
+      undici is only used by node-gyp when building native modules; fixed version is blocked by min-release-age until 2026-10-29
+    expired_at: 2026-10-29
+  - id: CVE-2026-111181
+    statement: >
+      body-parser is only used by the express and mockttp test servers; fixed version is blocked by min-release-age until 2026-11-05
+    expired_at: 2026-11-05

@@ -16,7 +16,7 @@
   },
   "peerDependencies": {
     "@eyeo/webext-ad-filtering-solution": "*",
-    "vite": "6.4.3",
+    "vite": "6.4.4",
     "vitest": "4.1.5",
     "vitest-chrome": "0.1.0",
     "vitest-mock-extended": "2.0.2",
