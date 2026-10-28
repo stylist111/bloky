@@ -105,10 +105,24 @@ check_package_lock:
 update_rules:
   stage: root
   image: gitlab/glab
+  variables:
+    # Alpine's mise package is too old to put mise's npm ahead of node's bundled npm
+    MISE_VERSION: v2026.10.8
+    MISE_SHA256: 043dc6b9077db988269ca2f85059851cb09fc080355350021363e95a5e227f84
+    # Alpine uses musl, so mise needs the musl builds of node
+    MISE_NODE_COMPILE: "false"
+    MISE_NODE_FLAVOR: musl
+    MISE_NODE_MIRROR_URL: https://unofficial-builds.nodejs.org/download/release/
+    # Fail if a tool is missing from mise.lock, instead of trusting the mirror's checksums
+    MISE_LOCKED: "true"
   before_script:
-    - apk add bash git nodejs npm jq
-    - npm install -g "npm@>=11.17.0"
-    - hash -r
+    - apk add bash curl git jq libstdc++
+    - curl -fsSL -o /usr/local/bin/mise "https://github.com/jdx/mise/releases/download/$MISE_VERSION/mise-$MISE_VERSION-linux-x64-musl"
+    - echo "$MISE_SHA256  /usr/local/bin/mise" | sha256sum -c -
+    - chmod +x /usr/local/bin/mise
+    - mise trust
+    - mise install node npm
+    - eval "$(mise env -s bash)"
     - git config --global user.email "extensions-release-squad@eyeo.com"
     - git config --global user.name "Eyeo Gitlab Automaton"
     - glab auth login --token $GITLAB_TOKEN_MERGE_REQUEST

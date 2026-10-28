@@ -106,7 +106,7 @@ Dropping support for a Node.js version means:
 - Adding support to [abp2dnr][repo-abp2dnr] (see [example][node-upgrade-abp2dnr-example]).
 - Upgrading [filterlists-delivery repository][repo-filterlists-delivery] (see [example][node-upgrade-filterlists-delivery-example]).
 - Upgrading extensions repository (see [example][node-upgrade-extensions-example]).
-  - Updating the Node.js version in the .nvmrc file.
+  - Updating the Node.js version in the mise.toml file, and [updating the mise.lock file](#updating-the-miselock-file).
   - Updating the Node.js and npm versions in the package.json, README.md and host/\*/STORE_LISTING.md files.
   - Running `npm install` to update the package-lock.json file.
   - Updating GitLab CI jobs:
@@ -119,6 +119,19 @@ Dropping support for a Node.js version means:
 - After all repositories that depend on "eyeo-windows" GitLab runner support new Node.js version:
   - Upgrading [default "eyeo-windows" GitLab runner][repo-terraform-windows-runner] (see [example][node-upgrade-windows-example]).
   - Removing Node.js version overwrite in repositories that depend on "eyeo-windows" GitLab runner.
+
+### Updating the mise.lock file
+
+The mise.lock file pins the checksums of the tools in mise.toml. Since `locked = true` is set in mise.toml, `mise install` never updates it, so it needs to be updated whenever a tool version in mise.toml changes:
+
+```sh
+# Platforms used by developers
+mise lock --platform linux-x64,linux-arm64,macos-x64,macos-arm64
+# Alpine (musl) platform used by the "update_rules" CI job, which needs its own node entry
+MISE_NODE_COMPILE=false MISE_NODE_FLAVOR=musl MISE_NODE_MIRROR_URL=https://unofficial-builds.nodejs.org/download/release/ mise lock --platform linux-x64-musl
+```
+
+`mise lock` doesn't add checksums for npm, so add a `checksum = "sha256:..."` line to each `[tools.npm."platforms.*"]` entry. The checksum can be calculated with `curl -fsSL <url> | sha256sum`, after verifying the downloaded file against the `dist.integrity` value from `https://registry.npmjs.org/npm/<version>`. Existing npm checksums are preserved when running `mise lock` again.
 
 [convcomms]: https://www.conventionalcommits.org/en/v1.0.0/
 [convcomms-angular]: https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#type

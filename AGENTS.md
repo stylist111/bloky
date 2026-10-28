@@ -6,7 +6,7 @@ See also: [README.md](README.md) in the root, [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Environment
 
-- Run `nvm use` before starting.
+- Run `mise install` before starting, with [mise activated](https://mise.jdx.dev/getting-started.html#activate-mise) in your shell (or prefix commands with `mise exec --`).
 - Verify with `node --version` before running builds or tests. Mismatched Node versions cause silent build failures.
 - Run all npm scripts from the repo root.
 

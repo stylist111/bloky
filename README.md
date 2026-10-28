@@ -51,6 +51,12 @@ npm install <package>@<version> --min-release-age=0
 - `unzip`, needed by get-browser-binary to install Chromium and Chrome for
   Testing when running browser tests
 
+We recommend using [mise](https://mise.jdx.dev/) to install the expected
+versions of node and npm, as defined in the `mise.toml` file, by running
+`mise install`. Make sure to [activate
+mise](https://mise.jdx.dev/getting-started.html#activate-mise) in your shell,
+so that these versions are used.
+
 On Windows, you need a [Linux environment running on
 WSL](https://docs.microsoft.com/windows/wsl/install-win10).
 

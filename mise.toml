@@ -1,4 +1,7 @@
 [tools]
-node = "24"
-npm = "11.19"
+node = "24.20.0"
+npm = "11.19.1"
 pre-commit = "4"
+
+[settings]
+locked = true
