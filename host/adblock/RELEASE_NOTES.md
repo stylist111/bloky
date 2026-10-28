@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fixed the popup briefly widening when opening the More menu and other popup
+  subpages in Chrome and Edge.
+
 # 6.51.0 - 2026-10-27
 
 - Updated snippets to 2.18.0
