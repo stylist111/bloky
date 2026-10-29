@@ -16,8 +16,7 @@
  */
 
 import { expect } from "expect";
-import { By } from "selenium-webdriver";
-import { getDisplayedElement, wait } from "@eyeo/test-utils/driver";
+import { wait } from "@eyeo/test-utils/driver";
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
 
 import { initOptionsHelpTab } from "../../utils/page.js";
@@ -40,30 +39,36 @@ export default () => {
     await initOptionsHelpTab(getOptionsHandle());
     await waitForExtensionStateLoaded();
 
-    // Verify it didn't fail
-    const container = await getDisplayedElement("#extension-state", {
-      timeout: 3000
+    // The panel is rendered again shortly after the Help tab is activated,
+    // which replaces its elements, so everything is read in-page in one step
+    // instead of holding on to elements between calls
+    const state = await driver.executeScript(() => {
+      const container = document.querySelector("#extension-state");
+      const table = container.querySelector("table");
+      return {
+        text: container.textContent,
+        hasTotals: Boolean(container.querySelector("dl")),
+        headerTexts: table
+          ? Array.from(table.querySelectorAll("th"), (h) => h.textContent)
+          : null,
+        rowCount: table ? table.querySelectorAll("tbody tr").length : 0
+      };
     });
-    const text = await container.getText();
-    expect(text).not.toContain("Failed to load");
+
+    // Verify it didn't fail
+    expect(state.text).not.toContain("Failed to load");
 
     // Check the definition list with totals is present
-    await getDisplayedElement("#extension-state dl", { timeout: 3000 });
-    expect(text).toContain("Filters");
+    expect(state.hasTotals).toBe(true);
+    expect(state.text).toContain("Filters");
 
     // Check that a table with subscription data is rendered
-    const table = await getDisplayedElement("#extension-state table", {
-      timeout: 3000
-    });
-    const headers = await table.findElements(By.css("th"));
-    const headerTexts = await Promise.all(headers.map((h) => h.getText()));
-    expect(headerTexts).toContain("Filter List");
-    expect(headerTexts).toContain("Version");
-    expect(headerTexts).toContain("Filters");
+    expect(state.headerTexts).toContain("Filter List");
+    expect(state.headerTexts).toContain("Version");
+    expect(state.headerTexts).toContain("Filters");
 
     // Check that at least one subscription row exists
-    const rows = await table.findElements(By.css("tbody tr"));
-    expect(rows.length).toBeGreaterThan(0);
+    expect(state.rowCount).toBeGreaterThan(0);
   });
 
   it("copies extension state to clipboard", async function () {
