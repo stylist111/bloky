@@ -30,14 +30,25 @@ import sentry from "./sentry.js";
  * @ignore
  */
 export const REASONS = Object.freeze({
+  // Added by `addDefaults()` without an explicit reason, e.g. on first run.
   DEFAULT: "default",
+  // Changed by the user, e.g. in the settings page.
   USER_ACTION: "user_action",
+  // Changed by an administrator through managed storage policies.
   ADMIN_POLICY: "admin_policy",
+  // Changed while migrating data, e.g. from Manifest V2 to Manifest V3
   MIGRATION: "migration",
+  // Replaced by the subscription its server redirected it to.
   REDIRECT: "redirect",
+  // Changed because the user's premium plan started or ended.
   PLAN_CHANGE: "plan_change",
+  // Restored after being found missing, e.g. by `restoreFromLedger()` or by
+  // re-adding the default subscriptions when none are left.
   RECOVERY: "recovery",
+  // Already present when the ledger first recorded the subscriptions, so
+  // the original reason isn't known.
   SNAPSHOT: "snapshot",
+  // Changed without a reason, or with a reason that isn't one of these.
   UNKNOWN: "unknown"
 });
 

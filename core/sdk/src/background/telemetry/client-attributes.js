@@ -16,7 +16,13 @@
  */
 
 import {truncateTimestampToDayStart} from "#adblockpluscore/lib/time.js";
+import {sha256Prefix} from "../../all/hashing.js";
 import {getAllFacts} from "../remote-config/storage.js";
+import {TRACKED_URLS, toTrackedFilterListUrl}
+  from "../remote-config/filter-list-urls.js";
+import sentry from "../sentry.js";
+import {STATES, getEntries as getLedgerEntries}
+  from "../subscription-ledger.js";
 
 /**
  * Rounds a value to a single significant figure.
@@ -31,6 +37,63 @@ import {getAllFacts} from "../remote-config/storage.js";
  */
 function roundSig1(x) {
   return Number(x.toPrecision(1));
+}
+
+/**
+ * Picks which of two ledger entries recorded for the same tracked filter
+ * list represents it. Subscribed entries win over removed ones, otherwise
+ * the latest change wins.
+ *
+ * @param {Object} current - The entry picked so far, if any
+ * @param {Object} candidate - Another entry for the same filter list
+ * @returns {Object} The entry representing the filter list
+ */
+function pickLedgerEntry(current, candidate) {
+  if (!current) {
+    return candidate;
+  }
+  const currentRemoved = current.state === STATES.REMOVED;
+  const candidateRemoved = candidate.state === STATES.REMOVED;
+  if (currentRemoved !== candidateRemoved) {
+    return currentRemoved ? candidate : current;
+  }
+  return candidate.ts > current.ts ? candidate : current;
+}
+
+/**
+ * Builds the subscription ledger values of the filter lists included in
+ * telemetry, as `<hash>:<state>:<reason>`, or `<hash>:absent` for the ones
+ * that have no ledger entry.
+ *
+ * @returns {Promise<string[]|undefined>} The sorted values, or undefined if
+ *   the ledger couldn't be read.
+ */
+async function buildFilterListsLedger() {
+  let entries;
+  try {
+    entries = await getLedgerEntries();
+  }
+  catch (e) {
+    sentry.reportError(e);
+    return;
+  }
+
+  const entriesByTrackedUrl = new Map();
+  for (const url of Object.keys(entries).sort()) {
+    for (const trackedUrl of toTrackedFilterListUrl(url)) {
+      entriesByTrackedUrl.set(
+        trackedUrl,
+        pickLedgerEntry(entriesByTrackedUrl.get(trackedUrl), entries[url])
+      );
+    }
+  }
+
+  const values = await Promise.all([...TRACKED_URLS].map(async url => {
+    const hash = await sha256Prefix(url);
+    const entry = entriesByTrackedUrl.get(url);
+    return entry ? `${hash}:${entry.state}:${entry.reason}` : `${hash}:absent`;
+  }));
+  return values.sort();
 }
 
 /**
@@ -50,6 +113,10 @@ export async function buildClientAttributes() {
   }
   if (facts.filterLists != null) {
     clientAttributes.push({key: "filter_lists", values: facts.filterLists});
+  }
+  const filterListsLedger = await buildFilterListsLedger();
+  if (filterListsLedger) {
+    clientAttributes.push({key: "filter_lists_ledger", values: filterListsLedger});
   }
   if (facts.customFiltersCount != null) {
     clientAttributes.push({

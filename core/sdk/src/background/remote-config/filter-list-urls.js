@@ -30,7 +30,7 @@ const TRACKED_FILENAMES = [
   "adblock_premium.txt"
 ];
 
-const TRACKED_URLS = new Set(
+export const TRACKED_URLS = new Set(
   TRACKED_FILENAMES.flatMap(f => [MV2_BASE + f, MV3_BASE + f])
 );
 

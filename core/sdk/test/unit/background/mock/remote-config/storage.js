@@ -16,9 +16,9 @@
  */
 
 // Minimal mock of remote-config/storage.js for unit tests that only need
-// to exercise `getClientId()` and `getSyncStatus()`. Controlled via
-// `global.__clientId` and `global.__lastDownloaded`, which tests set
-// before invoking the module under test.
+// to exercise `getClientId()`, `getSyncStatus()` and `getAllFacts()`.
+// Controlled via `global.__clientId`, `global.__lastDownloaded` and
+// `global.__facts`, which tests set before invoking the module under test.
 
 export async function getClientId() {
   return global.__clientId ?? null;
@@ -26,4 +26,8 @@ export async function getClientId() {
 
 export async function getSyncStatus() {
   return {lastDownloaded: global.__lastDownloaded ?? null};
+}
+
+export async function getAllFacts() {
+  return global.__facts ?? {};
 }

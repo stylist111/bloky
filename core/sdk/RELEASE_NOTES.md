@@ -1,5 +1,9 @@
 # Unreleased
 
+- Added the `filter_lists_ledger` client attribute to the CDP and telemetry
+  pings. For the same common filterlists as `filter_lists`, it reports the
+  hashed filterlist URL together with the state and reason recorded in the
+  subscription ledger, or `absent` when nothing was recorded.
 - Fixed the MV2 to MV3 subscription migration being marked as done before the
   migrated subscriptions were saved. If the background service worker was
   stopped in between, the subscriptions stayed on their MV2 URLs for good.
