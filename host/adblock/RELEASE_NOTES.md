@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fixed the move from a Manifest V2 to a Manifest V3 build being able to leave
+  the filter lists on their old URLs if the browser stopped the extension's
+  background process part way through the update.
 - Updated DOMPurify to 3.4.17.
 - Fixed the popup briefly widening when opening the More menu and other popup
   subpages in Chrome and Edge.

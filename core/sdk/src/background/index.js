@@ -473,6 +473,12 @@ async function checkAndMigrateSubscriptions() {
       await migrateCustomFilters();
     }
 
+    // The subscriptions are saved asynchronously, so wait for them before
+    // marking the migration as done. Otherwise a service worker stopped in
+    // between keeps the MV2 subscriptions with the migration flagged as done.
+    await filterEngine.filterStorage.awaitSavingComplete();
+    await prefs.awaitSavingComplete();
+
     Prefs.migration_state = MIGRATED_TO_MV3;
     return true;
   }

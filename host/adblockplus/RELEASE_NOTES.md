@@ -1,5 +1,9 @@
 # Unreleased
 
+- Fixed the move from a Manifest V2 to a Manifest V3 build being able to leave
+  the filter lists on their old URLs if the browser stopped the extension's
+  background process part way through the update.
+
 # 4.49.0 - 2026-10-27
 
 - Updated snippets to 2.18.0

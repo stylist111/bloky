@@ -26,9 +26,12 @@ import {subAntiCVLocal, subEasylistLocal, subAcceptableAdsLocal}
 
 describe("EWE.subscriptions", function() {
   let subscriptions;
+  let migrate;
 
-  async function mockAndImport() {
-    subscriptions = (await mock("subscriptions.js")).default;
+  async function mockAndImport(addAliases = null) {
+    let module = await mock("subscriptions.js", null, addAliases);
+    subscriptions = module.default;
+    ({migrate} = module);
   }
 
   const LEDGER_KEY = "ewe:subscriptionLedger";
@@ -188,6 +191,87 @@ describe("EWE.subscriptions", function() {
       // eslint-disable-next-line no-undef
       expect(global.filterStorageSubscriptions).toEqual([subscription]);
       expect(await getLedger()).toEqual({});
+    });
+  });
+
+  describe("migrate()", function() {
+    const MV2_URL = "https://example.com/mv2/subscription.txt";
+    const MV3_URL = "https://example.com/mv3/subscription.txt";
+    const DNR_ERROR = "Internal error";
+
+    let prefs;
+    let mv2Subscription;
+    let mv3Subscription;
+
+    after(function() {
+      // eslint-disable-next-line no-undef
+      delete global.addonBundledSubscriptions;
+    });
+
+    beforeEach(async function() {
+      prefs = {migration_subscription_errors: []};
+      env.setPrefs(prefs);
+      // eslint-disable-next-line no-undef
+      global.addonBundledSubscriptions = [
+        {id: RULESET_ID, url: MV3_URL, mv2_url: MV2_URL}
+      ];
+      // Both are read when the module under test is imported, so import it
+      // again, with the bundled subscriptions coming from the mock.
+      await mockAndImport(["./info.js"]);
+
+      // eslint-disable-next-line no-undef
+      let {RegularSubscription} = global.subscriptionClasses;
+      mv2Subscription = Object.assign(new RegularSubscription(), {
+        url: MV2_URL,
+        downloadable: true,
+        disabled: false,
+        downloadCount: 3,
+        version: 42
+      });
+      mv3Subscription = Object.assign(new RegularSubscription(), {
+        url: MV3_URL,
+        id: RULESET_ID,
+        downloadable: false,
+        disabled: false,
+        lastDownload: 1
+      });
+      // eslint-disable-next-line no-undef
+      global.fromURL =
+        url => (url == MV3_URL ? mv3Subscription : mv2Subscription);
+      env.setFilterStorageSubscriptions([mv2Subscription]);
+
+      env.browser.runtime.manifest.declarative_net_request.rule_resources =
+        [{id: RULESET_ID}];
+      Object.assign(env.browser.declarativeNetRequest, {
+        getEnabledRulesets: () => Promise.resolve([]),
+        updateEnabledRulesets: () => Promise.resolve()
+      });
+    });
+
+    it("replaces a downloadable subscription with its bundled one", async function() {
+      await migrate();
+
+      // eslint-disable-next-line no-undef
+      expect(global.filterStorageSubscriptions).toEqual([mv3Subscription]);
+      expect(mv3Subscription.downloadCount).toBe(3);
+      expect(mv3Subscription.version).toBe(42);
+      expect(prefs.migration_subscription_errors).toEqual([]);
+      expect(await getLedger()).toEqual({
+        [MV2_URL]: entry("removed", "migration"),
+        [MV3_URL]: entry("enabled", "migration")
+      });
+    });
+
+    it("records a migration error if adding the bundled one fails", async function() {
+      env.browser.declarativeNetRequest.updateEnabledRulesets =
+        () => Promise.reject(new Error(DNR_ERROR));
+
+      await migrate();
+
+      expect(prefs.migration_subscription_errors).toEqual([{
+        subscription: expect.objectContaining({url: MV2_URL}),
+        error: expect.stringContaining(DNR_ERROR)
+      }]);
     });
   });
 

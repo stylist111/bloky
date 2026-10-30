@@ -644,7 +644,7 @@ export async function migrate() {
 
     await remove(downloadable.url, {reason: REASONS.MIGRATION}); // MV2 URL
     try {
-      migrateSubscriptionToMv3(downloadable);
+      await migrateSubscriptionToMv3(downloadable);
     }
     catch (e) {
       sentry.reportError(e);

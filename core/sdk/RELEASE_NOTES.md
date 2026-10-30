@@ -1,5 +1,10 @@
 # Unreleased
 
+- Fixed the MV2 to MV3 subscription migration being marked as done before the
+  migrated subscriptions were saved. If the background service worker was
+  stopped in between, the subscriptions stayed on their MV2 URLs for good.
+  Failures to add a bundled subscription during the migration are now
+  recorded as well, so that they get retried on the next extension update.
 - Fixed the `filterLists` fact leaving out bundled filter lists on Manifest V3
   until their first update, so newly installed extensions reported missing
   lists such as acceptable ads and anti-cv.

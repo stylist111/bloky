@@ -34,6 +34,12 @@ export let filterEngine = {
       global.filterStorageSubscriptions =
         // eslint-disable-next-line no-undef
         global.filterStorageSubscriptions.filter(it => it !== subscription);
+    },
+    synchronizer: {
+      isExecuting() {
+        return false;
+      },
+      execute() {}
     }
   },
   defaultMatcher: {
