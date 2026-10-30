@@ -25,7 +25,8 @@ import experiments from "../experiments.js";
 import * as clientIds from "../client-ids.js";
 import {sha256Prefix} from "../../all/hashing.js";
 import sentry from "../sentry.js";
-import {toTrackedFilterListUrl} from "./filter-list-urls.js";
+import {toTrackedFilterListUrl, isActiveFilterList}
+  from "./filter-list-urls.js";
 
 const UNKNOWN_COUNTRY_CODE = "unknown";
 let _getFacts = async() => ({});
@@ -254,9 +255,9 @@ async function getDefaultFacts() {
   extName = extName ? extName.replace(/ /g, "").toLowerCase() : extName;
   const isMV3 = !!browser.declarativeNetRequest;
   const allSubscriptions = getSubscriptions();
-  const activeFilterUrls = allSubscriptions.flatMap(
-    s => s.enabled && s.downloadCount > 0 && s.url ? [s.url] : []
-  );
+  const activeFilterUrls = allSubscriptions
+    .filter(isActiveFilterList)
+    .map(s => s.url);
   const normalizedFilterUrls = [
     ...new Set(activeFilterUrls.flatMap(toTrackedFilterListUrl))
   ];

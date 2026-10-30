@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fixed the `filterLists` fact leaving out bundled filter lists on Manifest V3
+  until their first update, so newly installed extensions reported missing
+  lists such as acceptable ads and anti-cv.
 - Replaced the vendored copy of `rusha` with the npm package, and moved the
   vendored, eyeo-modified copy of `jsbn` into a local vendor directory,
   continuing the third-party dependency cleanup started with the

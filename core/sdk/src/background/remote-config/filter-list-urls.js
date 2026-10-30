@@ -56,3 +56,16 @@ export function toTrackedFilterListUrl(url) {
   }
   return TRACKED_URLS.has(url) ? [url] : [];
 }
+
+/**
+ * Whether a subscription should count as an active filter list. Bundled
+ * (non-downloadable) MV3 lists are active from install, while downloadable
+ * lists only have filters after a successful download.
+ *
+ * @param {Object} subscription
+ * @returns {boolean}
+ */
+export function isActiveFilterList(subscription) {
+  return !!subscription.url && subscription.enabled &&
+    (!subscription.downloadable || subscription.downloadCount > 0);
+}

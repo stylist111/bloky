@@ -16,7 +16,7 @@
  */
 
 import expect from "expect";
-import {toTrackedFilterListUrl} from "../../../src/background/remote-config/filter-list-urls.js";
+import {toTrackedFilterListUrl, isActiveFilterList} from "../../../src/background/remote-config/filter-list-urls.js";
 
 const MV2_BASE = "https://easylist-downloads.adblockplus.org/";
 const MV3_BASE = "https://easylist-downloads.adblockplus.org/v3/full/";
@@ -56,5 +56,39 @@ describe("toTrackedFilterListUrl", function() {
 
   it("drops +easylist.txt URLs from unknown domains", function() {
     expect(toTrackedFilterListUrl("https://example.com/easylistgermany+easylist.txt")).toEqual([]);
+  });
+});
+
+describe("isActiveFilterList", function() {
+  const url = `${MV3_BASE}abp-filters-anti-cv.txt`;
+
+  it("includes enabled bundled lists that were never downloaded", function() {
+    expect(isActiveFilterList({
+      url, enabled: true, downloadable: false, downloadCount: 0
+    })).toBe(true);
+  });
+
+  it("excludes enabled downloadable lists that were never downloaded", function() {
+    expect(isActiveFilterList({
+      url, enabled: true, downloadable: true, downloadCount: 0
+    })).toBe(false);
+  });
+
+  it("includes enabled downloadable lists after a download", function() {
+    expect(isActiveFilterList({
+      url, enabled: true, downloadable: true, downloadCount: 1
+    })).toBe(true);
+  });
+
+  it("excludes disabled lists", function() {
+    expect(isActiveFilterList({
+      url, enabled: false, downloadable: false, downloadCount: 3
+    })).toBe(false);
+  });
+
+  it("excludes subscriptions without a URL", function() {
+    expect(isActiveFilterList({
+      url: null, enabled: true, downloadable: false, downloadCount: 0
+    })).toBe(false);
   });
 });
