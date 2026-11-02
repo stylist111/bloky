@@ -9,7 +9,7 @@
     "yargs": "17.7.2"
   },
   "devDependencies": {
-    "@eyeo/filterlists": "1.0.104",
+    "@eyeo/filterlists": "1.0.105",
     "@eyeo/get-browser-binary": "0.26.0",
     "c8": "7.14.0",
     "chai": "4.5.0",
