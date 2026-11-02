@@ -1,5 +1,10 @@
 # Unreleased
 
+- Subscriptions still on the MV2 URL of a bundled subscription, left behind by
+  an MV2 to MV3 migration that was marked as done before its changes were
+  saved, are now moved to the bundled subscription on the next extension
+  update. Custom subscriptions that become bundled now keep their enabled
+  state when they are converted, instead of always ending up disabled.
 - Added the `ai_summaries_toggled` and `ai_summaries_toggle_shown` event
   schemas in `events.js` for the free "Hide AI search summaries" option that
   AdBlock and Adblock Plus add as an experiment.

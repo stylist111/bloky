@@ -21,7 +21,8 @@ import browser from "webextension-polyfill";
 import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 import {Page, isFirefox, firefoxVersion, isIncognito, readFile,
         writeFile, setMinTimeout, expectElemHideHidden, waitForAssertion, waitForSubscriptionsToDownload} from "./utils.js";
-import {subTestCustom1, subTestNoDNR} from "./fixtures/subscriptions.js";
+import {subTestCustom1, subTestCustom2, subTestCustom3, subTestNoDNR}
+  from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {EWE} from "./messaging.js";
 import {updateExtensionFiles, reloadExtension} from "./mocha/mocha-runner.js";
@@ -376,13 +377,11 @@ describe(`Update (${phase}) [runner-only]`, function() {
       expect(subs).toContainEqual(expect.objectContaining({
         id: newBundledSubscription.id,
         url: newBundledSubscription.url,
-        updatable: false // no diff URL, and isn't a custom sub anymore
+        updatable: false, // no diff URL, and isn't a custom sub anymore
+        enabled: true
       }));
 
-      // The converted subscription currently ends up disabled, since the
-      // conversion checks `enabled` on a core subscription object, which
-      // only has `disabled`.
-      await expectLedgerEntry(newBundledSubscription.url, "disabled",
+      await expectLedgerEntry(newBundledSubscription.url, "enabled",
                               "migration");
     });
 
@@ -416,6 +415,82 @@ describe(`Update (${phase}) [runner-only]`, function() {
 
       await expectLedgerEntry(oldBundledSubscription.url, "removed",
                               "migration");
+    });
+
+    // Adds the MV2 URL of a bundled subscription as a plain downloadable
+    // subscription, which is what a client whose MV2 to MV3 migration was
+    // marked as done before its changes were saved is left with.
+    async function addSubscriptionOnMv2Url(bundledSubscription) {
+      let bundled = (await EWE.testing._recommendations())
+        .map(recommendation => recommendation._source);
+      await EWE.testing._setSubscriptions(
+        bundled.filter(source => source.url != bundledSubscription.url));
+      try {
+        await EWE.subscriptions.add(bundledSubscription.mv2_url);
+      }
+      finally {
+        await EWE.testing._setSubscriptions(bundled);
+      }
+    }
+
+    it("converts subscriptions still on an MV2 URL to bundled subscriptions after an update [mv3-only]", async function() {
+      if (start) {
+        await addSubscriptionOnMv2Url(subTestCustom2);
+
+        let subs = await EWE.subscriptions.getSubscriptions();
+        expect(subs).toContainEqual(expect.objectContaining({
+          id: null,
+          url: subTestCustom2.mv2_url,
+          updatable: true
+        }));
+        await EWE.debugging.ensureEverythingHasSaved();
+
+        return;
+      }
+
+      let subs = await EWE.subscriptions.getSubscriptions();
+      expect(subs).toContainEqual(expect.objectContaining({
+        id: subTestCustom2.id,
+        url: subTestCustom2.url,
+        enabled: true
+      }));
+      expect(subs).not.toContainEqual(expect.objectContaining({
+        url: subTestCustom2.mv2_url
+      }));
+
+      await expectLedgerEntry(subTestCustom2.mv2_url, "removed", "migration");
+      await expectLedgerEntry(subTestCustom2.url, "enabled", "migration");
+    });
+
+    it("removes a subscription still on an MV2 URL if its bundled subscription is already there [mv3-only]", async function() {
+      if (start) {
+        await addSubscriptionOnMv2Url(subTestCustom3);
+        await EWE.subscriptions.add(subTestCustom3.url);
+
+        let subs = await EWE.subscriptions.getSubscriptions();
+        expect(subs).toContainEqual(expect.objectContaining({
+          url: subTestCustom3.mv2_url
+        }));
+        expect(subs).toContainEqual(expect.objectContaining({
+          id: subTestCustom3.id,
+          url: subTestCustom3.url
+        }));
+        await EWE.debugging.ensureEverythingHasSaved();
+
+        return;
+      }
+
+      let subs = await EWE.subscriptions.getSubscriptions();
+      expect(subs).toContainEqual(expect.objectContaining({
+        id: subTestCustom3.id,
+        url: subTestCustom3.url,
+        enabled: true
+      }));
+      expect(subs).not.toContainEqual(expect.objectContaining({
+        url: subTestCustom3.mv2_url
+      }));
+
+      await expectLedgerEntry(subTestCustom3.mv2_url, "removed", "migration");
     });
   });
 

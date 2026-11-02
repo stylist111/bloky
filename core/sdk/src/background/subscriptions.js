@@ -432,6 +432,13 @@ export async function updateSubscriptionInformation() {
     if (subscription instanceof RegularSubscription) {
       let subscriptionInfo = addonBundledSubscriptions.find(
         x => x.url == subscription.url);
+      if (!subscriptionInfo && !subscription.hasBundledFilters) {
+        // A downloadable subscription still on a bundled subscription's MV2
+        // URL was left behind by an MV2 to MV3 migration that was marked as
+        // done before its changes were saved (LOVEAB-86).
+        subscriptionInfo = addonBundledSubscriptions.find(
+          x => x.mv2_url == subscription.url);
+      }
 
       if (subscription.hasBundledFilters) {
         if (subscriptionInfo) {
@@ -462,14 +469,32 @@ export async function updateSubscriptionInformation() {
         // Existing custom user subscription, after the update it's now bundled
         // so we should migrate to the bundled one.
 
-        await remove(subscription.url, {reason: REASONS.MIGRATION});
-        await add(subscriptionInfo.url, {
-          downloadCount: subscription.downloadCount,
-          version: subscription.version,
-          reason: REASONS.MIGRATION
-        });
-        if (!subscription.enabled) {
-          await disable(subscriptionInfo.url, {reason: REASONS.MIGRATION});
+        let migrateToBundled = async() => {
+          await add(subscriptionInfo.url, {
+            downloadCount: subscription.downloadCount,
+            version: subscription.version,
+            reason: REASONS.MIGRATION
+          });
+          if (subscription.disabled) {
+            await disable(subscriptionInfo.url, {reason: REASONS.MIGRATION});
+          }
+        };
+
+        if (subscriptionInfo.url === subscription.url) {
+          // Same URL, so the custom one has to be removed before the bundled
+          // one can be created.
+          await remove(subscription.url, {reason: REASONS.MIGRATION});
+          await migrateToBundled();
+        }
+        else {
+          // Add the bundled one before removing the one on its MV2 URL, so
+          // being stopped in between leaves a duplicate to clean up on the
+          // next start rather than neither. If the bundled one is already
+          // there, there's only the duplicate to remove.
+          if (!getSubscription(subscriptionInfo.url)) {
+            await migrateToBundled();
+          }
+          await remove(subscription.url, {reason: REASONS.MIGRATION});
         }
       }
     }

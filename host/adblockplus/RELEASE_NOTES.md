@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fixed users who upgraded from a Manifest V2 build, mostly on Edge, being
+  left with their old filter list URLs and therefore without the bundled
+  filter lists. They are moved to the bundled filter lists with this update.
 - Added the free "Hide AI search summaries" option as an experiment, backed by
   the new AI Search Summaries Filter List. It hides the AI-generated answers
   that search engines place above their results and is off by default. It can
