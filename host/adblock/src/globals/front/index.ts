@@ -19,6 +19,7 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution/ui";
 import DOMPurify from "dompurify";
 
 import * as messaging from "../../core/messaging/front";
+import * as subscriptions from "../../core/subscriptions/shared";
 import * as filters from "../../filters/shared";
 
 /**
@@ -29,7 +30,7 @@ function start(): void {
     return;
   }
 
-  self.modulesAsGlobal = { messaging, filters, ewe };
+  self.modulesAsGlobal = { messaging, filters, ewe, subscriptions };
   Object.assign(self, {
     DOMPurify,
     ewe,

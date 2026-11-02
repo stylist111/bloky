@@ -374,5 +374,15 @@
     "id": "294D21F0-B3DC-11EF-9B01-F73C7F3A4DB5",
     "adblockId": "free_distraction_control",
     "index": 61
+  },
+  "https://easylist-downloads.adblockplus.org/v3/full/ai-search-summaries.txt": {
+    "id": "19EE0193-A63B-48AF-B216-5671DF4FCD2D",
+    "adblockId": "ai_summaries",
+    "index": 62
+  },
+  "https://easylist-downloads.adblockplus.org/ai-search-summaries.txt": {
+    "id": "19EE0193-A63B-48AF-B216-5671DF4FCD2D",
+    "adblockId": "ai_summaries",
+    "index": 62
   }
 }

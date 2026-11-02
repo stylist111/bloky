@@ -1,5 +1,11 @@
 # Unreleased
 
+- Added the free "Hide AI search summaries" filter list as an experiment. It
+  hides the AI-generated answers that search engines place above their results
+  and is off by default. It is listed under Other Filter Lists in the Filter
+  lists tab and has a "Hide AI Summaries" toggle in the popup menu. Both are
+  only shown to users in the experiment, which starts with a small share of
+  users.
 - Fixed the move from a Manifest V2 to a Manifest V3 build being able to leave
   the filter lists on their old URLs if the browser stopped the extension's
   background process part way through the update.

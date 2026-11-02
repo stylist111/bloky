@@ -425,6 +425,9 @@
   "options_recommended_videos_description": {
     "message": "Blokkeer video's en pop-ups waarin u wordt gevraagd om te betalen, u te abonneren, iets te installeren of aanbevolen items te kopen."
   },
+  "options_recommended_ai_summaries_description": {
+    "message": "Voorkom dat zoekmachines door AI gegenereerde samenvattingen boven de gewone resultaten tonen."
+  },
   "options_report_bug": {
     "message": "Een bug gevonden? <a>Stuur ons een bugrapport</a>"
   },

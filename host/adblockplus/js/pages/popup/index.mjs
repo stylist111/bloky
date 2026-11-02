@@ -28,10 +28,19 @@ import {
   ANNOYANCE_SUBSCRIPTION_TYPE,
   COOKIES_PREMIUM_SUBSCRIPTION_TYPE
 } from "../../../src/premium-subscriptions/shared/index.ts";
+import {
+  AI_SUMMARIES_SUBSCRIPTION_TYPE,
+  isAiSummariesRolledOut
+} from "../../../src/core/subscriptions/shared/index.ts";
+
 import "../../../src/popup/ui/popup.css";
 import "../../io-circle-toggle.mjs";
 import "./notifications.mjs";
 import "../../io-popup-footer.mjs";
+
+const extensionsUIServerLogger = new ewe.telemetry.ServerLogger(
+  "extensions_ui"
+);
 
 initI18n();
 
@@ -121,6 +130,7 @@ activeTab
     }
 
     setupCookieModal();
+    setupAiSummariesToggle().catch(reportAndLogError);
     setupToggles(tab);
     setupStats(tab);
     setupBlock(tab);
@@ -321,6 +331,118 @@ async function updateToggles() {
   } else {
     annoyanceToggle.removeAttribute("checked");
   }
+}
+
+/**
+ * Returns the recommendation of the free "Hide AI search summaries" filter
+ * list, or null while the list is not a recommended subscription
+ *
+ * @returns {Promise<object|null>}
+ */
+async function getAiSummariesRecommendation() {
+  const recommendations = await messaging.subscriptions.getRecommendations();
+  return (
+    recommendations.find(
+      ({ type }) => type === AI_SUMMARIES_SUBSCRIPTION_TYPE
+    ) || null
+  );
+}
+
+/**
+ * Checks whether the given filter list is installed and enabled
+ *
+ * @param {string} url - Filter list URL
+ * @returns {Promise<boolean>}
+ */
+async function isSubscriptionEnabled(url) {
+  const subscriptions = await messaging.subscriptions.get({
+    ignoreDisabled: true
+  });
+  return subscriptions.some((subscription) => subscription.url === url);
+}
+
+/**
+ * Turns the given filter list on. "add" does nothing for a list that is
+ * installed but disabled, and "toggle" would remove a list that is already
+ * enabled, so the current state (including disabled lists) is checked first.
+ *
+ * @param {string} url - Filter list URL
+ * @returns {Promise<boolean>} whether the filter list is on afterwards
+ */
+async function enableSubscription(url) {
+  const subscriptions = await messaging.subscriptions.get();
+  const subscription = subscriptions.find((item) => item.url === url);
+  if (!subscription) {
+    return (await messaging.subscriptions.add(url)) === true;
+  }
+  if (subscription.disabled) {
+    return await messaging.subscriptions.toggle(url);
+  }
+  return true;
+}
+
+/**
+ * Initializes the toggle for the free "Hide AI search summaries"
+ * filter list. The toggle is only shown if the filter list is available
+ * as a recommended subscription and the option is rolled out to the user.
+ */
+async function setupAiSummariesToggle() {
+  // The toggle is not shown, and so not reported as shown, on pages the
+  // extension cannot act on
+  if (document.body.classList.contains("ignore")) return;
+
+  const container = $("#page-free-controls");
+  const toggle = $("#ai-summaries-toggle");
+
+  const [recommendation, flags] = await Promise.all([
+    getAiSummariesRecommendation(),
+    ewe.experiments.getFlags()
+  ]);
+  if (!recommendation) return;
+  if (!isAiSummariesRolledOut(flags)) return;
+
+  const { url } = recommendation;
+  // Like allowlisting, a change made from the popup only takes effect once
+  // the page is reloaded, so the reload prompt is shown while the state
+  // differs from the one the popup opened with
+  const wasEnabled = await isSubscriptionEnabled(url);
+
+  const updateToggle = async () => {
+    toggle.toggleAttribute("checked", await isSubscriptionEnabled(url));
+  };
+
+  toggle.addEventListener("click", async () => {
+    const value = toggle.getAttribute("checked") !== null;
+    // The event is only logged once the change was applied
+    if (value) {
+      const enabled = await enableSubscription(url);
+      if (!enabled) return;
+    } else {
+      await messaging.subscriptions.remove(url);
+    }
+    document.body.classList.toggle("refresh", value !== wasEnabled);
+    const action = value ? "opted_in" : "opted_out";
+    extensionsUIServerLogger.behavior("ai_summaries_toggled", {
+      action,
+      source: "popup"
+    });
+  });
+
+  messaging.addMessageListener((msg) => {
+    if (msg.type !== "subscriptions.respond") return;
+
+    const [subscription] = msg.args;
+    if (subscription && subscription.url === url) {
+      updateToggle();
+    }
+  });
+  messaging.subscriptions.listen(["added", "changed", "removed"]);
+
+  toggle.toggleAttribute("checked", wasEnabled);
+  container.hidden = false;
+  extensionsUIServerLogger.behavior("ai_summaries_toggle_shown", {
+    source: "popup"
+  });
 }
 
 function setupCookieModal() {

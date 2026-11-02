@@ -41,6 +41,9 @@
   "common_feature_videos_title": {
     "message": "حجب عوامل التشتيت الأساسية"
   },
+  "common_feature_ai_summaries_title": {
+    "message": "إخفاء ملخصات الذكاء الاصطناعي في نتائج البحث"
+  },
   "common_notification_hide": {
     "message": "أغلق التنبيه"
   },

@@ -53,12 +53,14 @@ import {
   getElemTextSafe,
   checkSubscriptionsState,
   changeLanguageFilterList,
-  clickFLAndCheck
+  clickFLAndCheck,
+  setAiSummariesRollout
 } from "../../utils/page.js";
 import {
   getDefaultFilterLists,
   getBuiltinFilterLists,
-  freeFilterLists
+  freeFilterLists,
+  aiSummariesFilterList
 } from "../../utils/dataset.js";
 
 async function setFilterListUrl(url) {
@@ -68,6 +70,14 @@ async function setFilterListUrl(url) {
 }
 
 export default () => {
+  before(async function () {
+    // The AI search summaries option is only shown to users in the rollout
+    await setAiSummariesRollout(true);
+  });
+
+  after(async function () {
+    await setAiSummariesRollout(false);
+  });
   beforeEach(async function () {
     await initOptionsAdvancedTab(getOptionsHandle());
   });
@@ -161,6 +171,40 @@ export default () => {
     await initOptionsGeneralTab(getOptionsHandle());
     await clickFLAndCheck(name, { enable: true });
     await clickFLAndCheck(name, { enable: false });
+  });
+
+  it("shows the AI search summaries filter list first with a New label - general tab", async function () {
+    const { name, title, type } = aiSummariesFilterList;
+
+    await initOptionsGeneralTab(getOptionsHandle());
+
+    // Features marked as new are pinned to the top of the free features
+    const firstRow = await getDisplayedElement(
+      "#free-list-table li[aria-label]"
+    );
+    expect(await firstRow.getAttribute("aria-label")).toEqual(name);
+    expect(await firstRow.getAttribute("data-recommended")).toEqual(type);
+
+    const newLabel = await getDisplayedElement(
+      `#free-list-table li[data-recommended="${type}"] .label.new`
+    );
+    // The label is rendered in uppercase via CSS
+    expect((await newLabel.getText()).toLowerCase()).toEqual("new");
+
+    // Enabling it subscribes to the filter list
+    await clickFLAndCheck(name, { enable: true });
+    await checkSubscriptionsState([{ name: title, enabled: true }], {
+      timeout: 5000,
+      regexp: /Just now|minutes ago|Updating/
+    });
+
+    // Disabling it removes the subscription again
+    await initOptionsGeneralTab(getOptionsHandle());
+    await clickFLAndCheck(name, { enable: false });
+    await initOptionsAdvancedTab(getOptionsHandle());
+    await waitForNotDisplayed(getFLSelectors(title).filterlist, {
+      timeout: 5000
+    });
   });
 
   it("changes the default language filter list", async function () {

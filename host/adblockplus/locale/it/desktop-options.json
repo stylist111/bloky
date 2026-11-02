@@ -425,6 +425,9 @@
   "options_recommended_videos_description": {
     "message": "Blocca i video fluttuanti e i pop-up che ti chiedono di pagare, abbonarti, installare o acquistare articoli consigliati."
   },
+  "options_recommended_ai_summaries_description": {
+    "message": "Impedisci ai motori di ricerca di mostrare riepiloghi generati dall'IA sopra i risultati normali."
+  },
   "options_report_bug": {
     "message": "Hai trovato un bug? <a>Inviaci un bug report</a>"
   },

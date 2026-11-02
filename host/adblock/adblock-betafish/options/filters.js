@@ -78,10 +78,26 @@ function replaceAnnoyances(subsList) {
   return subsList;
 }
 
+// Whether the "Hide AI search summaries" option is rolled out to the
+// current user, read before the lists are prepared
+let aiSummariesRolledOut = false;
+
+// The "Hide AI search summaries" row is hidden while the list is not a
+// recommended subscription yet (entries that come only from
+// betafish-subscriptions.json have no "type") or while the option is not
+// rolled out to the user. Users who already subscribed keep seeing it.
+function isHiddenAiSummariesList([adblockId, entry]) {
+  if (adblockId !== "ai_summaries" || entry.subscribed) {
+    return false;
+  }
+  return !entry.type || !aiSummariesRolledOut;
+}
+
 function cleanUpSubs(subs) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const subsWithoutPremium = subs.filter(([_, entry]) => !isPremiumFilterListURL(entry.url));
-  const subsWithoutAnnoyances = replaceAnnoyances(subsWithoutPremium);
+  const subsWithoutHidden = subsWithoutPremium.filter((sub) => !isHiddenAiSummariesList(sub));
+  const subsWithoutAnnoyances = replaceAnnoyances(subsWithoutHidden);
   return subsWithoutAnnoyances;
 }
 
@@ -130,6 +146,10 @@ let filterListSections = {
     $container: $("#custom_filter_lists"),
   },
 };
+
+// Filter lists whose explanation text contains acronyms and therefore
+// must not be transformed to lowercase
+const explanationsWithAcronyms = ["ai_summaries"];
 
 function translateIDs(id) {
   const idsWith2 = ["warning_removal", "annoyances", "antisocial"];
@@ -214,6 +234,7 @@ FilterListUtil.getFilterListType = (filterList) => {
   const { adblockId } = filterList;
   const adblockFilters = ["easylist", "anticircumvent", "acceptable_ads", "acceptable_ads_privacy"];
   const otherFilters = [
+    "ai_summaries",
     "annoyances",
     "antisocial",
     "bitcoin_mining_protection",
@@ -625,8 +646,11 @@ function getDefaultFilterUI(filterList, checkboxID, filterListType) {
   const $extraInformation = $("<div>")
     .addClass("extra-info")
     .addClass("italic")
-    .addClass("lowercase")
     .text(translate(`filter_${filterList.adblockId}_explained`));
+  // Explanations containing acronyms (e.g. "AI") must keep their casing
+  if (!explanationsWithAcronyms.includes(filterList.adblockId)) {
+    $extraInformation.addClass("lowercase");
+  }
 
   const $filterInfo = $("<div>").append($filterHeader).append($extraInformation);
 
@@ -832,6 +856,13 @@ CheckboxForFilterList.prototype = {
       if (!event.addedViaBackground && isAcceptableAds(that.filterList)) {
         filtersExtensionsUIServerLogger.behavior("acceptable_ads_toggled", {
           action: checked ? "opted_in" : "opted_out",
+          source: "options_filter_list",
+        });
+      }
+      if (!event.addedViaBackground && adblockId === "ai_summaries") {
+        const action = checked ? "opted_in" : "opted_out";
+        filtersExtensionsUIServerLogger.behavior("ai_summaries_toggled", {
+          action,
           source: "options_filter_list",
         });
       }
@@ -1183,11 +1214,16 @@ async function initPremiumFiltersCTA() {
 
 $(async () => {
   // Retrieves list of filter lists from the background.
-  const subs = await SubscriptionAdapter.getAllSubscriptionsMinusText();
+  const [subs, experimentFlags] = await Promise.all([
+    SubscriptionAdapter.getAllSubscriptionsMinusText(),
+    modulesAsGlobal.ewe.experiments.getFlags(),
+  ]);
+  aiSummariesRolledOut = modulesAsGlobal.subscriptions.isAiSummariesRolledOut(experimentFlags);
   // Initialize page using subscriptions from the background.
   // Copy from update subscription list + setsubscriptionlist
   // Move highlighted filters to top of Other Filters section
-  const otherFiltersToHightlight = ["free_distraction_control"];
+  // "ai_summaries" is pinned to the top only while the list is new
+  const otherFiltersToHightlight = ["ai_summaries", "free_distraction_control"];
   FilterListUtil.prepareSubscriptions(subs, otherFiltersToHightlight);
 
   for (const adblockId in filterListSections) {

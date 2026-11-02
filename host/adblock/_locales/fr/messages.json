@@ -2039,6 +2039,14 @@
     "message": "Bloquez les vidéos et les fenêtres contextuelles qui apparaissent dans le coin de votre écran pour vous demander de payer, de vous abonner, d'installer ou d'acheter des produits et bien plus encore.",
     "description": "A filter list explanation"
   },
+  "filter_ai_summaries": {
+    "message": "Masquer les résumés IA des recherches",
+    "description": "A filter list title, a free feature"
+  },
+  "filter_ai_summaries_explained": {
+    "message": "supprime les résumés générés par IA en haut des résultats de recherche",
+    "description": "A filter list explanation"
+  },
   "filterlistsrock2": {
     "message": "Les listes de filtres bloquent la plupart des publicités sur le web. Vous pouvez également...",
     "description": "Header text on the Customize tab"
@@ -3468,5 +3476,25 @@
   "unsupported_browser_banner": {
     "message": "La version de votre navigateur n'est plus prise en charge. Veuillez mettre à jour votre navigateur pour continuer à recevoir les mises à jour de l'extension.",
     "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
+  },
+  "ai_summaries_popup_title": {
+    "message": "Masquer les résumés IA",
+    "description": "Title of the free Hide AI Summaries toggle section in the popup menu"
+  },
+  "ai_summaries_popup_text": {
+    "message": "Masquer les résumés générés par IA dans les résultats de recherche",
+    "description": "Text under the \"Hide AI Summaries\" toggle in the popup menu"
+  },
+  "onpage_options_ai_summaries_confirm_page_title": {
+    "message": "Menu contextuel AdBlock : confirmation de Masquer les résumés IA des recherches",
+    "description": "Title for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "ai_summaries_confirm_text": {
+    "message": "En activant cette fonctionnalité, AdBlock masque les réponses générées par IA que les moteurs de recherche affichent au-dessus de leurs résultats. Vos recherches ne sont pas modifiées et vous pouvez la désactiver à tout moment depuis le menu contextuel ou l'onglet Listes de filtres.",
+    "description": "Onscreen text for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "confirm_ai_summaries_enable": {
+    "message": "Confirmer l'activation de Masquer les résumés IA des recherches",
+    "description": "Aria label of the button confirming to turn on the Hide AI search summaries filter list."
   }
 }

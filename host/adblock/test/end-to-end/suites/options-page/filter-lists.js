@@ -35,8 +35,13 @@ import {
   initOptionsFiltersTab,
   checkSubscriptionsState,
   clickFilterlist,
+  setAiSummariesRollout,
 } from "../../utils/page.js";
-import { defaultFilterLists, languageFilterLists } from "../../utils/dataset.js";
+import {
+  defaultFilterLists,
+  languageFilterLists,
+  aiSummariesFilterList,
+} from "../../utils/dataset.js";
 
 async function setFilterListUrl(url) {
   await clickAndSendKeys("#txtNewSubscriptionUrl", url);
@@ -44,6 +49,14 @@ async function setFilterListUrl(url) {
 }
 
 export default () => {
+  before(async function () {
+    // The AI search summaries option is only shown to users in the rollout
+    await setAiSummariesRollout(true);
+  });
+
+  after(async function () {
+    await setAiSummariesRollout(false);
+  });
   beforeEach(async function () {
     await initOptionsFiltersTab(getOptionsHandle());
   });
@@ -150,6 +163,42 @@ export default () => {
       });
     });
   }
+
+  it("shows the AI search summaries filter list first under Other Filter Lists", async function () {
+    const { name, text, checkboxSelector } = aiSummariesFilterList;
+
+    // New filter lists are pinned to the top of the section
+    const firstRow = await getDisplayedElement("#other_filter_lists [name]");
+    expect(await firstRow.getAttribute("name")).toEqual(name);
+
+    const titleElem = await getDisplayedElement(`[name="${name}"] > label h1`);
+    expect(await titleElem.getText()).toEqual(text);
+
+    // The explanation keeps its casing ("AI"), unlike the other explanations
+    const explanationElem = await getDisplayedElement(`[name="${name}"] .extra-info`);
+    expect(await explanationElem.getText()).toEqual(
+      "removes AI-generated summaries at the top of search results",
+    );
+
+    const flEnabled = await isCheckboxPropertyEnabled(checkboxSelector);
+    expect(flEnabled).toEqual(false);
+  });
+
+  it("enables and disables the AI search summaries filter list", async function () {
+    const { name, checkboxSelector } = aiSummariesFilterList;
+
+    await clickFilterlist(name, checkboxSelector, true);
+    await checkSubscriptionsState([{ name, enabled: true, checkboxSelector }], {
+      timeout: 5000,
+      regexp: /updated|Subscribed|Fetching/,
+    });
+
+    await driver.sleep(1000); // Clicking right after subscribed may be ineffective
+    await clickFilterlist(name, checkboxSelector, false);
+    await checkSubscriptionsState([{ name, enabled: false, checkboxSelector }], {
+      regexp: /Unsubscribed/,
+    });
+  });
 
   it("adds and removes a language filter list", async function () {
     const name = "easylist_plus_vietnamese";

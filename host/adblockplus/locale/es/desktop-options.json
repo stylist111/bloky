@@ -425,6 +425,9 @@
   "options_recommended_videos_description": {
     "message": "Bloquea los vídeos de las esquinas y los elementos emergentes que te piden que pagues, te suscribas, instales algo o compres productos recomendados."
   },
+  "options_recommended_ai_summaries_description": {
+    "message": "Evita que los buscadores muestren resúmenes generados por IA encima de los resultados normales."
+  },
   "options_report_bug": {
     "message": "¿Encontraste un error? <a>Envíanos un informe de error</a>"
   },

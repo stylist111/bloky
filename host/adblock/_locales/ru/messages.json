@@ -2039,6 +2039,14 @@
     "message": "Блокируйте окна с видео в углу экрана и запросы на оплату/подписку, установку, рекомендации для покупки и т.д.",
     "description": "A filter list explanation"
   },
+  "filter_ai_summaries": {
+    "message": "Скрывать ИИ-сводки в результатах поиска",
+    "description": "A filter list title, a free feature"
+  },
+  "filter_ai_summaries_explained": {
+    "message": "удаляет сгенерированные ИИ сводки в верхней части результатов поиска",
+    "description": "A filter list explanation"
+  },
   "filterlistsrock2": {
     "message": "Списки фильтров блокируют большую часть рекламы в Интернете. Вы также можете...",
     "description": "Header text on the Customize tab"
@@ -3468,5 +3476,25 @@
   "unsupported_browser_banner": {
     "message": "Ваша версия браузера больше не поддерживается. Обновите браузер, чтобы продолжать получать обновления расширения.",
     "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
+  },
+  "ai_summaries_popup_title": {
+    "message": "Скрывать ИИ-сводки",
+    "description": "Title of the free Hide AI Summaries toggle section in the popup menu"
+  },
+  "ai_summaries_popup_text": {
+    "message": "Скрывать сгенерированные ИИ сводки в результатах поиска",
+    "description": "Text under the \"Hide AI Summaries\" toggle in the popup menu"
+  },
+  "onpage_options_ai_summaries_confirm_page_title": {
+    "message": "Всплывающее меню AdBlock: подтверждение функции «Скрывать ИИ-сводки в результатах поиска»",
+    "description": "Title for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "ai_summaries_confirm_text": {
+    "message": "Если включить эту функцию, AdBlock будет скрывать сгенерированные ИИ ответы, которые поисковые системы показывают над результатами поиска. Ваши поисковые запросы не изменяются, и вы можете в любой момент отключить функцию во всплывающем меню или на вкладке «Списки фильтров».",
+    "description": "Onscreen text for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "confirm_ai_summaries_enable": {
+    "message": "Подтвердить включение функции «Скрывать ИИ-сводки в результатах поиска»",
+    "description": "Aria label of the button confirming to turn on the Hide AI search summaries filter list."
   }
 }

@@ -425,6 +425,9 @@
   "options_recommended_videos_description": {
     "message": "Sizden belirli bir ödeme yapmanızı, abone olmanızı, bir uygulama ya da yazılımı cihazınıza kurmanızı ya da önerilen ögeleri satın almanızı isteyen köşe videolarını ve açılır pencereleri engelleyin."
   },
+  "options_recommended_ai_summaries_description": {
+    "message": "Arama motorlarının normal sonuçların üzerinde yapay zeka tarafından oluşturulan özetler göstermesini engelleyin."
+  },
   "options_report_bug": {
     "message": "Hataya mı rastladınız? <a>Sorunu bize bildirin.</a>"
   },

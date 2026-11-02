@@ -93,4 +93,28 @@ describe("Messaging category: subscriptions", () => {
       url
     });
   });
+
+  it("subscriptions.toggle", async () => {
+    (utils.send as jest.Mock).mockImplementation(async () => mockReturnValue);
+
+    const url = "http://example.com/filters.txt";
+    const value = await subscriptions.toggle(url);
+
+    expect(utils.send).toHaveBeenCalledWith("subscriptions.toggle", {
+      url
+    });
+    expect(value).toStrictEqual(mockReturnValue);
+  });
+
+  it("subscriptions.toggle with keepInstalled", async () => {
+    (utils.send as jest.Mock).mockImplementation(async () => mockReturnValue);
+
+    const url = "http://example.com/filters.txt";
+    await subscriptions.toggle(url, true);
+
+    expect(utils.send).toHaveBeenCalledWith("subscriptions.toggle", {
+      keepInstalled: true,
+      url
+    });
+  });
 });

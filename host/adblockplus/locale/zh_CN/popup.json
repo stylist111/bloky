@@ -65,6 +65,15 @@
   "premium_distractions_subtitle": {
     "message": "拦截自动播放视频等常见干扰"
   },
+  "ai_summaries_title": {
+    "message": "隐藏 AI 摘要"
+  },
+  "ai_summaries_subtitle": {
+    "message": "隐藏搜索结果上方的 AI 摘要"
+  },
+  "ai_summaries_new_label": {
+    "message": "新"
+  },
   "premium_distractions_title": {
     "message": "拦截更多干扰"
   },

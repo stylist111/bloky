@@ -2031,6 +2031,14 @@
     "message": "攔截角落影片播放框及含有要求您付費/訂閱、安裝、購買推薦品項等內容的提示訊息。",
     "description": "A filter list explanation"
   },
+  "filter_ai_summaries": {
+    "message": "隱藏 AI 搜尋摘要",
+    "description": "A filter list title, a free feature"
+  },
+  "filter_ai_summaries_explained": {
+    "message": "移除搜尋結果頂端由 AI 產生的摘要",
+    "description": "A filter list explanation"
+  },
   "filterlistsrock2": {
     "message": "過濾清單可以阻擋網路上大部分的廣告。您也可以……",
     "description": "Header text on the Customize tab"
@@ -3457,5 +3465,25 @@
   "unsupported_browser_banner": {
     "message": "您的瀏覽器版本不再受支援。請升級瀏覽器以繼續接收擴充功能更新。",
     "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
+  },
+  "ai_summaries_popup_title": {
+    "message": "隱藏 AI 摘要",
+    "description": "Title of the free Hide AI Summaries toggle section in the popup menu"
+  },
+  "ai_summaries_popup_text": {
+    "message": "隱藏搜尋結果中由 AI 產生的摘要",
+    "description": "Text under the \"Hide AI Summaries\" toggle in the popup menu"
+  },
+  "onpage_options_ai_summaries_confirm_page_title": {
+    "message": "AdBlock 彈出式選單：確認隱藏 AI 搜尋摘要",
+    "description": "Title for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "ai_summaries_confirm_text": {
+    "message": "開啟此功能後，AdBlock 會隱藏搜尋引擎在搜尋結果上方顯示的 AI 產生回答。您的搜尋內容不會被更改，您可以隨時在彈出式選單或「過濾清單」分頁中關閉此功能。",
+    "description": "Onscreen text for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "confirm_ai_summaries_enable": {
+    "message": "確認啟用「隱藏 AI 搜尋摘要」",
+    "description": "Aria label of the button confirming to turn on the Hide AI search summaries filter list."
   }
 }

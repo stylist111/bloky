@@ -425,6 +425,9 @@
   "options_recommended_videos_description": {
     "message": "B拦截角落视频，以及要求您支付、订阅、安装或购买推荐商品的弹出窗口。"
   },
+  "options_recommended_ai_summaries_description": {
+    "message": "阻止搜索引擎在常规结果上方显示 AI 生成的摘要。"
+  },
   "options_report_bug": {
     "message": "发现错误？<a>向我们发送错误报告</a>"
   },

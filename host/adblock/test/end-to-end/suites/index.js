@@ -29,6 +29,7 @@ import optionsPageFL from "./options-page/filter-lists.js";
 import optionsPageExtensionState from "./options-page/extension-state.js";
 import filterExperiments from "./options-page/filter-experiments.js";
 import popupElements from "./popup-page/popup-elements.js";
+import popupAiSummariesToggle from "./popup-page/ai-summaries-toggle.js";
 import freeUserOptions from "./premium/free-user-options.js";
 import freeUserPopup from "./premium/free-user-popup.js";
 import testServer from "./test-server.js";
@@ -67,6 +68,7 @@ export default () => {
 
     describe("Popup Page", function () {
       describe("Popup elements", popupElements);
+      describe("AI search summaries toggle", popupAiSummariesToggle);
       describe("Helpflow", helpFlow);
     });
     describe("Options Page", function () {

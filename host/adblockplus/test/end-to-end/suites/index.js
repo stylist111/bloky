@@ -29,6 +29,7 @@ import optionsPageDataCollection from "./options-page/data-collection.js";
 import extensionState from "./options-page/extension-state.js";
 import filterExperiments from "./options-page/filter-experiments.js";
 import popupPage from "./popup-page.js";
+import popupAiSummaries from "./popup-ai-summaries.js";
 import uninstallDefault from "./smoke/uninstall-default.js";
 import freeUser from "./premium/free-user.js";
 import getPremiumWithAccount from "./premium/get-premium-with-account.js";
@@ -64,6 +65,7 @@ export default () => {
     before(skipWhenSmokeTestsFailed);
 
     describe("Popup Page", popupPage);
+    describe("Popup Page - AI search summaries", popupAiSummaries);
 
     describe("Options Page", function () {
       describe("Acceptable Ads", optionsPageAA);

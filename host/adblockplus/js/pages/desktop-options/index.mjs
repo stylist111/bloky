@@ -30,6 +30,13 @@ import { FilterOrigin } from "~/filters/shared";
 import * as premiumSubscriptions from "~/premium-subscriptions/ui";
 import { premiumTypes } from "~/premium-subscriptions/shared";
 import {
+  AI_SUMMARIES_SUBSCRIPTION_TYPE,
+  compareByNewFreeType,
+  isAiSummariesRolledOut,
+  isAiSummariesVisible,
+  isNewFreeType
+} from "~/core/subscriptions/shared";
+import {
   convertDoclinks,
   getErrorMessage,
   getSourceAttribute
@@ -76,6 +83,9 @@ let promisedDateFormat = null;
 let promisedResources = null;
 
 const collections = Object.create(null);
+// Whether the "Hide AI search summaries" option is rolled out to the
+// current user
+let aiSummariesRolledOut = false;
 const { getMessage } = browser.i18n;
 const customFilters = [];
 const syncErrorIds = new Map([
@@ -157,6 +167,14 @@ Collection.prototype._sortItems = function () {
     if (a.url && isAcceptableAds(a.url)) return 1;
     if (b.url && isAcceptableAds(b.url)) return -1;
 
+    // Make sure that features marked as new appear on top of the free
+    // features in the General tab, without affecting the alphabetical order
+    // in the Advanced tab
+    if (this === collections.recommendedFreeList) {
+      const newComparison = compareByNewFreeType(a, b);
+      if (newComparison !== 0) return newComparison;
+    }
+
     // Make sure that newly added entries always appear on top in descending
     // chronological order
     const aTimestamp = a[timestampUI] || 0;
@@ -185,6 +203,9 @@ Collection.prototype.addItem = function (item) {
     listItem.setAttribute("aria-label", this._getItemTitle(item, j));
     listItem.setAttribute("data-recommended", item.recommended);
     listItem.setAttribute("data-access", item.url || item.text);
+    if (isNewFreeType(item.recommended)) {
+      listItem.classList.add("new");
+    }
 
     const tooltip = $("io-popout[type='tooltip']", listItem);
     if (tooltip) {
@@ -409,6 +430,11 @@ function addSubscription(subscription) {
       const ioListBox = $("#languages-box");
       ioListBox.items = ioListBox.items.concat(subscription);
       break;
+    case AI_SUMMARIES_SUBSCRIPTION_TYPE:
+      if (isAiSummariesVisible(aiSummariesRolledOut, disabled === false)) {
+        collection = collections.recommendedFreeList;
+      }
+      break;
     case "notifications":
     case "privacy":
     case "social":
@@ -437,6 +463,15 @@ function addSubscription(subscription) {
 
 function updateSubscription(subscription) {
   for (const name in collections) collections[name].updateItem(subscription);
+
+  // Users who turned the AI search summaries list on see its row even
+  // outside the rollout (addItem ignores rows that already exist)
+  if (
+    subscription.recommended === AI_SUMMARIES_SUBSCRIPTION_TYPE &&
+    subscription.disabled === false
+  ) {
+    collections.recommendedFreeList.addItem(subscription);
+  }
 
   if (subscription.recommended == "ads") {
     if (subscription.disabled) collections.langs.removeItem(subscription);
@@ -510,7 +545,11 @@ async function loadResources() {
   try {
     await loadLanguageNames();
 
-    const recommendations = await messaging.app.get("recommendations");
+    const [flags, recommendations] = await Promise.all([
+      ewe.experiments.getFlags(),
+      messaging.app.get("recommendations")
+    ]);
+    aiSummariesRolledOut = isAiSummariesRolledOut(flags);
     for (const recommendation of recommendations) {
       const subscription = {
         disabled: true,
@@ -747,6 +786,15 @@ const downloadDebugData = (data) => {
   URL.revokeObjectURL(blobURL);
 };
 
+// Logs the user turning the "Hide AI search summaries" list on or off,
+// if the given subscription is that list
+function logAiSummariesToggle(url, action, source) {
+  if (subscriptionsMap[url]?.recommended !== AI_SUMMARIES_SUBSCRIPTION_TYPE) {
+    return;
+  }
+  extensionsUIServerLogger.behavior("ai_summaries_toggled", { action, source });
+}
+
 function execAction(action, element) {
   if (
     element.getAttribute("aria-disabled") === "true" ||
@@ -827,6 +875,7 @@ function execAction(action, element) {
         type: "subscriptions.remove",
         url: removedUrl
       });
+      logAiSummariesToggle(removedUrl, "opted_out", "options_advanced");
       if (isAcceptableAds(removedUrl)) {
         extensionsUIServerLogger.behavior("acceptable_ads_toggled", {
           action: "opted_out",
@@ -851,13 +900,22 @@ function execAction(action, element) {
         })
         .then(() => updateSubscription(subscription));
       return true;
-    case "toggle-disable-subscription":
+    case "toggle-disable-subscription": {
+      const toggledUrl = findParentData(element, "access", false);
       browser.runtime.sendMessage({
         type: "subscriptions.toggle",
         keepInstalled: true,
-        url: findParentData(element, "access", false)
+        url: toggledUrl
       });
+      // The toggle flips its state before this handler runs
+      const isEnabling = element.closest("io-toggle")?.checked === true;
+      logAiSummariesToggle(
+        toggledUrl,
+        isEnabling ? "opted_in" : "opted_out",
+        "options_advanced"
+      );
       return true;
+    }
     case "toggle-pref":
       browser.runtime.sendMessage({
         type: "prefs.toggle",
@@ -866,12 +924,19 @@ function execAction(action, element) {
       return true;
     case "toggle-remove-subscription":
       const subscriptionUrl = findParentData(element, "access", false);
-      if (element.getAttribute("aria-checked") == "true") {
+      const isRemoving = element.getAttribute("aria-checked") == "true";
+      if (isRemoving) {
         browser.runtime.sendMessage({
           type: "subscriptions.remove",
           url: subscriptionUrl
         });
       } else addEnableSubscription(subscriptionUrl);
+
+      logAiSummariesToggle(
+        subscriptionUrl,
+        isRemoving ? "opted_out" : "opted_in",
+        "options_general"
+      );
       return true;
     case "update-all-subscriptions":
       browser.runtime.sendMessage({
@@ -1014,14 +1079,23 @@ function onHashChange() {
   }
 }
 
+// Whether the filters box listens for selections already. The box is set
+// up again on every subscription or premium change, and its items are only
+// available once the recommendations were loaded, so checking the items
+// could register the listener more than once and toggle a filter list
+// twice on one click
+let isFiltersBoxListening = false;
+
 function setupFiltersBox() {
   const ioListBox = $("#filters-box");
 
-  if (!ioListBox.items.length) {
+  if (!isFiltersBoxListening) {
+    isFiltersBoxListening = true;
     ioListBox.getItemTitle = (item) => getPrettyItemTitle(item, true);
     ioListBox.addEventListener("change", (event) => {
       const item = event.detail;
       addEnableSubscription(item.url, item.title, item.homepage);
+      logAiSummariesToggle(item.url, "opted_in", "options_advanced");
     });
   }
 
@@ -1047,6 +1121,15 @@ function getListBoxItems(subscriptions) {
     const key = recommended === "ads" ? recommended : "others";
     const label = getPrettyItemTitle(subscription, true);
     const selected = urls.has(url);
+
+    // Like in the General tab, the "Hide AI search summaries" list is only
+    // offered to users in the rollout, or to users who already added it
+    if (
+      recommended === AI_SUMMARIES_SUBSCRIPTION_TYPE &&
+      !isAiSummariesVisible(aiSummariesRolledOut, selected)
+    ) {
+      continue;
+    }
 
     // If subscription is premium, then it will not appear in the
     // advanced built-in filters

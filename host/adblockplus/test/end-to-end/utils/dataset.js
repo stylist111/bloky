@@ -33,6 +33,7 @@ export function getDefaultFilterLists(manifestVersion) {
 
 export function getBuiltinFilterLists(manifestVersion) {
   return [
+    `${aiSummariesFilterList.title} (${aiSummariesFilterList.name})`,
     manifestVersion === 3
       ? "ABP filters (compliance) (ABP Anti-Circumvention Filter List)"
       : "ABP filters (ABP Anti-Circumvention Filter List)",
@@ -114,3 +115,20 @@ export const premiumFilterLists = [
 export const freeFilterLists = [
   { name: "Block social media icons tracking", enabled: false }
 ];
+
+/**
+ * The free "Hide AI search summaries" filter list. Its toggle is shown in
+ * the General tab and in the popup once the list is a recommended
+ * subscription.
+ */
+export const aiSummariesFilterList = {
+  // Row title in the General tab
+  name: "Hide AI search summaries",
+  // Toggle title in the popup
+  popupTitle: "Hide AI summaries",
+  // Raw filter list title, as shown in the Advanced tab
+  title: "AI Search Summaries Filter List",
+  type: "ai-summaries",
+  popupContainerSelector: "#page-free-controls",
+  popupToggleSelector: "#ai-summaries-toggle svg"
+};

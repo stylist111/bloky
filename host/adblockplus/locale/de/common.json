@@ -41,6 +41,9 @@
   "common_feature_videos_title": {
     "message": "Blockiere einfache Ablenkungen"
   },
+  "common_feature_ai_summaries_title": {
+    "message": "Blende KI-Suchzusammenfassungen aus"
+  },
   "common_notification_hide": {
     "message": "Benachrichtigung schließen"
   },

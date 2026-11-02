@@ -20,6 +20,7 @@
 
 /* eslint-disable import/extensions */
 import {
+  AI_SUMMARIES_KEY,
   COOKIE_FILTER_KEY,
   DISTRACTIONS_KEY,
   PAGE_INFO_KEY,
@@ -29,6 +30,9 @@ import {
 
 const actionButtonAdblockUIServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger(
   "adblock_ui",
+);
+const actionButtonExtensionsUIServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger(
+  "extensions_ui",
 );
 
 async function pauseOnDomain() {
@@ -77,7 +81,19 @@ async function addSubscription(id) {
   returnToIndex();
 }
 
+async function confirmAiSummaries() {
+  await browser.runtime.sendMessage({ command: "subscribe", id: AI_SUMMARIES_KEY });
+  actionButtonExtensionsUIServerLogger.behavior("ai_summaries_toggled", {
+    action: "opted_in",
+    source: "popup",
+  });
+  // The change only takes effect once the page is reloaded, like pausing
+  browser.tabs.reload(this.pageInfo.id);
+  closePopup();
+}
+
 const actionHandlers = {
+  confirmAiSummaries,
   confirmCookie: () => addSubscription(COOKIE_FILTER_KEY),
   confirmDistractions: () => addSubscription(DISTRACTIONS_KEY),
   pauseOnDomain,

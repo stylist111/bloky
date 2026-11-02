@@ -65,6 +65,15 @@
   "premium_distractions_subtitle": {
     "message": "Blokuj typowe elementy rozpraszające uwagę, takie jak automatycznie odtwarzane filmy"
   },
+  "ai_summaries_title": {
+    "message": "Ukrywaj podsumowania AI"
+  },
+  "ai_summaries_subtitle": {
+    "message": "Ukrywaj podsumowania AI nad wynikami wyszukiwania"
+  },
+  "ai_summaries_new_label": {
+    "message": "Nowy"
+  },
   "premium_distractions_title": {
     "message": "Blokuj więcej elementów rozpraszających uwagę"
   },

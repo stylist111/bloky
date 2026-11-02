@@ -41,6 +41,9 @@
   "common_feature_videos_title": {
     "message": "Bloquer les sources de distraction courantes"
   },
+  "common_feature_ai_summaries_title": {
+    "message": "Masquer les résumés IA des recherches"
+  },
   "common_notification_hide": {
     "message": "Fermer la notification"
   },

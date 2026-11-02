@@ -150,10 +150,29 @@ popup-section .title-wrapper {
   fill: var(--popup-main-text-color);
 }
 
+popup-section .title-text {
+  margin: 0 0.5rem;
+}
+
+popup-section .title-text .title {
+  margin: 0;
+}
+
+popup-section .subtitle {
+  font-size: 0.8125rem;
+  color: var(--popup-secondary-text-color);
+}
+
 popup-section > div {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* The slider is positioned over the label, so the label has to be as wide
+   as the slider for a wrapping title or subtitle to stop before the toggle */
+popup-section toggle-button > label {
+  min-width: 2.5rem;
 }
 
 popup-detail-stats {

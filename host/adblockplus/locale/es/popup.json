@@ -65,6 +65,15 @@
   "premium_distractions_subtitle": {
     "message": "Bloquea distracciones habituales como los vídeos de reproducción automática"
   },
+  "ai_summaries_title": {
+    "message": "Ocultar resúmenes de IA"
+  },
+  "ai_summaries_subtitle": {
+    "message": "Oculta los resúmenes de IA encima de tus resultados de búsqueda"
+  },
+  "ai_summaries_new_label": {
+    "message": "NUEVO"
+  },
   "premium_distractions_title": {
     "message": "Bloquea más distracciones"
   },

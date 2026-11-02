@@ -425,6 +425,9 @@
   "options_recommended_videos_description": {
     "message": "Blokuj filmy oraz wyskakujące okienka, które proszą o zapłatę, subskrypcję, instalację lub zakup polecanych produktów."
   },
+  "options_recommended_ai_summaries_description": {
+    "message": "Zapobiegaj wyświetlaniu przez wyszukiwarki podsumowań generowanych przez AI nad zwykłymi wynikami."
+  },
   "options_report_bug": {
     "message": "Widzisz błąd? <a>Wyślij do nas zgłoszenie</a>"
   },

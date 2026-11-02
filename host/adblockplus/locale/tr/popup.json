@@ -65,6 +65,15 @@
   "premium_distractions_subtitle": {
     "message": "Otomatik oynatılan videolar gibi yaygın dikkat dağıtıcı unsurları engelleyin"
   },
+  "ai_summaries_title": {
+    "message": "Yapay zeka özetlerini gizle"
+  },
+  "ai_summaries_subtitle": {
+    "message": "Arama sonuçlarınızın üzerindeki yapay zeka özetlerini gizleyin"
+  },
+  "ai_summaries_new_label": {
+    "message": "Yeni"
+  },
   "premium_distractions_title": {
     "message": "Daha fazla dikkat dağıtıcı unsur engelleyin"
   },

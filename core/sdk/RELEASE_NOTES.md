@@ -1,5 +1,8 @@
 # Unreleased
 
+- Added the `ai_summaries_toggled` and `ai_summaries_toggle_shown` event
+  schemas in `events.js` for the free "Hide AI search summaries" option that
+  AdBlock and Adblock Plus add as an experiment.
 - Added the `filter_lists_ledger` client attribute to the CDP and telemetry
   pings. For the same common filterlists as `filter_lists`, it reports the
   hashed filterlist URL together with the state and reason recorded in the

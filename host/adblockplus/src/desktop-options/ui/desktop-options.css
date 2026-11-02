@@ -1443,6 +1443,7 @@ section.recommended-features h3 {
 section.recommended-features li .label.new {
   display: none;
   margin: 0 4px;
+  white-space: nowrap;
   padding: 0 4px;
   border-radius: 4px;
   text-transform: uppercase;

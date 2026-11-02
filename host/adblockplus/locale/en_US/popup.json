@@ -126,5 +126,17 @@
   },
   "premium_distractions_subtitle": {
     "message": "Block common distractions like auto-play videos"
+  },
+  "ai_summaries_title": {
+    "description": "Title of the free AI summaries feature toggle in the popup",
+    "message": "Hide AI summaries"
+  },
+  "ai_summaries_subtitle": {
+    "description": "Subtitle of the free AI summaries feature toggle in the popup",
+    "message": "Hide AI summaries above your search results"
+  },
+  "ai_summaries_new_label": {
+    "description": "Label marking the AI summaries feature toggle as new",
+    "message": "New"
   }
 }

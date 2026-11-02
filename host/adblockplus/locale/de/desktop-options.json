@@ -425,6 +425,9 @@
   "options_recommended_videos_description": {
     "message": "Blockiere Videoanzeigen in den Ecken und Aufforderungen zum Bezahlen, Abonnieren, Installieren oder Kaufen empfohlener Artikel."
   },
+  "options_recommended_ai_summaries_description": {
+    "message": "Verhindert, dass Suchmaschinen KI-generierte Zusammenfassungen über den regulären Ergebnissen anzeigen."
+  },
   "options_report_bug": {
     "message": "Hast du einen Fehler gefunden? <a>Sende uns einen Fehlerbericht</a>"
   },

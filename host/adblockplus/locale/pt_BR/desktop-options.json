@@ -425,6 +425,9 @@
   "options_recommended_videos_description": {
     "message": "Bloqueie caixas de vídeo nos cantos e janelas pop-up que pedem para você pagar, assinar, instalar ou comprar itens recomendados."
   },
+  "options_recommended_ai_summaries_description": {
+    "message": "Impeça que os mecanismos de busca exibam resumos gerados por IA acima dos resultados normais."
+  },
   "options_report_bug": {
     "message": "Encontrou um erro? <a>Envie um relatório de erros</a>"
   },

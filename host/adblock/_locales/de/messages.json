@@ -2039,6 +2039,14 @@
     "message": "Blockieren Sie Videoanzeigen in den Ecken und Aufforderungen zum Bezahlen/Abonnieren, Installieren, Kaufen empfohlener Artikel und mehr.",
     "description": "A filter list explanation"
   },
+  "filter_ai_summaries": {
+    "message": "KI-Suchzusammenfassungen ausblenden",
+    "description": "A filter list title, a free feature"
+  },
+  "filter_ai_summaries_explained": {
+    "message": "entfernt KI-generierte Zusammenfassungen am Anfang der Suchergebnisse",
+    "description": "A filter list explanation"
+  },
   "filterlistsrock2": {
     "message": "Die Filterlisten blockieren die meiste Werbung im Netz. Sie können auch ...",
     "description": "Header text on the Customize tab"
@@ -3468,5 +3476,25 @@
   "unsupported_browser_banner": {
     "message": "Ihre Browserversion wird nicht mehr unterstützt. Bitte aktualisieren Sie Ihren Browser, um weiterhin Erweiterungsupdates zu erhalten.",
     "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
+  },
+  "ai_summaries_popup_title": {
+    "message": "KI-Zusammenfassungen ausblenden",
+    "description": "Title of the free Hide AI Summaries toggle section in the popup menu"
+  },
+  "ai_summaries_popup_text": {
+    "message": "KI-generierte Zusammenfassungen in Suchergebnissen ausblenden",
+    "description": "Text under the \"Hide AI Summaries\" toggle in the popup menu"
+  },
+  "onpage_options_ai_summaries_confirm_page_title": {
+    "message": "AdBlock-Popup-Menü: Bestätigung „KI-Suchzusammenfassungen ausblenden“",
+    "description": "Title for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "ai_summaries_confirm_text": {
+    "message": "Wenn Sie diese Funktion aktivieren, blendet AdBlock die KI-generierten Antworten aus, die Suchmaschinen über ihren Ergebnissen anzeigen. Ihre Suchanfragen werden nicht verändert, und Sie können die Funktion jederzeit über das Popup-Menü oder den Tab „Filterlisten“ wieder deaktivieren.",
+    "description": "Onscreen text for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "confirm_ai_summaries_enable": {
+    "message": "Aktivierung von „KI-Suchzusammenfassungen ausblenden“ bestätigen",
+    "description": "Aria label of the button confirming to turn on the Hide AI search summaries filter list."
   }
 }

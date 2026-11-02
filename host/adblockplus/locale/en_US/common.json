@@ -57,6 +57,10 @@
     "description": "Title of basic distraction control filter list option, a free option",
     "message": "Basic distraction control"
   },
+  "common_feature_ai_summaries_title": {
+    "description": "Title of the AI summaries filter list option, a free option that blocks AI-generated answers in search engine results",
+    "message": "Hide AI search summaries"
+  },
   "common_feature_notifications_title": {
     "description": "https://gitlab.com/eyeo/specs/spec/blob/52243bc8596b06107461034c745a6ecdaa42f1f6/spec/abp/desktop-settings/general-tab.md#list-of-recommended-filter-lists",
     "message": "Block push notifications"

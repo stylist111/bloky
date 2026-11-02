@@ -192,3 +192,23 @@ export const premiumPopupToggleItems = [
   { name: "cookies-premium", action: "confirmCookie" },
   { name: "distraction-control", action: "confirmDistractions" },
 ].map(addTestId);
+
+/**
+ * The free "Hide AI search summaries" filter list and its popup toggle
+ * section, shown once the list is a recommended subscription and the option
+ * is rolled out to the user.
+ */
+export const aiSummariesFilterList = {
+  // Not part of defaultFilterLists: the row is hidden outside the rollout
+  ...addTestIdAndCheckboxSelector({
+    name: "ai_summaries",
+    text: "Hide AI search summaries",
+    enabled: false,
+  }),
+  // Popup toggle section (free, with a confirmation page like the premium ones)
+  popupSectionSelector: '[data-name="aiSummaries"]',
+  popupTitle: "Hide AI Summaries",
+  popupSubtitle: "Hide AI-generated summaries in search results",
+  popupToggleSelector: '[data-name="ai_summaries"]',
+  popupConfirmActionSelector: '[data-action="confirmAiSummaries"] > button',
+};

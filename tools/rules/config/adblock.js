@@ -88,6 +88,8 @@ export const recommended = [
   ...typeAds,
   ...typeAllowing,
   ...typePremium,
+  // ai-summaries
+  "19EE0193-A63B-48AF-B216-5671DF4FCD2D",
   // circumvention
   "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
   // notifications
@@ -107,6 +109,8 @@ export const recommended = [
 export const privileged = [
   // Acceptable Ads
   "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
+  // ai-summaries
+  "19EE0193-A63B-48AF-B216-5671DF4FCD2D",
   // annoyances
   "CDAD4CF5-2706-42CB-B404-F5B9B61B8CAA",
   // cookies-premium

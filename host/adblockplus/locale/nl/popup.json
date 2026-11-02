@@ -65,6 +65,15 @@
   "premium_distractions_subtitle": {
     "message": "Blokkeer veelvoorkomende afleidingen, zoals video's die automatisch worden afgespeeld"
   },
+  "ai_summaries_title": {
+    "message": "AI-samenvattingen verbergen"
+  },
+  "ai_summaries_subtitle": {
+    "message": "AI-samenvattingen boven uw zoekresultaten verbergen"
+  },
+  "ai_summaries_new_label": {
+    "message": "Nieuw"
+  },
   "premium_distractions_title": {
     "message": "Blokkeer meer afleidingen"
   },

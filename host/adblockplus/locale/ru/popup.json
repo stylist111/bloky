@@ -65,6 +65,15 @@
   "premium_distractions_subtitle": {
     "message": "Блокируйте распространенные отвлекающие факторы, такие как видео с автоматическим воспроизведением"
   },
+  "ai_summaries_title": {
+    "message": "Скрывать ИИ-сводки"
+  },
+  "ai_summaries_subtitle": {
+    "message": "Скрывать ИИ-сводки над результатами поиска"
+  },
+  "ai_summaries_new_label": {
+    "message": "НОВИНКА"
+  },
   "premium_distractions_title": {
     "message": "Блокируйте больше отвлекающих факторов"
   },

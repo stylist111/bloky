@@ -56,6 +56,7 @@ import { port } from "../adblockplusui/adblockpluschrome/lib/messaging/port";
 import SubscriptionAdapter from "./subscriptionadapter";
 import * as prefs from "./prefs/background";
 import { FilterOrigin } from "../src/filters/shared";
+import { isAiSummariesRolledOut } from "../src/core/subscriptions/shared";
 
 import {
   createFilterMetaData,
@@ -381,6 +382,30 @@ const getTab = function (tabId) {
   });
 };
 
+const AI_SUMMARIES_SUBSCRIPTION_TYPE = "ai-summaries";
+
+// Returns the URL of the free "Hide AI search summaries" filter list and
+// whether it is enabled, or null while the list is not a recommended
+// subscription yet or the option is not rolled out to the user. Used by the
+// popup toggle.
+const getAiSummariesState = async function () {
+  const recommendation = ewe.subscriptions
+    .getRecommendations()
+    .find((rec) => rec.type === AI_SUMMARIES_SUBSCRIPTION_TYPE);
+  if (!recommendation) {
+    return null;
+  }
+  const [subscriptions, flags] = await Promise.all([
+    ewe.subscriptions.getSubscriptions(),
+    ewe.experiments.getFlags(),
+  ]);
+  if (!isAiSummariesRolledOut(flags)) {
+    return null;
+  }
+  const subscription = subscriptions.find((sub) => sub.url === recommendation.url);
+  return { url: recommendation.url, subscribed: Boolean(subscription && subscription.enabled) };
+};
+
 // Get interesting information about the current tab.
 // Inputs:
 // secondTime: bool - whether this is a recursive call
@@ -435,6 +460,7 @@ const getCurrentTabInfo = function (secondTime, tabId) {
           showDcCTA: await License.shouldShowPremiumDcCTA(),
           newBadgeTextReason: getNewBadgeTextReason(),
           premiumPayURL: License.MAB_CONFIG.payURL,
+          aiSummaries: await getAiSummariesState(),
         };
         if (!disabledSite) {
           result.whitelisted = !!(await ewe.filters.getAllowingFilters(page.id)).length;

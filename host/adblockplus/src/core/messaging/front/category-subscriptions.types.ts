@@ -71,6 +71,22 @@ export interface InitializationIssues {
 }
 
 /**
+ * Options sent to subscriptions.toggle
+ **/
+export interface ToggleOptions {
+  /**
+   * Whether to disable the subscription instead of removing it, if it is
+   * installed and enabled
+   **/
+  keepInstalled?: boolean;
+
+  /**
+   * Subscription URL
+   **/
+  url: string;
+}
+
+/**
  * Options sent to subscriptions.remove
  **/
 export interface RemoveOptions {

@@ -22,6 +22,7 @@ const CLOSED_KEY = "closedProgrammatically";
 const PAGE_INFO_KEY = "pageInfo";
 const COOKIE_FILTER_KEY = "cookies-premium";
 const DISTRACTIONS_KEY = "distraction-control";
+const AI_SUMMARIES_KEY = "ai_summaries";
 
 const addLanguageAndDir = () => {
   if (document.readyState === "complete" && typeof setLangAndDirAttributes === "function") {
@@ -100,6 +101,7 @@ const translateWithTags = (messageID, innerText, [openingTag, closingTag]) => {
 };
 
 export {
+  AI_SUMMARIES_KEY,
   CLOSED_KEY,
   COOKIE_FILTER_KEY,
   DISTRACTIONS_KEY,

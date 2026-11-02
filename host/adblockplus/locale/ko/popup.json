@@ -65,6 +65,15 @@
   "premium_distractions_subtitle": {
     "message": "자동 재생 동영상 같은 일반적인 방해물 차단"
   },
+  "ai_summaries_title": {
+    "message": "AI 요약 숨기기"
+  },
+  "ai_summaries_subtitle": {
+    "message": "검색 결과 위의 AI 요약 숨기기"
+  },
+  "ai_summaries_new_label": {
+    "message": "신규"
+  },
   "premium_distractions_title": {
     "message": "더 많은 방해물 차단"
   },

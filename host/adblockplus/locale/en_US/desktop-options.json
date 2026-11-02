@@ -103,6 +103,10 @@
     "description": "Description for basic distraction control filter list option, a free option",
     "message": "Block corner video boxes and prompts asking you to pay/subscribe, install, shop recommended items and more."
   },
+  "options_recommended_ai_summaries_description": {
+    "description": "Description for the AI summaries filter list option, a free option",
+    "message": "Stop search engines from showing AI-generated summaries above the regular results."
+  },
   "options_recommended_notifications_description": {
     "description": "https://gitlab.com/eyeo/specs/spec/blob/52243bc8596b06107461034c745a6ecdaa42f1f6/spec/abp/desktop-settings/general-tab.md#list-of-recommended-filter-lists",
     "message": "Stop websites from asking you to allow push notifications that could track your online activity."

@@ -2039,6 +2039,14 @@
     "message": "Blocca i video box fluttuanti e i messaggi che ti chiedono di pagare/iscriverti, installare, acquistare articoli consigliati e altro ancora.",
     "description": "A filter list explanation"
   },
+  "filter_ai_summaries": {
+    "message": "Nascondi i riepiloghi IA nelle ricerche",
+    "description": "A filter list title, a free feature"
+  },
+  "filter_ai_summaries_explained": {
+    "message": "rimuove i riepiloghi generati dall'IA all'inizio dei risultati di ricerca",
+    "description": "A filter list explanation"
+  },
   "filterlistsrock2": {
     "message": "Le liste di filtri bloccano la maggior parte delle pubblicità sul web. Puoi anche...",
     "description": "Header text on the Customize tab"
@@ -3468,5 +3476,25 @@
   "unsupported_browser_banner": {
     "message": "La versione del tuo browser non è più supportata. Aggiorna il browser per continuare a ricevere gli aggiornamenti dell'estensione.",
     "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
+  },
+  "ai_summaries_popup_title": {
+    "message": "Nascondi i riepiloghi IA",
+    "description": "Title of the free Hide AI Summaries toggle section in the popup menu"
+  },
+  "ai_summaries_popup_text": {
+    "message": "Nascondi i riepiloghi generati dall'IA nei risultati di ricerca",
+    "description": "Text under the \"Hide AI Summaries\" toggle in the popup menu"
+  },
+  "onpage_options_ai_summaries_confirm_page_title": {
+    "message": "Menu popup di AdBlock: conferma di Nascondi i riepiloghi IA nelle ricerche",
+    "description": "Title for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "ai_summaries_confirm_text": {
+    "message": "Attivando questa funzione, AdBlock nasconde le risposte generate dall'IA che i motori di ricerca mostrano sopra i risultati. Le tue ricerche non vengono modificate e puoi disattivarla in qualsiasi momento dal menu popup o dalla scheda Liste di filtri.",
+    "description": "Onscreen text for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "confirm_ai_summaries_enable": {
+    "message": "Conferma l'attivazione di Nascondi i riepiloghi IA nelle ricerche",
+    "description": "Aria label of the button confirming to turn on the Hide AI search summaries filter list."
   }
 }

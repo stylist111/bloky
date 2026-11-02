@@ -228,6 +228,39 @@ export default {
           }
         }
       }
+    },
+    ai_summaries_toggled: {
+      description: "User turned the free 'Hide AI search summaries' filter list on or off. This is a shared event fired by both AB and ABP, from the options page and the popup.",
+      data: {
+        description: "Data about the AI search summaries toggle interaction",
+        type: "object",
+        properties: {
+          action: {
+            description: "Whether the user opted in or out of blocking AI search summaries",
+            type: "string",
+            enum: ["opted_in", "opted_out"]
+          },
+          source: {
+            description: "Where the toggle occurred: the options page (ABP General tab, ABP Advanced tab or AB Filter lists tab) or the popup toggle (ABP and AB)",
+            type: "string",
+            enum: ["options_general", "options_advanced", "options_filter_list", "popup"]
+          }
+        }
+      }
+    },
+    ai_summaries_toggle_shown: {
+      description: "The toggle for the free 'Hide AI search summaries' filter list was shown in the popup. Fired by both AB and ABP once per popup opening, for users the option is rolled out to, so that opt-ins can be related to how often the toggle was seen",
+      data: {
+        description: "Data about where the toggle was shown",
+        type: "object",
+        properties: {
+          source: {
+            description: "Where the toggle was shown",
+            type: "string",
+            enum: ["popup"]
+          }
+        }
+      }
     }
   },
   adblockplus_ui: {

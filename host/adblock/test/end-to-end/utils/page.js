@@ -33,7 +33,13 @@ import {
   wait,
 } from "@eyeo/test-utils/driver";
 import { simulatePremiumActivation, simulateDowngradeToFreeUser } from "@eyeo/test-utils/account";
-import { getOptionsHandle, callOptionsAPI as _callOptionsAPI } from "@eyeo/test-utils/extension";
+import {
+  getOptionsHandle,
+  callOptionsAPI as _callOptionsAPI,
+  setRemoteConfigExperiments,
+  setRemoteConfigUrl,
+  syncRemoteConfig,
+} from "@eyeo/test-utils/extension";
 import { premiumFilterLists } from "./dataset.js";
 
 import { installUrl } from "./urls.js";
@@ -594,4 +600,55 @@ export async function loadPageWithTrustedIframe(pageUrl, trustedIframeSrc) {
   // Switch to the iframe
   const trustedIframe = await driver.findElement(By.css(iframeSelector));
   return trustedIframe;
+}
+
+/**
+ * Puts the current user into the "ai-summaries-rollout" experiment, or takes
+ * them out of it. The "Hide AI search summaries" option is only shown to
+ * users in the experiment: a toggle in the popup and the list in the Filter
+ * lists tab.
+ *
+ * @param {boolean} enabled - Whether the user is in the experiment
+ */
+export async function setAiSummariesRollout(enabled) {
+  await setRemoteConfigExperiments(
+    getOptionsHandle,
+    enabled
+      ? [
+          {
+            experimentId: "ai-summaries-rollout",
+            variants: [
+              {
+                variantId: "ai-summaries-rollout-enabled",
+                mods: [0, 1000],
+                flags: { "ai-summaries-enabled": true },
+              },
+            ],
+          },
+        ]
+      : [],
+  );
+  await setRemoteConfigUrl(initOptionsGeneralTab);
+  await syncRemoteConfig(initOptionsGeneralTab);
+  // A subscription change shortly before the sync starts a concurrent
+  // experiments sync on the previous config, which can overwrite the new
+  // flags. Sync again until the flag is stable in the expected state.
+  await wait(
+    async () => {
+      const isFlagEnabled = async () =>
+        Boolean((await callOptionsAPI("ewe.experiments.getFlags"))["ai-summaries-enabled"]);
+      if ((await isFlagEnabled()) !== enabled) {
+        await syncRemoteConfig(initOptionsGeneralTab);
+        return false;
+      }
+      await driver.sleep(500);
+      return (await isFlagEnabled()) === enabled;
+    },
+    10000,
+    `The ai-summaries-enabled flag was not ${enabled ? "set" : "cleared"}`,
+  );
+  // The options page reads the flag when it loads
+  await driver.switchTo().window(getOptionsHandle());
+  await driver.navigate().refresh();
+  await driver.sleep(optionsPageSleep);
 }

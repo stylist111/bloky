@@ -2135,6 +2135,14 @@
     "message": "Block corner video boxes and prompts asking you to pay/subscribe, install, shop recommended items and more.",
     "description": "A filter list explanation"
   },
+  "filter_ai_summaries": {
+    "message": "Hide AI search summaries",
+    "description": "A filter list title, a free feature"
+  },
+  "filter_ai_summaries_explained": {
+    "message": "removes AI-generated summaries at the top of search results",
+    "description": "A filter list explanation"
+  },
   "filterlistsrock2": {
     "message": "The filter lists block most ads on the web. You can also...",
     "description": "Header text on the Customize tab"
@@ -3553,5 +3561,25 @@
   "unsupported_browser_banner": {
     "message": "Your browser version is no longer supported. Please upgrade your browser to continue receiving extension updates.",
     "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
+  },
+  "ai_summaries_popup_title": {
+    "message": "Hide AI Summaries",
+    "description": "Title of the free Hide AI Summaries toggle section in the popup menu"
+  },
+  "ai_summaries_popup_text": {
+    "message": "Hide AI-generated summaries in search results",
+    "description": "Text under the \"Hide AI Summaries\" toggle in the popup menu"
+  },
+  "onpage_options_ai_summaries_confirm_page_title": {
+    "message": "AdBlock Popup Menu: Hide AI Search Summaries Confirmation",
+    "description": "Title for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "ai_summaries_confirm_text": {
+    "message": "By turning this feature on, AdBlock hides the AI-generated answers that search engines show above their results. Your searches are not changed, and you can turn this off at any time from the popup menu or the Filter lists tab.",
+    "description": "Onscreen text for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "confirm_ai_summaries_enable": {
+    "message": "Confirm Hide AI search summaries enablement",
+    "description": "Aria label of the button confirming to turn on the Hide AI search summaries filter list."
   }
 }

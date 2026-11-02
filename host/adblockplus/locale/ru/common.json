@@ -41,6 +41,9 @@
   "common_feature_videos_title": {
     "message": "Блокируйте основные отвлекающие факторы"
   },
+  "common_feature_ai_summaries_title": {
+    "message": "Скрывайте ИИ-сводки в результатах поиска"
+  },
   "common_notification_hide": {
     "message": "Закрыть уведомление"
   },

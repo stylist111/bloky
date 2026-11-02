@@ -425,6 +425,9 @@
   "options_recommended_videos_description": {
     "message": "A sarokban megjelenő videók és a fizetést, feliratkozást, telepítést vagy üzlet által ajánlott cikkek megvásárlását kérő előugró ablakok blokkolása."
   },
+  "options_recommended_ai_summaries_description": {
+    "message": "Megakadályozza, hogy a keresők MI által generált összefoglalókat jelenítsenek meg a normál találatok fölött."
+  },
   "options_report_bug": {
     "message": "Hibát talált? <a>Küldjön hibajelentést nekünk</a>"
   },

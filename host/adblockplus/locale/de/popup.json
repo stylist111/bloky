@@ -65,6 +65,15 @@
   "premium_distractions_subtitle": {
     "message": "Blockiere häufige Ablenkungen wie Autoplay-Videos"
   },
+  "ai_summaries_title": {
+    "message": "KI-Zusammenfassungen ausblenden"
+  },
+  "ai_summaries_subtitle": {
+    "message": "KI-Zusammenfassungen über deinen Suchergebnissen ausblenden"
+  },
+  "ai_summaries_new_label": {
+    "message": "NEU"
+  },
   "premium_distractions_title": {
     "message": "Blockiere mehr Ablenkungen"
   },

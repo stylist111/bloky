@@ -41,6 +41,9 @@
   "common_feature_videos_title": {
     "message": "Blokuj podstawowe elementy rozpraszające uwagę"
   },
+  "common_feature_ai_summaries_title": {
+    "message": "Ukrywaj podsumowania AI w wynikach wyszukiwania"
+  },
   "common_notification_hide": {
     "message": "Zamknij powiadomienie"
   },

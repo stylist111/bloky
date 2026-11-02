@@ -2039,6 +2039,14 @@
     "message": "Blokkeer video's en prompts waarin u wordt gevraagd om te betalen/u te abonneren, iets te installeren, aanbevolen items te kopen en nog veel meer.",
     "description": "A filter list explanation"
   },
+  "filter_ai_summaries": {
+    "message": "AI-samenvattingen in zoekresultaten verbergen",
+    "description": "A filter list title, a free feature"
+  },
+  "filter_ai_summaries_explained": {
+    "message": "verwijdert door AI gegenereerde samenvattingen bovenaan de zoekresultaten",
+    "description": "A filter list explanation"
+  },
   "filterlistsrock2": {
     "message": "Met de filterlijsten blokkeer je de meeste advertenties op internet. Je kunt ook...",
     "description": "Header text on the Customize tab"
@@ -3468,5 +3476,25 @@
   "unsupported_browser_banner": {
     "message": "Uw browserversie wordt niet meer ondersteund. Werk uw browser bij om extensie-updates te blijven ontvangen.",
     "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
+  },
+  "ai_summaries_popup_title": {
+    "message": "AI-samenvattingen verbergen",
+    "description": "Title of the free Hide AI Summaries toggle section in the popup menu"
+  },
+  "ai_summaries_popup_text": {
+    "message": "Door AI gegenereerde samenvattingen in zoekresultaten verbergen",
+    "description": "Text under the \"Hide AI Summaries\" toggle in the popup menu"
+  },
+  "onpage_options_ai_summaries_confirm_page_title": {
+    "message": "AdBlock-pop-upmenu: bevestiging van AI-samenvattingen in zoekresultaten verbergen",
+    "description": "Title for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "ai_summaries_confirm_text": {
+    "message": "Als u deze functie inschakelt, verbergt AdBlock de door AI gegenereerde antwoorden die zoekmachines boven hun resultaten tonen. Uw zoekopdrachten worden niet gewijzigd en u kunt de functie op elk moment uitschakelen via het pop-upmenu of het tabblad Filterlijsten.",
+    "description": "Onscreen text for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "confirm_ai_summaries_enable": {
+    "message": "Inschakelen van AI-samenvattingen in zoekresultaten verbergen bevestigen",
+    "description": "Aria label of the button confirming to turn on the Hide AI search summaries filter list."
   }
 }

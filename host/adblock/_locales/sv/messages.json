@@ -2031,6 +2031,14 @@
     "message": "Blockera videorutor and uppmaningar om att betala/abonnera, installera, köpa rekommenderade produkter med mera.",
     "description": "A filter list explanation"
   },
+  "filter_ai_summaries": {
+    "message": "Dölj AI-sammanfattningar i sökresultat",
+    "description": "A filter list title, a free feature"
+  },
+  "filter_ai_summaries_explained": {
+    "message": "tar bort AI-genererade sammanfattningar överst i sökresultaten",
+    "description": "A filter list explanation"
+  },
   "filterlistsrock2": {
     "message": "Filterlistorna blockerar de flesta annonserna på nätet. Du kan även...",
     "description": "Header text on the Customize tab"
@@ -3444,5 +3452,25 @@
   "unsupported_browser_banner": {
     "message": "Din webbläsarversion stöds inte längre. Uppdatera din webbläsare för att fortsätta ta emot tilläggsuppdateringar.",
     "description": "Banner shown to users whose browser version is below the extension's minimum supported version"
+  },
+  "ai_summaries_popup_title": {
+    "message": "Dölj AI-sammanfattningar",
+    "description": "Title of the free Hide AI Summaries toggle section in the popup menu"
+  },
+  "ai_summaries_popup_text": {
+    "message": "Dölj AI-genererade sammanfattningar i sökresultat",
+    "description": "Text under the \"Hide AI Summaries\" toggle in the popup menu"
+  },
+  "onpage_options_ai_summaries_confirm_page_title": {
+    "message": "AdBlocks popup-meny: bekräftelse av Dölj AI-sammanfattningar i sökresultat",
+    "description": "Title for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "ai_summaries_confirm_text": {
+    "message": "När du aktiverar den här funktionen döljer AdBlock de AI-genererade svar som sökmotorer visar ovanför sina resultat. Dina sökningar ändras inte, och du kan när som helst stänga av funktionen i popup-menyn eller på fliken Filterlistor.",
+    "description": "Onscreen text for the popup menu, Hide AI search summaries confirmation page."
+  },
+  "confirm_ai_summaries_enable": {
+    "message": "Bekräfta aktivering av Dölj AI-sammanfattningar i sökresultat",
+    "description": "Aria label of the button confirming to turn on the Hide AI search summaries filter list."
   }
 }

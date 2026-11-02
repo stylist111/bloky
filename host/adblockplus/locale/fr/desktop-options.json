@@ -425,6 +425,9 @@
   "options_recommended_videos_description": {
     "message": "Bloquez les vidéos et les fenêtres contextuelles qui apparaissent dans le coin de votre écran pour vous demander de payer, de vous abonner, d'installer ou d'acheter des produits."
   },
+  "options_recommended_ai_summaries_description": {
+    "message": "Empêcher les moteurs de recherche d'afficher des résumés générés par IA au-dessus des résultats habituels."
+  },
   "options_report_bug": {
     "message": "Vous avez trouvé un bogue ? <a>Envoyez-nous un rapport de bogue</a>"
   },

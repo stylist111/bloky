@@ -122,6 +122,7 @@ export default {
         ],
         ignore: [
           "adblock-betafish/button/filtering-options.html",
+          "adblock-betafish/button/ai-summaries-confirm.html",
           "adblock-betafish/button/cookie-confirm.html",
           "adblock-betafish/button/distractions-confirm.html",
           "adblock-betafish/button/undo-allow-confirm.html",
@@ -404,6 +405,10 @@ export default {
       {
         dest: "adblock-button-filtering-options.html",
         src: "adblock-betafish/button/filtering-options.html",
+      },
+      {
+        dest: "adblock-button-ai-summaries-confirm.html",
+        src: "adblock-betafish/button/ai-summaries-confirm.html",
       },
       {
         dest: "adblock-button-cookie-confirm.html",

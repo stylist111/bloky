@@ -23,7 +23,8 @@ import {
   type AddOptions,
   type GetOptions,
   type InitializationIssues,
-  type RemoveOptions
+  type RemoveOptions,
+  type ToggleOptions
 } from "./category-subscriptions.types";
 import * as messaging from "./messaging";
 import { send } from "./utils";
@@ -91,4 +92,27 @@ export function listen(filter: string[]): void {
 export async function remove(url: string): Promise<void> {
   const options: RemoveOptions = { url };
   await send("subscriptions.remove", options);
+}
+
+/**
+ * Toggles the given subscription: adds it if it is not installed, enables it
+ * if it is installed but disabled, and otherwise removes it (or disables it,
+ * if `keepInstalled` is set)
+ *
+ * @param url - Subscription URL
+ * @param keepInstalled - Whether to disable the subscription instead of
+ *   removing it
+ * @returns
+ *   true if the subscription was toggled or added,
+ *   false if the URL is invalid
+ */
+export async function toggle(
+  url: string,
+  keepInstalled?: boolean
+): Promise<boolean> {
+  const options: ToggleOptions = { url };
+  if (keepInstalled) {
+    options.keepInstalled = true;
+  }
+  return await send("subscriptions.toggle", options);
 }
