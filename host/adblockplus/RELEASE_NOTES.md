@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.50.0 - 2026-11-03
+
 - Fixed users who upgraded from a Manifest V2 build, mostly on Edge, being
   left with their old filter list URLs and therefore without the bundled
   filter lists. They are moved to the bundled filter lists with this update.
