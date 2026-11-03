@@ -18,7 +18,7 @@
 import expect from "expect";
 import sinon from "sinon/pkg/sinon.js";
 import {clearTestEvents, EWE, expectTestEvents} from "./messaging.js";
-import {ISO_DATE_REGEX, waitForAssertion} from "./utils.js";
+import {ISO_DATE_REGEX, isFirefox, waitForAssertion} from "./utils.js";
 import {defaultFacts, cohortsConfig, cohort1Config, cohort2Config, filterListsCohortConfig, filterListsExcludeCohortConfig, filterListsHash} from "./fixtures/cohorts.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {DEFAULT_CONFIG, setConfig} from "./fixtures/remote-config.js";
@@ -273,7 +273,12 @@ describe("Cohorts", function() {
       staticRuleCount: expect.any(Number),
       filterLists: expect.any(Array),
       clientIdStability: expect.any(Number),
-      clientIdRotationFrequency: expect.any(Number)
+      clientIdRotationFrequency: expect.any(Number),
+      // Firefox blocks storage.sync for the test extension's temporary ID.
+      ...(isFirefox() ? {} : {
+        pingIdMintCount: expect.any(Number),
+        eventsIdMintCount: expect.any(Number)
+      })
     };
 
     beforeEach(async function() {

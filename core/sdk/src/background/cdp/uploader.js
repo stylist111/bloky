@@ -384,18 +384,16 @@ async function initializeUcid() {
     storage.getState().ucid = uuidv4();
     await storage.save();
 
-    if (await experiments.getFlag("report-sync-ids-mint-count")) {
-      try {
-        const {pingIdMintCount} =
-          await browser.storage.sync.get({pingIdMintCount: 0});
-        await browser.storage.sync.set(
-          {pingIdMintCount: pingIdMintCount + 1}
-        );
-      }
-      catch(e) {
-        e.message = `storage.sync: ${e.message}`;
-        sentry.reportError(e);
-      }
+    try {
+      const {pingIdMintCount} =
+        await browser.storage.sync.get({pingIdMintCount: 0});
+      await browser.storage.sync.set(
+        {pingIdMintCount: pingIdMintCount + 1}
+      );
+    }
+    catch(e) {
+      e.message = `storage.sync: ${e.message}`;
+      sentry.reportError(e);
     }
   }
 }

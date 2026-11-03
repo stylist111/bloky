@@ -278,17 +278,15 @@ async function getDefaultFacts() {
 
   let pingIdMintCount;
   let eventsIdMintCount;
-  if (await experiments.getFlag("report-sync-ids-mint-count")) {
-    try {
-      ({pingIdMintCount, eventsIdMintCount} =
-        await browser.storage.sync.get(
-          {pingIdMintCount: 0, eventsIdMintCount: 0}
-        ));
-    }
-    catch(e) {
-      e.message = `storage.sync: ${e.message}`;
-      sentry.reportError(e);
-    }
+  try {
+    ({pingIdMintCount, eventsIdMintCount} =
+      await browser.storage.sync.get(
+        {pingIdMintCount: 0, eventsIdMintCount: 0}
+      ));
+  }
+  catch(e) {
+    e.message = `storage.sync: ${e.message}`;
+    sentry.reportError(e);
   }
 
   let staticRuleCount;

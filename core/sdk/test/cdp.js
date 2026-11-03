@@ -1101,6 +1101,69 @@ describe("CDP", function() {
       );
     });
 
+    describe("ping_id_mint_count", function() {
+      let originalMintCount;
+
+      async function getFirstPingMintCount() {
+        let payload;
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1);
+          payload = requestLogs[0].body.payload;
+        }, LOGS_WAIT_INTERVAL_MS);
+
+        expect(payload).not.toHaveProperty("last_ping");
+        return payload.client_attributes
+          .find(({key}) => key == "ping_id_mint_count")?.value;
+      }
+
+      before(function() {
+        // Firefox blocks storage.sync for the test extension's temporary ID.
+        if (isFirefox()) {
+          this.skip();
+        }
+      });
+
+      beforeEach(async function() {
+        // Mocked facts from earlier tests would override the real count.
+        await EWE.testing.mockFacts({});
+        ({pingIdMintCount: originalMintCount} =
+          await browser.storage.sync.get("pingIdMintCount"));
+        await browser.storage.sync.remove("pingIdMintCount");
+        await EWE.testing.resetCdpMetricsUploader();
+      });
+
+      afterEach(async function() {
+        if (typeof originalMintCount == "number") {
+          await browser.storage.sync.set({pingIdMintCount: originalMintCount});
+        }
+        else {
+          await browser.storage.sync.remove("pingIdMintCount");
+        }
+      });
+
+      it("reports 1 on the first ping after a fresh install", async function() {
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+        await startMetricsUploaderWithTestArgs();
+
+        expect(await getFirstPingMintCount()).toEqual("1");
+      });
+
+      it("reports one higher on the first ping after local storage is cleared", async function() {
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+        await startMetricsUploaderWithTestArgs();
+        expect(await getFirstPingMintCount()).toEqual("1");
+
+        await EWE.testing.stopCdpMetricsUploader();
+        await clearCdpStorage();
+        await clearRequestLogs();
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+        await startMetricsUploaderWithTestArgs();
+
+        expect(await getFirstPingMintCount()).toEqual("2");
+      });
+    });
+
     it("sends the request for the second time with filled 'last_ping' and 'encrypted_data'", async function() {
       await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
       await startMetricsUploaderWithTestArgs();

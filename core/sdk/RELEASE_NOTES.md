@@ -1,5 +1,9 @@
 # Unreleased
 
+- The `ping_id_mint_count` and `events_id_mint_count` client attributes are
+  now always counted and reported. Before, they depended on the
+  `report-sync-ids-mint-count` experiment flag, which meant that they
+  could sometimes be missed on the first ping.
 - Subscriptions still on the MV2 URL of a bundled subscription, left behind by
   an MV2 to MV3 migration that was marked as done before its changes were
   saved, are now moved to the bundled subscription on the next extension
