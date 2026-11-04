@@ -79,6 +79,7 @@ describe("Client attributes", function() {
   it("still builds the attributes from the facts", async function() {
     global.__facts = {
       installDate: new Date("2023-10-01T01:12:34Z").getTime(),
+      installType: "admin",
       filterLists: ["abc"],
       customFiltersCount: 53,
       dynamicRuleCount: 143
@@ -90,11 +91,19 @@ describe("Client attributes", function() {
           key: "install_time",
           value: String(new Date("2023-10-01T00:00:00Z").getTime())
         },
+        {key: "install_type", value: "admin"},
         {key: "filter_lists", values: ["abc"]},
         {key: "custom_filters_count", value: "50"},
         {key: "dynamic_rule_count", value: "100"}
       ])
     );
+  });
+
+  it("leaves out the install type if the fact is missing", async function() {
+    global.__facts = {filterLists: ["abc"]};
+
+    const attributes = await clientAttributes.buildClientAttributes();
+    expect(attributes.find(a => a.key === "install_type")).toBeUndefined();
   });
 
   it("reports all tracked filter lists as absent for an empty ledger", async function() {

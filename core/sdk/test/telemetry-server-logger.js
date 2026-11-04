@@ -439,6 +439,7 @@ describe("Telemetry - Server Logging", function() {
     it("sends client_attributes with low precision values", async function() {
       await EWE.testing.mockFacts({
         installDate: new Date("2023-10-01T01:12:34Z").getTime(),
+        installType: "admin",
         customFiltersCount: 53,
         dynamicRuleCount: 143,
         staticRuleCount: 789,
@@ -459,6 +460,7 @@ describe("Telemetry - Server Logging", function() {
       expect(payload.client_attributes).toEqual(
         expect.arrayContaining([
           {key: "install_time", value: String(new Date("2023-10-01T00:00:00Z").getTime())},
+          {key: "install_type", value: "admin"},
           {key: "custom_filters_count", value: "50"},
           {key: "dynamic_rule_count", value: "100"},
           {key: "static_rule_count", value: "800"},

@@ -1,5 +1,6 @@
 # Unreleased
 
+- Added the `install_type` client attribute to the CDP and telemetry pings.
 - The `ping_id_mint_count` and `events_id_mint_count` client attributes are
   now always counted and reported. Before, they depended on the
   `report-sync-ids-mint-count` experiment flag, which meant that they

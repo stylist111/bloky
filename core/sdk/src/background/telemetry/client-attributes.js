@@ -111,6 +111,9 @@ export async function buildClientAttributes() {
       value: String(truncateTimestampToDayStart(facts.installDate)),
     });
   }
+  if (facts.installType) {
+    clientAttributes.push({key: "install_type", value: facts.installType});
+  }
   if (facts.filterLists != null) {
     clientAttributes.push({key: "filter_lists", values: facts.filterLists});
   }
