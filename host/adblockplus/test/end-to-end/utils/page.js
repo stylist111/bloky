@@ -86,6 +86,8 @@ export async function checkInstallUninstallUrl({ url, appVersion, uninstall }) {
 
   if (uninstall) {
     const todaysDate = moment().utc().format("YYYYMMDD");
+    const thisHour = moment().utc().startOf("hour").valueOf();
+    const lastHour = thisHour - 60 * 60 * 1000;
 
     base = {
       ...base,
@@ -102,7 +104,8 @@ export async function checkInstallUninstallUrl({ url, appVersion, uninstall }) {
       er: expect.stringMatching(/^([a-zA-Z0-9+/,_=]{8}|null)$/), // experiments revision ID. Example: ietbCO3H
       ev: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // experiments variants. Example: AQ%3D%3
       ca: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // cohort assignments. Example: AQ%3D%3
-      fv: expect.stringMatching(new RegExp(`(0|${todaysDate})`)) // filter version. Example: 20241216
+      fv: expect.stringMatching(new RegExp(`(0|${todaysDate})`)), // filter version. Example: 20241216
+      it: expect.stringMatching(new RegExp(`^(${thisHour}|${lastHour})$`)) // install time, rounded down to the hour. Example: 1793620800000
     };
   }
 

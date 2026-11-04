@@ -37,6 +37,7 @@ const abbreviations = [
   ["ev", "experimentsVariants"],
   ["ca", "cohortAssignments"],
   ["fv", "firstVersion"],
+  ["it", "installTime"],
   ["ndc", "notificationDownloadCount"],
   ["p", "platform"],
   ["ps", "premiumStatus"],
@@ -44,6 +45,32 @@ const abbreviations = [
   ["s", "subscriptions"],
   ["wafc", "webAllowlistingFilterCount"]
 ];
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Rounds the install date down to the hour, day or month, getting coarser
+ * the older the installation is.
+ *
+ * @param installDate - Installation timestamp in ms
+ * @param now - Current timestamp in ms
+ * @returns The rounded installation timestamp in ms
+ */
+export function roundInstallTime(installDate: number, now: number): number {
+  const age = now - installDate;
+  const date = new Date(installDate);
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+  const day = date.getUTCDate();
+
+  if (age > 365 * DAY_MS) {
+    return Date.UTC(year, month);
+  }
+  if (age > 7 * DAY_MS) {
+    return Date.UTC(year, month, day);
+  }
+  return Date.UTC(year, month, day, date.getUTCHours());
+}
 
 /**
  * Returns the number of currently active filters that have been added using
@@ -128,6 +155,13 @@ export async function setUninstallURL(): Promise<void> {
   params.cohortAssignments = await ewe.cohorts.getEncodedCohorts();
   params.firstVersion = ewe.reporting.getFirstVersion();
 
+  // Users who installed before the installDate pref existed have 0, so leave
+  // it out for them.
+  const installDate: number = Prefs.get("installDate");
+  if (installDate > 0) {
+    params.installTime = roundInstallTime(installDate, Date.now());
+  }
+
   const notificationDownloadCount = await ewe.notifications.getDownloadCount();
   if (notificationDownloadCount < 5) {
     params.notificationDownloadCount = notificationDownloadCount;
@@ -200,6 +234,7 @@ export function start(): void {
   });
   ewe.subscriptions.onRemoved.addListener(setUninstallURL);
   Prefs.on("data_collection_opt_out", setUninstallURL);
+  Prefs.on("installDate", setUninstallURL);
 
   void setUninstallURL();
 }

@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added extension install time to the uninstall URL.
+
 # 4.50.0 - 2026-11-03
 
 - Fixed users who upgraded from a Manifest V2 build, mostly on Edge, being

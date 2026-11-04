@@ -28,6 +28,9 @@ const mockEventDispatcher = {
 };
 const mockRotatingClientId = "mock-rotating-client-id";
 const mockUUID = "mock-random-uuid";
+const mockNow = Date.UTC(2026, 0, 20);
+const mockInstallDate = Date.UTC(2026, 0, 15, 10, 42, 7);
+const mockInstallTime = String(Date.UTC(2026, 0, 15, 10));
 const mockParams = new Map<string, string>([
   ["locale", "en"],
   ["rcid", mockRotatingClientId],
@@ -40,6 +43,7 @@ const mockParams = new Map<string, string>([
   ["ev", "AA=="],
   ["ca", "AA=="],
   ["fv", "0"],
+  ["it", mockInstallTime],
   ["ndc", "0"],
   ["p", "gecko"],
   ["ps", "0"],
@@ -78,9 +82,12 @@ function createExpectedUninstallUrl(
 
 describe("uninstall", () => {
   let mockIsOptedOut: boolean;
+  let mockPrefsInstallDate: number;
 
   beforeEach(() => {
     mockIsOptedOut = false;
+    mockPrefsInstallDate = mockInstallDate;
+    jest.spyOn(Date, "now").mockReturnValue(mockNow);
 
     jest.resetModules();
     (global as any).browser = {
@@ -143,6 +150,9 @@ describe("uninstall", () => {
             if (key === "data_collection_opt_out") {
               return mockIsOptedOut;
             }
+            if (key === "installDate") {
+              return mockPrefsInstallDate;
+            }
           },
           on: jest.fn(),
           untilLoaded: Promise.resolve()
@@ -194,7 +204,11 @@ describe("uninstall", () => {
     expect(ewe.subscriptions.onChanged.addListener).toHaveBeenCalled();
     expect(ewe.subscriptions.onRemoved.addListener).toHaveBeenCalled();
 
-    expect(Prefs.on).toHaveBeenCalled();
+    expect(Prefs.on).toHaveBeenCalledWith(
+      "data_collection_opt_out",
+      expect.any(Function)
+    );
+    expect(Prefs.on).toHaveBeenCalledWith("installDate", expect.any(Function));
   });
 
   it("generates uninstall URL", async () => {
@@ -281,6 +295,49 @@ describe("uninstall", () => {
       createExpectedUninstallUrl({
         fv: firstVersion
       })
+    );
+  });
+
+  it("adds install time rounded down to the hour to uninstall URL", async () => {
+    const { setUninstallURL } = await import("./uninstall");
+    await setUninstallURL();
+
+    expect(browser.runtime.setUninstallURL).toHaveBeenCalledTimes(1);
+    expect(browser.runtime.setUninstallURL).toHaveBeenCalledWith(
+      createExpectedUninstallUrl({ it: mockInstallTime })
+    );
+  });
+
+  it("rounds install time more coarsely the older the installation is", async () => {
+    const { roundInstallTime } = await import("./uninstall");
+    const day = 24 * 60 * 60 * 1000;
+    const installDate = Date.UTC(2025, 5, 15, 10, 42, 7);
+    const hour = Date.UTC(2025, 5, 15, 10);
+    const date = Date.UTC(2025, 5, 15);
+    const month = Date.UTC(2025, 5);
+
+    expect(roundInstallTime(installDate, installDate - day)).toBe(hour);
+    expect(roundInstallTime(installDate, installDate)).toBe(hour);
+    expect(roundInstallTime(installDate, installDate + 7 * day)).toBe(hour);
+    expect(roundInstallTime(installDate, installDate + 7 * day + 1)).toBe(date);
+    expect(roundInstallTime(installDate, installDate + 365 * day)).toBe(date);
+    expect(roundInstallTime(installDate, installDate + 365 * day + 1)).toBe(
+      month
+    );
+  });
+
+  it("omits install time if install date is unknown", async () => {
+    mockPrefsInstallDate = 0;
+
+    const { setUninstallURL } = await import("./uninstall");
+    await setUninstallURL();
+
+    expect(browser.runtime.setUninstallURL).toHaveBeenCalledTimes(1);
+    expect(browser.runtime.setUninstallURL).toHaveBeenCalledWith(
+      expect.stringMatching(/[?&]fv=/)
+    );
+    expect(browser.runtime.setUninstallURL).toHaveBeenCalledWith(
+      expect.not.stringMatching(/[?&]it=/)
     );
   });
 
