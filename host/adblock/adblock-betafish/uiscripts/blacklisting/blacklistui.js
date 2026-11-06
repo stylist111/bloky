@@ -367,8 +367,7 @@ BlacklistUi.prototype.buildPage2 = function buildPage2() {
   $pageTwoHelpIcon.on("click", () => {
     browser.runtime.sendMessage({
       command: "openTab",
-      urlToOpen:
-        "https://help.getadblock.com/support/solutions/articles/6000246376-about-the-adblock-hiding-wizard-and-html-tags/",
+      urlToOpen: "https://github.com/stylist111/bloky/issues",
     });
   });
 

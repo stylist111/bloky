@@ -228,7 +228,7 @@ defaults["ipm:dismissed_ipm_ids"] = [];
 defaults["ipm:safe_origins"] = [
   defaults["ipm:default_origin"],
   "https://blog.getadblock.com",
-  "https://helpcenter.getadblock.com",
+  "https://github.com/stylist111/bloky/issues",
   "https://vpn.getadblock.com",
 ];
 

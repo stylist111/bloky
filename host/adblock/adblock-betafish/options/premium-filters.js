@@ -27,8 +27,7 @@ const premiumFiltersUIitems = [
     title: translate("enhanced_distraction_control"),
     description: translate("enhanced_distraction_control_description"),
     disclaimer: `${translate("please_note")} ${translate("distraction_control_new")} ${translate("your_participation")} ${translate("dc_more_information")}`,
-    urlToOpen:
-      "https://help.getadblock.com/support/solutions/articles/6000250028-about-distraction-control",
+    urlToOpen: "https://github.com/stylist111/bloky/issues",
     imageURL: "icons/distraction-control-video.svg",
     topLineClass: "",
   },

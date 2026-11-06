@@ -9,34 +9,34 @@
   },
   "name_devbuild": {
     "description": "Extension name to be shown for development builds. Note: this cannot be longer than 45 characters. Should not be translated",
-    "message": "AdBlock development build"
+    "message": "Bloky development build"
   },
   "name_releasebuild": {
     "description": "Extension name to be shown for release / published builds.  The extension name 'AdBlock' should NOT be translated, but the text after the dash should be translated",
-    "message": "AdBlock — best ad blocker"
+    "message": "Bloky — best ad blocker"
   },
   "name": {
     "description": "Extension name to be shown for release / published builds.  The extension name 'AdBlock' should NOT be translated, but the text after the dash should be translated",
-    "message": "AdBlock — best ad blocker"
+    "message": "Bloky — best ad blocker"
   },
   "short_name": {
     "description": "Extension name.  This message does NOT need to be translated",
-    "message": "AdBlock"
+    "message": "Bloky"
   },
   "description_edge": {
-    "message": "AdBlock. The #1 ad blocker with over 200 million downloads. Blocks ads all over the web.",
+    "message": "Bloky. The #1 ad blocker with over 200 million downloads. Blocks ads all over the web.",
     "description": "Description for the AdBlock for Edge extension. Should not exceed 132 characters."
   },
   "description_yt": {
-    "message": "The only YouTube ad blocker built by AdBlock, the most popular Chrome extension with 60 million users worldwide",
+    "message": "The only YouTube ad blocker built by Bloky, the most popular Chrome extension with 60 million users worldwide",
     "description": "Description for the AdBlock on YouTube extension. Should not exceed 132 characters."
   },
   "name_adblock_on_youtube": {
-    "message": "AdBlock on YouTube",
+    "message": "Bloky on YouTube",
     "description": "Name of version of the AdBlock extension that only blocks ads on YouTube. Other strings that refer to the 'AdBlock on YouTube' extension should use this name."
   },
   "adblock_click_for_details": {
-    "message": "AdBlock - click for details",
+    "message": "Bloky - click for details",
     "description": "Tooltip on the AdBlock button, to help users understand that they can click the button to access more options."
   },
   "buttoncancel": {
@@ -60,15 +60,15 @@
     "description": "Edit filter(s) manually button"
   },
   "optionstitle": {
-    "message": "AdBlock Options",
+    "message": "Bloky Options",
     "description": "Title for the Options page"
   },
   "optionstitle_yt": {
-    "message": "AdBlock on YouTube Options",
+    "message": "Bloky on YouTube Options",
     "description": "Title for the Options page for the 'AdBlock on YouTube' extension."
   },
   "chromebutton_how_to_hide2": {
-    "message": "Right-click the AdBlock button and select 'Hide in Chrome Menu'. To show it, click the Chrome menu, right-click the AdBlock button, and select 'Keep in Toolbar'.",
+    "message": "Right-click the Bloky button and select 'Hide in Chrome Menu'. To show it, click the Chrome menu, right-click the Bloky button, and select 'Keep in Toolbar'.",
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Hide Button' should match the text that Chrome displays when you right click a toolbar button."
   },
   "operabutton_how_to_hide2": {
@@ -76,7 +76,7 @@
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Hide Button' should match the text that Opera displays on the Extensions page."
   },
   "safaributton_how_to_hide2": {
-    "message": "To hide the button, right click Safari's toolbar and choose Customize Toolbar, then drag the AdBlock button out of the toolbar. You can show it again by dragging it back into the toolbar.",
+    "message": "To hide the button, right click Safari's toolbar and choose Customize Toolbar, then drag the Bloky button out of the toolbar. You can show it again by dragging it back into the toolbar.",
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Customize Toolbar' should match the text that Safari displays in the toolbar's context menu."
   },
   "ff_button_how_to_hide": {
@@ -108,7 +108,7 @@
     "description": "'Block an ad' wizard attribute choice page"
   },
   "blacklisternotsure_part_II": {
-    "message": "You can undo this any time by selecting 'Undo my hidden items on this page' from the AdBlock menu.",
+    "message": "You can undo this any time by selecting 'Undo my hidden items on this page' from the Bloky menu.",
     "description": "'Block an ad' wizard attribute choice page"
   },
   "hiddenelementmessagecount": {
@@ -214,7 +214,7 @@
     "description": "'Block an ad' wizard loading message"
   },
   "blockanadtitle": {
-    "message": "AdBlock Hiding Wizard",
+    "message": "Bloky Hiding Wizard",
     "description": "Title of the first two dialogs of the 'Block an ad' wizard"
   },
   "clickthead": {
@@ -222,15 +222,15 @@
     "description": "User has to click the ad they want to block."
   },
   "adblock_wont_run_on_pages_matching": {
-    "message": "AdBlock won't run on any page matching:",
+    "message": "Bloky won't run on any page matching:",
     "description": "Message displayed when the allowlist wizard will allowlist part of an entire website, for example '*.google.com/reader/*'.  The URL will appear on the next line."
   },
   "you_can_slide_to_change": {
-    "message": "You can slide below to change exactly what pages AdBlock won't run on.",
+    "message": "You can slide below to change exactly what pages Bloky won't run on.",
     "description": "allowlist slider usage instructions. Sometimes only one slider will show, and sometimes two will show, and if possible the text should handle both cases."
   },
   "whitelistertitle2": {
-    "message": "Don't run AdBlock on...",
+    "message": "Don't run Bloky on...",
     "description": "The title of the allowlist wizard (Don't run on this page/pages on this domain)"
   },
   "buttonexclude": {
@@ -246,7 +246,7 @@
     "description": "Checkbox in the allowlist wizard"
   },
   "wizardcantrunonframesets": {
-    "message": "This AdBlock feature does not work on this site because it uses out of date technology. You can allow or block ads manually in the 'Customize' tab of the options page.",
+    "message": "This Bloky feature does not work on this site because it uses out of date technology. You can allow or block ads manually in the 'Customize' tab of the options page.",
     "description": "Alert shown when the user tries to use a blocklist/allowlist wizard on an old website"
   },
   "subscribeconfirm": {
@@ -288,7 +288,7 @@
     "description": "Title of the first Options page tab"
   },
   "mac_app_message_options": {
-    "message": "AdBlock for Safari is now available as a Mac app!",
+    "message": "Bloky for Safari is now available as a Mac app!",
     "description": "Message to users on the Options page"
   },
   "betalabel": {
@@ -308,7 +308,7 @@
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "datacollectionoption": {
-    "message": "Allow AdBlock to collect anonymous filter list usage data, and information about content blocked by filter lists",
+    "message": "Allow Bloky to collect anonymous filter list usage data, and information about content blocked by filter lists",
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "updatedrightnow": {
@@ -414,11 +414,11 @@
     "description": "Label to remove a custom filter list"
   },
   "you_know_thats_a_bad_idea_right": {
-    "message": "The more filter lists you use, the slower AdBlock runs. Using too many lists can even crash your browser on some websites. Press OK to subscribe to this list anyway.",
+    "message": "The more filter lists you use, the slower Bloky runs. Using too many lists can even crash your browser on some websites. Press OK to subscribe to this list anyway.",
     "description": "Confirmation message shown to user if they try to subscribe to too many lists. The user will have two options: OK and Cancel."
   },
   "unsubscribe_from_all_confirmation": {
-    "message": "AdBlock can't block ads if you disable all the filter lists. We recommend pausing AdBlock instead. Unsubscribe from this list anyway?",
+    "message": "Bloky can't block ads if you disable all the filter lists. We recommend pausing Bloky instead. Unsubscribe from this list anyway?",
     "description": "Confirmation message shown to user if they try to unsubscribe from all filter lists. The user will have two options: OK and Cancel."
   },
   "filterstabtitle": {
@@ -542,7 +542,7 @@
     "description": "'Hide a section of a webpage' part on the Customize tab of the Options page."
   },
   "tabcustomizetitle": {
-    "message": "Customize AdBlock",
+    "message": "Customize Bloky",
     "description": "Title of the Customize tab of the Options page"
   },
   "filterlistsrock": {
@@ -578,7 +578,7 @@
     "description": "Message of the CSS-hiding section (Hide a section of a webpage) on the Customize tab"
   },
   "excludedomainorurl": {
-    "message": "The domain or url where AdBlock shouldn't block anything",
+    "message": "The domain or url where Bloky shouldn't block anything",
     "description": "Message of the exclude section (Show ads on a webpage or domain) on the Customize tab"
   },
   "blockdomain": {
@@ -614,7 +614,7 @@
     "description": "Reminder to click 'Save'"
   },
   "adblockreportinganad": {
-    "message": "AdBlock - Reporting an ad",
+    "message": "Bloky - Reporting an ad",
     "description": "Title of the ad report page"
   },
   "adreportintro": {
@@ -674,7 +674,7 @@
     "description": "On the ad report page, telling the user there is nothing to do as the ad they were seeing is now blocked."
   },
   "disableallextensions": {
-    "message": "Disable all extensions except for AdBlock:",
+    "message": "Disable all extensions except for Bloky:",
     "description": "Instruction on ad report page"
   },
   "disableforchromestepone": {
@@ -702,7 +702,7 @@
     "description": "On the ad report page, alert notifying users that we've disabled all other extensions"
   },
   "disableforchromeandsafaristeptwo": {
-    "message": "Uncheck the \"Enabled\" checkbox next to every extension except for AdBlock.  Leave AdBlock enabled.",
+    "message": "Uncheck the \"Enabled\" checkbox next to every extension except for Bloky.  Leave Bloky enabled.",
     "description": "Step 2 for disabling Chrome and Safari extensions"
   },
   "disableforsafaristepone": {
@@ -714,7 +714,7 @@
     "description": "Step 1 for disabling Edge extensions"
   },
   "disableforedgesteptwo": {
-    "message": "For each extension except for AdBlock, click the gear icon and click the On toggle button to change it to Off.",
+    "message": "For each extension except for Bloky, click the gear icon and click the On toggle button to change it to Off.",
     "description": "Step 2 for disabling Edge extensions"
   },
   "reenableadsonebyone": {
@@ -1034,7 +1034,7 @@
     "description": "Multiple choice option"
   },
   "nodefaultfilter1": {
-    "message": "We don't have a default filter list for that language.\nPlease [[try to find a suitable list that supports this language]] or block this ad for yourself via the AdBlock menu.",
+    "message": "We don't have a default filter list for that language.\nPlease [[try to find a suitable list that supports this language]] or block this ad for yourself via the Bloky menu.",
     "description": "Instructions on ad report page pointing users to EasyList subscriptions list."
   },
   "retryaftersubscribe": {
@@ -1068,7 +1068,7 @@
     "description": "Instruction for how to check Firefox for a reported ad. Don't translate the name 'Adblock Plus'."
   },
   "checkinfirefoxorchrome_2": {
-    "message": "Install Adblock Plus for Firefox or AdBlock for Chrome if you don't have it.",
+    "message": "Install Adblock Plus for Firefox or Bloky for Chrome if you don't have it.",
     "description": "Instruction for how to check Firefox/Chrome for a reported ad. Don't translate the name 'Adblock Plus'."
   },
   "checkinfirefox_3": {
@@ -1092,7 +1092,7 @@
     "description": "Instruction for how to check Chrome for a reported ad"
   },
   "ff_checkinchrome_2": {
-    "message": "Install AdBlock for Chrome, if you don't have it.",
+    "message": "Install Bloky for Chrome, if you don't have it.",
     "description": "Instruction for how to check Chrome for a reported ad"
   },
   "ff_checkinchrome_3": {
@@ -1126,7 +1126,7 @@
     "description": "Telling users who won't report an ad to us how to handle it for themselves"
   },
   "popup_menu_title": {
-    "message": "AdBlock Popup Menu",
+    "message": "Bloky Popup Menu",
     "description": "Title for the popup menu."
   },
   "block_an_ad_on_this_page": {
@@ -1218,11 +1218,11 @@
     "description": "Label at the bottom of the 'Customize' tab of the Options page"
   },
   "disabled_by_filter_lists": {
-    "message": "Sorry, AdBlock is disabled on this page by one of your filter lists.",
+    "message": "Sorry, Bloky is disabled on this page by one of your filter lists.",
     "description": "Message shown when a user tries to un-allowlist a web page that has been allowlisted by a rule in a subscribed filter list."
   },
   "disabled_by_filter_lists_yt": {
-    "message": "Sorry, AdBlock on YouTube is disabled on this page by one of your options.",
+    "message": "Sorry, Bloky on YouTube is disabled on this page by one of your options.",
     "description": "Message shown when a user tries to un-allowlist a web page that has been allowlisted by a rule in a subscribed filter list. Specific to the 'AdBlock on YouTube' extension."
   },
   "dont_run_on_pages_on_domain": {
@@ -1238,15 +1238,15 @@
     "description": "header title on the menu when a user is on tab that extensions are disabled on (Chrome settings, etc)"
   },
   "disabled": {
-    "message": "AdBlock is Paused",
+    "message": "Bloky is Paused",
     "description": "Title shown in menu when AdBlock is paused on all sites"
   },
   "disabled_on_all_sites": {
-    "message": "You’ve configured AdBlock to remain paused on all sites.",
+    "message": "You’ve configured Bloky to remain paused on all sites.",
     "description": "Message shown in menu when AdBlock is paused on all sites"
   },
   "disabled_on_this_page": {
-    "message": "AdBlock is disabled on this page.",
+    "message": "Bloky is disabled on this page.",
     "description": "Message shown in toolbar button on web pages that have been allowlisted"
   },
   "disabled_on_this_channel": {
@@ -1254,23 +1254,23 @@
     "description": "Message shown in the toolbar button menu on YouTube channel pages and videos that have been allowlisted."
   },
   "enable_adblock": {
-    "message": "Enable AdBlock on this page",
+    "message": "Enable Bloky on this page",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
   "status_paused": {
-    "message": "AdBlock is paused.",
+    "message": "Bloky is paused.",
     "description": "Message shown in toolbar button when AdBlock is not running"
   },
   "status_universal_paused": {
-    "message": "AdBlock is paused on all sites.",
+    "message": "Bloky is paused on all sites.",
     "description": "Message shown in toolbar button when AdBlock is not running on all domains"
   },
   "status_domain_paused": {
-    "message": "AdBlock is paused for this visit. You may need to refresh the page to see your changes.",
+    "message": "Bloky is paused for this visit. You may need to refresh the page to see your changes.",
     "description": "Message shown in toolbar button when AdBlock is not running on a specific domain"
   },
   "status_allowlisted": {
-    "message": "You’ve configured AdBlock to remain paused on this site for every visit.",
+    "message": "You’ve configured Bloky to remain paused on this site for every visit.",
     "description": "Message shown in toolbar button when AdBlock is not running on a page or website"
   },
   "resume_blocking_ads": {
@@ -1292,15 +1292,15 @@
     "description": "Message shown on the premium tab of the option page when user is a licensed premium user"
   },
   "unpause_adblock": {
-    "message": "Unpause AdBlock",
+    "message": "Unpause Bloky",
     "description": "Link text to start blocking ads again, displayed immediately after 'AdBlock is paused'"
   },
   "domain_unpause_adblock": {
-    "message": "Unpause AdBlock on this site",
+    "message": "Unpause Bloky on this site",
     "description": "Link text to start blocking ads again, displayed immediately after 'AdBlock is paused on this site'"
   },
   "pause_adblock": {
-    "message": "Pause AdBlock",
+    "message": "Pause Bloky",
     "description": "Menu entry to pause AdBlock (stop blocking ads)"
   },
   "pause_adblock_everywhere": {
@@ -1320,7 +1320,7 @@
     "description": "Menu entry to pause the extension (stop blocking ads)"
   },
   "safaricontentblockingpausemessage": {
-    "message": "To pause AdBlock with Content Blocking enabled, please select Safari (in the menu bar) > Preferences > Extensions > AdBlock, and uncheck 'Enable AdBlock'.",
+    "message": "To pause Bloky with Content Blocking enabled, please select Safari (in the menu bar) > Preferences > Extensions > Bloky, and uncheck 'Enable Bloky'.",
     "description": "Alert displayed after clicking 'Pause AdBlock' in the AdBlock menu while Safari Content blocking is enabled."
   },
   "safaricontentblockinglimitexceeded": {
@@ -1336,7 +1336,7 @@
     "description": "Title of a notification shown to Safari Content Blocking users with too many filter list rules."
   },
   "safarinotificationbody": {
-    "message": "Please disable some filter lists. More information in AdBlock's Options.",
+    "message": "Please disable some filter lists. More information in Bloky's Options.",
     "description": "Body of a notification shown to Safari Content Blocking users with too many filter list rules."
   },
   "undo_last_block": {
@@ -1360,7 +1360,7 @@
     "description": "Toolbar button menu entry to hide the AdBlock button"
   },
   "donate_to_adblock": {
-    "message": "Love AdBlock? Consider donating!",
+    "message": "Love Bloky? Consider donating!",
     "description": "Text of a donate link in the toolbar button menu"
   },
   "help_and_feedback": {
@@ -1392,7 +1392,7 @@
     "description": "A tab on the Options page"
   },
   "translators": {
-    "message": "Learn more about how to help translate AdBlock [[here]]",
+    "message": "Learn more about how to help translate Bloky [[here]]",
     "description": "A link on the Options page / translators tab to a KB article about how to help translate AdBlock"
   },
   "report_ad_on_page": {
@@ -1412,7 +1412,7 @@
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "onpage_messages": {
-    "message": "Allow AdBlock to show me messages on webpages when relevant",
+    "message": "Allow Bloky to show me messages on webpages when relevant",
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "work_around_hulu_problems": {
@@ -1444,7 +1444,7 @@
     "description": "Message on the 'Customize' tab of the options page, explaining the danger of adding a allowlist filter for all websites with only some exceptions."
   },
   "storage_quota_exceeded": {
-    "message": "You exceeded the amount of storage AdBlock can use. Please unsubscribe from some filter lists!",
+    "message": "You exceeded the amount of storage Bloky can use. Please unsubscribe from some filter lists!",
     "description": "Message shown when the user uses more storage than allowed by the browser."
   },
   "firefox_explanation": {
@@ -1456,7 +1456,7 @@
     "description": "part one of the message to safari users on the popup menu"
   },
   "mac_app_message_menu_part_two": {
-    "message": "Try the AdBlock Mac app",
+    "message": "Try the Bloky Mac app",
     "description": "part two of the message to safari users on the popup menu"
   },
   "blocked_ads": {
@@ -1484,11 +1484,11 @@
     }
   },
   "show_on_adblock_button": {
-    "message": "Show number of ads blocked on AdBlock button",
+    "message": "Show number of ads blocked on Bloky button",
     "description": "Checkbox letting user choose whether the toolbar button should show a badge with the number of ads blocked"
   },
   "show_on_adblock_menu": {
-    "message": "Show number of ads blocked on AdBlock menu",
+    "message": "Show number of ads blocked on Bloky menu",
     "description": "Checkbox letting user choose whether the AdBlock menu should show the number of ads blocked"
   },
   "show_on_button": {
@@ -1512,7 +1512,7 @@
     "description": "Checkbox letting user choose whether to block annoyances on youtube.com (such as comments, suggested videos, annotations, and recommended channels)"
   },
   "show_devtools_panel": {
-    "message": "Show 'AdBlock' panel in the developer tools",
+    "message": "Show 'Bloky' panel in the developer tools",
     "description": "Checkbox letting user choose whether the AdBlock tab should be displayed in the developer tools window"
   },
   "adblockinglist": {
@@ -1568,7 +1568,7 @@
     }
   },
   "adblocksupport": {
-    "message": "AdBlock Support",
+    "message": "Bloky Support",
     "description": "Title of the Support tab of the Options page"
   },
   "whatsnew": {
@@ -1584,19 +1584,19 @@
     "description": "Subtitle on the Support tab"
   },
   "adblockupdates": {
-    "message": "AdBlock updates",
+    "message": "Bloky updates",
     "description": "Subtitle on the Support tab"
   },
   "ytadblockupdates": {
-    "message": "AdBlock on YouTube updates",
+    "message": "Bloky on YouTube updates",
     "description": "Subtitle on the Support tab. Specific to the 'AdBlock on YouTube' extension."
   },
   "whatmakesadblocktick": {
-    "message": "Want to see what makes AdBlock tick?",
+    "message": "Want to see what makes Bloky tick?",
     "description": "Subtitle on the Support tab. This section contains links to the AdBlock source code and contributors. In this context, 'tick' can be replaced with the word 'work'."
   },
   "aboutadblock": {
-    "message": "About AdBlock",
+    "message": "About Bloky",
     "description": "Subtitle on the Support tab"
   },
   "sourcecode": {
@@ -1640,11 +1640,11 @@
     "description": "Menu entry to open the resource list page"
   },
   "new_resourcelist_explanation_win": {
-    "message": "To show all requests, right click the page, select 'Inspect' (Ctrl+Shift+I), then select the 'AdBlock' tab.",
+    "message": "To show all requests, right click the page, select 'Inspect' (Ctrl+Shift+I), then select the 'Bloky' tab.",
     "description": "Message explaining how to access the resource list page on AdBlock 3.0+ (Windows)"
   },
   "new_resourcelist_explanation_osx": {
-    "message": "To show all requests, right click the page, select 'Inspect' (Option+Cmd+I), then select the 'AdBlock' tab.",
+    "message": "To show all requests, right click the page, select 'Inspect' (Option+Cmd+I), then select the 'Bloky' tab.",
     "description": "Message explaining how to access the resource list page on AdBlock 3.0+ (Mac)"
   },
   "noresourcessend2": {
@@ -1732,7 +1732,7 @@
     "description": "Message shown to users after disabling both EasyList Lite and EasyList via the Filter lists tab on the Options page."
   },
   "easylist_disable_done": {
-    "message": "AdBlock uses EasyList to block ads on most websites.",
+    "message": "Bloky uses EasyList to block ads on most websites.",
     "description": "Message shown to users after disabling EasyList via the Filter lists tab on the Options page."
   },
   "easylist_disable_how_to_reenable": {
@@ -1740,7 +1740,7 @@
     "description": "Message shown to users after disabling EasyList via the Filter lists tab on the Options page."
   },
   "easylist_lite_disable_done": {
-    "message": "AdBlock uses EasyList Lite or EasyList to block ads on most websites.",
+    "message": "Bloky uses EasyList Lite or EasyList to block ads on most websites.",
     "description": "Message shown to users after disabling both EasyList Lite and EasyList via the Filter lists tab on the Options page."
   },
   "easylist_lite_disable_how_to_reenable": {
@@ -1796,7 +1796,7 @@
     "description": "Error message shown when the user doesn't attach a screenshot to an ad report."
   },
   "adreport_response_success": {
-    "message": "All set! We'll be in touch as soon as we can. In the meantime, look for an email from AdBlock. You'll find a link to your ticket on our help site there, along with some self-help suggestions if we can't get back to you right away.",
+    "message": "All set! We'll be in touch as soon as we can. In the meantime, look for an email from Bloky. You'll find a link to your ticket on our help site there, along with some self-help suggestions if we can't get back to you right away.",
     "description": "Shown when a ticket has been sumbitted to AdBlock's support site successfully."
   },
   "adreport_response_invalid_file": {
@@ -1844,11 +1844,11 @@
     "description": "Part three of a message shown to users on the Customize tab of the Options page after invalid custom filters have been migrated"
   },
   "show_language_options": {
-    "message": "Let me choose AdBlock's display language",
+    "message": "Let me choose Bloky's display language",
     "description": "Option to let the user choose AdBlock's display language."
   },
   "display_language_selector": {
-    "message": "Display AdBlock in",
+    "message": "Display Bloky in",
     "description": "Text shown before language selector drop-down."
   },
   "myadblockoptions": {
@@ -1912,7 +1912,7 @@
     "description": "Title for Options page message letting users know of settings change."
   },
   "settings_changed": {
-    "message": "In preparation, AdBlock now works differently and some of your settings may have changed.",
+    "message": "In preparation, Bloky now works differently and some of your settings may have changed.",
     "description": "Part of Options page message letting users know of settings change."
   },
   "learn_more": {
@@ -1920,7 +1920,7 @@
     "description": "Link to Knowledge Base article with more information about the settings change"
   },
   "download_mac_app": {
-    "message": "To get the best AdBlock experience on your Mac, please download our [[AdBlock for Safari Mac App!]]",
+    "message": "To get the best Bloky experience on your Mac, please download our [[Bloky for Safari Mac App!]]",
     "description": "Link to download our Mac App. [[ and ]] will be replaced with HTML to link to the Mac App Store"
   },
   "note": {
@@ -1928,7 +1928,7 @@
     "description": "Indicates that the user should take note of the message that follows."
   },
   "changes_to_adblock": {
-    "message": "We've made changes to AdBlock!",
+    "message": "We've made changes to Bloky!",
     "description": "Link to Options page with more information about the changes."
   },
   "new_myadblock_feature_available": {
@@ -1956,7 +1956,7 @@
     "description": "The text of the header the MyAdBlock Options page"
   },
   "myadblock_picreplacement_exlained": {
-    "message": "Select from the categories below and AdBlock will occasionally replace ads with high-quality images to brighten your day.",
+    "message": "Select from the categories below and Bloky will occasionally replace ads with high-quality images to brighten your day.",
     "description": "The label text for the switch on the MyAdBlock Options page"
   },
   "error_msg_header": {
@@ -1964,7 +1964,7 @@
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
   "error_msg_partI": {
-    "message": "We're sorry, the AdBlock menu had trouble loading.",
+    "message": "We're sorry, the Bloky menu had trouble loading.",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
   "error_msg_reload_partI": {
@@ -2088,7 +2088,7 @@
     "description": "Text in theme box of the Themes tab of the Options page (no more than 60 characters)"
   },
   "myadblock_themes_description": {
-    "message": "Change the way AdBlock looks, including font size and color scheme",
+    "message": "Change the way Bloky looks, including font size and color scheme",
     "description": "Text briefly describing what themes do on the MyAdBlock tab of the Options page"
   },
   "stay_tuned": {
@@ -2144,15 +2144,15 @@
     "description": "Text of clickable element that applies the theme of a theme box in the Themes tab of the Options page"
   },
   "adblock_twitter": {
-    "message": "AdBlock Twitter",
+    "message": "Bloky Twitter",
     "description": "Title for link to AdBlock's Twitter account"
   },
   "adblock_facebook": {
-    "message": "AdBlock Facebook",
+    "message": "Bloky Facebook",
     "description": "Title for link to AdBlock's Facebook account"
   },
   "adblock_website": {
-    "message": "AdBlock Home Page",
+    "message": "Bloky Home Page",
     "description": "Title for link to AdBlock's website"
   },
   "callout_new_feature": {
@@ -2160,7 +2160,7 @@
     "description": "Text to callout a new feature"
   },
   "myadblock_short_description": {
-    "message": "Experience an enhanced AdBlock with fun new features exclusively for donors",
+    "message": "Experience an enhanced Bloky with fun new features exclusively for donors",
     "description": "Text substitle of myAdBlock page in the options page"
   },
   "image_swap": {
@@ -2286,7 +2286,7 @@
     "description": "Max 4 characters. If it's not possible to translate in four characters or less, please don't translate. Text in the badge of our extension toolbar icon."
   },
   "vpn_cta_msg": {
-    "message": "Introducing AdBlock VPN",
+    "message": "Introducing Bloky VPN",
     "description": "Text of a VPN call-to-action item in the popup menu."
   },
   "vpn_cta_msg_hover": {
@@ -2294,7 +2294,7 @@
     "description": "on hover text of a call-to-action item in the popup menu."
   },
   "new_cta_default_text": {
-    "message": "Upgrade your AdBlock",
+    "message": "Upgrade your Bloky",
     "description": "Text of a temporary call-to-action item in the popup menu."
   },
   "new_cta_hovered_text": {
@@ -2314,11 +2314,11 @@
     "description": "The text in a button visible to locked users in the MyAdBlock Options page"
   },
   "make_adblock_yours_title": {
-    "message": "Make AdBlock Yours",
+    "message": "Make Bloky Yours",
     "description": "The title of a feature box in the MyAdBlock Options page"
   },
   "make_adblock_yours_description": {
-    "message": "You’re in control of the look, feel, and font size of AdBlock with easy-to-use controls.",
+    "message": "You’re in control of the look, feel, and font size of Bloky with easy-to-use controls.",
     "description": "The main text of a feature box in the MyAdBlock Options page"
   },
   "see_photos_no_ads_title": {
@@ -2402,7 +2402,7 @@
     "description": "Message for help flow in popup menu."
   },
   "updating_filter_lists": {
-    "message": "AdBlock is updating your filter lists now to see if that might be the problem.",
+    "message": "Bloky is updating your filter lists now to see if that might be the problem.",
     "description": "Message for help flow in popup menu."
   },
   "checked_basics": {
@@ -2454,7 +2454,7 @@
     "description": "Message for help flow in popup menu."
   },
   "try_pausing": {
-    "message": "OK, let's try pausing AdBlock.",
+    "message": "OK, let's try pausing Bloky.",
     "description": "Message for help flow in popup menu."
   },
   "reload_when_ready": {
@@ -2466,7 +2466,7 @@
     "description": "Message for help flow in popup menu."
   },
   "issue_unrelated_adblock": {
-    "message": "It seems that there's an issue with the site unrelated to AdBlock.",
+    "message": "It seems that there's an issue with the site unrelated to Bloky.",
     "description": "Message for help flow in popup menu."
   },
   "contact_the_site": {
@@ -2482,11 +2482,11 @@
     "description": "Message for help flow in popup menu."
   },
   "paused_site_issue": {
-    "message": "AdBlock is currently paused, so it seems there's an issue with the site unrelated to AdBlock.",
+    "message": "Bloky is currently paused, so it seems there's an issue with the site unrelated to Bloky.",
     "description": "Message for help flow in popup menu."
   },
   "paused_not_blocking": {
-    "message": "AdBlock is currently paused, so we're not blocking any ads.",
+    "message": "Bloky is currently paused, so we're not blocking any ads.",
     "description": "Message for help flow in popup menu."
   },
   "resume_reload": {
@@ -2498,7 +2498,7 @@
     "description": "Message for help flow in popup menu."
   },
   "unpaused_reload": {
-    "message": "We just unpaused AdBlock and reloaded the page.",
+    "message": "We just unpaused Bloky and reloaded the page.",
     "description": "Message for help flow in popup menu."
   },
   "thanks": {
@@ -2534,7 +2534,7 @@
     "description": "Message for help flow in popup menu."
   },
   "premium_filters_details": {
-    "message": "Additional details on distractions blocked by AdBlock Premium can be found [[here]].",
+    "message": "Additional details on distractions blocked by Bloky can be found [[here]].",
     "description": "Message for help flow in popup menu."
   },
   "premium_filters_options": {
@@ -2562,11 +2562,11 @@
     "description": "Message for help flow in popup menu."
   },
   "paused_not_blocking_distraction": {
-    "message": "AdBlock is currently paused, so we are not blocking any distractions.",
+    "message": "Bloky is currently paused, so we are not blocking any distractions.",
     "description": "panel text on the help flow in popup menu."
   },
   "resume_reload_distraction": {
-    "message": "Do you want to enable AdBlock and reload the page?",
+    "message": "Do you want to enable Bloky and reload the page?",
     "description": "panel text on the help flow in popup menu."
   },
   "next": {
@@ -2586,7 +2586,7 @@
     "description": "Text for help flow in popup menu."
   },
   "adblock_logo": {
-    "message": "AdBlock logo",
+    "message": "Bloky logo",
     "description": "Text in the alt attribute of an AdBlock logo image."
   },
   "example_themes": {
@@ -2598,7 +2598,7 @@
     "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Image Swap feature."
   },
   "adblock_home": {
-    "message": "AdBlock home",
+    "message": "Bloky home",
     "description": "Text in the alt attribute of an AdBlock logo / icon that links to getadblock.com."
   },
   "preview_channel_image": {
@@ -2694,7 +2694,7 @@
     "description": "First sentence in the aria-label of the pop-up menu action to pause blocking ads on this site. This will be followed by the options 'Once' and 'Always'"
   },
   "adblock_will_pause_on_this_site": {
-    "message": "If clicked, AdBlock will stop blocking ads on this site.",
+    "message": "If clicked, Bloky will stop blocking ads on this site.",
     "description": "Second sentence in the aria-label of the pop-up menu action to pause blocking ads on this site."
   },
   "pause_on_all_sites": {
@@ -2702,11 +2702,11 @@
     "description": "First sentence in the aria-label of the pop-up menu action to pause blocking ads on all sites."
   },
   "adblock_will_pause_on_all_sites": {
-    "message": "If clicked, AdBlock will stop blocking ads on all sites.",
+    "message": "If clicked, Bloky will stop blocking ads on all sites.",
     "description": "Second sentence in the aria-label of the pop-up menu action to pause blocking ads on all sites."
   },
   "adblock_will_block_ads_again": {
-    "message": "If clicked, AdBlock will block ads again.",
+    "message": "If clicked, Bloky will block ads again.",
     "description": "Second sentence in the aria-label of the pop-up menu action to resume blocking ads."
   },
   "resume_blocking_ads_period": {
@@ -2721,16 +2721,12 @@
     "message": "Premium",
     "description": "Abbreviated name of the AdBlock upgrade."
   },
-  "adblock_premium": {
-    "message": "AdBlock Premium",
-    "description": "Full name of the AdBlock upgrade."
-  },
   "premium_page_title": {
-    "message": "AdBlock Premium: A better way to browse the internet.",
+    "message": "Bloky: A better way to browse the internet.",
     "description": "The text of the header the AdBlock Premium Options page"
   },
   "premium_benefits_explained": {
-    "message": "In exchange for supporting us by enabling AdBlock Premium, you'll get access to the latest tools and features as soon as they're released.",
+    "message": "In exchange for supporting us by enabling Bloky, you'll get access to the latest tools and features as soon as they're released.",
     "description": "Main text of the teaser AdBlock Premium feature in the AdBlock Premium tab of the Options page"
   },
   "manage_subscription": {
@@ -2766,7 +2762,7 @@
     "description": "Part 1 of a call-to-action on the blocklist wizard"
   },
   "adblock_looked_like_this": {
-    "message": "What if AdBlock looked like this?",
+    "message": "What if Bloky looked like this?",
     "description": "Part 1 of a call-to-action on the Popup menu"
   },
   "check_out_themes": {
@@ -2790,7 +2786,7 @@
     "description": "Part 2 of a call-to-action on the Popup menu"
   },
   "notification_antiadblock_message": {
-    "message": "This site has been known to show targeted messages to AdBlock users. Do you want AdBlock to hide targeted messages?"
+    "message": "This site has been known to show targeted messages to Bloky users. Do you want Bloky to hide targeted messages?"
   },
   "notification_antiadblock_title": {
     "message": "Hide targeted messages?"
@@ -2836,11 +2832,11 @@
     "description": "Generic error shown when the user tries to add an invalid filter rule to their custom filters"
   },
   "love_adblock": {
-    "message": "Love AdBlock?",
+    "message": "Love Bloky?",
     "description": "Text in a button that asks users to rate us."
   },
   "show_some_love": {
-    "message": "Show AdBlock some love!",
+    "message": "Show Bloky some love!",
     "description": "Title of the tooltip of the rate us button CTA in the Options page."
   },
   "support_with_a_review": {
@@ -2856,7 +2852,7 @@
     "description": "Text of a menu item in the popup menu asking users to leave us a review."
   },
   "vpn_coming_soon": {
-    "message": "Check out what's coming soon from AdBlock",
+    "message": "Check out what's coming soon from Bloky",
     "description": "Text of the tooltip of the rate us button CTA in the Options page."
   },
   "join_vpn_waitlist": {
@@ -2864,11 +2860,11 @@
     "description": "Text of a menu item in the popup menu asking users to leave us a review."
   },
   "adblock_vpn": {
-    "message": "AdBlock VPN",
+    "message": "Bloky VPN",
     "description": "Text of a Options page lower menu button"
   },
   "adblock_newsletter": {
-    "message": "AdBlock Newsletter",
+    "message": "Bloky Newsletter",
     "description": "Text of a Options page lower menu button"
   },
   "keep_touch": {
@@ -2884,11 +2880,11 @@
     "description": "Text of a Options page lower menu button"
   },
   "added_mailing_list": {
-    "message": "You've been added to the AdBlock mailing list.",
+    "message": "You've been added to the Bloky mailing list.",
     "description": "Text of a Options page lower menu button"
   },
   "sign_up_mailing": {
-    "message": "Sign up for our mailing list to stay up-to-date on the latest at AdBlock.",
+    "message": "Sign up for our mailing list to stay up-to-date on the latest at Bloky.",
     "description": "Text of a Options page lower menu button"
   },
   "email_address_placeholder": {
@@ -2926,7 +2922,7 @@
     }
   },
   "enjoying_adblock": {
-    "message": "Enjoying AdBlock?",
+    "message": "Enjoying Bloky?",
     "description": "Text of a footer in the popup menu help flow asking users to leave us a review."
   },
   "back_help_flow": {
@@ -2946,15 +2942,15 @@
     "description": "On page title of the statistics page of the Options page"
   },
   "stats_opt_in_header": {
-    "message": "Want to see your AdBlock stats? ",
+    "message": "Want to see your Bloky stats? ",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_opt_in_msg": {
-    "message": "Opt in to local stats collection to see your AdBlock statistics, such as which sites you block the most ads and trackers on, total blocks over time, and images swapped for Premium users.",
+    "message": "Opt in to local stats collection to see your Bloky statistics, such as which sites you block the most ads and trackers on, total blocks over time, and images swapped for Premium users.",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_opt_in_local_msg": {
-    "message": "Opt in to local stats collection as well in order to access all of your AdBlock stats, such as which sites you block the most ads and trackers on, total blocks over time, and images swapped for Premium users.",
+    "message": "Opt in to local stats collection as well in order to access all of your Bloky stats, such as which sites you block the most ads and trackers on, total blocks over time, and images swapped for Premium users.",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_already_opted": {
@@ -2970,7 +2966,7 @@
     "description": "Text in the Opt In button on the statistics page of the Options page"
   },
   "stats_opt_in_data_collect": {
-    "message": "Help improve AdBlock by sharing [[anonymous usage data]]",
+    "message": "Help improve Bloky by sharing [[anonymous usage data]]",
     "description": "Text in the Opt In button on the statistics page of the Options page"
   },
   "stats_ads_blocked": {
@@ -3130,7 +3126,7 @@
     "description": "text on the image swap tab"
   },
   "custom_image_description": {
-    "message": "Choose up to 9 images you want AdBlock to use to replace ads",
+    "message": "Choose up to 9 images you want Bloky to use to replace ads",
     "description": "text on the image swap tab"
   },
   "remove_image": {
@@ -3198,11 +3194,11 @@
     "description": "The button text on the popup menu"
   },
   "enable_on_this_site": {
-    "message": "Enable AdBlock On This Site",
+    "message": "Enable Bloky On This Site",
     "description": "GFC messaging on the popup menu"
   },
   "premium_access_without_disabling": {
-    "message": "New features in AdBlock Premium make it easy to get access to the content you love without disabling AdBlock.",
+    "message": "New features in Bloky make it easy to get access to the content you love without disabling Bloky.",
     "description": "GFC messaging on the popup menu"
   },
   "dont_show_reminder": {
@@ -3214,7 +3210,7 @@
     "description": "GFC messaging on the popup menu"
   },
   "access_without_disabling": {
-    "message": "Get easy access to the content you love without disabling AdBlock!",
+    "message": "Get easy access to the content you love without disabling Bloky!",
     "description": "GFC messaging on the popup menu"
   },
   "learn_more_lower": {
@@ -3224,10 +3220,6 @@
   "distraction_control": {
     "message": "Distraction Control",
     "description": "Name of a Premium option"
-  },
-  "take_control": {
-    "message": "Take control of your browser and browse the way you want to!",
-    "description": "Description of the distraction control option"
   },
   "goodbye_distractions": {
     "message": "Say goodbye to newsletter pop-ups, floating videos, and other annoying distractions with Distraction Control.",
@@ -3298,7 +3290,7 @@
     "description": "Title text on panel in the help flow"
   },
   "updating_preferences": {
-    "message": "AdBlock is updating your preferences now.",
+    "message": "Bloky is updating your preferences now.",
     "description": "text on panel in the help flow"
   },
   "done_reload_page": {
@@ -3318,7 +3310,7 @@
     "description": "Sub-header describing Image Swap on the main Premium options page"
   },
   "personalize_experience": {
-    "message": "Personalize your browsing experience and get even more out of AdBlock for $browser$.",
+    "message": "Personalize your browsing experience and get even more out of Bloky for $browser$.",
     "description": "Description of Image Swap on the main Premium options page",
     "placeholders": {
       "browser": {
@@ -3332,15 +3324,15 @@
     "description": "Description of Image Swap on the main Premium options page"
   },
   "customize_your_adblock": {
-    "message": "Customize Your AdBlock",
+    "message": "Customize Your Bloky",
     "description": "Sub-header describing Themes on the main Premium options page"
   },
   "fun_way_customize": {
-    "message": "Themes are a fun way to customize AdBlock on your browser.",
+    "message": "Themes are a fun way to customize Bloky on your browser.",
     "description": "Description of Themes on the main Premium options page"
   },
   "take_control_easy": {
-    "message": "Take control of the look, feel, and font size of AdBlock with easy-to-use controls. Make AdBlock yours!",
+    "message": "Take control of the look, feel, and font size of Bloky with easy-to-use controls. Make Bloky yours!",
     "description": "Description of Themes on the main Premium options page"
   },
   "annoyance_free_browsing": {
@@ -3352,15 +3344,15 @@
     "description": "Header on the main Premium options page"
   },
   "see_fewer_walls": {
-    "message": "See Fewer Anti-AdBlock Walls",
+    "message": "See Fewer Anti-Bloky Walls",
     "description": "Sub-header describing Bypass Mode on the main Premium options page"
   },
   "popups_disable_adblock": {
-    "message": "Pop-ups that require you to disable AdBlock are becoming increasingly common on the web.",
+    "message": "Pop-ups that require you to disable Bloky are becoming increasingly common on the web.",
     "description": "Description of Bypass Mode on the main Premium options page"
   },
   "get_around_popups": {
-    "message": "With Bypass Mode, you’ll be able to get around some of those pop-ups without disabling AdBlock.",
+    "message": "With Bypass Mode, you’ll be able to get around some of those pop-ups without disabling Bloky.",
     "description": "Description of Bypass Mode on the main Premium options page"
   }
 }

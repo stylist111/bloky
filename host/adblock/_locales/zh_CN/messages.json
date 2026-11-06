@@ -9,30 +9,30 @@
   },
   "name_devbuild": {
     "description": "Extension name to be shown for development builds. Note: this cannot be longer than 45 characters. Should not be translated",
-    "message": "AdBlock 开发者版本"
+    "message": "Bloky 开发者版本"
   },
   "name_releasebuild": {
     "description": "Extension name to be shown for release / published builds.  The extension name 'AdBlock' should NOT be translated, but the text after the dash should be translated",
-    "message": "AdBlock — 最佳广告拦截工具"
+    "message": "Bloky — 最佳广告拦截工具"
   },
   "name": {
     "description": "Extension name to be shown for release / published builds.  The extension name 'AdBlock' should NOT be translated, but the text after the dash should be translated",
-    "message": "AdBlock - 拦截整个网络的广告"
+    "message": "Bloky - 拦截整个网络的广告"
   },
   "description_edge": {
-    "message": "AdBlock。排名第一的广告拦截应用，下载量超过 2 亿。拦截网页上的广告。",
+    "message": "Bloky。排名第一的广告拦截应用，下载量超过 2 亿。拦截网页上的广告。",
     "description": "Description for the AdBlock for Edge extension. Should not exceed 132 characters."
   },
   "description_yt": {
-    "message": "AdBlock 提供的唯一能够拦截 YouTube 广告的应用，最受欢迎的 Chrome 扩展，拥有超过 6000 万用户",
+    "message": "Bloky 提供的唯一能够拦截 YouTube 广告的应用，最受欢迎的 Chrome 扩展，拥有超过 6000 万用户",
     "description": "Description for the AdBlock on YouTube extension. Should not exceed 132 characters."
   },
   "name_adblock_on_youtube": {
-    "message": "AdBlock on YouTube",
+    "message": "Bloky on YouTube",
     "description": "Name of version of the AdBlock extension that only blocks ads on YouTube. Other strings that refer to the 'AdBlock on YouTube' extension should use this name."
   },
   "adblock_click_for_details": {
-    "message": "AdBlock - 点击查看详情",
+    "message": "Bloky - 点击查看详情",
     "description": "Tooltip on the AdBlock button, to help users understand that they can click the button to access more options."
   },
   "buttoncancel": {
@@ -56,15 +56,15 @@
     "description": "Edit filter(s) manually button"
   },
   "optionstitle": {
-    "message": "AdBlock 选项",
+    "message": "Bloky 选项",
     "description": "Title for the Options page"
   },
   "optionstitle_yt": {
-    "message": "AdBlock on YouTube 选项",
+    "message": "Bloky on YouTube 选项",
     "description": "Title for the Options page for the 'AdBlock on YouTube' extension."
   },
   "chromebutton_how_to_hide2": {
-    "message": "右击 AdBlock 按钮，然后选择“在 Chrome 菜单中隐藏”。要显示，请点击 Chrome 菜单，右击 AdBlock 按钮，然后选择“在工具栏中显示”。",
+    "message": "右击 Bloky 按钮，然后选择“在 Chrome 菜单中隐藏”。要显示，请点击 Chrome 菜单，右击 Bloky 按钮，然后选择“在工具栏中显示”。",
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Hide Button' should match the text that Chrome displays when you right click a toolbar button."
   },
   "operabutton_how_to_hide2": {
@@ -72,7 +72,7 @@
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Hide Button' should match the text that Opera displays on the Extensions page."
   },
   "safaributton_how_to_hide2": {
-    "message": "要隐藏按钮，右击 Safari 的工具栏。选择“自定工具栏”，然后将 AdBlock 按钮拖出工具栏。将其拖回到工具栏来即可再次显示。",
+    "message": "要隐藏按钮，右击 Safari 的工具栏。选择“自定工具栏”，然后将 Bloky 按钮拖出工具栏。将其拖回到工具栏来即可再次显示。",
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Customize Toolbar' should match the text that Safari displays in the toolbar's context menu."
   },
   "ff_button_how_to_hide": {
@@ -104,7 +104,7 @@
     "description": "'Block an ad' wizard attribute choice page"
   },
   "blacklisternotsure_part_II": {
-    "message": "您随时都可以通过从AdBlock菜单中选择“撤消我在此页面上隐藏的项目”来撤消此操作。",
+    "message": "您随时都可以通过从Bloky菜单中选择“撤消我在此页面上隐藏的项目”来撤消此操作。",
     "description": "'Block an ad' wizard attribute choice page"
   },
   "hiddenelementmessagecount": {
@@ -210,7 +210,7 @@
     "description": "'Block an ad' wizard loading message"
   },
   "blockanadtitle": {
-    "message": "AdBlock隐藏向导",
+    "message": "Bloky隐藏向导",
     "description": "Title of the first two dialogs of the 'Block an ad' wizard"
   },
   "clickthead": {
@@ -218,15 +218,15 @@
     "description": "User has to click the ad they want to block."
   },
   "adblock_wont_run_on_pages_matching": {
-    "message": "AdBlock 不会在任何匹配下列规则的页面上运行：",
+    "message": "Bloky 不会在任何匹配下列规则的页面上运行：",
     "description": "Message displayed when the allowlist wizard will allowlist part of an entire website, for example '*.google.com/reader/*'.  The URL will appear on the next line."
   },
   "you_can_slide_to_change": {
-    "message": "你可以在下方滑动以更改 AdBlock 不运行的页面范围。",
+    "message": "你可以在下方滑动以更改 Bloky 不运行的页面范围。",
     "description": "allowlist slider usage instructions. Sometimes only one slider will show, and sometimes two will show, and if possible the text should handle both cases."
   },
   "whitelistertitle2": {
-    "message": "不运行 AdBlock 的页面范围",
+    "message": "不运行 Bloky 的页面范围",
     "description": "The title of the allowlist wizard (Don't run on this page/pages on this domain)"
   },
   "buttonexclude": {
@@ -242,7 +242,7 @@
     "description": "Checkbox in the allowlist wizard"
   },
   "wizardcantrunonframesets": {
-    "message": "此 AdBlock 功能不适用于此网站，因为该网站使用了过时的技术。可以在“选项”页面的“自定义”标签页中手动允许或拦截广告。",
+    "message": "此 Bloky 功能不适用于此网站，因为该网站使用了过时的技术。可以在“选项”页面的“自定义”标签页中手动允许或拦截广告。",
     "description": "Alert shown when the user tries to use a blocklist/allowlist wizard on an old website"
   },
   "subscribeconfirm": {
@@ -284,7 +284,7 @@
     "description": "Title of the first Options page tab"
   },
   "mac_app_message_options": {
-    "message": "Safari 版 AdBlock 现已登陆 Mac 应用！",
+    "message": "Safari 版 Bloky 现已登陆 Mac 应用！",
     "description": "Message to users on the Options page"
   },
   "betalabel": {
@@ -304,7 +304,7 @@
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "datacollectionoption": {
-    "message": "允许 AdBlock 收集匿名的拦截规则列表使用数据，以及被规则拦截内容的有关信息",
+    "message": "允许 Bloky 收集匿名的拦截规则列表使用数据，以及被规则拦截内容的有关信息",
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "updatedrightnow": {
@@ -418,11 +418,11 @@
     "description": "Label to remove a custom filter list"
   },
   "you_know_thats_a_bad_idea_right": {
-    "message": "使用的拦截规则列表越多，AdBlock 的运行速度就会越慢。使用列表过多甚至可能使你的浏览器在访问部分网站时崩溃。按“好”来订阅此列表。",
+    "message": "使用的拦截规则列表越多，Bloky 的运行速度就会越慢。使用列表过多甚至可能使你的浏览器在访问部分网站时崩溃。按“好”来订阅此列表。",
     "description": "Confirmation message shown to user if they try to subscribe to too many lists. The user will have two options: OK and Cancel."
   },
   "unsubscribe_from_all_confirmation": {
-    "message": "如果禁用所有的拦截规则列表，AdBlock 将无法拦截广告。我们建议你改为暂停 AdBlock。确定要取消订阅此列表吗？",
+    "message": "如果禁用所有的拦截规则列表，Bloky 将无法拦截广告。我们建议你改为暂停 Bloky。确定要取消订阅此列表吗？",
     "description": "Confirmation message shown to user if they try to unsubscribe from all filter lists. The user will have two options: OK and Cancel."
   },
   "filterstabtitle": {
@@ -438,7 +438,7 @@
     "description": "Title for links to view filter lists on website"
   },
   "updatenowmessage2": {
-    "message": "AdBlock 会自动获取更新；你也可以选择[[立即更新]]",
+    "message": "Bloky 会自动获取更新；你也可以选择[[立即更新]]",
     "description": "Update filters text and button"
   },
   "orenteraurl": {
@@ -546,7 +546,7 @@
     "description": "'Hide a section of a webpage' part on the Customize tab of the Options page."
   },
   "tabcustomizetitle": {
-    "message": "自定义 AdBlock",
+    "message": "自定义 Bloky",
     "description": "Title of the Customize tab of the Options page"
   },
   "filterlistsrock": {
@@ -582,7 +582,7 @@
     "description": "Message of the CSS-hiding section (Hide a section of a webpage) on the Customize tab"
   },
   "excludedomainorurl": {
-    "message": "不允许 AdBlock 拦截任何内容的域名或 URL",
+    "message": "不允许 Bloky 拦截任何内容的域名或 URL",
     "description": "Message of the exclude section (Show ads on a webpage or domain) on the Customize tab"
   },
   "blockdomain": {
@@ -618,7 +618,7 @@
     "description": "Reminder to click 'Save'"
   },
   "adblockreportinganad": {
-    "message": "AdBlock - 报告广告",
+    "message": "Bloky - 报告广告",
     "description": "Title of the ad report page"
   },
   "adreportintro": {
@@ -678,7 +678,7 @@
     "description": "On the ad report page, telling the user there is nothing to do as the ad they were seeing is now blocked."
   },
   "disableallextensions": {
-    "message": "禁用除 AdBlock 之外的所有扩展：",
+    "message": "禁用除 Bloky 之外的所有扩展：",
     "description": "Instruction on ad report page"
   },
   "disableforchromestepone": {
@@ -706,7 +706,7 @@
     "description": "On the ad report page, alert notifying users that we've disabled all other extensions"
   },
   "disableforchromeandsafaristeptwo": {
-    "message": "在除 AdBlock 之外的每个扩展旁边取消勾选“启用”。只保留 AdBlock 为启用状态。",
+    "message": "在除 Bloky 之外的每个扩展旁边取消勾选“启用”。只保留 Bloky 为启用状态。",
     "description": "Step 2 for disabling Chrome and Safari extensions"
   },
   "disableforsafaristepone": {
@@ -718,7 +718,7 @@
     "description": "Step 1 for disabling Edge extensions"
   },
   "disableforedgesteptwo": {
-    "message": "对于除 AdBlock 的每个扩展，点击齿轮图标然后将开关切换为关闭状态。",
+    "message": "对于除 Bloky 的每个扩展，点击齿轮图标然后将开关切换为关闭状态。",
     "description": "Step 2 for disabling Edge extensions"
   },
   "reenableadsonebyone": {
@@ -1038,7 +1038,7 @@
     "description": "Multiple choice option"
   },
   "nodefaultfilter1": {
-    "message": "我们没有针对该语言的默认拦截规则列表。\n请[[尝试查找支持此语言的列表]]或通过 AdBlock 菜单为你自己阻止此广告。",
+    "message": "我们没有针对该语言的默认拦截规则列表。\n请[[尝试查找支持此语言的列表]]或通过 Bloky 菜单为你自己阻止此广告。",
     "description": "Instructions on ad report page pointing users to EasyList subscriptions list."
   },
   "retryaftersubscribe": {
@@ -1072,7 +1072,7 @@
     "description": "Instruction for how to check Firefox for a reported ad. Don't translate the name 'Adblock Plus'."
   },
   "checkinfirefoxorchrome_2": {
-    "message": "如果你没有 Adblock Plus for Firefox 或 AdBlock for Chrome，请安装。",
+    "message": "如果你没有 Adblock Plus for Firefox 或 Bloky for Chrome，请安装。",
     "description": "Instruction for how to check Firefox/Chrome for a reported ad. Don't translate the name 'Adblock Plus'."
   },
   "checkinfirefox_3": {
@@ -1096,7 +1096,7 @@
     "description": "Instruction for how to check Chrome for a reported ad"
   },
   "ff_checkinchrome_2": {
-    "message": "如果你没有 AdBlock for Chrome，请安装。",
+    "message": "如果你没有 Bloky for Chrome，请安装。",
     "description": "Instruction for how to check Chrome for a reported ad"
   },
   "ff_checkinchrome_3": {
@@ -1130,7 +1130,7 @@
     "description": "Telling users who won't report an ad to us how to handle it for themselves"
   },
   "popup_menu_title": {
-    "message": "AdBlock 弹出菜单",
+    "message": "Bloky 弹出菜单",
     "description": "Title for the popup menu."
   },
   "block_an_ad_on_this_page": {
@@ -1222,11 +1222,11 @@
     "description": "Label at the bottom of the 'Customize' tab of the Options page"
   },
   "disabled_by_filter_lists": {
-    "message": "抱歉，根据你的某一个拦截规则列表，AdBlock 在此页面上被禁用。",
+    "message": "抱歉，根据你的某一个拦截规则列表，Bloky 在此页面上被禁用。",
     "description": "Message shown when a user tries to un-allowlist a web page that has been allowlisted by a rule in a subscribed filter list."
   },
   "disabled_by_filter_lists_yt": {
-    "message": "抱歉，根据您的选项设置，AdBlock on YouTube 在此页面上被禁用。",
+    "message": "抱歉，根据您的选项设置，Bloky on YouTube 在此页面上被禁用。",
     "description": "Message shown when a user tries to un-allowlist a web page that has been allowlisted by a rule in a subscribed filter list. Specific to the 'AdBlock on YouTube' extension."
   },
   "dont_run_on_pages_on_domain": {
@@ -1242,15 +1242,15 @@
     "description": "header title on the menu when a user is on tab that extensions are disabled on (Chrome settings, etc)"
   },
   "disabled": {
-    "message": "AdBlock已暂停",
+    "message": "Bloky已暂停",
     "description": "Title shown in menu when AdBlock is paused on all sites"
   },
   "disabled_on_all_sites": {
-    "message": "您已将AdBlock配置为在所有网站都保持暂停状态。",
+    "message": "您已将Bloky配置为在所有网站都保持暂停状态。",
     "description": "Message shown in menu when AdBlock is paused on all sites"
   },
   "disabled_on_this_page": {
-    "message": "AdBlock 在此页面上被禁用。",
+    "message": "Bloky 在此页面上被禁用。",
     "description": "Message shown in toolbar button on web pages that have been allowlisted"
   },
   "disabled_on_this_channel": {
@@ -1258,23 +1258,23 @@
     "description": "Message shown in the toolbar button menu on YouTube channel pages and videos that have been allowlisted."
   },
   "enable_adblock": {
-    "message": "在此页面上启用 AdBlock",
+    "message": "在此页面上启用 Bloky",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
   "status_paused": {
-    "message": "AdBlock 已暂停。",
+    "message": "Bloky 已暂停。",
     "description": "Message shown in toolbar button when AdBlock is not running"
   },
   "status_universal_paused": {
-    "message": "AdBlock 已在所有网站上暂停。",
+    "message": "Bloky 已在所有网站上暂停。",
     "description": "Message shown in toolbar button when AdBlock is not running on all domains"
   },
   "status_domain_paused": {
-    "message": "本次访问已暂停AdBlock。您可能需要刷新页面才能看到所做的更改。",
+    "message": "本次访问已暂停Bloky。您可能需要刷新页面才能看到所做的更改。",
     "description": "Message shown in toolbar button when AdBlock is not running on a specific domain"
   },
   "status_allowlisted": {
-    "message": "您已将AdBlock配置为每次访问此网站时都保持暂停状态。",
+    "message": "您已将Bloky配置为每次访问此网站时都保持暂停状态。",
     "description": "Message shown in toolbar button when AdBlock is not running on a page or website"
   },
   "resume_blocking_ads": {
@@ -1296,15 +1296,15 @@
     "description": "Message shown on the premium tab of the option page when user is a licensed premium user"
   },
   "unpause_adblock": {
-    "message": "恢复运行 AdBlock",
+    "message": "恢复运行 Bloky",
     "description": "Link text to start blocking ads again, displayed immediately after 'AdBlock is paused'"
   },
   "domain_unpause_adblock": {
-    "message": "在此网站上恢复运行 AdBlock",
+    "message": "在此网站上恢复运行 Bloky",
     "description": "Link text to start blocking ads again, displayed immediately after 'AdBlock is paused on this site'"
   },
   "pause_adblock": {
-    "message": "暂停 AdBlock",
+    "message": "暂停 Bloky",
     "description": "Menu entry to pause AdBlock (stop blocking ads)"
   },
   "pause_adblock_everywhere": {
@@ -1324,7 +1324,7 @@
     "description": "Menu entry to pause the extension (stop blocking ads)"
   },
   "safaricontentblockingpausemessage": {
-    "message": "若要在开启内容拦截的情况下暂停 AdBlock，请选择 Safari 菜单 > 首选项 > 扩展 > AdBlock，取消选中“启用 AdBlock”。",
+    "message": "若要在开启内容拦截的情况下暂停 Bloky，请选择 Safari 菜单 > 首选项 > 扩展 > Bloky，取消选中“启用 Bloky”。",
     "description": "Alert displayed after clicking 'Pause AdBlock' in the AdBlock menu while Safari Content blocking is enabled."
   },
   "safaricontentblockinglimitexceeded": {
@@ -1340,7 +1340,7 @@
     "description": "Title of a notification shown to Safari Content Blocking users with too many filter list rules."
   },
   "safarinotificationbody": {
-    "message": "请禁用某些拦截规则列表。在 AdBlock 选项中了解更多内容。",
+    "message": "请禁用某些拦截规则列表。在 Bloky 选项中了解更多内容。",
     "description": "Body of a notification shown to Safari Content Blocking users with too many filter list rules."
   },
   "undo_last_block": {
@@ -1364,7 +1364,7 @@
     "description": "Toolbar button menu entry to hide the AdBlock button"
   },
   "donate_to_adblock": {
-    "message": "喜欢 AdBlock 吗？请考虑捐赠支持！",
+    "message": "喜欢 Bloky 吗？请考虑捐赠支持！",
     "description": "Text of a donate link in the toolbar button menu"
   },
   "help_and_feedback": {
@@ -1396,7 +1396,7 @@
     "description": "A tab on the Options page"
   },
   "translators": {
-    "message": "点击[[这里]]了解有关如何帮助翻译 AdBlock 的更多信息",
+    "message": "点击[[这里]]了解有关如何帮助翻译 Bloky 的更多信息",
     "description": "A link on the Options page / translators tab to a KB article about how to help translate AdBlock"
   },
   "report_ad_on_page": {
@@ -1416,7 +1416,7 @@
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "onpage_messages": {
-    "message": "允许 AdBlock 在网页上向我显示相关的消息",
+    "message": "允许 Bloky 在网页上向我显示相关的消息",
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "work_around_hulu_problems": {
@@ -1448,7 +1448,7 @@
     "description": "Message on the 'Customize' tab of the options page, explaining the danger of adding a allowlist filter for all websites with only some exceptions."
   },
   "storage_quota_exceeded": {
-    "message": "你使用 AdBlock 的存储量超过了上限。请取消订阅部分拦截规则列表！",
+    "message": "你使用 Bloky 的存储量超过了上限。请取消订阅部分拦截规则列表！",
     "description": "Message shown when the user uses more storage than allowed by the browser."
   },
   "firefox_explanation": {
@@ -1460,7 +1460,7 @@
     "description": "part one of the message to safari users on the popup menu"
   },
   "mac_app_message_menu_part_two": {
-    "message": "试用 AdBlock Mac 应用",
+    "message": "试用 Bloky Mac 应用",
     "description": "part two of the message to safari users on the popup menu"
   },
   "blocked_ads": {
@@ -1488,11 +1488,11 @@
     }
   },
   "show_on_adblock_button": {
-    "message": "在 AdBlock 按钮上显示已拦截的广告数量",
+    "message": "在 Bloky 按钮上显示已拦截的广告数量",
     "description": "Checkbox letting user choose whether the toolbar button should show a badge with the number of ads blocked"
   },
   "show_on_adblock_menu": {
-    "message": "在 AdBlock 菜单中显示已拦截的广告数量",
+    "message": "在 Bloky 菜单中显示已拦截的广告数量",
     "description": "Checkbox letting user choose whether the AdBlock menu should show the number of ads blocked"
   },
   "show_on_button": {
@@ -1516,7 +1516,7 @@
     "description": "Checkbox letting user choose whether to block annoyances on youtube.com (such as comments, suggested videos, annotations, and recommended channels)"
   },
   "show_devtools_panel": {
-    "message": "在开发工具中显示“AdBlock”面板",
+    "message": "在开发工具中显示“Bloky”面板",
     "description": "Checkbox letting user choose whether the AdBlock tab should be displayed in the developer tools window"
   },
   "adblockinglist": {
@@ -1572,7 +1572,7 @@
     }
   },
   "adblocksupport": {
-    "message": "AdBlock 支持",
+    "message": "Bloky 支持",
     "description": "Title of the Support tab of the Options page"
   },
   "whatsnew": {
@@ -1588,19 +1588,19 @@
     "description": "Subtitle on the Support tab"
   },
   "adblockupdates": {
-    "message": "AdBlock 更新",
+    "message": "Bloky 更新",
     "description": "Subtitle on the Support tab"
   },
   "ytadblockupdates": {
-    "message": "AdBlock on YouTube 更新",
+    "message": "Bloky on YouTube 更新",
     "description": "Subtitle on the Support tab. Specific to the 'AdBlock on YouTube' extension."
   },
   "whatmakesadblocktick": {
-    "message": "了解 AdBlock 幕后。",
+    "message": "了解 Bloky 幕后。",
     "description": "Subtitle on the Support tab. This section contains links to the AdBlock source code and contributors. In this context, 'tick' can be replaced with the word 'work'."
   },
   "aboutadblock": {
-    "message": "关于 AdBlock",
+    "message": "关于 Bloky",
     "description": "Subtitle on the Support tab"
   },
   "sourcecode": {
@@ -1644,11 +1644,11 @@
     "description": "Menu entry to open the resource list page"
   },
   "new_resourcelist_explanation_win": {
-    "message": "要显示所有请求，请右键单击该页，选择“检查”（Ctrl+Shift+I）然后选择“AdBlock”标签页。",
+    "message": "要显示所有请求，请右键单击该页，选择“检查”（Ctrl+Shift+I）然后选择“Bloky”标签页。",
     "description": "Message explaining how to access the resource list page on AdBlock 3.0+ (Windows)"
   },
   "new_resourcelist_explanation_osx": {
-    "message": "要显示所有请求，请右键单击该页，选择“检查”（Option+Cmd+I）然后选择“AdBlock”标签页。",
+    "message": "要显示所有请求，请右键单击该页，选择“检查”（Option+Cmd+I）然后选择“Bloky”标签页。",
     "description": "Message explaining how to access the resource list page on AdBlock 3.0+ (Mac)"
   },
   "noresourcessend2": {
@@ -1736,7 +1736,7 @@
     "description": "Message shown to users after disabling both EasyList Lite and EasyList via the Filter lists tab on the Options page."
   },
   "easylist_disable_done": {
-    "message": "AdBlock 使用 EasyList 拦截绝大多数网站上的广告。",
+    "message": "Bloky 使用 EasyList 拦截绝大多数网站上的广告。",
     "description": "Message shown to users after disabling EasyList via the Filter lists tab on the Options page."
   },
   "easylist_disable_how_to_reenable": {
@@ -1744,7 +1744,7 @@
     "description": "Message shown to users after disabling EasyList via the Filter lists tab on the Options page."
   },
   "easylist_lite_disable_done": {
-    "message": "AdBlock 使用 EasyList Lite 拦截绝大多数网站上的广告。",
+    "message": "Bloky 使用 EasyList Lite 拦截绝大多数网站上的广告。",
     "description": "Message shown to users after disabling both EasyList Lite and EasyList via the Filter lists tab on the Options page."
   },
   "easylist_lite_disable_how_to_reenable": {
@@ -1800,7 +1800,7 @@
     "description": "Error message shown when the user doesn't attach a screenshot to an ad report."
   },
   "adreport_response_success": {
-    "message": "完成！我们会尽快与你联系。请留言来自 AdBlock 的电子邮件。你将在邮件中找到指向帮助网站工单页面的链接，同时也能在我们回复你之前了解一些自助解决的参考方案。",
+    "message": "完成！我们会尽快与你联系。请留言来自 Bloky 的电子邮件。你将在邮件中找到指向帮助网站工单页面的链接，同时也能在我们回复你之前了解一些自助解决的参考方案。",
     "description": "Shown when a ticket has been sumbitted to AdBlock's support site successfully."
   },
   "adreport_response_invalid_file": {
@@ -1848,11 +1848,11 @@
     "description": "Part three of a message shown to users on the Customize tab of the Options page after invalid custom filters have been migrated"
   },
   "show_language_options": {
-    "message": "让我来选择 AdBlock 的显示语言",
+    "message": "让我来选择 Bloky 的显示语言",
     "description": "Option to let the user choose AdBlock's display language."
   },
   "display_language_selector": {
-    "message": "AdBlock 语言：",
+    "message": "Bloky 语言：",
     "description": "Text shown before language selector drop-down."
   },
   "myadblockoptions": {
@@ -1916,7 +1916,7 @@
     "description": "Title for Options page message letting users know of settings change."
   },
   "settings_changed": {
-    "message": "AdBlock 也做出了相应的变更，调整了部分运行方式，而你的部分设置可能也被更改。",
+    "message": "Bloky 也做出了相应的变更，调整了部分运行方式，而你的部分设置可能也被更改。",
     "description": "Part of Options page message letting users know of settings change."
   },
   "learn_more": {
@@ -1924,7 +1924,7 @@
     "description": "Link to Knowledge Base article with more information about the settings change"
   },
   "download_mac_app": {
-    "message": "要在你的 Mac 上获得最佳 AdBlock 体验，请下载 [[AdBlock for Safari Mac App]]！",
+    "message": "要在你的 Mac 上获得最佳 Bloky 体验，请下载 [[Bloky for Safari Mac App]]！",
     "description": "Link to download our Mac App. [[ and ]] will be replaced with HTML to link to the Mac App Store"
   },
   "note": {
@@ -1932,7 +1932,7 @@
     "description": "Indicates that the user should take note of the message that follows."
   },
   "changes_to_adblock": {
-    "message": "我们对 AdBlock 做出了一些变更！",
+    "message": "我们对 Bloky 做出了一些变更！",
     "description": "Link to Options page with more information about the changes."
   },
   "new_myadblock_feature_available": {
@@ -1960,7 +1960,7 @@
     "description": "The text of the header the MyAdBlock Options page"
   },
   "myadblock_picreplacement_exlained": {
-    "message": "从以下类别中进行选择，AdBlock 偶尔会将广告替换为高质量的图片，以照亮你的一天。",
+    "message": "从以下类别中进行选择，Bloky 偶尔会将广告替换为高质量的图片，以照亮你的一天。",
     "description": "The label text for the switch on the MyAdBlock Options page"
   },
   "error_msg_header": {
@@ -1968,7 +1968,7 @@
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
   "error_msg_partI": {
-    "message": "We're sorry, the AdBlock menu had trouble loading.",
+    "message": "We're sorry, the Bloky menu had trouble loading.",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
   "error_msg_reload_partI": {
@@ -2108,7 +2108,7 @@
     "description": "Text in theme box of the Themes tab of the Options page (no more than 60 characters)"
   },
   "myadblock_themes_description": {
-    "message": "改变 AdBlock 的外观，包括字体大小和颜色方案",
+    "message": "改变 Bloky 的外观，包括字体大小和颜色方案",
     "description": "Text briefly describing what themes do on the MyAdBlock tab of the Options page"
   },
   "stay_tuned": {
@@ -2164,15 +2164,15 @@
     "description": "Text of clickable element that applies the theme of a theme box in the Themes tab of the Options page"
   },
   "adblock_twitter": {
-    "message": "AdBlock Twitter",
+    "message": "Bloky Twitter",
     "description": "Title for link to AdBlock's Twitter account"
   },
   "adblock_facebook": {
-    "message": "AdBlock Facebook",
+    "message": "Bloky Facebook",
     "description": "Title for link to AdBlock's Facebook account"
   },
   "adblock_website": {
-    "message": "AdBlock 主页",
+    "message": "Bloky 主页",
     "description": "Title for link to AdBlock's website"
   },
   "callout_new_feature": {
@@ -2180,7 +2180,7 @@
     "description": "Text to callout a new feature"
   },
   "myadblock_short_description": {
-    "message": "体验针对捐赠者的专属有趣功能，感受更强大的 AdBlock",
+    "message": "体验针对捐赠者的专属有趣功能，感受更强大的 Bloky",
     "description": "Text substitle of myAdBlock page in the options page"
   },
   "image_swap": {
@@ -2306,7 +2306,7 @@
     "description": "Max 4 characters. If it's not possible to translate in four characters or less, please don't translate. Text in the badge of our extension toolbar icon."
   },
   "vpn_cta_msg": {
-    "message": "隆重介紹AdBlock VPN",
+    "message": "隆重介紹Bloky VPN",
     "description": "Text of a VPN call-to-action item in the popup menu."
   },
   "vpn_cta_msg_hover": {
@@ -2314,7 +2314,7 @@
     "description": "on hover text of a call-to-action item in the popup menu."
   },
   "new_cta_default_text": {
-    "message": "升级您的 AdBlock",
+    "message": "升级您的 Bloky",
     "description": "Text of a temporary call-to-action item in the popup menu."
   },
   "new_cta_hovered_text": {
@@ -2334,11 +2334,11 @@
     "description": "The text in a button visible to locked users in the MyAdBlock Options page"
   },
   "make_adblock_yours_title": {
-    "message": "打造您自己的 AdBlock",
+    "message": "打造您自己的 Bloky",
     "description": "The title of a feature box in the MyAdBlock Options page"
   },
   "make_adblock_yours_description": {
-    "message": "您可以通过简单易用的控件来控制 AdBlock 的外观、体验和字体大小。",
+    "message": "您可以通过简单易用的控件来控制 Bloky 的外观、体验和字体大小。",
     "description": "The main text of a feature box in the MyAdBlock Options page"
   },
   "see_photos_no_ads_title": {
@@ -2422,7 +2422,7 @@
     "description": "Message for help flow in popup menu."
   },
   "updating_filter_lists": {
-    "message": "AdBlock 正在更新您的拦截规则列表，以检查问题是否出在该处。",
+    "message": "Bloky 正在更新您的拦截规则列表，以检查问题是否出在该处。",
     "description": "Message for help flow in popup menu."
   },
   "checked_basics": {
@@ -2474,7 +2474,7 @@
     "description": "Message for help flow in popup menu."
   },
   "try_pausing": {
-    "message": "好的，我们试试暂停 AdBlock。",
+    "message": "好的，我们试试暂停 Bloky。",
     "description": "Message for help flow in popup menu."
   },
   "reload_when_ready": {
@@ -2486,7 +2486,7 @@
     "description": "Message for help flow in popup menu."
   },
   "issue_unrelated_adblock": {
-    "message": "该网站似乎存在与 AdBlock 无关的问题。",
+    "message": "该网站似乎存在与 Bloky 无关的问题。",
     "description": "Message for help flow in popup menu."
   },
   "contact_the_site": {
@@ -2502,11 +2502,11 @@
     "description": "Message for help flow in popup menu."
   },
   "paused_site_issue": {
-    "message": "AdBlock 目前已暂停，因此该网站看来存在与 AdBlock 无关的问题。",
+    "message": "Bloky 目前已暂停，因此该网站看来存在与 Bloky 无关的问题。",
     "description": "Message for help flow in popup menu."
   },
   "paused_not_blocking": {
-    "message": "AdBlock 目前已暂停，因此我们并未拦截广告。",
+    "message": "Bloky 目前已暂停，因此我们并未拦截广告。",
     "description": "Message for help flow in popup menu."
   },
   "resume_reload": {
@@ -2518,7 +2518,7 @@
     "description": "Message for help flow in popup menu."
   },
   "unpaused_reload": {
-    "message": "我们刚刚取消暂停了 AdBlock 并重新加载了页面。",
+    "message": "我们刚刚取消暂停了 Bloky 并重新加载了页面。",
     "description": "Message for help flow in popup menu."
   },
   "thanks": {
@@ -2554,7 +2554,7 @@
     "description": "Message for help flow in popup menu."
   },
   "premium_filters_details": {
-    "message": "单击[[此处]] 查看 AdBlock Premium 所拦截干扰的其他详情。",
+    "message": "单击[[此处]] 查看 Bloky 所拦截干扰的其他详情。",
     "description": "Message for help flow in popup menu."
   },
   "premium_filters_options": {
@@ -2582,11 +2582,11 @@
     "description": "Message for help flow in popup menu."
   },
   "paused_not_blocking_distraction": {
-    "message": "AdBlock 目前已暂停，因此我们并未拦截任何干扰信息。",
+    "message": "Bloky 目前已暂停，因此我们并未拦截任何干扰信息。",
     "description": "panel text on the help flow in popup menu."
   },
   "resume_reload_distraction": {
-    "message": "您要启用 AdBlock 并重新加载页面吗？",
+    "message": "您要启用 Bloky 并重新加载页面吗？",
     "description": "panel text on the help flow in popup menu."
   },
   "next": {
@@ -2606,7 +2606,7 @@
     "description": "Text for help flow in popup menu."
   },
   "adblock_logo": {
-    "message": "AdBlock 徽标",
+    "message": "Bloky 徽标",
     "description": "Text in the alt attribute of an AdBlock logo image."
   },
   "example_themes": {
@@ -2618,7 +2618,7 @@
     "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Image Swap feature."
   },
   "adblock_home": {
-    "message": "AdBlock 主页",
+    "message": "Bloky 主页",
     "description": "Text in the alt attribute of an AdBlock logo / icon that links to getadblock.com."
   },
   "preview_channel_image": {
@@ -2714,7 +2714,7 @@
     "description": "First sentence in the aria-label of the pop-up menu action to pause blocking ads on this site. This will be followed by the options 'Once' and 'Always'"
   },
   "adblock_will_pause_on_this_site": {
-    "message": "如果点击，AdBlock 将不再拦截此网站上的广告。",
+    "message": "如果点击，Bloky 将不再拦截此网站上的广告。",
     "description": "Second sentence in the aria-label of the pop-up menu action to pause blocking ads on this site."
   },
   "pause_on_all_sites": {
@@ -2722,11 +2722,11 @@
     "description": "First sentence in the aria-label of the pop-up menu action to pause blocking ads on all sites."
   },
   "adblock_will_pause_on_all_sites": {
-    "message": "如果点击，AdBlock 将不再拦截所有网站上的广告。",
+    "message": "如果点击，Bloky 将不再拦截所有网站上的广告。",
     "description": "Second sentence in the aria-label of the pop-up menu action to pause blocking ads on all sites."
   },
   "adblock_will_block_ads_again": {
-    "message": "如果点击，AdBlock 会再次拦截广告。",
+    "message": "如果点击，Bloky 会再次拦截广告。",
     "description": "Second sentence in the aria-label of the pop-up menu action to resume blocking ads."
   },
   "resume_blocking_ads_period": {
@@ -2741,20 +2741,16 @@
     "message": "Premium",
     "description": "Abbreviated name of the AdBlock upgrade."
   },
-  "adblock_premium": {
-    "message": "AdBlock Premium",
-    "description": "Full name of the AdBlock upgrade."
-  },
   "premium_page_title": {
-    "message": "AdBlock Premium：浏览互联网的更好方法。",
+    "message": "Bloky：浏览互联网的更好方法。",
     "description": "The text of the header the AdBlock Premium Options page"
   },
   "premium_upsell_text": {
-    "message": "立即使用 AdBlock VPN 解锁更安全、无边界的互联网",
+    "message": "立即使用 Bloky VPN 解锁更安全、无边界的互联网",
     "description": "The text on the premium upsell of AdBlock Premium in Options page"
   },
   "premium_benefits_explained": {
-    "message": "为感谢您支持并启用AdBlock Premium，您将在最新工具和功能推出时获得优先使用权。",
+    "message": "为感谢您支持并启用Bloky，您将在最新工具和功能推出时获得优先使用权。",
     "description": "Main text of the teaser AdBlock Premium feature in the AdBlock Premium tab of the Options page"
   },
   "manage_subscription": {
@@ -2790,7 +2786,7 @@
     "description": "Part 1 of a call-to-action on the blocklist wizard"
   },
   "adblock_looked_like_this": {
-    "message": "如果AdBlock采用这种外观怎么样？",
+    "message": "如果Bloky采用这种外观怎么样？",
     "description": "Part 1 of a call-to-action on the Popup menu"
   },
   "check_out_themes": {
@@ -2814,7 +2810,7 @@
     "description": "Part 2 of a call-to-action on the Popup menu"
   },
   "notification_antiadblock_message": {
-    "message": "已知该网站会向 AdBlock 用户显示定向消息。您希望 AdBlock 隐藏定向消息吗？"
+    "message": "已知该网站会向 Bloky 用户显示定向消息。您希望 Bloky 隐藏定向消息吗？"
   },
   "notification_antiadblock_title": {
     "message": "是否隐藏定向消息？"
@@ -2865,11 +2861,11 @@
     "description": "Error shown when the user tries to add a filter that is already active as an experiment filter to their custom filters"
   },
   "love_adblock": {
-    "message": "喜欢 AdBlock 吗？",
+    "message": "喜欢 Bloky 吗？",
     "description": "Text in a button that asks users to rate us."
   },
   "show_some_love": {
-    "message": "展示你对 AdBlock 的喜爱！",
+    "message": "展示你对 Bloky 的喜爱！",
     "description": "Title of the tooltip of the rate us button CTA in the Options page."
   },
   "support_with_a_review": {
@@ -2885,7 +2881,7 @@
     "description": "Text of a menu item in the popup menu asking users to leave us a review."
   },
   "vpn_coming_soon": {
-    "message": "查看 AdBlock 即将推出的功能",
+    "message": "查看 Bloky 即将推出的功能",
     "description": "Text of the tooltip of the rate us button CTA in the Options page."
   },
   "join_vpn_waitlist": {
@@ -2893,11 +2889,11 @@
     "description": "Text of a menu item in the popup menu asking users to leave us a review."
   },
   "adblock_vpn": {
-    "message": "AdBlock VPN",
+    "message": "Bloky VPN",
     "description": "Text of a Options page lower menu button"
   },
   "adblock_newsletter": {
-    "message": "AdBlock 电子通讯",
+    "message": "Bloky 电子通讯",
     "description": "Text of a Options page lower menu button"
   },
   "keep_touch": {
@@ -2913,11 +2909,11 @@
     "description": "Text of a Options page lower menu button"
   },
   "added_mailing_list": {
-    "message": "您已被添加到 AdBlock 邮件列表中。",
+    "message": "您已被添加到 Bloky 邮件列表中。",
     "description": "Text of a Options page lower menu button"
   },
   "sign_up_mailing": {
-    "message": "注册加入我们的邮件列表，以及时获取 AdBlock 的最新信息。",
+    "message": "注册加入我们的邮件列表，以及时获取 Bloky 的最新信息。",
     "description": "Text of a Options page lower menu button"
   },
   "email_address_placeholder": {
@@ -2955,7 +2951,7 @@
     }
   },
   "enjoying_adblock": {
-    "message": "喜欢 AdBlock 吗？",
+    "message": "喜欢 Bloky 吗？",
     "description": "Text of a footer in the popup menu help flow asking users to leave us a review."
   },
   "back_help_flow": {
@@ -2975,15 +2971,15 @@
     "description": "On page title of the statistics page of the Options page"
   },
   "stats_opt_in_header": {
-    "message": "想查看您的 AdBlock 统计信息吗？ ",
+    "message": "想查看您的 Bloky 统计信息吗？ ",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_opt_in_msg": {
-    "message": "请选择加入本地统计收集以查看您的 AdBlock 统计信息，例如您在哪些网站上拦截了最多的广告和跟踪代码，一段时间内的拦截总数，Premium 用户还可查看交换的图像。",
+    "message": "请选择加入本地统计收集以查看您的 Bloky 统计信息，例如您在哪些网站上拦截了最多的广告和跟踪代码，一段时间内的拦截总数，Premium 用户还可查看交换的图像。",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_opt_in_local_msg": {
-    "message": "请也选择加入本地统计收集以查看您全部的 AdBlock 统计信息，例如您在哪些网站上拦截了最多的广告和跟踪代码，一段时间内的拦截总数，Premium 用户还可查看交换的图像。",
+    "message": "请也选择加入本地统计收集以查看您全部的 Bloky 统计信息，例如您在哪些网站上拦截了最多的广告和跟踪代码，一段时间内的拦截总数，Premium 用户还可查看交换的图像。",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_already_opted": {
@@ -2999,7 +2995,7 @@
     "description": "Text in the Opt In button on the statistics page of the Options page"
   },
   "stats_opt_in_data_collect": {
-    "message": "通过共享[[匿名使用情况数据]]来帮助改善 AdBlock",
+    "message": "通过共享[[匿名使用情况数据]]来帮助改善 Bloky",
     "description": "Text in the Opt In button on the statistics page of the Options page"
   },
   "stats_ads_blocked": {
@@ -3159,7 +3155,7 @@
     "description": "text on the image swap tab"
   },
   "custom_image_description": {
-    "message": "选择最多 9 张您希望 AdBlock 用来替换广告的图像",
+    "message": "选择最多 9 张您希望 Bloky 用来替换广告的图像",
     "description": "text on the image swap tab"
   },
   "remove_image": {
@@ -3227,11 +3223,11 @@
     "description": "The button text on the popup menu"
   },
   "enable_on_this_site": {
-    "message": "在此网站上启用AdBlock",
+    "message": "在此网站上启用Bloky",
     "description": "GFC messaging on the popup menu"
   },
   "premium_access_without_disabling": {
-    "message": "AdBlock Premium的新功能使您无需禁用AdBlock，即可轻松访问您喜欢的内容。",
+    "message": "Bloky的新功能使您无需禁用Bloky，即可轻松访问您喜欢的内容。",
     "description": "GFC messaging on the popup menu"
   },
   "dont_show_reminder": {
@@ -3243,7 +3239,7 @@
     "description": "GFC messaging on the popup menu"
   },
   "access_without_disabling": {
-    "message": "无需禁用AdBlock，即可轻松访问您喜欢的内容！",
+    "message": "无需禁用Bloky，即可轻松访问您喜欢的内容！",
     "description": "GFC messaging on the popup menu"
   },
   "learn_more_lower": {
@@ -3277,14 +3273,6 @@
   "premium_filters_content_row_2": {
     "message": "隐藏热门网站上的绝大多数 Cookie 警告。 ",
     "description": "Line / row 2 on the Premium CTA on the Filters list tab"
-  },
-  "take_control": {
-    "message": "掌控自己的浏览器，随心所欲畅快浏览！",
-    "description": "Description of the distraction control option"
-  },
-  "premium_filters_maintained": {
-    "message": "Premium 筛选清单由我们的团队维护，提供远超我们标准筛选器的专属益处。",
-    "description": "Description of the Premium filter lists"
   },
   "premium_filter_easyprivacy": {
     "message": "拦截额外的跟踪器",
@@ -3399,7 +3387,7 @@
     "description": "Title text on panel in the help flow"
   },
   "updating_preferences": {
-    "message": "AdBlock 正在更新您的首选项。",
+    "message": "Bloky 正在更新您的首选项。",
     "description": "text on panel in the help flow"
   },
   "done_reload_page": {
@@ -3419,7 +3407,7 @@
     "description": "Sub-header describing Image Swap on the main Premium options page"
   },
   "personalize_experience": {
-    "message": "个性化您的浏览体验，充分利用 AdBlock for $browser$。",
+    "message": "个性化您的浏览体验，充分利用 Bloky for $browser$。",
     "description": "Description of Image Swap on the main Premium options page",
     "placeholders": {
       "browser": {
@@ -3433,15 +3421,15 @@
     "description": "Description of Image Swap on the main Premium options page"
   },
   "customize_your_adblock": {
-    "message": "自定义 AdBlock",
+    "message": "自定义 Bloky",
     "description": "Sub-header describing Themes on the main Premium options page"
   },
   "fun_way_customize": {
-    "message": "主题是在您的浏览器中自定义 AdBlock 的有趣方式。",
+    "message": "主题是在您的浏览器中自定义 Bloky 的有趣方式。",
     "description": "Description of Themes on the main Premium options page"
   },
   "take_control_easy": {
-    "message": "通过简单易用的控件来控制 AdBlock 的外观、体验和字体大小。让 AdBlock 为您所用。",
+    "message": "通过简单易用的控件来控制 Bloky 的外观、体验和字体大小。让 Bloky 为您所用。",
     "description": "Description of Themes on the main Premium options page"
   },
   "annoyance_free_browsing": {
@@ -3453,15 +3441,15 @@
     "description": "Header on the main Premium options page"
   },
   "see_fewer_walls": {
-    "message": "看到更少的反 AdBlock 墙",
+    "message": "看到更少的反 Bloky 墙",
     "description": "Sub-header describing Bypass Mode on the main Premium options page"
   },
   "popups_disable_adblock": {
-    "message": "要求您禁用 AdBlock 的弹窗在网络上越来越常见。",
+    "message": "要求您禁用 Bloky 的弹窗在网络上越来越常见。",
     "description": "Description of Bypass Mode on the main Premium options page"
   },
   "get_around_popups": {
-    "message": "有了旁路模式，您可以在不禁用 AdBlock 的情况下绕过一些弹窗。",
+    "message": "有了旁路模式，您可以在不禁用 Bloky 的情况下绕过一些弹窗。",
     "description": "Description of Bypass Mode on the main Premium options page"
   },
   "user_account_login": {
@@ -3471,7 +3459,7 @@
     "message": "我的账户"
   },
   "marketing_opt_out": {
-    "message": "允许 AdBlock 偶尔显示推广信息"
+    "message": "允许 Bloky 偶尔显示推广信息"
   },
   "unsupported_browser_banner": {
     "message": "您的浏览器版本不再受支持。请升级浏览器以继续接收扩展程序更新。",
@@ -3486,11 +3474,11 @@
     "description": "Text under the \"Hide AI Summaries\" toggle in the popup menu"
   },
   "onpage_options_ai_summaries_confirm_page_title": {
-    "message": "AdBlock 弹出菜单：确认隐藏 AI 搜索摘要",
+    "message": "Bloky 弹出菜单：确认隐藏 AI 搜索摘要",
     "description": "Title for the popup menu, Hide AI search summaries confirmation page."
   },
   "ai_summaries_confirm_text": {
-    "message": "开启此功能后，AdBlock 会隐藏搜索引擎在搜索结果上方显示的 AI 生成回答。您的搜索内容不会被更改，您可以随时在弹出菜单或“拦截规则列表”选项卡中关闭此功能。",
+    "message": "开启此功能后，Bloky 会隐藏搜索引擎在搜索结果上方显示的 AI 生成回答。您的搜索内容不会被更改，您可以随时在弹出菜单或“拦截规则列表”选项卡中关闭此功能。",
     "description": "Onscreen text for the popup menu, Hide AI search summaries confirmation page."
   },
   "confirm_ai_summaries_enable": {

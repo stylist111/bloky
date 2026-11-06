@@ -9,26 +9,26 @@
   },
   "name_devbuild": {
     "description": "Extension name to be shown for development builds. Note: this cannot be longer than 45 characters. Should not be translated",
-    "message": "Razvijalska graditev AdBlock"
+    "message": "Razvijalska graditev Bloky"
   },
   "name_releasebuild": {
     "description": "Extension name to be shown for release / published builds.  The extension name 'AdBlock' should NOT be translated, but the text after the dash should be translated",
-    "message": "AdBlock - Najboljša blokada oglasov"
+    "message": "Bloky - Najboljša blokada oglasov"
   },
   "name": {
     "description": "Extension name to be shown for release / published builds.  The extension name 'AdBlock' should NOT be translated, but the text after the dash should be translated",
-    "message": "AdBlock - Najboljša blokada oglasov"
+    "message": "Bloky - Najboljša blokada oglasov"
   },
   "description_edge": {
-    "message": "AdBlock. Najbolj popularna razširitev za blokiranje oglasov z več kot 200 milijonov prenosov. Blokira oglase po vsem spletu.",
+    "message": "Bloky. Najbolj popularna razširitev za blokiranje oglasov z več kot 200 milijonov prenosov. Blokira oglase po vsem spletu.",
     "description": "Description for the AdBlock for Edge extension. Should not exceed 132 characters."
   },
   "name_adblock_on_youtube": {
-    "message": "AdBlock on YouTube",
+    "message": "Bloky on YouTube",
     "description": "Name of version of the AdBlock extension that only blocks ads on YouTube. Other strings that refer to the 'AdBlock on YouTube' extension should use this name."
   },
   "adblock_click_for_details": {
-    "message": "AdBlock - kliknite za podrobnosti",
+    "message": "Bloky - kliknite za podrobnosti",
     "description": "Tooltip on the AdBlock button, to help users understand that they can click the button to access more options."
   },
   "buttoncancel": {
@@ -52,11 +52,11 @@
     "description": "Edit filter(s) manually button"
   },
   "optionstitle": {
-    "message": "AdBlock - možnosti",
+    "message": "Bloky - možnosti",
     "description": "Title for the Options page"
   },
   "chromebutton_how_to_hide2": {
-    "message": "Z desno miškino tipko kliknite AdBlockovo ikono in izberite \"Skrij v meniju Chroma\". Če jo želite ponovno prikazati, izberite Chromov meni, z desno miškino tipko kliknite na AdBlock in izberite »Pokaži v orodni vrstici«.",
+    "message": "Z desno miškino tipko kliknite AdBlockovo ikono in izberite \"Skrij v meniju Chroma\". Če jo želite ponovno prikazati, izberite Chromov meni, z desno miškino tipko kliknite na Bloky in izberite »Pokaži v orodni vrstici«.",
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Hide Button' should match the text that Chrome displays when you right click a toolbar button."
   },
   "operabutton_how_to_hide2": {
@@ -152,11 +152,11 @@
     "description": "'Block an ad' wizard loading message"
   },
   "adblock_wont_run_on_pages_matching": {
-    "message": "AdBlock ne bo deloval na straneh, ki ustrezajo:",
+    "message": "Bloky ne bo deloval na straneh, ki ustrezajo:",
     "description": "Message displayed when the allowlist wizard will allowlist part of an entire website, for example '*.google.com/reader/*'.  The URL will appear on the next line."
   },
   "you_can_slide_to_change": {
-    "message": "Če želite spremeniti strani, na katerih se AdBlock ne bo izvajal, premaknite spodnji drsnik.",
+    "message": "Če želite spremeniti strani, na katerih se Bloky ne bo izvajal, premaknite spodnji drsnik.",
     "description": "allowlist slider usage instructions. Sometimes only one slider will show, and sometimes two will show, and if possible the text should handle both cases."
   },
   "whitelistertitle2": {
@@ -172,7 +172,7 @@
     "description": "Checkbox in the allowlist wizard"
   },
   "wizardcantrunonframesets": {
-    "message": "Ta AdBlock funkcija na tej strani ne deluje zaradi zastarelih tehnolgij, ki jih stran uporablja. Lahko ročno dovolite ali blokirate oglase v zavihku 'Prilagodi' v nastavitvah.",
+    "message": "Ta Bloky funkcija na tej strani ne deluje zaradi zastarelih tehnolgij, ki jih stran uporablja. Lahko ročno dovolite ali blokirate oglase v zavihku 'Prilagodi' v nastavitvah.",
     "description": "Alert shown when the user tries to use a blocklist/allowlist wizard on an old website"
   },
   "subscribeconfirm": {
@@ -328,7 +328,7 @@
     "description": "Label to remove a custom filter list"
   },
   "you_know_thats_a_bad_idea_right": {
-    "message": "Tem več seznamov filtrov uporabljate, tem počasneje deluje AdBlock. Uporaba prevelike količine seznamov lahko celo privede do zrušitve vašega brskalnika. Izberite 'V redu', da se vseeno naročite na ta seznam.",
+    "message": "Tem več seznamov filtrov uporabljate, tem počasneje deluje Bloky. Uporaba prevelike količine seznamov lahko celo privede do zrušitve vašega brskalnika. Izberite 'V redu', da se vseeno naročite na ta seznam.",
     "description": "Confirmation message shown to user if they try to subscribe to too many lists. The user will have two options: OK and Cancel."
   },
   "filterstabtitle": {
@@ -428,7 +428,7 @@
     "description": "'Hide a section of a webpage' part on the Customize tab of the Options page."
   },
   "tabcustomizetitle": {
-    "message": "Prilagodite AdBlock",
+    "message": "Prilagodite Bloky",
     "description": "Title of the Customize tab of the Options page"
   },
   "filterlistsrock": {
@@ -464,7 +464,7 @@
     "description": "Message of the CSS-hiding section (Hide a section of a webpage) on the Customize tab"
   },
   "excludedomainorurl": {
-    "message": "Domena ali spletni naslov, kjer AdBlock naj ne blokira ničesar",
+    "message": "Domena ali spletni naslov, kjer Bloky naj ne blokira ničesar",
     "description": "Message of the exclude section (Show ads on a webpage or domain) on the Customize tab"
   },
   "blockdomain": {
@@ -500,7 +500,7 @@
     "description": "Reminder to click 'Save'"
   },
   "adblockreportinganad": {
-    "message": "AdBlock - Prijava oglasa",
+    "message": "Bloky - Prijava oglasa",
     "description": "Title of the ad report page"
   },
   "adreportintro": {
@@ -584,7 +584,7 @@
     "description": "On the ad report page, alert notifying users that we've disabled all other extensions"
   },
   "disableforchromeandsafaristeptwo": {
-    "message": "Odznačite potrditveno polje 'Omogočeno' pri vsaki razširitvi, razen AdBlocku. AdBlock pustite omogočen.",
+    "message": "Odznačite potrditveno polje 'Omogočeno' pri vsaki razširitvi, razen AdBlocku. Bloky pustite omogočen.",
     "description": "Step 2 for disabling Chrome and Safari extensions"
   },
   "disableforsafaristepone": {
@@ -954,7 +954,7 @@
     "description": "Instruction for how to check Chrome for a reported ad"
   },
   "ff_checkinchrome_2": {
-    "message": "Namestite AdBlock za brskalnik Chrome, v kolikor ga že niste.",
+    "message": "Namestite Bloky za brskalnik Chrome, v kolikor ga že niste.",
     "description": "Instruction for how to check Chrome for a reported ad"
   },
   "ff_checkinchrome_3": {
@@ -1072,7 +1072,7 @@
     "description": "Label at the bottom of the 'Customize' tab of the Options page"
   },
   "disabled_by_filter_lists": {
-    "message": "Oprostite, AdBlock je na tej strani onemogočen s strani enega izmed vaših filtrov.",
+    "message": "Oprostite, Bloky je na tej strani onemogočen s strani enega izmed vaših filtrov.",
     "description": "Message shown when a user tries to un-allowlist a web page that has been allowlisted by a rule in a subscribed filter list."
   },
   "dont_run_on_pages_on_domain": {
@@ -1080,15 +1080,15 @@
     "description": "Menu entry to open the allowlist wizard"
   },
   "disabled_on_this_page": {
-    "message": "AdBlock je onemogočen na tej strani.",
+    "message": "Bloky je onemogočen na tej strani.",
     "description": "Message shown in toolbar button on web pages that have been allowlisted"
   },
   "enable_adblock": {
-    "message": "Omogoči AdBlock na tej strani",
+    "message": "Omogoči Bloky na tej strani",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
   "status_paused": {
-    "message": "AdBlock je začasno ustavljen.",
+    "message": "Bloky je začasno ustavljen.",
     "description": "Message shown in toolbar button when AdBlock is not running"
   },
   "premium_status_short_msg": {
@@ -1096,11 +1096,11 @@
     "description": "Message shown on the premium tab of the option page when user is a licensed premium user"
   },
   "unpause_adblock": {
-    "message": "Ponovno aktiviraj AdBlock",
+    "message": "Ponovno aktiviraj Bloky",
     "description": "Link text to start blocking ads again, displayed immediately after 'AdBlock is paused'"
   },
   "pause_adblock": {
-    "message": "Začasno ustavi AdBlock",
+    "message": "Začasno ustavi Bloky",
     "description": "Menu entry to pause AdBlock (stop blocking ads)"
   },
   "browserestartrequired": {
@@ -1132,7 +1132,7 @@
     "description": "Toolbar button menu entry to hide the AdBlock button"
   },
   "donate_to_adblock": {
-    "message": "Vam je AdBlock všeč? Razmislite o donaciji :)",
+    "message": "Vam je Bloky všeč? Razmislite o donaciji :)",
     "description": "Text of a donate link in the toolbar button menu"
   },
   "help_and_feedback": {
@@ -1140,7 +1140,7 @@
     "description": "Text of a help link in the toolbar button menu"
   },
   "donate_to_youtube_adblock": {
-    "message": "Ti je AdBlock všeč? Razmisli o donaciji :)",
+    "message": "Ti je Bloky všeč? Razmisli o donaciji :)",
     "description": "Text of a donate link in the toolbar button menu. 'This' refers to the 'AdBlock on YouTube' extension."
   },
   "pwyw": {
@@ -1200,7 +1200,7 @@
     "description": "Message on the 'Customize' tab of the options page, explaining the danger of adding a allowlist filter for all websites with only some exceptions."
   },
   "storage_quota_exceeded": {
-    "message": "Presegli ste količino prostora, ki jo AdBlock lahko uporabi za shranjevanje. Prosimo, odjavite se od nekaterih seznamov filtriranja!",
+    "message": "Presegli ste količino prostora, ki jo Bloky lahko uporabi za shranjevanje. Prosimo, odjavite se od nekaterih seznamov filtriranja!",
     "description": "Message shown when the user uses more storage than allowed by the browser."
   },
   "firefox_explanation": {
@@ -1244,7 +1244,7 @@
     "description": "Checkbox letting user choose whether the AdBlock menu should show the number of ads blocked"
   },
   "show_devtools_panel": {
-    "message": "Prikaži 'AdBlock' konzolo v orodjih za razvijalce",
+    "message": "Prikaži 'Bloky' konzolo v orodjih za razvijalce",
     "description": "Checkbox letting user choose whether the AdBlock tab should be displayed in the developer tools window"
   },
   "adblockinglist": {
@@ -1300,7 +1300,7 @@
     }
   },
   "adblocksupport": {
-    "message": "AdBlock podpora",
+    "message": "Bloky podpora",
     "description": "Title of the Support tab of the Options page"
   },
   "englishonly": {
@@ -1312,7 +1312,7 @@
     "description": "Subtitle on the Support tab"
   },
   "whatmakesadblocktick": {
-    "message": "Ali želite videti, kako deluje AdBlock?",
+    "message": "Ali želite videti, kako deluje Bloky?",
     "description": "Subtitle on the Support tab. This section contains links to the AdBlock source code and contributors. In this context, 'tick' can be replaced with the word 'work'."
   },
   "debuginfo": {
@@ -1628,15 +1628,15 @@
     "description": "Text of clickable element that applies the theme of a theme box in the Themes tab of the Options page"
   },
   "adblock_twitter": {
-    "message": "AdBlock Twitter",
+    "message": "Bloky Twitter",
     "description": "Title for link to AdBlock's Twitter account"
   },
   "adblock_facebook": {
-    "message": "AdBlock Facebook",
+    "message": "Bloky Facebook",
     "description": "Title for link to AdBlock's Facebook account"
   },
   "adblock_website": {
-    "message": "Domača stran AdBlock",
+    "message": "Domača stran Bloky",
     "description": "Title for link to AdBlock's website"
   },
   "callout_new_feature": {
@@ -1708,7 +1708,7 @@
     "description": "Max 4 characters. If it's not possible to translate in four characters or less, please don't translate. Text in the badge of our extension toolbar icon."
   },
   "new_cta_default_text": {
-    "message": "Nagradi AdBlock",
+    "message": "Nagradi Bloky",
     "description": "Text of a temporary call-to-action item in the popup menu."
   },
   "get_it_now": {
@@ -1748,11 +1748,11 @@
     "description": "Message for help flow in popup menu."
   },
   "adblock_logo": {
-    "message": "AdBlock logotip",
+    "message": "Bloky logotip",
     "description": "Text in the alt attribute of an AdBlock logo image."
   },
   "adblock_home": {
-    "message": "Domača stran AdBlock",
+    "message": "Domača stran Bloky",
     "description": "Text in the alt attribute of an AdBlock logo / icon that links to getadblock.com."
   },
   "help": {
@@ -1794,10 +1794,6 @@
   "premium": {
     "message": "Premium",
     "description": "Abbreviated name of the AdBlock upgrade."
-  },
-  "adblock_premium": {
-    "message": "AdBlock Premium",
-    "description": "Full name of the AdBlock upgrade."
   },
   "manage_subscription": {
     "message": "Upravljaj naročnino",

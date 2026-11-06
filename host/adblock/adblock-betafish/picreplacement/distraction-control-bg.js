@@ -18,36 +18,21 @@
 /* For ESLint: List any global identifiers used in this file below */
 /* global browser, log */
 
-import { TELEMETRY } from "../telemetry/background";
-import SubscriptionAdapter from "../subscriptionadapter";
-
-const sendDCReport = function (url, type, id) {
+// Bloky: instead of silently posting the page URL and browser details to
+// AdBlock's support server, open a pre-filled GitHub issue. The user sees
+// exactly what will be sent and decides whether to submit it.
+const sendDCReport = function (url, type) {
   if (!url || !type) {
     return;
   }
-  const reportData = {
-    url,
-    type,
-    platform:
-      TELEMETRY &&
-      `browser:${TELEMETRY.browser}, browser version:${TELEMETRY.browserVersion}, OS:${TELEMETRY.os}, OS version:${TELEMETRY.osVersion}`,
-    locale: browser.i18n.getUILanguage(),
-    version: browser.runtime.getManifest().version,
-  };
-  if (id) {
-    const subs = SubscriptionAdapter.getSubscriptionsMinusText();
-    if (subs && subs[id]) {
-      const lastUpdate = subs[id].lastDownload || 0;
-      reportData.filterListLastUpdate = new Date(lastUpdate * 1000);
-    }
-  }
-  const formData = new FormData();
-  formData.append("bug_report", JSON.stringify(reportData));
-  fetch("https://getadblock.com/freshdesk/bugReportDistractionControl.php", {
-    body: formData,
-    method: "post",
-  }).catch((error) => {
-    log("freshdesk returned error: ", error);
+  const issue = new URL("https://github.com/stylist111/bloky/issues/new");
+  issue.searchParams.set("title", `Distraction not hidden: ${new URL(url).hostname}`);
+  issue.searchParams.set(
+    "body",
+    `Page: ${url}\nBloky version: ${browser.runtime.getManifest().version}\n\nWhat is still shown:\n`,
+  );
+  browser.tabs.create({ url: issue.href }).catch((error) => {
+    log("could not open issue page: ", error);
   });
 };
 
@@ -55,6 +40,6 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.command !== "sendDCReport" || !message.url || !message.type) {
     return;
   }
-  sendDCReport(message.url, message.type, message.id);
+  sendDCReport(message.url, message.type);
   sendResponse({});
 });

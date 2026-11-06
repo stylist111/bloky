@@ -43,7 +43,7 @@ const processError = function (err, stack, message) {
         en: "Oops!",
       },
       error_msg_partI: {
-        en: "We're sorry, the AdBlock menu had trouble loading.",
+        en: "We're sorry, the Bloky menu had trouble loading.",
       },
       error_msg_reload_partI: {
         en: "Next, try reloading the extension by ",

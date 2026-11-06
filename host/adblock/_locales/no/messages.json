@@ -5,26 +5,26 @@
   },
   "name_devbuild": {
     "description": "Extension name to be shown for development builds. Note: this cannot be longer than 45 characters. Should not be translated",
-    "message": "AdBlock utviklings build"
+    "message": "Bloky utviklings build"
   },
   "name_releasebuild": {
     "description": "Extension name to be shown for release / published builds.  The extension name 'AdBlock' should NOT be translated, but the text after the dash should be translated",
-    "message": "AdBlock – den beste annonseblokkerer"
+    "message": "Bloky – den beste annonseblokkerer"
   },
   "name": {
     "description": "Extension name to be shown for release / published builds.  The extension name 'AdBlock' should NOT be translated, but the text after the dash should be translated",
-    "message": "AdBlock – den beste annonseblokkerer"
+    "message": "Bloky – den beste annonseblokkerer"
   },
   "description_edge": {
-    "message": "AdBlock. Reklameblokkerer #1 med over 200 millioner nedlastninger. Blokkerer reklamer over hele internettet.",
+    "message": "Bloky. Reklameblokkerer #1 med over 200 millioner nedlastninger. Blokkerer reklamer over hele internettet.",
     "description": "Description for the AdBlock for Edge extension. Should not exceed 132 characters."
   },
   "name_adblock_on_youtube": {
-    "message": "AdBlock på YouTube",
+    "message": "Bloky på YouTube",
     "description": "Name of version of the AdBlock extension that only blocks ads on YouTube. Other strings that refer to the 'AdBlock on YouTube' extension should use this name."
   },
   "adblock_click_for_details": {
-    "message": "AdBlock - Klikk for mer informasjon",
+    "message": "Bloky - Klikk for mer informasjon",
     "description": "Tooltip on the AdBlock button, to help users understand that they can click the button to access more options."
   },
   "buttoncancel": {
@@ -48,11 +48,11 @@
     "description": "Edit filter(s) manually button"
   },
   "optionstitle": {
-    "message": "AdBlock-innstillinger",
+    "message": "Bloky-innstillinger",
     "description": "Title for the Options page"
   },
   "chromebutton_how_to_hide2": {
-    "message": "Høyreklikk på AdBlock-knappen og velg 'Skjul i Chrome-menyen'. For å vise den, klikk på Chrome-menyen, høyreklikk på AdBlock-knappen, og velg 'Vis i verktøyraden'.",
+    "message": "Høyreklikk på Bloky-knappen og velg 'Skjul i Chrome-menyen'. For å vise den, klikk på Chrome-menyen, høyreklikk på Bloky-knappen, og velg 'Vis i verktøyraden'.",
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Hide Button' should match the text that Chrome displays when you right click a toolbar button."
   },
   "operabutton_how_to_hide2": {
@@ -148,15 +148,15 @@
     "description": "'Block an ad' wizard loading message"
   },
   "adblock_wont_run_on_pages_matching": {
-    "message": "AdBlock vil ikke kjøre på disse sidene:",
+    "message": "Bloky vil ikke kjøre på disse sidene:",
     "description": "Message displayed when the allowlist wizard will allowlist part of an entire website, for example '*.google.com/reader/*'.  The URL will appear on the next line."
   },
   "you_can_slide_to_change": {
-    "message": "Du kan skyve under for å endre akkurat hvilke sider AdBlock ikke kjører på.",
+    "message": "Du kan skyve under for å endre akkurat hvilke sider Bloky ikke kjører på.",
     "description": "allowlist slider usage instructions. Sometimes only one slider will show, and sometimes two will show, and if possible the text should handle both cases."
   },
   "whitelistertitle2": {
-    "message": "Ikke kjør AdBlock på...",
+    "message": "Ikke kjør Bloky på...",
     "description": "The title of the allowlist wizard (Don't run on this page/pages on this domain)"
   },
   "buttonexclude": {
@@ -206,7 +206,7 @@
     "description": "Title of the first Options page tab"
   },
   "mac_app_message_options": {
-    "message": "AdBlock for Safari er nå tilgjengelig som en Mac-app!",
+    "message": "Bloky for Safari er nå tilgjengelig som en Mac-app!",
     "description": "Message to users on the Options page"
   },
   "betalabel": {
@@ -226,7 +226,7 @@
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "datacollectionoption": {
-    "message": "Tillat AdBlock å samle inn anonyme filterliste-bruksdata, og informasjon om innholdet som blir blokkert av filterlister",
+    "message": "Tillat Bloky å samle inn anonyme filterliste-bruksdata, og informasjon om innholdet som blir blokkert av filterlister",
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "updatedrightnow": {
@@ -332,11 +332,11 @@
     "description": "Label to remove a custom filter list"
   },
   "you_know_thats_a_bad_idea_right": {
-    "message": "Jo flere lister du velger, dess tregere kjører AdBlock. Hvis du bruker for mange lister, kan nettleseren slutte å virke på noen sider. Trykk OK for å abonnere på listen uansett.",
+    "message": "Jo flere lister du velger, dess tregere kjører Bloky. Hvis du bruker for mange lister, kan nettleseren slutte å virke på noen sider. Trykk OK for å abonnere på listen uansett.",
     "description": "Confirmation message shown to user if they try to subscribe to too many lists. The user will have two options: OK and Cancel."
   },
   "unsubscribe_from_all_confirmation": {
-    "message": "AdBlock kan ikke blokkere reklamer hvis du deaktiverer alle filterlistene. Vi anbefaler å sette AdBlock på pause i stedet. Vil du avskrive deg fra denne listen likevel?",
+    "message": "Bloky kan ikke blokkere reklamer hvis du deaktiverer alle filterlistene. Vi anbefaler å sette Bloky på pause i stedet. Vil du avskrive deg fra denne listen likevel?",
     "description": "Confirmation message shown to user if they try to unsubscribe from all filter lists. The user will have two options: OK and Cancel."
   },
   "filterstabtitle": {
@@ -452,7 +452,7 @@
     "description": "'Hide a section of a webpage' part on the Customize tab of the Options page."
   },
   "tabcustomizetitle": {
-    "message": "Tilpass AdBlock",
+    "message": "Tilpass Bloky",
     "description": "Title of the Customize tab of the Options page"
   },
   "filterlistsrock": {
@@ -488,7 +488,7 @@
     "description": "Message of the CSS-hiding section (Hide a section of a webpage) on the Customize tab"
   },
   "excludedomainorurl": {
-    "message": "Domenet eller nettadressen hvor AdBlock ikke skal blokkere noe",
+    "message": "Domenet eller nettadressen hvor Bloky ikke skal blokkere noe",
     "description": "Message of the exclude section (Show ads on a webpage or domain) on the Customize tab"
   },
   "blockdomain": {
@@ -524,7 +524,7 @@
     "description": "Reminder to click 'Save'"
   },
   "adblockreportinganad": {
-    "message": "AdBlock - Rapporter en annonse",
+    "message": "Bloky - Rapporter en annonse",
     "description": "Title of the ad report page"
   },
   "adreportintro": {
@@ -584,7 +584,7 @@
     "description": "On the ad report page, telling the user there is nothing to do as the ad they were seeing is now blocked."
   },
   "disableallextensions": {
-    "message": "Slå av alle utvidelser, utenom AdBlock:",
+    "message": "Slå av alle utvidelser, utenom Bloky:",
     "description": "Instruction on ad report page"
   },
   "disableforchromestepone": {
@@ -612,7 +612,7 @@
     "description": "On the ad report page, alert notifying users that we've disabled all other extensions"
   },
   "disableforchromeandsafaristeptwo": {
-    "message": "Fjern avkrysningen av \"Aktiver\" ved alle utvidelser, unntatt AdBlock. La AdBlock forbli aktivert.",
+    "message": "Fjern avkrysningen av \"Aktiver\" ved alle utvidelser, unntatt Bloky. La Bloky forbli aktivert.",
     "description": "Step 2 for disabling Chrome and Safari extensions"
   },
   "disableforsafaristepone": {
@@ -624,7 +624,7 @@
     "description": "Step 1 for disabling Edge extensions"
   },
   "disableforedgesteptwo": {
-    "message": "For alle utvidelser bortsett fra AdBlock, klikk på girikonet (⚙), og klikk på Av/På-knappen for å endre den til Av.",
+    "message": "For alle utvidelser bortsett fra Bloky, klikk på girikonet (⚙), og klikk på Av/På-knappen for å endre den til Av.",
     "description": "Step 2 for disabling Edge extensions"
   },
   "reenableadsonebyone": {
@@ -944,7 +944,7 @@
     "description": "Multiple choice option"
   },
   "nodefaultfilter1": {
-    "message": "Vi har ikke noen standard-filterlister for det språket. Vennligst prøv å finn [[en passende liste som støtter dette språket]], eller blokker denne reklamen for deg selv gjennom AdBlock-menyen.",
+    "message": "Vi har ikke noen standard-filterlister for det språket. Vennligst prøv å finn [[en passende liste som støtter dette språket]], eller blokker denne reklamen for deg selv gjennom Bloky-menyen.",
     "description": "Instructions on ad report page pointing users to EasyList subscriptions list."
   },
   "retryaftersubscribe": {
@@ -978,7 +978,7 @@
     "description": "Instruction for how to check Firefox for a reported ad. Don't translate the name 'Adblock Plus'."
   },
   "checkinfirefoxorchrome_2": {
-    "message": "Installer Adblock Plus for Firefox, eller AdBlock for Chrome, hvis du ikke har dem.",
+    "message": "Installer Adblock Plus for Firefox, eller Bloky for Chrome, hvis du ikke har dem.",
     "description": "Instruction for how to check Firefox/Chrome for a reported ad. Don't translate the name 'Adblock Plus'."
   },
   "checkinfirefox_3": {
@@ -1002,7 +1002,7 @@
     "description": "Instruction for how to check Chrome for a reported ad"
   },
   "ff_checkinchrome_2": {
-    "message": "Installer AdBlock for Chrome hvis du ikke har gjort det.",
+    "message": "Installer Bloky for Chrome hvis du ikke har gjort det.",
     "description": "Instruction for how to check Chrome for a reported ad"
   },
   "ff_checkinchrome_3": {
@@ -1120,7 +1120,7 @@
     "description": "Label at the bottom of the 'Customize' tab of the Options page"
   },
   "disabled_by_filter_lists": {
-    "message": "Beklager, AdBlock er deaktivert på denne siden av en av dine filerlister.",
+    "message": "Beklager, Bloky er deaktivert på denne siden av en av dine filerlister.",
     "description": "Message shown when a user tries to un-allowlist a web page that has been allowlisted by a rule in a subscribed filter list."
   },
   "dont_run_on_pages_on_domain": {
@@ -1128,7 +1128,7 @@
     "description": "Menu entry to open the allowlist wizard"
   },
   "disabled_on_this_page": {
-    "message": "AdBlock er deaktivert på denne siden.",
+    "message": "Bloky er deaktivert på denne siden.",
     "description": "Message shown in toolbar button on web pages that have been allowlisted"
   },
   "disabled_on_this_channel": {
@@ -1136,15 +1136,15 @@
     "description": "Message shown in the toolbar button menu on YouTube channel pages and videos that have been allowlisted."
   },
   "enable_adblock": {
-    "message": "Aktiver AdBlock på denne siden",
+    "message": "Aktiver Bloky på denne siden",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
   "status_paused": {
-    "message": "AdBlock er satt på pause.",
+    "message": "Bloky er satt på pause.",
     "description": "Message shown in toolbar button when AdBlock is not running"
   },
   "status_universal_paused": {
-    "message": "AdBlock er midlertidig stanset på alle nettsider.",
+    "message": "Bloky er midlertidig stanset på alle nettsider.",
     "description": "Message shown in toolbar button when AdBlock is not running on all domains"
   },
   "resume_blocking_ads": {
@@ -1156,15 +1156,15 @@
     "description": "Message shown on the premium tab of the option page when user is a licensed premium user"
   },
   "unpause_adblock": {
-    "message": "Start AdBlock igjen",
+    "message": "Start Bloky igjen",
     "description": "Link text to start blocking ads again, displayed immediately after 'AdBlock is paused'"
   },
   "domain_unpause_adblock": {
-    "message": "Gjenopprett AdBlock på dette nettstedet",
+    "message": "Gjenopprett Bloky på dette nettstedet",
     "description": "Link text to start blocking ads again, displayed immediately after 'AdBlock is paused on this site'"
   },
   "pause_adblock": {
-    "message": "Sett AdBlock på pause",
+    "message": "Sett Bloky på pause",
     "description": "Menu entry to pause AdBlock (stop blocking ads)"
   },
   "pause_adblock_everywhere": {
@@ -1184,7 +1184,7 @@
     "description": "Menu entry to pause the extension (stop blocking ads)"
   },
   "safaricontentblockingpausemessage": {
-    "message": "For å pause AdBlock med innholdsblokkering aktivert, Velg Safari (i menylinjen) > innstillinger > utvidelser > AdBlock, og fjern krysset \"Aktiver AdBlock.",
+    "message": "For å pause Bloky med innholdsblokkering aktivert, Velg Safari (i menylinjen) > innstillinger > utvidelser > Bloky, og fjern krysset \"Aktiver Bloky.",
     "description": "Alert displayed after clicking 'Pause AdBlock' in the AdBlock menu while Safari Content blocking is enabled."
   },
   "safaricontentblockinglimitexceeded": {
@@ -1220,7 +1220,7 @@
     "description": "Toolbar button menu entry to hide the AdBlock button"
   },
   "donate_to_adblock": {
-    "message": "Elsker du AdBlock? Tenk over om du vil donere!",
+    "message": "Elsker du Bloky? Tenk over om du vil donere!",
     "description": "Text of a donate link in the toolbar button menu"
   },
   "help_and_feedback": {
@@ -1252,7 +1252,7 @@
     "description": "A tab on the Options page"
   },
   "translators": {
-    "message": "Lær mer om hvordan man kan hjelpe til med å oversette AdBlock [[her]]",
+    "message": "Lær mer om hvordan man kan hjelpe til med å oversette Bloky [[her]]",
     "description": "A link on the Options page / translators tab to a KB article about how to help translate AdBlock"
   },
   "report_ad_on_page": {
@@ -1296,7 +1296,7 @@
     "description": "Message on the 'Customize' tab of the options page, explaining the danger of adding a allowlist filter for all websites with only some exceptions."
   },
   "storage_quota_exceeded": {
-    "message": "Du har brukt mer plass enn AdBlock har til rådighet! Vennligst avslutt abonnementet fra noen filterlister!",
+    "message": "Du har brukt mer plass enn Bloky har til rådighet! Vennligst avslutt abonnementet fra noen filterlister!",
     "description": "Message shown when the user uses more storage than allowed by the browser."
   },
   "firefox_explanation": {
@@ -1308,7 +1308,7 @@
     "description": "part one of the message to safari users on the popup menu"
   },
   "mac_app_message_menu_part_two": {
-    "message": "Prøv AdBlock Mac applikasjonen",
+    "message": "Prøv Bloky Mac applikasjonen",
     "description": "part two of the message to safari users on the popup menu"
   },
   "blocked_ads": {
@@ -1336,11 +1336,11 @@
     }
   },
   "show_on_adblock_button": {
-    "message": "Vis antall annonser blokkert på AdBlock-knappen",
+    "message": "Vis antall annonser blokkert på Bloky-knappen",
     "description": "Checkbox letting user choose whether the toolbar button should show a badge with the number of ads blocked"
   },
   "show_on_adblock_menu": {
-    "message": "Vis antall annonser blokkert i AdBlock-menyen",
+    "message": "Vis antall annonser blokkert i Bloky-menyen",
     "description": "Checkbox letting user choose whether the AdBlock menu should show the number of ads blocked"
   },
   "show_on_button": {
@@ -1356,7 +1356,7 @@
     "description": "Label for checkbox letting user choose whether to block ads on youtube.com"
   },
   "show_devtools_panel": {
-    "message": "Vis 'AdBlock'-panelet i utviklerverktøyene",
+    "message": "Vis 'Bloky'-panelet i utviklerverktøyene",
     "description": "Checkbox letting user choose whether the AdBlock tab should be displayed in the developer tools window"
   },
   "adblockinglist": {
@@ -1412,7 +1412,7 @@
     }
   },
   "adblocksupport": {
-    "message": "AdBlock Støtte",
+    "message": "Bloky Støtte",
     "description": "Title of the Support tab of the Options page"
   },
   "englishonly": {
@@ -1420,15 +1420,15 @@
     "description": "Lets the user know that a link/page is only available in English."
   },
   "adblockupdates": {
-    "message": "AdBlock-oppdateringer",
+    "message": "Bloky-oppdateringer",
     "description": "Subtitle on the Support tab"
   },
   "whatmakesadblocktick": {
-    "message": "Vil du se hva som får AdBlock til å virke?",
+    "message": "Vil du se hva som får Bloky til å virke?",
     "description": "Subtitle on the Support tab. This section contains links to the AdBlock source code and contributors. In this context, 'tick' can be replaced with the word 'work'."
   },
   "aboutadblock": {
-    "message": "Om AdBlock",
+    "message": "Om Bloky",
     "description": "Subtitle on the Support tab"
   },
   "debuginfo": {
@@ -1468,11 +1468,11 @@
     "description": "Menu entry to open the resource list page"
   },
   "new_resourcelist_explanation_win": {
-    "message": "For å vise alle forespørsler, høyreklikk på siden, og så velg 'Inspiser' (Ctrl+Shift+i), og så velg 'AdBlock'-fanen.",
+    "message": "For å vise alle forespørsler, høyreklikk på siden, og så velg 'Inspiser' (Ctrl+Shift+i), og så velg 'Bloky'-fanen.",
     "description": "Message explaining how to access the resource list page on AdBlock 3.0+ (Windows)"
   },
   "new_resourcelist_explanation_osx": {
-    "message": "For å vise alle forespørsler, høyreklikk på siden, og så velg 'Inspiser' (Option+⌘+i), og så velg 'AdBlock'-fanen.",
+    "message": "For å vise alle forespørsler, høyreklikk på siden, og så velg 'Inspiser' (Option+⌘+i), og så velg 'Bloky'-fanen.",
     "description": "Message explaining how to access the resource list page on AdBlock 3.0+ (Mac)"
   },
   "noresourcessend2": {
@@ -1560,7 +1560,7 @@
     "description": "Message shown to users after disabling both EasyList Lite and EasyList via the Filter lists tab on the Options page."
   },
   "easylist_disable_done": {
-    "message": "AdBlock bruker EasyList til å blokkere annonser på de fleste nettsteder.",
+    "message": "Bloky bruker EasyList til å blokkere annonser på de fleste nettsteder.",
     "description": "Message shown to users after disabling EasyList via the Filter lists tab on the Options page."
   },
   "easylist_disable_how_to_reenable": {
@@ -1568,7 +1568,7 @@
     "description": "Message shown to users after disabling EasyList via the Filter lists tab on the Options page."
   },
   "easylist_lite_disable_done": {
-    "message": "AdBlock bruker EasyList eller EasyList Lite til å blokkere annonser på de fleste nettsteder.",
+    "message": "Bloky bruker EasyList eller EasyList Lite til å blokkere annonser på de fleste nettsteder.",
     "description": "Message shown to users after disabling both EasyList Lite and EasyList via the Filter lists tab on the Options page."
   },
   "easylist_lite_disable_how_to_reenable": {
@@ -1624,7 +1624,7 @@
     "description": "Error message shown when the user doesn't attach a screenshot to an ad report."
   },
   "adreport_response_success": {
-    "message": "Alt klart! Vi vil komme i kontakt så fort vi kan. I mellomtiden, se etter en E-post fra AdBlock. Du vil finne en lenke til billetten din på vår hjelpeside der, i tillegg til noen selvhjelpsråd hvis vi ikke kan komme tilbake til deg umiddelbart.",
+    "message": "Alt klart! Vi vil komme i kontakt så fort vi kan. I mellomtiden, se etter en E-post fra Bloky. Du vil finne en lenke til billetten din på vår hjelpeside der, i tillegg til noen selvhjelpsråd hvis vi ikke kan komme tilbake til deg umiddelbart.",
     "description": "Shown when a ticket has been sumbitted to AdBlock's support site successfully."
   },
   "adreport_response_invalid_file": {
@@ -1676,7 +1676,7 @@
     "description": "Option to let the user choose AdBlock's display language."
   },
   "display_language_selector": {
-    "message": "Vis AdBlock i",
+    "message": "Vis Bloky i",
     "description": "Text shown before language selector drop-down."
   },
   "myadblockoptions": {
@@ -1728,7 +1728,7 @@
     "description": "Title for Options page message letting users know of settings change."
   },
   "settings_changed": {
-    "message": "Som en forberedelse, så fungerer AdBlock annerledes nå og noen av dine innstillinger er kanskje endret.",
+    "message": "Som en forberedelse, så fungerer Bloky annerledes nå og noen av dine innstillinger er kanskje endret.",
     "description": "Part of Options page message letting users know of settings change."
   },
   "learn_more": {
@@ -1736,7 +1736,7 @@
     "description": "Link to Knowledge Base article with more information about the settings change"
   },
   "download_mac_app": {
-    "message": "For å få den beste AdBlock opplevelsen på Mac, vennligst last ned vår [[AdBlock for Safari Mac App!]]",
+    "message": "For å få den beste Bloky opplevelsen på Mac, vennligst last ned vår [[Bloky for Safari Mac App!]]",
     "description": "Link to download our Mac App. [[ and ]] will be replaced with HTML to link to the Mac App Store"
   },
   "note": {
@@ -1744,7 +1744,7 @@
     "description": "Indicates that the user should take note of the message that follows."
   },
   "changes_to_adblock": {
-    "message": "Vi har gjort endringer i AdBlock!",
+    "message": "Vi har gjort endringer i Bloky!",
     "description": "Link to Options page with more information about the changes."
   },
   "new_myadblock_feature_available": {
@@ -1772,7 +1772,7 @@
     "description": "The text of the header the MyAdBlock Options page"
   },
   "myadblock_picreplacement_exlained": {
-    "message": "Velg fra kategorien under og AdBlock vill fra tid til annen bytte ut reklamer med bilder av høy kvalitet for å lyse opp dagen din.",
+    "message": "Velg fra kategorien under og Bloky vill fra tid til annen bytte ut reklamer med bilder av høy kvalitet for å lyse opp dagen din.",
     "description": "The label text for the switch on the MyAdBlock Options page"
   },
   "error_msg_header": {
@@ -1812,7 +1812,7 @@
     "description": "A filter list explanation"
   },
   "filterwarning_removal2": {
-    "message": "AdBlock Advarsels Fjerning liste",
+    "message": "Bloky Advarsels Fjerning liste",
     "description": "A filter list. \"Adblock\" is written with a lowercase B in this string as it refers to ad blocking extensions in general, not just AdBlock specifically."
   },
   "filter_warning_removal_explained": {
@@ -1916,15 +1916,15 @@
     "description": "Text of clickable element that applies the theme of a theme box in the Themes tab of the Options page"
   },
   "adblock_twitter": {
-    "message": "AdBlock sin Twitter",
+    "message": "Bloky sin Twitter",
     "description": "Title for link to AdBlock's Twitter account"
   },
   "adblock_facebook": {
-    "message": "AdBlock sin Facebook",
+    "message": "Bloky sin Facebook",
     "description": "Title for link to AdBlock's Facebook account"
   },
   "adblock_website": {
-    "message": "AdBlock-hjemmeside",
+    "message": "Bloky-hjemmeside",
     "description": "Title for link to AdBlock's website"
   },
   "callout_new_feature": {
@@ -2092,7 +2092,7 @@
     "description": "Message for help flow in popup menu."
   },
   "adblock_logo": {
-    "message": "AdBlock-logo",
+    "message": "Bloky-logo",
     "description": "Text in the alt attribute of an AdBlock logo image."
   },
   "example_themes": {
@@ -2155,10 +2155,6 @@
     "message": "Premium",
     "description": "Abbreviated name of the AdBlock upgrade."
   },
-  "adblock_premium": {
-    "message": "AdBlock Premium",
-    "description": "Full name of the AdBlock upgrade."
-  },
   "manage_subscription": {
     "message": "Behandle abonnementet ditt",
     "description": "Text of link to manage the user's Premium subscription on the Premium tab of the Options page"
@@ -2195,7 +2191,7 @@
     "description": "Text of a menu item in the popup menu asking users to leave us a review."
   },
   "adblock_vpn": {
-    "message": "AdBlock VPN",
+    "message": "Bloky VPN",
     "description": "Text of a Options page lower menu button"
   },
   "email_address_placeholder": {
@@ -2203,7 +2199,7 @@
     "description": "Text of a Options page lower menu button"
   },
   "enjoying_adblock": {
-    "message": "Liker du AdBlock?",
+    "message": "Liker du Bloky?",
     "description": "Text of a footer in the popup menu help flow asking users to leave us a review."
   },
   "stats": {

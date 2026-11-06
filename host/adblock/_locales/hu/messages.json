@@ -9,30 +9,30 @@
   },
   "name_devbuild": {
     "description": "Extension name to be shown for development builds. Note: this cannot be longer than 45 characters. Should not be translated",
-    "message": "AdBlock fejlesztői verzió"
+    "message": "Bloky fejlesztői verzió"
   },
   "name_releasebuild": {
     "description": "Extension name to be shown for release / published builds.  The extension name 'AdBlock' should NOT be translated, but the text after the dash should be translated",
-    "message": "AdBlock - a legjobb hirdetésgátló"
+    "message": "Bloky - a legjobb hirdetésgátló"
   },
   "name": {
     "description": "Extension name to be shown for release / published builds.  The extension name 'AdBlock' should NOT be translated, but the text after the dash should be translated",
-    "message": "AdBlock - a legjobb hirdetésgátló"
+    "message": "Bloky - a legjobb hirdetésgátló"
   },
   "description_edge": {
-    "message": "AdBlock. Az elsőszámú hirdetés blokkoló, több mint 200 millió letöltéssel. Blokkolja a hirdetéseket szerte a hálón.",
+    "message": "Bloky. Az elsőszámú hirdetés blokkoló, több mint 200 millió letöltéssel. Blokkolja a hirdetéseket szerte a hálón.",
     "description": "Description for the AdBlock for Edge extension. Should not exceed 132 characters."
   },
   "description_yt": {
-    "message": "Az egyetlen YouTube hirdetésblokkoló az AdBlock jóvoltából, a legnépszerűbb Chrome bővítmény 60 millió felhasználóval világszerte",
+    "message": "Az egyetlen YouTube hirdetésblokkoló az Bloky jóvoltából, a legnépszerűbb Chrome bővítmény 60 millió felhasználóval világszerte",
     "description": "Description for the AdBlock on YouTube extension. Should not exceed 132 characters."
   },
   "name_adblock_on_youtube": {
-    "message": "AdBlock a YouTube-on",
+    "message": "Bloky a YouTube-on",
     "description": "Name of version of the AdBlock extension that only blocks ads on YouTube. Other strings that refer to the 'AdBlock on YouTube' extension should use this name."
   },
   "adblock_click_for_details": {
-    "message": "AdBlock - kattintson a részletekért",
+    "message": "Bloky - kattintson a részletekért",
     "description": "Tooltip on the AdBlock button, to help users understand that they can click the button to access more options."
   },
   "buttoncancel": {
@@ -56,15 +56,15 @@
     "description": "Edit filter(s) manually button"
   },
   "optionstitle": {
-    "message": "AdBlock opciók",
+    "message": "Bloky opciók",
     "description": "Title for the Options page"
   },
   "optionstitle_yt": {
-    "message": "AdBlock a YouTube-on opciók",
+    "message": "Bloky a YouTube-on opciók",
     "description": "Title for the Options page for the 'AdBlock on YouTube' extension."
   },
   "chromebutton_how_to_hide2": {
-    "message": "Jobb klikkeljen az AdBlock ikonra és válasssza az 'Elrejtés Chrome menüben'-t. Megjelenítéséhez kattintson a Chrome menüre, jobb klikk az AdBlock gombra, majd válassza a 'Eszköztáron tartás\"-t.",
+    "message": "Jobb klikkeljen az Bloky ikonra és válasssza az 'Elrejtés Chrome menüben'-t. Megjelenítéséhez kattintson a Chrome menüre, jobb klikk az Bloky gombra, majd válassza a 'Eszköztáron tartás\"-t.",
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Hide Button' should match the text that Chrome displays when you right click a toolbar button."
   },
   "operabutton_how_to_hide2": {
@@ -72,7 +72,7 @@
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Hide Button' should match the text that Opera displays on the Extensions page."
   },
   "safaributton_how_to_hide2": {
-    "message": "A gomb elrejtéséhez kattintson jobb gombbal a Safari eszköztárára, majd válassza az Eszköztár testreszabása menüpontot, aztán húzza le az AdBlock gombját az eszköztárról. Az eszköztárra való visszahúzásával újra megjelenítheti.",
+    "message": "A gomb elrejtéséhez kattintson jobb gombbal a Safari eszköztárára, majd válassza az Eszköztár testreszabása menüpontot, aztán húzza le az Bloky gombját az eszköztárról. Az eszköztárra való visszahúzásával újra megjelenítheti.",
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Customize Toolbar' should match the text that Safari displays in the toolbar's context menu."
   },
   "ff_button_how_to_hide": {
@@ -160,11 +160,11 @@
     "description": "'Block an ad' wizard loading message"
   },
   "adblock_wont_run_on_pages_matching": {
-    "message": "Az AdBlock nem fut az alábbiakkal megegyező oldalakon:",
+    "message": "Az Bloky nem fut az alábbiakkal megegyező oldalakon:",
     "description": "Message displayed when the allowlist wizard will allowlist part of an entire website, for example '*.google.com/reader/*'.  The URL will appear on the next line."
   },
   "you_can_slide_to_change": {
-    "message": "Alul a csúsztatással módosíthatja, hogy pontosan mely oldalakon ne fusson az AdBlock.",
+    "message": "Alul a csúsztatással módosíthatja, hogy pontosan mely oldalakon ne fusson az Bloky.",
     "description": "allowlist slider usage instructions. Sometimes only one slider will show, and sometimes two will show, and if possible the text should handle both cases."
   },
   "whitelistertitle2": {
@@ -180,7 +180,7 @@
     "description": "Checkbox in the allowlist wizard"
   },
   "wizardcantrunonframesets": {
-    "message": "Ez az AdBlock szolgáltatás nem működik ezen az oldalon, mert elavult technológiát használ. Az opciók oldal 'Testreszabás' fülén manuálisan blokkolhat vagy engedélyezhet tartalmakat.",
+    "message": "Ez az Bloky szolgáltatás nem működik ezen az oldalon, mert elavult technológiát használ. Az opciók oldal 'Testreszabás' fülén manuálisan blokkolhat vagy engedélyezhet tartalmakat.",
     "description": "Alert shown when the user tries to use a blocklist/allowlist wizard on an old website"
   },
   "subscribeconfirm": {
@@ -222,7 +222,7 @@
     "description": "Title of the first Options page tab"
   },
   "mac_app_message_options": {
-    "message": "Az AdBlock már elérhető a Safari-hoz Mac appként!",
+    "message": "Az Bloky már elérhető a Safari-hoz Mac appként!",
     "description": "Message to users on the Options page"
   },
   "betalabel": {
@@ -242,7 +242,7 @@
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "datacollectionoption": {
-    "message": "Szűrőlista-használati adatok és a szűrőlisták által blokkolt tartalmakra vonatkozó információk névtelen gyűjtésének engedélyezése az AdBlock számára",
+    "message": "Szűrőlista-használati adatok és a szűrőlisták által blokkolt tartalmakra vonatkozó információk névtelen gyűjtésének engedélyezése az Bloky számára",
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "updatedrightnow": {
@@ -356,11 +356,11 @@
     "description": "Label to remove a custom filter list"
   },
   "you_know_thats_a_bad_idea_right": {
-    "message": "Minél több szűrőlistát használ, annál lassabban fut az AdBlock. Túl sok lista használata akár a böngésző összeomlásához is vezethet egyes weboldalakon. Nyomja meg az OK gombot, ha mindenképp fel akar iratkozni a listára.",
+    "message": "Minél több szűrőlistát használ, annál lassabban fut az Bloky. Túl sok lista használata akár a böngésző összeomlásához is vezethet egyes weboldalakon. Nyomja meg az OK gombot, ha mindenképp fel akar iratkozni a listára.",
     "description": "Confirmation message shown to user if they try to subscribe to too many lists. The user will have two options: OK and Cancel."
   },
   "unsubscribe_from_all_confirmation": {
-    "message": "Az AdBlock nem tudja blokkolni a hirdetéseket, ha letiltja az összes szűrőlistát. Helyette az AdBlock szüneteltetését javasoljuk. Akkor is leiratkozik erről a listáról?",
+    "message": "Az Bloky nem tudja blokkolni a hirdetéseket, ha letiltja az összes szűrőlistát. Helyette az Bloky szüneteltetését javasoljuk. Akkor is leiratkozik erről a listáról?",
     "description": "Confirmation message shown to user if they try to unsubscribe from all filter lists. The user will have two options: OK and Cancel."
   },
   "filterstabtitle": {
@@ -476,7 +476,7 @@
     "description": "'Hide a section of a webpage' part on the Customize tab of the Options page."
   },
   "tabcustomizetitle": {
-    "message": "AdBlock testreszabása",
+    "message": "Bloky testreszabása",
     "description": "Title of the Customize tab of the Options page"
   },
   "filterlistsrock": {
@@ -512,7 +512,7 @@
     "description": "Message of the CSS-hiding section (Hide a section of a webpage) on the Customize tab"
   },
   "excludedomainorurl": {
-    "message": "A tartomány vagy url, ahol az AdBlock ne blokkoljon semmit",
+    "message": "A tartomány vagy url, ahol az Bloky ne blokkoljon semmit",
     "description": "Message of the exclude section (Show ads on a webpage or domain) on the Customize tab"
   },
   "blockdomain": {
@@ -548,7 +548,7 @@
     "description": "Reminder to click 'Save'"
   },
   "adblockreportinganad": {
-    "message": "AdBlock - Egy hirdetés bejelentése",
+    "message": "Bloky - Egy hirdetés bejelentése",
     "description": "Title of the ad report page"
   },
   "adreportintro": {
@@ -608,7 +608,7 @@
     "description": "On the ad report page, telling the user there is nothing to do as the ad they were seeing is now blocked."
   },
   "disableallextensions": {
-    "message": "Az AdBlock kivételével tiltson le minden kiegészítőt:",
+    "message": "Az Bloky kivételével tiltson le minden kiegészítőt:",
     "description": "Instruction on ad report page"
   },
   "disableforchromestepone": {
@@ -636,7 +636,7 @@
     "description": "On the ad report page, alert notifying users that we've disabled all other extensions"
   },
   "disableforchromeandsafaristeptwo": {
-    "message": "Törölje a jelölést az összes bővítmény melletti \"Engedélyezve\" jelölőnégyzetből az AdBlock kivételével. Hagyja az AdBlock-ot engedélyezve.",
+    "message": "Törölje a jelölést az összes bővítmény melletti \"Engedélyezve\" jelölőnégyzetből az Bloky kivételével. Hagyja az Bloky-ot engedélyezve.",
     "description": "Step 2 for disabling Chrome and Safari extensions"
   },
   "disableforsafaristepone": {
@@ -648,7 +648,7 @@
     "description": "Step 1 for disabling Edge extensions"
   },
   "disableforedgesteptwo": {
-    "message": "Az AdBlock kivételével minden bővítménynél kattintson a fogaskerékre, majd a Be gombra, hogy átváltson Ki-re.",
+    "message": "Az Bloky kivételével minden bővítménynél kattintson a fogaskerékre, majd a Be gombra, hogy átváltson Ki-re.",
     "description": "Step 2 for disabling Edge extensions"
   },
   "reenableadsonebyone": {
@@ -971,7 +971,7 @@
     "description": "Multiple choice option"
   },
   "nodefaultfilter1": {
-    "message": "Nincs alapértelmezett szűrőlistánk ehhez a nyelvhez.\nKérjük, [[keressen megfelelő listát, amely támogatja azt]], vagy blokkolja a hirdetést saját részére az AdBlock menü révén.",
+    "message": "Nincs alapértelmezett szűrőlistánk ehhez a nyelvhez.\nKérjük, [[keressen megfelelő listát, amely támogatja azt]], vagy blokkolja a hirdetést saját részére az Bloky menü révén.",
     "description": "Instructions on ad report page pointing users to EasyList subscriptions list."
   },
   "retryaftersubscribe": {
@@ -1001,11 +1001,11 @@
     "description": "instruction for how to check Firefox or Chrome for a reported ad"
   },
   "checkinfirefox_2": {
-    "message": "Telepítse az AdBlock Plus-t Firefox alá, ha még nincs meg.",
+    "message": "Telepítse az Bloky Plus-t Firefox alá, ha még nincs meg.",
     "description": "Instruction for how to check Firefox for a reported ad. Don't translate the name 'Adblock Plus'."
   },
   "checkinfirefoxorchrome_2": {
-    "message": "Telepítse az AdBlock Plus-t Firefox vagy az AdBlock-ot Chrome alá, ha még nincsenek meg.",
+    "message": "Telepítse az Bloky Plus-t Firefox vagy az Bloky-ot Chrome alá, ha még nincsenek meg.",
     "description": "Instruction for how to check Firefox/Chrome for a reported ad. Don't translate the name 'Adblock Plus'."
   },
   "checkinfirefox_3": {
@@ -1029,7 +1029,7 @@
     "description": "Instruction for how to check Chrome for a reported ad"
   },
   "ff_checkinchrome_2": {
-    "message": "Telepítse az AdBlock a Chrome-hoz, ha még nincs meg.",
+    "message": "Telepítse az Bloky a Chrome-hoz, ha még nincs meg.",
     "description": "Instruction for how to check Chrome for a reported ad"
   },
   "ff_checkinchrome_3": {
@@ -1063,7 +1063,7 @@
     "description": "Telling users who won't report an ad to us how to handle it for themselves"
   },
   "popup_menu_title": {
-    "message": "AdBlock felugró menü",
+    "message": "Bloky felugró menü",
     "description": "Title for the popup menu."
   },
   "block_an_ad_on_this_page": {
@@ -1155,11 +1155,11 @@
     "description": "Label at the bottom of the 'Customize' tab of the Options page"
   },
   "disabled_by_filter_lists": {
-    "message": "Sajnáljuk, az AdBlock le van tiltva ezen az oldalon az egyik szűrőlista által.",
+    "message": "Sajnáljuk, az Bloky le van tiltva ezen az oldalon az egyik szűrőlista által.",
     "description": "Message shown when a user tries to un-allowlist a web page that has been allowlisted by a rule in a subscribed filter list."
   },
   "disabled_by_filter_lists_yt": {
-    "message": "Sajnáljuk, az AdBlock a YouTube-on le van tiltva ezen az oldalon az egyik opció által.",
+    "message": "Sajnáljuk, az Bloky a YouTube-on le van tiltva ezen az oldalon az egyik opció által.",
     "description": "Message shown when a user tries to un-allowlist a web page that has been allowlisted by a rule in a subscribed filter list. Specific to the 'AdBlock on YouTube' extension."
   },
   "dont_run_on_pages_on_domain": {
@@ -1175,7 +1175,7 @@
     "description": "header title on the menu when a user is on tab that extensions are disabled on (Chrome settings, etc)"
   },
   "disabled_on_this_page": {
-    "message": "Az AdBlock le van tiltva ezen az oldalon.",
+    "message": "Az Bloky le van tiltva ezen az oldalon.",
     "description": "Message shown in toolbar button on web pages that have been allowlisted"
   },
   "disabled_on_this_channel": {
@@ -1183,15 +1183,15 @@
     "description": "Message shown in the toolbar button menu on YouTube channel pages and videos that have been allowlisted."
   },
   "enable_adblock": {
-    "message": "AdBlock engedélyezése ezen az oldalon",
+    "message": "Bloky engedélyezése ezen az oldalon",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
   "status_paused": {
-    "message": "Az AdBlock fel van föggesztve.",
+    "message": "Az Bloky fel van föggesztve.",
     "description": "Message shown in toolbar button when AdBlock is not running"
   },
   "status_universal_paused": {
-    "message": "Az AdBlock felfüggesztve minden webhelyen.",
+    "message": "Az Bloky felfüggesztve minden webhelyen.",
     "description": "Message shown in toolbar button when AdBlock is not running on all domains"
   },
   "resume_blocking_ads": {
@@ -1213,19 +1213,19 @@
     "description": "Message shown on the premium tab of the option page when user is a licensed premium user"
   },
   "premium_upsell_text": {
-    "message": "Fedezd fel még ma a biztonságosabb, határok nélküli internetet az AdBlock VPN-nel",
+    "message": "Fedezd fel még ma a biztonságosabb, határok nélküli internetet az Bloky VPN-nel",
     "description": "The text on the premium upsell of AdBlock Premium in Options page"
   },
   "unpause_adblock": {
-    "message": "Az AdBlock felfüggesztésének feloldása",
+    "message": "Az Bloky felfüggesztésének feloldása",
     "description": "Link text to start blocking ads again, displayed immediately after 'AdBlock is paused'"
   },
   "domain_unpause_adblock": {
-    "message": "Az AdBlock folytatása ezen az oldalon",
+    "message": "Az Bloky folytatása ezen az oldalon",
     "description": "Link text to start blocking ads again, displayed immediately after 'AdBlock is paused on this site'"
   },
   "pause_adblock": {
-    "message": "Az AdBlock felfüggesztése",
+    "message": "Az Bloky felfüggesztése",
     "description": "Menu entry to pause AdBlock (stop blocking ads)"
   },
   "pause_adblock_everywhere": {
@@ -1245,7 +1245,7 @@
     "description": "Menu entry to pause the extension (stop blocking ads)"
   },
   "safaricontentblockingpausemessage": {
-    "message": "Az AdBlock engedélyezett tartalomblokkolás melletti szüneteltetéséhez kérjük válassza a Safati (a menüsávon) > Környezeti beállítások > Bővítmények > AdBlock menüpontot, és törölje a jelölést az 'AdBlock engedéylezése' elől.",
+    "message": "Az Bloky engedélyezett tartalomblokkolás melletti szüneteltetéséhez kérjük válassza a Safati (a menüsávon) > Környezeti beállítások > Bővítmények > Bloky menüpontot, és törölje a jelölést az 'Bloky engedéylezése' elől.",
     "description": "Alert displayed after clicking 'Pause AdBlock' in the AdBlock menu while Safari Content blocking is enabled."
   },
   "safaricontentblockinglimitexceeded": {
@@ -1261,7 +1261,7 @@
     "description": "Title of a notification shown to Safari Content Blocking users with too many filter list rules."
   },
   "safarinotificationbody": {
-    "message": "Kérjük tiltson le néhány szűrólistát. További információ az AdBlock opciói közt.",
+    "message": "Kérjük tiltson le néhány szűrólistát. További információ az Bloky opciói közt.",
     "description": "Body of a notification shown to Safari Content Blocking users with too many filter list rules."
   },
   "undo_last_block": {
@@ -1281,7 +1281,7 @@
     "description": "Toolbar button menu entry to hide the AdBlock button"
   },
   "donate_to_adblock": {
-    "message": "Szereti az AdBlock-ot? Adományozzon!",
+    "message": "Szereti az Bloky-ot? Adományozzon!",
     "description": "Text of a donate link in the toolbar button menu"
   },
   "help_and_feedback": {
@@ -1289,7 +1289,7 @@
     "description": "Text of a help link in the toolbar button menu"
   },
   "donate_to_youtube_adblock": {
-    "message": "Teszik az AdBlock a YouTube-on? Adományozzon!",
+    "message": "Teszik az Bloky a YouTube-on? Adományozzon!",
     "description": "Text of a donate link in the toolbar button menu. 'This' refers to the 'AdBlock on YouTube' extension."
   },
   "pwyw": {
@@ -1313,7 +1313,7 @@
     "description": "A tab on the Options page"
   },
   "translators": {
-    "message": "Tudjon meg többet arról, hogy hogyan segíthet az AdBlock fordításában [[itt]]",
+    "message": "Tudjon meg többet arról, hogy hogyan segíthet az Bloky fordításában [[itt]]",
     "description": "A link on the Options page / translators tab to a KB article about how to help translate AdBlock"
   },
   "report_ad_on_page": {
@@ -1333,7 +1333,7 @@
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "onpage_messages": {
-    "message": "Engedély AdBlock üzenetek megjelenítése a weboldalokon ha releváns",
+    "message": "Engedély Bloky üzenetek megjelenítése a weboldalokon ha releváns",
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "work_around_hulu_problems": {
@@ -1361,7 +1361,7 @@
     "description": "Message on the 'Customize' tab of the options page, explaining the danger of adding a allowlist filter for all websites with only some exceptions."
   },
   "storage_quota_exceeded": {
-    "message": "Túllépte az AdBlock által használható tárterületet. Kérem iratkozzon le néhány szűrőlistáról!",
+    "message": "Túllépte az Bloky által használható tárterületet. Kérem iratkozzon le néhány szűrőlistáról!",
     "description": "Message shown when the user uses more storage than allowed by the browser."
   },
   "firefox_explanation": {
@@ -1373,7 +1373,7 @@
     "description": "part one of the message to safari users on the popup menu"
   },
   "mac_app_message_menu_part_two": {
-    "message": "Próbáld ki az AdBlock Mac appot",
+    "message": "Próbáld ki az Bloky Mac appot",
     "description": "part two of the message to safari users on the popup menu"
   },
   "blocked_ads": {
@@ -1401,11 +1401,11 @@
     }
   },
   "show_on_adblock_button": {
-    "message": "A blokkolt hirdetések számának megjelenítése az AdBlock gombján",
+    "message": "A blokkolt hirdetések számának megjelenítése az Bloky gombján",
     "description": "Checkbox letting user choose whether the toolbar button should show a badge with the number of ads blocked"
   },
   "show_on_adblock_menu": {
-    "message": "A blokkolt hirdetések számának megjelenítése az AdBlock menüjében",
+    "message": "A blokkolt hirdetések számának megjelenítése az Bloky menüjében",
     "description": "Checkbox letting user choose whether the AdBlock menu should show the number of ads blocked"
   },
   "show_on_button": {
@@ -1429,7 +1429,7 @@
     "description": "Checkbox letting user choose whether to block annoyances on youtube.com (such as comments, suggested videos, annotations, and recommended channels)"
   },
   "show_devtools_panel": {
-    "message": "Az 'AdBlock' panel megjelenítése a fejlesztői eszközökben",
+    "message": "Az 'Bloky' panel megjelenítése a fejlesztői eszközökben",
     "description": "Checkbox letting user choose whether the AdBlock tab should be displayed in the developer tools window"
   },
   "adblockinglist": {
@@ -1485,7 +1485,7 @@
     }
   },
   "adblocksupport": {
-    "message": "AdBlock ügyfélszolgálat",
+    "message": "Bloky ügyfélszolgálat",
     "description": "Title of the Support tab of the Options page"
   },
   "englishonly": {
@@ -1493,19 +1493,19 @@
     "description": "Lets the user know that a link/page is only available in English."
   },
   "adblockupdates": {
-    "message": "AdBlock frissítések",
+    "message": "Bloky frissítések",
     "description": "Subtitle on the Support tab"
   },
   "ytadblockupdates": {
-    "message": "AdBlock a YouTube-on frissítések",
+    "message": "Bloky a YouTube-on frissítések",
     "description": "Subtitle on the Support tab. Specific to the 'AdBlock on YouTube' extension."
   },
   "whatmakesadblocktick": {
-    "message": "Szeretné látni mitől ketyeg az AdBlock?",
+    "message": "Szeretné látni mitől ketyeg az Bloky?",
     "description": "Subtitle on the Support tab. This section contains links to the AdBlock source code and contributors. In this context, 'tick' can be replaced with the word 'work'."
   },
   "aboutadblock": {
-    "message": "Az AdBlock-ról",
+    "message": "Az Bloky-ról",
     "description": "Subtitle on the Support tab"
   },
   "debuginfo": {
@@ -1545,11 +1545,11 @@
     "description": "Menu entry to open the resource list page"
   },
   "new_resourcelist_explanation_win": {
-    "message": "Az összes kérelem megjelenítéséhez kattintson jobb egérgombbal a lapon, válassza a 'Vizsgálat' (Ctrl+Shift+I) menüpontot, majd az AdBlock fület.",
+    "message": "Az összes kérelem megjelenítéséhez kattintson jobb egérgombbal a lapon, válassza a 'Vizsgálat' (Ctrl+Shift+I) menüpontot, majd az Bloky fület.",
     "description": "Message explaining how to access the resource list page on AdBlock 3.0+ (Windows)"
   },
   "new_resourcelist_explanation_osx": {
-    "message": "Az összes kérelem megjelenítéséhez kattintson jobb egérgombbal a lapon, válassza a 'Vizsgálat' (Option+Cmd+I) menüpontot, majd az AdBlock fület.",
+    "message": "Az összes kérelem megjelenítéséhez kattintson jobb egérgombbal a lapon, válassza a 'Vizsgálat' (Option+Cmd+I) menüpontot, majd az Bloky fület.",
     "description": "Message explaining how to access the resource list page on AdBlock 3.0+ (Mac)"
   },
   "noresourcessend2": {
@@ -1637,7 +1637,7 @@
     "description": "Message shown to users after disabling both EasyList Lite and EasyList via the Filter lists tab on the Options page."
   },
   "easylist_disable_done": {
-    "message": "Az AdBlock az EasyList segítségével blokkolja a hirdetéseket a legtöbb webhelyen.",
+    "message": "Az Bloky az EasyList segítségével blokkolja a hirdetéseket a legtöbb webhelyen.",
     "description": "Message shown to users after disabling EasyList via the Filter lists tab on the Options page."
   },
   "easylist_disable_how_to_reenable": {
@@ -1645,7 +1645,7 @@
     "description": "Message shown to users after disabling EasyList via the Filter lists tab on the Options page."
   },
   "easylist_lite_disable_done": {
-    "message": "Az AdBlock az EasyList Lite vagy az EasyList segítségével blokkolja a hirdetéseket a legtöbb webhelyen.",
+    "message": "Az Bloky az EasyList Lite vagy az EasyList segítségével blokkolja a hirdetéseket a legtöbb webhelyen.",
     "description": "Message shown to users after disabling both EasyList Lite and EasyList via the Filter lists tab on the Options page."
   },
   "easylist_lite_disable_how_to_reenable": {
@@ -1701,7 +1701,7 @@
     "description": "Error message shown when the user doesn't attach a screenshot to an ad report."
   },
   "adreport_response_success": {
-    "message": "Minden kész! Felvesszük a kapcsolatot, amint tudjuk. Addig is, keressen egy az AdBlock-tól kapott email-t. Benne megtalálja az ügyfélszolgálati oldalunkon található jegyének linkjét, továbbá néhány önsegítő javaslatot, amennyiben nem érjük el azonnal.",
+    "message": "Minden kész! Felvesszük a kapcsolatot, amint tudjuk. Addig is, keressen egy az Bloky-tól kapott email-t. Benne megtalálja az ügyfélszolgálati oldalunkon található jegyének linkjét, továbbá néhány önsegítő javaslatot, amennyiben nem érjük el azonnal.",
     "description": "Shown when a ticket has been sumbitted to AdBlock's support site successfully."
   },
   "adreport_response_invalid_file": {
@@ -1749,11 +1749,11 @@
     "description": "Part three of a message shown to users on the Customize tab of the Options page after invalid custom filters have been migrated"
   },
   "show_language_options": {
-    "message": "Hadd válasszam ki az AdBlock megjelenítési nyelvét",
+    "message": "Hadd válasszam ki az Bloky megjelenítési nyelvét",
     "description": "Option to let the user choose AdBlock's display language."
   },
   "display_language_selector": {
-    "message": "Az AdBlock nyelve",
+    "message": "Az Bloky nyelve",
     "description": "Text shown before language selector drop-down."
   },
   "myadblockoptions": {
@@ -1805,7 +1805,7 @@
     "description": "Title for Options page message letting users know of settings change."
   },
   "settings_changed": {
-    "message": "Az ehhez való előkészülés érdekében az AdBlock immár másképpen működik, és néhány beállításod esetleg megváltozhatott.",
+    "message": "Az ehhez való előkészülés érdekében az Bloky immár másképpen működik, és néhány beállításod esetleg megváltozhatott.",
     "description": "Part of Options page message letting users know of settings change."
   },
   "learn_more": {
@@ -1813,7 +1813,7 @@
     "description": "Link to Knowledge Base article with more information about the settings change"
   },
   "download_mac_app": {
-    "message": "A Mac-en való legjobb élmény elérése érdekében kérlek töltsd le az [[AdBlock Appunkat Safari-ra Mac-en!]]",
+    "message": "A Mac-en való legjobb élmény elérése érdekében kérlek töltsd le az [[Bloky Appunkat Safari-ra Mac-en!]]",
     "description": "Link to download our Mac App. [[ and ]] will be replaced with HTML to link to the Mac App Store"
   },
   "note": {
@@ -1821,7 +1821,7 @@
     "description": "Indicates that the user should take note of the message that follows."
   },
   "changes_to_adblock": {
-    "message": "Módosítottunk az AdBlock-on!",
+    "message": "Módosítottunk az Bloky-on!",
     "description": "Link to Options page with more information about the changes."
   },
   "new_myadblock_feature_available": {
@@ -1849,7 +1849,7 @@
     "description": "The text of the header the MyAdBlock Options page"
   },
   "myadblock_picreplacement_exlained": {
-    "message": "Válaszz a lenti kategóriákból és az AdBlock automatikusan kicseréli a reklámokat kiváló minőségű képekkel hogy felvillanyozza a napod.",
+    "message": "Válaszz a lenti kategóriákból és az Bloky automatikusan kicseréli a reklámokat kiváló minőségű képekkel hogy felvillanyozza a napod.",
     "description": "The label text for the switch on the MyAdBlock Options page"
   },
   "error_msg_header": {
@@ -1957,15 +1957,15 @@
     "description": "Text of clickable element that applies the theme of a theme box in the Themes tab of the Options page"
   },
   "adblock_twitter": {
-    "message": "AdBlock Twitter",
+    "message": "Bloky Twitter",
     "description": "Title for link to AdBlock's Twitter account"
   },
   "adblock_facebook": {
-    "message": "AdBlock Facebook",
+    "message": "Bloky Facebook",
     "description": "Title for link to AdBlock's Facebook account"
   },
   "adblock_website": {
-    "message": "AdBlock weboldal",
+    "message": "Bloky weboldal",
     "description": "Title for link to AdBlock's website"
   },
   "callout_new_feature": {
@@ -2033,11 +2033,11 @@
     "description": "Message for help flow in popup menu."
   },
   "adblock_logo": {
-    "message": "AdBlock logó",
+    "message": "Bloky logó",
     "description": "Text in the alt attribute of an AdBlock logo image."
   },
   "adblock_home": {
-    "message": "AdBlock honlap",
+    "message": "Bloky honlap",
     "description": "Text in the alt attribute of an AdBlock logo / icon that links to getadblock.com."
   },
   "help": {
@@ -2071,7 +2071,7 @@
     "message": "Igen"
   },
   "love_adblock": {
-    "message": "Tetszik az AdBlock?",
+    "message": "Tetszik az Bloky?",
     "description": "Text in a button that asks users to rate us."
   },
   "rate_us": {
@@ -2079,7 +2079,7 @@
     "description": "Text of a menu item in the popup menu asking users to leave us a review."
   },
   "adblock_vpn": {
-    "message": "AdBlock VPN",
+    "message": "Bloky VPN",
     "description": "Text of a Options page lower menu button"
   },
   "stats": {
@@ -2129,6 +2129,6 @@
     "message": "Fiókom"
   },
   "marketing_opt_out": {
-    "message": "Engedélyezd, hogy az AdBlock alkalmanként promóciós üzeneteket jelenítsen meg"
+    "message": "Engedélyezd, hogy az Bloky alkalmanként promóciós üzeneteket jelenítsen meg"
   }
 }

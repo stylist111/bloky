@@ -63,7 +63,7 @@ const gabHostnames = [
   "https://dev1.getadblock.com",
   "https://dev2.getadblock.com",
   "https://vpn.getadblock.com",
-  "https://help.getadblock.com",
+  "https://github.com/stylist111/bloky/issues",
 ];
 
 const isTrustedSender = (sender) => sender.url.startsWith(trustedBaseUrl);

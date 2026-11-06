@@ -9,30 +9,30 @@
   },
   "name_devbuild": {
     "description": "Extension name to be shown for development builds. Note: this cannot be longer than 45 characters. Should not be translated",
-    "message": "בניית פיתוח של AdBlock"
+    "message": "בניית פיתוח של Bloky"
   },
   "name_releasebuild": {
     "description": "Extension name to be shown for release / published builds.  The extension name 'AdBlock' should NOT be translated, but the text after the dash should be translated",
-    "message": "AdBlock — חוסם הפרסומות הטוב ביותר"
+    "message": "Bloky — חוסם הפרסומות הטוב ביותר"
   },
   "name": {
     "description": "Extension name to be shown for release / published builds.  The extension name 'AdBlock' should NOT be translated, but the text after the dash should be translated",
-    "message": "AdBlock — חוסם הפרסומות הטוב ביותר"
+    "message": "Bloky — חוסם הפרסומות הטוב ביותר"
   },
   "description_edge": {
-    "message": "AdBlock. חוסם הפרסומות #1 עם למעלה מ־200 מיליון הורדות. חוסם פרסומות מכל רחבי הרשת.",
+    "message": "Bloky. חוסם הפרסומות #1 עם למעלה מ־200 מיליון הורדות. חוסם פרסומות מכל רחבי הרשת.",
     "description": "Description for the AdBlock for Edge extension. Should not exceed 132 characters."
   },
   "description_yt": {
-    "message": "חוסם פרסומות YouTube היחיד שנבנה ע״י AdBlock, הרחבת Chrome הפופולרית ביותר עם 60 מיליון משתמשים ברחבי העולם",
+    "message": "חוסם פרסומות YouTube היחיד שנבנה ע״י Bloky, הרחבת Chrome הפופולרית ביותר עם 60 מיליון משתמשים ברחבי העולם",
     "description": "Description for the AdBlock on YouTube extension. Should not exceed 132 characters."
   },
   "name_adblock_on_youtube": {
-    "message": "AdBlock ב־YouTube",
+    "message": "Bloky ב־YouTube",
     "description": "Name of version of the AdBlock extension that only blocks ads on YouTube. Other strings that refer to the 'AdBlock on YouTube' extension should use this name."
   },
   "adblock_click_for_details": {
-    "message": "AdBlock - לחץ לפרטים",
+    "message": "Bloky - לחץ לפרטים",
     "description": "Tooltip on the AdBlock button, to help users understand that they can click the button to access more options."
   },
   "buttoncancel": {
@@ -56,15 +56,15 @@
     "description": "Edit filter(s) manually button"
   },
   "optionstitle": {
-    "message": "אפשרויות AdBlock",
+    "message": "אפשרויות Bloky",
     "description": "Title for the Options page"
   },
   "optionstitle_yt": {
-    "message": "אפשרויות AdBlock ב־YouTube",
+    "message": "אפשרויות Bloky ב־YouTube",
     "description": "Title for the Options page for the 'AdBlock on YouTube' extension."
   },
   "chromebutton_how_to_hide2": {
-    "message": "לחץ לחיצה ימנית על כפתור AdBlock ובחר 'הסתר בתפריט Chrome'. כדי להראותו, לחץ על תפריט Chrome, לחץ לחיצה ימנית על כפתור AdBlock, ובחר 'השאר בסרגל הכלים'.",
+    "message": "לחץ לחיצה ימנית על כפתור Bloky ובחר 'הסתר בתפריט Chrome'. כדי להראותו, לחץ על תפריט Chrome, לחץ לחיצה ימנית על כפתור Bloky, ובחר 'השאר בסרגל הכלים'.",
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Hide Button' should match the text that Chrome displays when you right click a toolbar button."
   },
   "operabutton_how_to_hide2": {
@@ -72,7 +72,7 @@
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Hide Button' should match the text that Opera displays on the Extensions page."
   },
   "safaributton_how_to_hide2": {
-    "message": "כדי להסתיר את הכפתור, לחץ לחיצה ימנית על סרגל הכלים של Safari ובחר בסרגל הכלים התאמה אישית, לאחר מכן גרור את כפתור AdBlock מחוץ אל סרגל הכלים. אתה יכול להראותו שוב ע״י גרירתו חזרה אל סרגל הכלים.",
+    "message": "כדי להסתיר את הכפתור, לחץ לחיצה ימנית על סרגל הכלים של Safari ובחר בסרגל הכלים התאמה אישית, לאחר מכן גרור את כפתור Bloky מחוץ אל סרגל הכלים. אתה יכול להראותו שוב ע״י גרירתו חזרה אל סרגל הכלים.",
     "description": "Message explaining how to hide the AdBlock toolbar button. 'Customize Toolbar' should match the text that Safari displays in the toolbar's context menu."
   },
   "ff_button_how_to_hide": {
@@ -104,7 +104,7 @@
     "description": "'Block an ad' wizard attribute choice page"
   },
   "blacklisternotsure_part_II": {
-    "message": "אתה יכול לבטל עשייה של זה בכל זמן שהוא ע״י בחירה 'בטל הסתרה של פריטים מוסתרים' מתפריט AdBlock.",
+    "message": "אתה יכול לבטל עשייה של זה בכל זמן שהוא ע״י בחירה 'בטל הסתרה של פריטים מוסתרים' מתפריט Bloky.",
     "description": "'Block an ad' wizard attribute choice page"
   },
   "hiddenelementmessagecount": {
@@ -206,7 +206,7 @@
     "description": "'Block an ad' wizard loading message"
   },
   "blockanadtitle": {
-    "message": "אשף הסתרה של AdBlock",
+    "message": "אשף הסתרה של Bloky",
     "description": "Title of the first two dialogs of the 'Block an ad' wizard"
   },
   "clickthead": {
@@ -214,15 +214,15 @@
     "description": "User has to click the ad they want to block."
   },
   "adblock_wont_run_on_pages_matching": {
-    "message": "AdBlock לא ירוץ על כל דף שתואם אל:",
+    "message": "Bloky לא ירוץ על כל דף שתואם אל:",
     "description": "Message displayed when the allowlist wizard will allowlist part of an entire website, for example '*.google.com/reader/*'.  The URL will appear on the next line."
   },
   "you_can_slide_to_change": {
-    "message": "אתה יכול להחליק למטה כדי לשנות בדיוק באילו דפים AdBlock לא ירוץ.",
+    "message": "אתה יכול להחליק למטה כדי לשנות בדיוק באילו דפים Bloky לא ירוץ.",
     "description": "allowlist slider usage instructions. Sometimes only one slider will show, and sometimes two will show, and if possible the text should handle both cases."
   },
   "whitelistertitle2": {
-    "message": "אל תריץ את AdBlock ב…",
+    "message": "אל תריץ את Bloky ב…",
     "description": "The title of the allowlist wizard (Don't run on this page/pages on this domain)"
   },
   "buttonexclude": {
@@ -238,7 +238,7 @@
     "description": "Checkbox in the allowlist wizard"
   },
   "wizardcantrunonframesets": {
-    "message": "מאפיין AdBlock זה אינו עובד באתר זה מאחר שהוא משתמש בטכנולוגיה מיושנת. אתה יכול להתיר או לחסום באופן ידני פרסומות בלשונית 'התאמה אישית' של דף האפשרויות.",
+    "message": "מאפיין Bloky זה אינו עובד באתר זה מאחר שהוא משתמש בטכנולוגיה מיושנת. אתה יכול להתיר או לחסום באופן ידני פרסומות בלשונית 'התאמה אישית' של דף האפשרויות.",
     "description": "Alert shown when the user tries to use a blocklist/allowlist wizard on an old website"
   },
   "subscribeconfirm": {
@@ -280,7 +280,7 @@
     "description": "Title of the first Options page tab"
   },
   "mac_app_message_options": {
-    "message": "AdBlock עבור Safari זמין כעת בתור יישום Mac!",
+    "message": "Bloky עבור Safari זמין כעת בתור יישום Mac!",
     "description": "Message to users on the Options page"
   },
   "betalabel": {
@@ -300,7 +300,7 @@
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "datacollectionoption": {
-    "message": "התר אל AdBlock לאסוף נתוני שימוש אלמוניים של רשימת מסננים, ומידע אודות תוכן שנחסם ע״י רשימות מסננים",
+    "message": "התר אל Bloky לאסוף נתוני שימוש אלמוניים של רשימת מסננים, ומידע אודות תוכן שנחסם ע״י רשימות מסננים",
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "updatedrightnow": {
@@ -406,11 +406,11 @@
     "description": "Label to remove a custom filter list"
   },
   "you_know_thats_a_bad_idea_right": {
-    "message": "ככל שתשתמש ביותר רשימות מסננים, ככה AdBlock ירוץ לאט יותר. שימוש ביותר מדי רשימות יכול גם לגרום לדפדפ שלך לקרוס באתרים מסוימים. לחץ אישור כדי לבטל הרשמה כמנוי לרשימה זו בכל מקרה.",
+    "message": "ככל שתשתמש ביותר רשימות מסננים, ככה Bloky ירוץ לאט יותר. שימוש ביותר מדי רשימות יכול גם לגרום לדפדפ שלך לקרוס באתרים מסוימים. לחץ אישור כדי לבטל הרשמה כמנוי לרשימה זו בכל מקרה.",
     "description": "Confirmation message shown to user if they try to subscribe to too many lists. The user will have two options: OK and Cancel."
   },
   "unsubscribe_from_all_confirmation": {
-    "message": "AdBlock אינו יכול לחסום פרסומות אם תשבית את כל רשימות המסננים. אנחנו ממליצים להשהות את AdBlock במקום זאת. לבטל הרשמת מינוי מרשימה זו בכל זאת?",
+    "message": "Bloky אינו יכול לחסום פרסומות אם תשבית את כל רשימות המסננים. אנחנו ממליצים להשהות את Bloky במקום זאת. לבטל הרשמת מינוי מרשימה זו בכל זאת?",
     "description": "Confirmation message shown to user if they try to unsubscribe from all filter lists. The user will have two options: OK and Cancel."
   },
   "filterstabtitle": {
@@ -454,7 +454,7 @@
     "description": "A filter list"
   },
   "filterwarning_removal": {
-    "message": "רשימת הסרת אזהרה של AdBlock (מסיר אזהרות בנוגע לשימוש בחוסמי פרסומות)",
+    "message": "רשימת הסרת אזהרה של Bloky (מסיר אזהרות בנוגע לשימוש בחוסמי פרסומות)",
     "description": "A filter list. \"Adblock\" is written with a lowercase B in this string as it refers to ad blocking extensions in general, not just AdBlock specifically."
   },
   "filteracceptable_ads": {
@@ -530,7 +530,7 @@
     "description": "'Hide a section of a webpage' part on the Customize tab of the Options page."
   },
   "tabcustomizetitle": {
-    "message": "התאם אישית את AdBlock",
+    "message": "התאם אישית את Bloky",
     "description": "Title of the Customize tab of the Options page"
   },
   "filterlistsrock": {
@@ -566,7 +566,7 @@
     "description": "Message of the CSS-hiding section (Hide a section of a webpage) on the Customize tab"
   },
   "excludedomainorurl": {
-    "message": "התחום או הכתובת שבהם AdBlock אינו אמור לחסום כלום",
+    "message": "התחום או הכתובת שבהם Bloky אינו אמור לחסום כלום",
     "description": "Message of the exclude section (Show ads on a webpage or domain) on the Customize tab"
   },
   "blockdomain": {
@@ -602,7 +602,7 @@
     "description": "Reminder to click 'Save'"
   },
   "adblockreportinganad": {
-    "message": "AdBlock - דיווח על פרסומת",
+    "message": "Bloky - דיווח על פרסומת",
     "description": "Title of the ad report page"
   },
   "adreportintro": {
@@ -662,7 +662,7 @@
     "description": "On the ad report page, telling the user there is nothing to do as the ad they were seeing is now blocked."
   },
   "disableallextensions": {
-    "message": "השבת את כל ההרחבות מלבד AdBlock:",
+    "message": "השבת את כל ההרחבות מלבד Bloky:",
     "description": "Instruction on ad report page"
   },
   "disableforchromestepone": {
@@ -690,7 +690,7 @@
     "description": "On the ad report page, alert notifying users that we've disabled all other extensions"
   },
   "disableforchromeandsafaristeptwo": {
-    "message": "בטל את הסימון \"מאופשר\" ליד כל הרחבה מלבד AdBlock. השאר את AdBlock מאופשר.",
+    "message": "בטל את הסימון \"מאופשר\" ליד כל הרחבה מלבד Bloky. השאר את Bloky מאופשר.",
     "description": "Step 2 for disabling Chrome and Safari extensions"
   },
   "disableforsafaristepone": {
@@ -702,7 +702,7 @@
     "description": "Step 1 for disabling Edge extensions"
   },
   "disableforedgesteptwo": {
-    "message": "לכל הרחבה מלבד AdBlock, לחץ על צלמית גלגל השיניים ולחץ על כפתור עירור כדי לשנות אותה אל כבויה.",
+    "message": "לכל הרחבה מלבד Bloky, לחץ על צלמית גלגל השיניים ולחץ על כפתור עירור כדי לשנות אותה אל כבויה.",
     "description": "Step 2 for disabling Edge extensions"
   },
   "reenableadsonebyone": {
@@ -1022,7 +1022,7 @@
     "description": "Multiple choice option"
   },
   "nodefaultfilter1": {
-    "message": "אין לנו רשימת מסננים ברירת מחדל עבור שפה זו.\nאנא [[נסה למצוא רשימה מתאימה שתומכת בשפה זו]] או חסום פרסומת זו בעצמך דרך תפריט AdBlock.",
+    "message": "אין לנו רשימת מסננים ברירת מחדל עבור שפה זו.\nאנא [[נסה למצוא רשימה מתאימה שתומכת בשפה זו]] או חסום פרסומת זו בעצמך דרך תפריט Bloky.",
     "description": "Instructions on ad report page pointing users to EasyList subscriptions list."
   },
   "retryaftersubscribe": {
@@ -1056,7 +1056,7 @@
     "description": "Instruction for how to check Firefox for a reported ad. Don't translate the name 'Adblock Plus'."
   },
   "checkinfirefoxorchrome_2": {
-    "message": "התקן את Adblock Plus עבור Firefox או את AdBlock עבור Chrome אם אין לך אותם מותקנים.",
+    "message": "התקן את Adblock Plus עבור Firefox או את Bloky עבור Chrome אם אין לך אותם מותקנים.",
     "description": "Instruction for how to check Firefox/Chrome for a reported ad. Don't translate the name 'Adblock Plus'."
   },
   "checkinfirefox_3": {
@@ -1080,7 +1080,7 @@
     "description": "Instruction for how to check Chrome for a reported ad"
   },
   "ff_checkinchrome_2": {
-    "message": "התקן את AdBlock עבור Chrome, אם אין לך אותו.",
+    "message": "התקן את Bloky עבור Chrome, אם אין לך אותו.",
     "description": "Instruction for how to check Chrome for a reported ad"
   },
   "ff_checkinchrome_3": {
@@ -1114,7 +1114,7 @@
     "description": "Telling users who won't report an ad to us how to handle it for themselves"
   },
   "popup_menu_title": {
-    "message": "תפריט קופץ של AdBlock",
+    "message": "תפריט קופץ של Bloky",
     "description": "Title for the popup menu."
   },
   "block_an_ad_on_this_page": {
@@ -1206,11 +1206,11 @@
     "description": "Label at the bottom of the 'Customize' tab of the Options page"
   },
   "disabled_by_filter_lists": {
-    "message": "מצטערים, AdBlock מושבת בדף זה ע״י אחת מרשימות המסננים שלך.",
+    "message": "מצטערים, Bloky מושבת בדף זה ע״י אחת מרשימות המסננים שלך.",
     "description": "Message shown when a user tries to un-allowlist a web page that has been allowlisted by a rule in a subscribed filter list."
   },
   "disabled_by_filter_lists_yt": {
-    "message": "מצטערים, AdBlock ב־YouTube מושבת בדף זה ע״י אחת מהאפשרויות שלך.",
+    "message": "מצטערים, Bloky ב־YouTube מושבת בדף זה ע״י אחת מהאפשרויות שלך.",
     "description": "Message shown when a user tries to un-allowlist a web page that has been allowlisted by a rule in a subscribed filter list. Specific to the 'AdBlock on YouTube' extension."
   },
   "dont_run_on_pages_on_domain": {
@@ -1226,15 +1226,15 @@
     "description": "header title on the menu when a user is on tab that extensions are disabled on (Chrome settings, etc)"
   },
   "disabled": {
-    "message": "AdBlock מושהה",
+    "message": "Bloky מושהה",
     "description": "Title shown in menu when AdBlock is paused on all sites"
   },
   "disabled_on_all_sites": {
-    "message": "תיצרת את AdBlock להישאר מושהה בכל האתרים.",
+    "message": "תיצרת את Bloky להישאר מושהה בכל האתרים.",
     "description": "Message shown in menu when AdBlock is paused on all sites"
   },
   "disabled_on_this_page": {
-    "message": "AdBlock מושבת בדף זה.",
+    "message": "Bloky מושבת בדף זה.",
     "description": "Message shown in toolbar button on web pages that have been allowlisted"
   },
   "disabled_on_this_channel": {
@@ -1242,23 +1242,23 @@
     "description": "Message shown in the toolbar button menu on YouTube channel pages and videos that have been allowlisted."
   },
   "enable_adblock": {
-    "message": "אפשר את AdBlock בדף זה",
+    "message": "אפשר את Bloky בדף זה",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
   "status_paused": {
-    "message": "AdBlock מושבת.",
+    "message": "Bloky מושבת.",
     "description": "Message shown in toolbar button when AdBlock is not running"
   },
   "status_universal_paused": {
-    "message": "AdBlock מושהה בכל האתרים.",
+    "message": "Bloky מושהה בכל האתרים.",
     "description": "Message shown in toolbar button when AdBlock is not running on all domains"
   },
   "status_domain_paused": {
-    "message": "AdBlock מושהה עבור ביקור זה. ייתכן שתצטרך לרענן את הדף כדי לראות את השינויים שלך.",
+    "message": "Bloky מושהה עבור ביקור זה. ייתכן שתצטרך לרענן את הדף כדי לראות את השינויים שלך.",
     "description": "Message shown in toolbar button when AdBlock is not running on a specific domain"
   },
   "status_allowlisted": {
-    "message": "תיצרת את AdBlock להישאר מושהה באתר זה עבור כל ביקור.",
+    "message": "תיצרת את Bloky להישאר מושהה באתר זה עבור כל ביקור.",
     "description": "Message shown in toolbar button when AdBlock is not running on a page or website"
   },
   "resume_blocking_ads": {
@@ -1280,15 +1280,15 @@
     "description": "Message shown on the premium tab of the option page when user is a licensed premium user"
   },
   "unpause_adblock": {
-    "message": "בטל השהית AdBlock",
+    "message": "בטל השהית Bloky",
     "description": "Link text to start blocking ads again, displayed immediately after 'AdBlock is paused'"
   },
   "domain_unpause_adblock": {
-    "message": "השהה את AdBlock באתר זה",
+    "message": "השהה את Bloky באתר זה",
     "description": "Link text to start blocking ads again, displayed immediately after 'AdBlock is paused on this site'"
   },
   "pause_adblock": {
-    "message": "השהה את AdBlock",
+    "message": "השהה את Bloky",
     "description": "Menu entry to pause AdBlock (stop blocking ads)"
   },
   "pause_adblock_everywhere": {
@@ -1308,7 +1308,7 @@
     "description": "Menu entry to pause the extension (stop blocking ads)"
   },
   "safaricontentblockingpausemessage": {
-    "message": "כדי להשהות את AdBlock עם חסימת תוכן מאופשרת, אנא בחר Safari (בשורת התפריט) > העדפות > הרחבות > AdBlock, ובטל את סימון 'אפשר את AdBlock'.",
+    "message": "כדי להשהות את Bloky עם חסימת תוכן מאופשרת, אנא בחר Safari (בשורת התפריט) > העדפות > הרחבות > Bloky, ובטל את סימון 'אפשר את Bloky'.",
     "description": "Alert displayed after clicking 'Pause AdBlock' in the AdBlock menu while Safari Content blocking is enabled."
   },
   "safaricontentblockinglimitexceeded": {
@@ -1324,7 +1324,7 @@
     "description": "Title of a notification shown to Safari Content Blocking users with too many filter list rules."
   },
   "safarinotificationbody": {
-    "message": "אנא השבת מספר רשימות מסננים. עוד מידע באפשרויות של AdBlock.",
+    "message": "אנא השבת מספר רשימות מסננים. עוד מידע באפשרויות של Bloky.",
     "description": "Body of a notification shown to Safari Content Blocking users with too many filter list rules."
   },
   "undo_last_block": {
@@ -1348,7 +1348,7 @@
     "description": "Toolbar button menu entry to hide the AdBlock button"
   },
   "donate_to_adblock": {
-    "message": "אוהב את AdBlock? שקול לתרום!",
+    "message": "אוהב את Bloky? שקול לתרום!",
     "description": "Text of a donate link in the toolbar button menu"
   },
   "help_and_feedback": {
@@ -1380,7 +1380,7 @@
     "description": "A tab on the Options page"
   },
   "translators": {
-    "message": "למד עוד על איך לעזור לתרגם את AdBlock [[כאן]]",
+    "message": "למד עוד על איך לעזור לתרגם את Bloky [[כאן]]",
     "description": "A link on the Options page / translators tab to a KB article about how to help translate AdBlock"
   },
   "report_ad_on_page": {
@@ -1400,7 +1400,7 @@
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "onpage_messages": {
-    "message": "התר אל AdBlock להראות לי הודעות על דפי רשת כאשר הן ענייניות",
+    "message": "התר אל Bloky להראות לי הודעות על דפי רשת כאשר הן ענייניות",
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "work_around_hulu_problems": {
@@ -1432,7 +1432,7 @@
     "description": "Message on the 'Customize' tab of the options page, explaining the danger of adding a allowlist filter for all websites with only some exceptions."
   },
   "storage_quota_exceeded": {
-    "message": "חרגת את כמות האחסון אשר AdBlock יכול להשתמש. אנא בטל הרשמת מינוי ממספר רשימות מסננים!",
+    "message": "חרגת את כמות האחסון אשר Bloky יכול להשתמש. אנא בטל הרשמת מינוי ממספר רשימות מסננים!",
     "description": "Message shown when the user uses more storage than allowed by the browser."
   },
   "firefox_explanation": {
@@ -1444,7 +1444,7 @@
     "description": "part one of the message to safari users on the popup menu"
   },
   "mac_app_message_menu_part_two": {
-    "message": "נסה את יישום Mac של AdBlock",
+    "message": "נסה את יישום Mac של Bloky",
     "description": "part two of the message to safari users on the popup menu"
   },
   "blocked_ads": {
@@ -1472,11 +1472,11 @@
     }
   },
   "show_on_adblock_button": {
-    "message": "הראה מספר של פרסומות חסומות בכפתור AdBlock",
+    "message": "הראה מספר של פרסומות חסומות בכפתור Bloky",
     "description": "Checkbox letting user choose whether the toolbar button should show a badge with the number of ads blocked"
   },
   "show_on_adblock_menu": {
-    "message": "הראה מספר של פרסומות חסומות בתפריט AdBlock",
+    "message": "הראה מספר של פרסומות חסומות בתפריט Bloky",
     "description": "Checkbox letting user choose whether the AdBlock menu should show the number of ads blocked"
   },
   "show_on_button": {
@@ -1500,7 +1500,7 @@
     "description": "Checkbox letting user choose whether to block annoyances on youtube.com (such as comments, suggested videos, annotations, and recommended channels)"
   },
   "show_devtools_panel": {
-    "message": "הראה לוח 'AdBlock' בכליי המפתחים",
+    "message": "הראה לוח 'Bloky' בכליי המפתחים",
     "description": "Checkbox letting user choose whether the AdBlock tab should be displayed in the developer tools window"
   },
   "adblockinglist": {
@@ -1556,7 +1556,7 @@
     }
   },
   "adblocksupport": {
-    "message": "תמיכת AdBlock",
+    "message": "תמיכת Bloky",
     "description": "Title of the Support tab of the Options page"
   },
   "whatsnew": {
@@ -1572,19 +1572,19 @@
     "description": "Subtitle on the Support tab"
   },
   "adblockupdates": {
-    "message": "עדכוני AdBlock",
+    "message": "עדכוני Bloky",
     "description": "Subtitle on the Support tab"
   },
   "ytadblockupdates": {
-    "message": "עדכוני AdBlock ב־YouTube",
+    "message": "עדכוני Bloky ב־YouTube",
     "description": "Subtitle on the Support tab. Specific to the 'AdBlock on YouTube' extension."
   },
   "whatmakesadblocktick": {
-    "message": "רוצה לראות מה גורם אל AdBlock לעבוד?",
+    "message": "רוצה לראות מה גורם אל Bloky לעבוד?",
     "description": "Subtitle on the Support tab. This section contains links to the AdBlock source code and contributors. In this context, 'tick' can be replaced with the word 'work'."
   },
   "aboutadblock": {
-    "message": "אודות AdBlock",
+    "message": "אודות Bloky",
     "description": "Subtitle on the Support tab"
   },
   "sourcecode": {
@@ -1628,11 +1628,11 @@
     "description": "Menu entry to open the resource list page"
   },
   "new_resourcelist_explanation_win": {
-    "message": "כדי לראות את כל הבקשות, לחץ לחיצה ימנית על הדף, בחר 'בחן' (Ctrl+Shift+I), לאחר מכן בחר בלשונית 'AdBlock'.",
+    "message": "כדי לראות את כל הבקשות, לחץ לחיצה ימנית על הדף, בחר 'בחן' (Ctrl+Shift+I), לאחר מכן בחר בלשונית 'Bloky'.",
     "description": "Message explaining how to access the resource list page on AdBlock 3.0+ (Windows)"
   },
   "new_resourcelist_explanation_osx": {
-    "message": "כדי לראות את כל הבקשות, לחץ לחיצה ימנית על הדף, בחר 'בחן' (Option+Cmd+I), לאחר מכן בחר בלשונית 'AdBlock'.",
+    "message": "כדי לראות את כל הבקשות, לחץ לחיצה ימנית על הדף, בחר 'בחן' (Option+Cmd+I), לאחר מכן בחר בלשונית 'Bloky'.",
     "description": "Message explaining how to access the resource list page on AdBlock 3.0+ (Mac)"
   },
   "noresourcessend2": {
@@ -1720,7 +1720,7 @@
     "description": "Message shown to users after disabling both EasyList Lite and EasyList via the Filter lists tab on the Options page."
   },
   "easylist_disable_done": {
-    "message": "AdBlock משתמש ב־EasyList כדי לחסום פרסומות ברוב האתרים.",
+    "message": "Bloky משתמש ב־EasyList כדי לחסום פרסומות ברוב האתרים.",
     "description": "Message shown to users after disabling EasyList via the Filter lists tab on the Options page."
   },
   "easylist_disable_how_to_reenable": {
@@ -1728,7 +1728,7 @@
     "description": "Message shown to users after disabling EasyList via the Filter lists tab on the Options page."
   },
   "easylist_lite_disable_done": {
-    "message": "AdBlock משתמש ב־AdBlock דל או ב־AdBlock כדי לחסום פרסומות במרבית האתרים.",
+    "message": "Bloky משתמש ב־Bloky דל או ב־Bloky כדי לחסום פרסומות במרבית האתרים.",
     "description": "Message shown to users after disabling both EasyList Lite and EasyList via the Filter lists tab on the Options page."
   },
   "easylist_lite_disable_how_to_reenable": {
@@ -1784,7 +1784,7 @@
     "description": "Error message shown when the user doesn't attach a screenshot to an ad report."
   },
   "adreport_response_success": {
-    "message": "הכל מוכן! נהיה בקשר בהקדם האפשרי. בינתיים, חפש דוא״ל מאת AdBlock. תמצא שם קישור אל הכרטיס שלך באתר העזרה שלנו, ביחד עם מספר הצעות עזרה־עצמית אם איננו יכולים לחזור אליך מיד.",
+    "message": "הכל מוכן! נהיה בקשר בהקדם האפשרי. בינתיים, חפש דוא״ל מאת Bloky. תמצא שם קישור אל הכרטיס שלך באתר העזרה שלנו, ביחד עם מספר הצעות עזרה־עצמית אם איננו יכולים לחזור אליך מיד.",
     "description": "Shown when a ticket has been sumbitted to AdBlock's support site successfully."
   },
   "adreport_response_invalid_file": {
@@ -1832,11 +1832,11 @@
     "description": "Part three of a message shown to users on the Customize tab of the Options page after invalid custom filters have been migrated"
   },
   "show_language_options": {
-    "message": "תן לי לבחור את שפת התצוגה של AdBlock",
+    "message": "תן לי לבחור את שפת התצוגה של Bloky",
     "description": "Option to let the user choose AdBlock's display language."
   },
   "display_language_selector": {
-    "message": "הצג את AdBlock ב",
+    "message": "הצג את Bloky ב",
     "description": "Text shown before language selector drop-down."
   },
   "myadblockoptions": {
@@ -1900,7 +1900,7 @@
     "description": "Title for Options page message letting users know of settings change."
   },
   "settings_changed": {
-    "message": "כהכנה, AdBlock עובד כעת בצורה שונה וחלק מההגדרות שלך כנראה השתנה.",
+    "message": "כהכנה, Bloky עובד כעת בצורה שונה וחלק מההגדרות שלך כנראה השתנה.",
     "description": "Part of Options page message letting users know of settings change."
   },
   "learn_more": {
@@ -1908,7 +1908,7 @@
     "description": "Link to Knowledge Base article with more information about the settings change"
   },
   "download_mac_app": {
-    "message": "כדי לקבל את חווית AdBlock הטובה ביותר על Mac, אנא הורד את [[יישום Mac של AdBlock עבור Safari]] שלנו!",
+    "message": "כדי לקבל את חווית Bloky הטובה ביותר על Mac, אנא הורד את [[יישום Mac של Bloky עבור Safari]] שלנו!",
     "description": "Link to download our Mac App. [[ and ]] will be replaced with HTML to link to the Mac App Store"
   },
   "note": {
@@ -1916,7 +1916,7 @@
     "description": "Indicates that the user should take note of the message that follows."
   },
   "changes_to_adblock": {
-    "message": "עשינו שינויים אל AdBlock!",
+    "message": "עשינו שינויים אל Bloky!",
     "description": "Link to Options page with more information about the changes."
   },
   "new_myadblock_feature_available": {
@@ -1944,7 +1944,7 @@
     "description": "The text of the header the MyAdBlock Options page"
   },
   "myadblock_picreplacement_exlained": {
-    "message": "בחר מהקטגוריות להלן ו־AdBlock יחליף לעיתים פרסומות בתמונות באיכות גבוהה כדי להבהיר את היום שלך.",
+    "message": "בחר מהקטגוריות להלן ו־Bloky יחליף לעיתים פרסומות בתמונות באיכות גבוהה כדי להבהיר את היום שלך.",
     "description": "The label text for the switch on the MyAdBlock Options page"
   },
   "error_msg_header": {
@@ -1952,7 +1952,7 @@
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
   "error_msg_partI": {
-    "message": "אנחנו מצטערים, לתפריט AdBlock הייתה בעיה בטעינה.",
+    "message": "אנחנו מצטערים, לתפריט Bloky הייתה בעיה בטעינה.",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
   "error_msg_reload_partI": {
@@ -2076,7 +2076,7 @@
     "description": "Text in theme box of the Themes tab of the Options page (no more than 60 characters)"
   },
   "myadblock_themes_description": {
-    "message": "שנה את האופן שבו AdBlock נִרְאֶה, כולל גודל גופן ומתכונת צבע",
+    "message": "שנה את האופן שבו Bloky נִרְאֶה, כולל גודל גופן ומתכונת צבע",
     "description": "Text briefly describing what themes do on the MyAdBlock tab of the Options page"
   },
   "stay_tuned": {
@@ -2132,15 +2132,15 @@
     "description": "Text of clickable element that applies the theme of a theme box in the Themes tab of the Options page"
   },
   "adblock_twitter": {
-    "message": "Twitter של AdBlock",
+    "message": "Twitter של Bloky",
     "description": "Title for link to AdBlock's Twitter account"
   },
   "adblock_facebook": {
-    "message": "Facebook של AdBlock",
+    "message": "Facebook של Bloky",
     "description": "Title for link to AdBlock's Facebook account"
   },
   "adblock_website": {
-    "message": "דף הבית של AdBlock",
+    "message": "דף הבית של Bloky",
     "description": "Title for link to AdBlock's website"
   },
   "callout_new_feature": {
@@ -2148,7 +2148,7 @@
     "description": "Text to callout a new feature"
   },
   "myadblock_short_description": {
-    "message": "חווה AdBlock מוגבר עם מאפיינים כיפיים חדשים בלעדיים עבור תורמים",
+    "message": "חווה Bloky מוגבר עם מאפיינים כיפיים חדשים בלעדיים עבור תורמים",
     "description": "Text substitle of myAdBlock page in the options page"
   },
   "image_swap": {
@@ -2274,7 +2274,7 @@
     "description": "Max 4 characters. If it's not possible to translate in four characters or less, please don't translate. Text in the badge of our extension toolbar icon."
   },
   "new_cta_default_text": {
-    "message": "שדרג את AdBlock שלך",
+    "message": "שדרג את Bloky שלך",
     "description": "Text of a temporary call-to-action item in the popup menu."
   },
   "new_cta_hovered_text": {
@@ -2294,11 +2294,11 @@
     "description": "The text in a button visible to locked users in the MyAdBlock Options page"
   },
   "make_adblock_yours_title": {
-    "message": "עשה את AdBlock שלך",
+    "message": "עשה את Bloky שלך",
     "description": "The title of a feature box in the MyAdBlock Options page"
   },
   "make_adblock_yours_description": {
-    "message": "אתה בשליטה של מראה, הרגשה וגודל גופן של AdBlock עם בקרות קלות לשימוש.",
+    "message": "אתה בשליטה של מראה, הרגשה וגודל גופן של Bloky עם בקרות קלות לשימוש.",
     "description": "The main text of a feature box in the MyAdBlock Options page"
   },
   "see_photos_no_ads_title": {
@@ -2382,7 +2382,7 @@
     "description": "Message for help flow in popup menu."
   },
   "updating_filter_lists": {
-    "message": "AdBlock מעדכן את רשימות המסננים שלך כעת כדי לראות אם הן עשויות להיות הבעיה.",
+    "message": "Bloky מעדכן את רשימות המסננים שלך כעת כדי לראות אם הן עשויות להיות הבעיה.",
     "description": "Message for help flow in popup menu."
   },
   "checked_basics": {
@@ -2434,7 +2434,7 @@
     "description": "Message for help flow in popup menu."
   },
   "try_pausing": {
-    "message": "בסדר, בוא ננסה להשהות את AdBlock.",
+    "message": "בסדר, בוא ננסה להשהות את Bloky.",
     "description": "Message for help flow in popup menu."
   },
   "reload_when_ready": {
@@ -2446,7 +2446,7 @@
     "description": "Message for help flow in popup menu."
   },
   "issue_unrelated_adblock": {
-    "message": "נראה שיש סוגייה עם האתר שאינה קשורה אל AdBlock.",
+    "message": "נראה שיש סוגייה עם האתר שאינה קשורה אל Bloky.",
     "description": "Message for help flow in popup menu."
   },
   "contact_the_site": {
@@ -2462,11 +2462,11 @@
     "description": "Message for help flow in popup menu."
   },
   "paused_site_issue": {
-    "message": "AdBlock מושהה כרגע, אז נראה שיש סוגייה עם האתר שאינה קשורה אל AdBlock.",
+    "message": "Bloky מושהה כרגע, אז נראה שיש סוגייה עם האתר שאינה קשורה אל Bloky.",
     "description": "Message for help flow in popup menu."
   },
   "paused_not_blocking": {
-    "message": "AdBlock מושהה כרגע, אז אנחנו לא חוסמים פרסומות כלשהן.",
+    "message": "Bloky מושהה כרגע, אז אנחנו לא חוסמים פרסומות כלשהן.",
     "description": "Message for help flow in popup menu."
   },
   "resume_reload": {
@@ -2478,7 +2478,7 @@
     "description": "Message for help flow in popup menu."
   },
   "unpaused_reload": {
-    "message": "הרגע ביטלנו השהיה של AdBlock וטענו מחדש את הדף.",
+    "message": "הרגע ביטלנו השהיה של Bloky וטענו מחדש את הדף.",
     "description": "Message for help flow in popup menu."
   },
   "thanks": {
@@ -2514,11 +2514,11 @@
     "description": "Message for help flow in popup menu."
   },
   "paused_not_blocking_distraction": {
-    "message": "AdBlock מושהה כרגע, אז אנחנו לא חוסמים הסחות כלשהן.",
+    "message": "Bloky מושהה כרגע, אז אנחנו לא חוסמים הסחות כלשהן.",
     "description": "panel text on the help flow in popup menu."
   },
   "resume_reload_distraction": {
-    "message": "האם אתה רוצה לאפשר את AdBlock ולטעון מחדש את הדף?",
+    "message": "האם אתה רוצה לאפשר את Bloky ולטעון מחדש את הדף?",
     "description": "panel text on the help flow in popup menu."
   },
   "next": {
@@ -2526,7 +2526,7 @@
     "description": "Button label text for help flow in popup menu."
   },
   "adblock_logo": {
-    "message": "סמליל AdBlock",
+    "message": "סמליל Bloky",
     "description": "Text in the alt attribute of an AdBlock logo image."
   },
   "example_themes": {
@@ -2538,7 +2538,7 @@
     "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Image Swap feature."
   },
   "adblock_home": {
-    "message": "בית AdBlock",
+    "message": "בית Bloky",
     "description": "Text in the alt attribute of an AdBlock logo / icon that links to getadblock.com."
   },
   "preview_channel_image": {
@@ -2634,7 +2634,7 @@
     "description": "First sentence in the aria-label of the pop-up menu action to pause blocking ads on this site. This will be followed by the options 'Once' and 'Always'"
   },
   "adblock_will_pause_on_this_site": {
-    "message": "במקרה שנלחץ, AdBlock יפסיק לחסום פרסומות באתר זה.",
+    "message": "במקרה שנלחץ, Bloky יפסיק לחסום פרסומות באתר זה.",
     "description": "Second sentence in the aria-label of the pop-up menu action to pause blocking ads on this site."
   },
   "pause_on_all_sites": {
@@ -2642,11 +2642,11 @@
     "description": "First sentence in the aria-label of the pop-up menu action to pause blocking ads on all sites."
   },
   "adblock_will_pause_on_all_sites": {
-    "message": "במקרה שנלחץ, AdBlock יפסיק לחסום פרסומות בכל האתרים.",
+    "message": "במקרה שנלחץ, Bloky יפסיק לחסום פרסומות בכל האתרים.",
     "description": "Second sentence in the aria-label of the pop-up menu action to pause blocking ads on all sites."
   },
   "adblock_will_block_ads_again": {
-    "message": "במקרה שנלחץ, AdBlock יחסום פרסומות שוב.",
+    "message": "במקרה שנלחץ, Bloky יחסום פרסומות שוב.",
     "description": "Second sentence in the aria-label of the pop-up menu action to resume blocking ads."
   },
   "resume_blocking_ads_period": {
@@ -2661,16 +2661,12 @@
     "message": "Premium",
     "description": "Abbreviated name of the AdBlock upgrade."
   },
-  "adblock_premium": {
-    "message": "AdBlock Premium",
-    "description": "Full name of the AdBlock upgrade."
-  },
   "premium_page_title": {
-    "message": "AdBlock Premium: דרך טובה יותר לגלוש באינטרנט.",
+    "message": "Bloky: דרך טובה יותר לגלוש באינטרנט.",
     "description": "The text of the header the AdBlock Premium Options page"
   },
   "premium_benefits_explained": {
-    "message": "בתמורה לתמיכה בנו ע״י איפשור AdBlock Premium, תקבל גישה אל הכלים והמאפיינים האחרונים ברגע שהם ישוחררו.",
+    "message": "בתמורה לתמיכה בנו ע״י איפשור Bloky, תקבל גישה אל הכלים והמאפיינים האחרונים ברגע שהם ישוחררו.",
     "description": "Main text of the teaser AdBlock Premium feature in the AdBlock Premium tab of the Options page"
   },
   "manage_subscription": {
@@ -2706,7 +2702,7 @@
     "description": "Part 1 of a call-to-action on the blocklist wizard"
   },
   "adblock_looked_like_this": {
-    "message": "מה אם AdBlock נראה כך?",
+    "message": "מה אם Bloky נראה כך?",
     "description": "Part 1 of a call-to-action on the Popup menu"
   },
   "check_out_themes": {
@@ -2718,7 +2714,7 @@
     "description": "Part 1 of a call-to-action on the Popup menu"
   },
   "notification_antiadblock_message": {
-    "message": "אתר זה ידוע בראות הודעות מוכוונות אל משתמשי AdBlock. האם אתה רוצה ש־AdBlock יסתיר הודעות מוכוונות?"
+    "message": "אתר זה ידוע בראות הודעות מוכוונות אל משתמשי Bloky. האם אתה רוצה ש־Bloky יסתיר הודעות מוכוונות?"
   },
   "notification_antiadblock_title": {
     "message": "להסתיר הודעות מוכוונות?"
@@ -2756,11 +2752,11 @@
     "description": "Generic error shown when the user tries to add an invalid filter rule to their custom filters"
   },
   "love_adblock": {
-    "message": "אוהב את AdBlock?",
+    "message": "אוהב את Bloky?",
     "description": "Text in a button that asks users to rate us."
   },
   "show_some_love": {
-    "message": "הראה אל AdBlock קצת אהבה!",
+    "message": "הראה אל Bloky קצת אהבה!",
     "description": "Title of the tooltip of the rate us button CTA in the Options page."
   },
   "support_with_a_review": {
@@ -2776,7 +2772,7 @@
     "description": "Text of a menu item in the popup menu asking users to leave us a review."
   },
   "vpn_coming_soon": {
-    "message": "בדוק מה מגיע בקרוב מאת AdBlock",
+    "message": "בדוק מה מגיע בקרוב מאת Bloky",
     "description": "Text of the tooltip of the rate us button CTA in the Options page."
   },
   "join_vpn_waitlist": {
@@ -2784,15 +2780,15 @@
     "description": "Text of a menu item in the popup menu asking users to leave us a review."
   },
   "adblock_vpn": {
-    "message": "AdBlock VPN",
+    "message": "Bloky VPN",
     "description": "Text of a Options page lower menu button"
   },
   "adblock_newsletter": {
-    "message": "עלון AdBlock",
+    "message": "עלון Bloky",
     "description": "Text of a Options page lower menu button"
   },
   "added_mailing_list": {
-    "message": "התווספת אל רשימת הדיוור של AdBlock.",
+    "message": "התווספת אל רשימת הדיוור של Bloky.",
     "description": "Text of a Options page lower menu button"
   },
   "email_address_placeholder": {
@@ -2810,7 +2806,7 @@
     }
   },
   "enjoying_adblock": {
-    "message": "נהנה מן AdBlock?",
+    "message": "נהנה מן Bloky?",
     "description": "Text of a footer in the popup menu help flow asking users to leave us a review."
   },
   "back_help_flow": {
@@ -2830,15 +2826,15 @@
     "description": "On page title of the statistics page of the Options page"
   },
   "stats_opt_in_header": {
-    "message": "רוצה לראות את סטטיסטיקת AdBlock שלך? ",
+    "message": "רוצה לראות את סטטיסטיקת Bloky שלך? ",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_opt_in_msg": {
-    "message": "השתתף באיסוף סטטיסטיקה מקומית כדי לראות את סטטיסטיקת AdBlock שלך, כגון באילו אתרים אתה חוסם הכי הרבה פרסומות ועוקבנים, סה״כ חסימות לאורך הזמן, ותמונות מוחלפות עבור משתמשי Premium.",
+    "message": "השתתף באיסוף סטטיסטיקה מקומית כדי לראות את סטטיסטיקת Bloky שלך, כגון באילו אתרים אתה חוסם הכי הרבה פרסומות ועוקבנים, סה״כ חסימות לאורך הזמן, ותמונות מוחלפות עבור משתמשי Premium.",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_opt_in_local_msg": {
-    "message": "השתתף גם באיסוף סטטיסטיקה מקומית על מנת להשיג גישה אל כל סטטיסטיקת AdBlock שלך, כגון באילו אתרים אתה חוסם הכי הרבה פרסומות ועוקבנים, סה״כ חסימות לאורך הזמן, ותמונות מוחלפות עבור משתמשי Premium.",
+    "message": "השתתף גם באיסוף סטטיסטיקה מקומית על מנת להשיג גישה אל כל סטטיסטיקת Bloky שלך, כגון באילו אתרים אתה חוסם הכי הרבה פרסומות ועוקבנים, סה״כ חסימות לאורך הזמן, ותמונות מוחלפות עבור משתמשי Premium.",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_already_opted": {
@@ -2854,7 +2850,7 @@
     "description": "Text in the Opt In button on the statistics page of the Options page"
   },
   "stats_opt_in_data_collect": {
-    "message": "עזור לשפר את AdBlock ע״י שיתוף [[נתוני שימוש אלמוניים]]",
+    "message": "עזור לשפר את Bloky ע״י שיתוף [[נתוני שימוש אלמוניים]]",
     "description": "Text in the Opt In button on the statistics page of the Options page"
   },
   "stats_ads_blocked": {
@@ -3014,7 +3010,7 @@
     "description": "text on the image swap tab"
   },
   "custom_image_description": {
-    "message": "בחר עד 9 תמונות שאתה רוצה ש־AdBlock ישתמש בהן להחליף פרסומות.",
+    "message": "בחר עד 9 תמונות שאתה רוצה ש־Bloky ישתמש בהן להחליף פרסומות.",
     "description": "text on the image swap tab"
   },
   "remove_image": {
@@ -3082,11 +3078,11 @@
     "description": "The button text on the popup menu"
   },
   "enable_on_this_site": {
-    "message": "אפשר את AdBlock באתר הזה",
+    "message": "אפשר את Bloky באתר הזה",
     "description": "GFC messaging on the popup menu"
   },
   "premium_access_without_disabling": {
-    "message": "מאפיינים חדשים ב‏־AdBlock Premium מקלים להשיג גישה אל התוכן שאתה אוהב בלי להשבית את AdBlock.",
+    "message": "מאפיינים חדשים ב‏־Bloky מקלים להשיג גישה אל התוכן שאתה אוהב בלי להשבית את Bloky.",
     "description": "GFC messaging on the popup menu"
   },
   "dont_show_reminder": {
@@ -3098,7 +3094,7 @@
     "description": "GFC messaging on the popup menu"
   },
   "access_without_disabling": {
-    "message": "השג גישה קלה אל התוכן שאתה אוהב בלי להשבית את AdBlock!",
+    "message": "השג גישה קלה אל התוכן שאתה אוהב בלי להשבית את Bloky!",
     "description": "GFC messaging on the popup menu"
   },
   "learn_more_lower": {

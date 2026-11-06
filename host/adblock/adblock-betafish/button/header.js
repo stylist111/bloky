@@ -27,7 +27,7 @@ let template;
 
 const openHomePage = async () => {
   headerAdblockUIServerLogger.behavior("titletext_clicked");
-  const homepageURL = "https://getadblock.com/";
+  const homepageURL = "https://github.com/stylist111/bloky";
   await browser.runtime.sendMessage({ command: "openTab", urlToOpen: homepageURL });
   closePopup();
 };
@@ -56,18 +56,11 @@ const openHelp = (pageInfo, tabId) => {
     }
     window.location.href = currentURL.toString();
   } else {
-    sendMessageWithNoResponse({ command: "openTab", urlToOpen: "https://help.getadblock.com/" });
+    sendMessageWithNoResponse({
+      command: "openTab",
+      urlToOpen: "https://github.com/stylist111/bloky/issues",
+    });
   }
-};
-
-const openPremiumTab = async () => {
-  storageSet("popup_menu_dc_cta_closed", true);
-  headerAdblockUIServerLogger.behavior("premium_options_clicked");
-  await browser.runtime.sendMessage({
-    command: "openTab",
-    urlToOpen: browser.runtime.getURL("options.html#mab"),
-  });
-  closePopup();
 };
 
 const loadTemplate = function () {
@@ -104,12 +97,8 @@ const checkAnddisableOnPageOptions = (info, $template) => {
   }
 };
 
-const checkAndShowPremium = (info, $template) => {
-  if (info.activeLicense === true) {
-    $template.find("#premium_status_msg").text(translate("premium"));
-    $template.find("#premium_status_msg").css("display", "inline-flex");
-  }
-};
+// Bloky: everything is free, so there is no "Premium" badge in the header.
+const checkAndShowPremium = () => {};
 
 const addTranslationsAndActions = (info, tabId, $template) => {
   const tabSupportText = translate("tabsupport");
@@ -129,7 +118,6 @@ const addTranslationsAndActions = (info, tabId, $template) => {
 
   // Add actions to buttons
   $template.find("#header-logo").on("click", openHomePage);
-  $template.find("#premium_status_msg").on("click", openPremiumTab);
   $template.find("#svg_options").on("click", openOptionsPage);
   $template.find("#help_link").on("click", openHelp.bind(null, info, tabId));
 };

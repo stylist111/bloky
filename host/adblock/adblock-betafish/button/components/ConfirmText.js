@@ -43,8 +43,7 @@ async function customFilters(i18n) {
 
 function distractionControl(i18n) {
   const mainText = splitAndTranslate(i18n);
-  const link =
-    "https://help.getadblock.com/support/solutions/articles/6000250028-about-distraction-control";
+  const link = "https://github.com/stylist111/bloky/issues";
   const linkText = translateWithTags("dc_more_information", "", [
     `<inline-link-button data-url="${link}">`,
     "</inline-link-button>",

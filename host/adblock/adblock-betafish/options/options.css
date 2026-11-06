@@ -2071,3 +2071,19 @@ html[dir="rtl"] #general-option-list .extra-info {
   padding-right: 35px;
   padding-left: 0px;
 }
+
+/* Bloky: options that make no sense in Bloky (data collection, marketing) */
+.bloky-hidden {
+  display: none !important;
+}
+
+/* Bloky: AdBlock's stock photo channels are hosted on their CDN (their photos),
+   so only the user's own images are offered. */
+#channel-options li.image-box:not(#custom-channel-box) {
+  display: none !important;
+}
+
+/* Bloky: no upsell banners anywhere */
+.upsell-cta {
+  display: none !important;
+}

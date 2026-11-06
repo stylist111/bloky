@@ -204,7 +204,7 @@
         "content": [
           {
             "text": "learn_more_to_resolve",
-            "linkURL": "https://helpcenter.getadblock.com/hc/en-us/articles/9738502334611-How-to-remove-malware-or-adware-from-your-device"
+            "linkURL": "https://github.com/stylist111/bloky/issues"
           }
         ]
       }
@@ -374,7 +374,7 @@
           },
           {
             "text": "try_manual_update",
-            "linkURL": "https://helpcenter.getadblock.com/hc/en-us/articles/9738461969043-How-do-I-manually-update-my-filter-lists"
+            "linkURL": "https://github.com/stylist111/bloky/issues"
           }
         ]
       },
@@ -385,7 +385,7 @@
           },
           {
             "text": "contact_support",
-            "linkURL": "mailto:help@getadblock.com"
+            "linkURL": "https://github.com/stylist111/bloky/issues"
           }
         ]
       }
@@ -420,7 +420,7 @@
         "content": [
           {
             "text": "visit_help_center",
-            "linkURL": "https://help.getadblock.com"
+            "linkURL": "https://github.com/stylist111/bloky/issues"
           }
         ]
       },
@@ -431,7 +431,7 @@
           },
           {
             "text": "contact_support",
-            "linkURL": "mailto:help@getadblock.com"
+            "linkURL": "https://github.com/stylist111/bloky/issues"
           }
         ]
       }
@@ -444,11 +444,11 @@
         "content": [
           {
             "text": "edit_filter_lists",
-            "linkURL": "https://helpcenter.getadblock.com/hc/en-us/articles/9738523403027-Introduction-to-Filter-Lists"
+            "linkURL": "https://github.com/stylist111/bloky/issues"
           },
           {
             "text": "learn_more_filter_lists",
-            "linkURL": "https://helpcenter.getadblock.com/hc/en-us/articles/9738501334035-How-to-use-custom-filters"
+            "linkURL": "https://github.com/stylist111/bloky/issues"
           }
         ]
       },
@@ -459,7 +459,7 @@
           },
           {
             "text": "contact_support",
-            "linkURL": "mailto:help@getadblock.com"
+            "linkURL": "https://github.com/stylist111/bloky/issues"
           }
         ]
       }
@@ -676,7 +676,7 @@
           },
           {
             "text": "additional_troubleshooting",
-            "linkURL": "https://helpcenter.getadblock.com/hc/en-us/sections/9738470244883-A-Web-Page-Doesn-t-Work-With-AdBlock-On"
+            "linkURL": "https://github.com/stylist111/bloky/issues"
           }
         ]
       }
