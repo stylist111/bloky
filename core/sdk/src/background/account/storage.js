@@ -99,10 +99,8 @@ function hasPremiumFeature(features) {
  * @returns {Promise<boolean>}
  */
 export async function hasPremium() {
-  const state = await accountData.getStateLoaded();
-  const user = state.user || {};
-
-  return !!user.hasPremium;
+  // Bloky: every feature is free for everyone, there is no paid plan.
+  return true;
 }
 
 /**

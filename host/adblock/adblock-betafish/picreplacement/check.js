@@ -18,8 +18,8 @@
 /* For ESLint: List any global identifiers used in this file below */
 /* global browser */
 
-// Yes, you could hack my code to not check the license.  But please don't.
-// Paying for this extension supports the work on AdBlock.  Thanks very much.
+// Bloky: this is a free, open-source fork. All former Premium features are
+// unlocked for everyone, and there is no license server.
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
@@ -31,14 +31,12 @@ import { Channels } from "./channels";
 import { setSetting } from "~/prefs/background";
 import { showIconBadgeCTA, NEW_BADGE_REASONS } from "~/alias/icon";
 import { Prefs } from "~/alias/prefs";
-import * as logger from "~/utilities/background";
 import SubscriptionAdapter from "../subscriptionadapter";
 import {
   chromeStorageSetHelper,
   chromeStorageGetHelper,
   migrateData,
   storageSet,
-  reloadOptionsPageTabs,
 } from "~/utilities/background";
 
 const licenseNotifier = new EventEmitter();
@@ -321,7 +319,8 @@ export const License = (function getLicense() {
       return formattedDate;
     },
     async isActiveLicense() {
-      return ewe.account.hasPremium();
+      // Bloky: all former Premium features are free.
+      return true;
     },
     isLicenseCodeValid() {
       return License && License.get().code && typeof License.get().code === "string";
@@ -329,20 +328,15 @@ export const License = (function getLicense() {
     isMyAdBlockEnrolled() {
       return License && License.get() && License.get().myadblock_enrollment === true;
     },
+    // Bloky: no upsells of any kind.
     async shouldShowMyAdBlockEnrollment() {
-      return (
-        License.isMyAdBlockEnrolled() &&
-        !(await License.isActiveLicense()) &&
-        License.shouldShowPremiumCTA()
-      );
+      return false;
     },
     async shouldShowPremiumDcCTA() {
-      return (
-        License && (await License.isActiveLicense()) && License.get().suppress_premium_cta !== true
-      );
+      return false;
     },
     shouldShowPremiumCTA() {
-      return !(License && License.get().suppress_premium_cta === true);
+      return false;
     },
   };
 })();
@@ -414,40 +408,7 @@ License.initialize(() => {
   }
 });
 
-ewe.account.onChanged.addListener(async ({ user, oldUser }) => {
-  const hasPremium = user && user.hasPremium;
-  const oldUserHadPremium = oldUser && oldUser.hasPremium;
-
-  // activate
-  if (hasPremium && !oldUserHadPremium) {
-    if (await ewe.account.isTrial()) {
-      SubscriptionAdapter.subscribe({
-        adblockId: "distraction-control",
-        reason: ewe.subscriptions.REASONS.PLAN_CHANGE,
-      });
-      SubscriptionAdapter.subscribe({
-        adblockId: "cookies-premium",
-        reason: ewe.subscriptions.REASONS.PLAN_CHANGE,
-      });
-    }
-    reloadOptionsPageTabs();
-  }
-
-  licenseNotifier.emit("license.updated", {
-    status: hasPremium ? "active" : "expired",
-  });
-
-  if (hasPremium !== oldUserHadPremium) {
-    // used in allowlisting module to update the authorized keys
-    licenseNotifier.emit("license.status.changed");
-  }
-
-  // expired
-  if (!hasPremium) {
-    logger.debug("No premium license, deactivating features");
-    await License.processExpiredLicense();
-  }
-});
+// Bloky: there are no accounts or licenses, so nothing ever expires.
 
 // eslint-disable-next-line no-restricted-globals
 Object.assign(self, {

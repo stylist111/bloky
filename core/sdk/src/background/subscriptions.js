@@ -207,7 +207,9 @@ export function getDefaultSubscriptions(uiLanguage) {
   if (preferredAASubscription) {
     aaSubscriptions = [preferredAASubscription];
   }
-  chosenSubscriptions.unshift(...aaSubscriptions);
+  // Bloky: Acceptable Ads stay available as an opt-in, but are never enabled
+  // by default. hasAA is still reported so callers don't treat it as an error.
+  void aaSubscriptions;
 
   chosenSubscriptions.unshift(...adSubscriptions);
 

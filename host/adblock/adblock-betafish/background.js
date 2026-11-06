@@ -22,13 +22,6 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { getPerformanceTimings } from "@eyeo/webext-ad-filtering-solution/all/profiling";
 
 import * as info from "info";
-import { start as startConflictDetection } from "@eyeo-fragments/conflict-detection/background";
-import { start as startYtWallDetection } from "@eyeo-fragments/yt-wall-detection/background";
-import { start as startReverseTrial } from "@eyeo-fragments/reverse-trial/background";
-import { start as startPublicAPI } from "@eyeo-fragments/public-api";
-import { start as startCloseTab } from "@eyeo-fragments/close-tab";
-import logoBase64 from "../icons/adblock-20.svg?uri";
-import { start as startFacts } from "../src/remote-config/background";
 import { Prefs } from "./alias/prefs";
 import { getUserFilters } from "./filter-utils";
 import {
@@ -37,7 +30,7 @@ import {
   pausedFilterText1,
   pausedFilterText2,
 } from "../src/pause/background";
-import { NEW_BADGE_REASONS, getNewBadgeTextReason, showIconBadgeCTA } from "./alias/icon";
+import { getNewBadgeTextReason } from "./alias/icon";
 
 import { getDebugInfo } from "./debug/background/index";
 import { getUserId } from "./id/background/index";
@@ -47,12 +40,9 @@ import { getBlockedPerPage, Stats } from "../adblockplusui/adblockpluschrome/lib
 import { getSettings, settings } from "./prefs/background";
 import { License, channels } from "./picreplacement/check";
 import { revalidateAllowlistingStates } from "../adblockplusui/adblockpluschrome/lib/allowlisting";
-import { setUninstallURL } from "./alias/uninstall";
 
 import DataCollectionV2 from "./datacollection.v2";
 import LocalDataCollection from "./localdatacollection";
-import * as logger from "~/utilities/background";
-import { port } from "../adblockplusui/adblockpluschrome/lib/messaging/port";
 import SubscriptionAdapter from "./subscriptionadapter";
 import * as prefs from "./prefs/background";
 import { FilterOrigin } from "../src/filters/shared";
@@ -478,9 +468,9 @@ const getCurrentTabInfo = function (secondTime, tabId) {
   });
 };
 
-const premiumCtaViewed = "premium_cta_viewed";
 const versionStorageKey = "last_known_version";
-const isUpdatePageEngaged = true;
+// Bloky: never open marketing pages after an update.
+const isUpdatePageEngaged = false;
 
 const DAYS_IN_WEEK = 7;
 const MILLIS_IN_DAY = 24 * 60 * 60 * 1000;
@@ -625,31 +615,8 @@ if (isUpdatePageEngaged) {
   void showUpdatePage();
 }
 
-/*
-  If we call browser.storage.local.get with an undefined key, we get the whole list back.
-  This function passes false as the default result if the key does not exist,
-  so it works as we expect when checking for defined properties on an object.
-*/
-const getValueOrFalse = async (key) => {
-  const result = await browser.storage.local.get({ [key]: false });
-  return result[key];
-};
-
-browser.runtime.onInstalled.addListener(async (details) => {
-  // Display beta page after each update for beta-users only
-  if (
-    (details.reason === "update" || details.reason === "install") &&
-    browser.runtime.id === adblocBetaID
-  ) {
-    browser.tabs.create({ url: "https://getadblock.com/beta" });
-  }
-
-  // Show the new callout to everyone for the new premium popup until they click
-  const alreadyViewedCta = await getValueOrFalse(premiumCtaViewed);
-  if (details.reason === "update" && !alreadyViewedCta) {
-    await showIconBadgeCTA(NEW_BADGE_REASONS.UPDATE_FOR_EVERYONE);
-    void browser.storage.local.set({ [premiumCtaViewed]: true });
-  }
+browser.runtime.onInstalled.addListener(async () => {
+  // Bloky: no beta page and no "New" badge on updates.
 
   // We want to move away from localStorage, so remove item if it exists.
   if (typeof localStorage !== "undefined") {
@@ -724,60 +691,12 @@ initialize
       await License.ready();
       return Boolean(await License.isActiveLicense());
     });
-    await getUserId();
-    TELEMETRY.start();
-    setUninstallURL();
+    // Bloky: removed telemetry ping, uninstall survey URL, YouTube auto-allowlisting,
+    // premium trial pop-ups, remote "facts", getadblock.com page hooks,
+    // partner public API (Acceptable Ads partners) and partner extension detection.
     revalidateAllowlistingStates();
     prefs.migrateUserData();
-    startYtWallDetection({
-      addTrustedMessageTypes: ext.addTrustedMessageTypes,
-      logger,
-      port,
-      prefs: Prefs,
-    });
-    startReverseTrial({
-      addTrustedMessageTypes: ext.addTrustedMessageTypes,
-      prefs: Prefs,
-      port,
-      logoUrl: logoBase64,
-      async isOptedOut() {
-        return Prefs.get("data_collection_opt_out") === true;
-      },
-      addonVersion: info.addonVersion,
-      allowedUrlHosts: ["getadblock.com", "docs.google.com"],
-    });
-    startFacts();
-    startCloseTab({
-      port,
-      addTrustedMessageTypes: ext.addTrustedMessageTypes,
-      trustedOrigins: [
-        "https://getadblock.com",
-        "https://stage.dev.getadblock.com",
-        "https://dev1.dev.getadblock.com",
-        "https://dev2.dev.getadblock.com",
-        "https://dev3.dev.getadblock.com",
-        "https://myaccount.getadblock.com",
-      ],
-    });
-    startPublicAPI({
-      port,
-      addTrustedMessageTypes: ext.addTrustedMessageTypes,
-      hasPremium: License.isActiveLicense,
-    });
     addAllowlistingListeners();
-    await startConflictDetection({
-      logger,
-      prefs: Prefs,
-      port,
-      addTrustedMessageTypes: ext.addTrustedMessageTypes,
-      onUpdatedPartnerExtensionIds: async (extensionIds) => {
-        await Prefs.untilLoaded;
-        Prefs.set("partnerExtensionFound", {
-          extesnionsIdsFound: extensionIds,
-          detectionTimestamp: Date.now(),
-        });
-      },
-    });
   })
   .then(() => {
     performance.measure("adblock.initialize", "adblock.initialize");

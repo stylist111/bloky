@@ -309,39 +309,8 @@ const start = async function () {
       $(".header-logo").attr("src", `icons/${popupMenuTheme}/beta_logo.svg`);
     }
 
-    // CTAs
-    if (
-      !userClosedVPNCta && // VPN CTA
-      !info.disabledSite &&
-      !info.whitelisted
-    ) {
-      show(["div_vpn_cta"]);
-      popupAdblockUIServerLogger.behavior("vpn_cta", { action: "seen" });
-    } else if (
-      // Premium CTAs
-      info.showMABEnrollment &&
-      userClosedCta &&
-      showThemesCTA &&
-      userClosedFreeDCCta
-    ) {
-      show(["div_premium_themes_cta"]);
-      $("#div_premium_themes_cta").attr("data-theme-cta", info.popupMenuThemeCTA);
-      const theme = info.popupMenuThemeCTA ? info.popupMenuThemeCTA.replace("_theme", "") : "";
-      popupAdblockUIServerLogger.behavior("premium_themes_cta", { theme, action: "seen" });
-    } else if (info.showMABEnrollment && !userClosedCta && userClosedFreeDCCta) {
-      show(["div_myadblock_enrollment_v2"]);
-      popupAdblockUIServerLogger.behavior("premium_upsell_cta", { action: "seen" });
-    } else if (info.showMABEnrollment && !userClosedFreeDCCta) {
-      show(["div_free_dc_cta"]);
-      popupAdblockUIServerLogger.behavior("free_dc_cta", { action: "seen" });
-    } else if (info.showDcCTA && !userClosedDCCta && !info.disabledSite) {
-      show(["div_premium_dc_cta"]);
-      popupAdblockUIServerLogger.behavior("premium_dc_cta", { action: "seen" });
-    }
-
-    if (info.activeLicense === true) {
-      $("#premium_status_msg").css("display", "inline-flex");
-    }
+    // Bloky: no CTAs (VPN, Premium, themes, distraction control) and no "Premium" badge.
+    void [userClosedCta, userClosedFreeDCCta, showThemesCTA, userClosedDCCta, userClosedVPNCta];
 
     if (errorOccurred) {
       return;

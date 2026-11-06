@@ -140,14 +140,14 @@ defaults.show_devtools_panel = true;
  *
  * @type {boolean}
  */
-defaults.data_collection_opt_out = false;
+defaults.data_collection_opt_out = true; // Bloky: never collect data
 
 /**
  * Whether marketing messages can be shown or not.
  *
  * @type {boolean}
  */
-defaults.marketing_opt_out = false;
+defaults.marketing_opt_out = true; // Bloky: no marketing
 
 /**
  * Prevents unsolicited UI elements from showing up after installation. This
@@ -156,7 +156,7 @@ defaults.marketing_opt_out = false;
  * @see https://adblockplus.org/development-builds/suppressing-the-first-run-page-on-chrome
  * @type {boolean}
  */
-defaults.suppress_first_run_page = false;
+defaults.suppress_first_run_page = true; // Bloky
 
 /**
  * Additonal subscriptions to be automatically added when the extension is
@@ -331,14 +331,14 @@ defaults.onpage_dialog_timing_configurations = {
  *
  * @type {string}
  */
-defaults.ping_server_url = "https://ping.getadblock.com/stats/";
+defaults.ping_server_url = ""; // Bloky: no telemetry
 
 /**
  * The URL of the backup Ping server.
  *
  * @type {string}
  */
-defaults.backup_ping_server_url = "https://ping-retry.getadblock.com/stats/";
+defaults.backup_ping_server_url = ""; // Bloky: no telemetry
 
 /**
  * Where the dialog for the YouTube wall should link users to

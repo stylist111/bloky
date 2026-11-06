@@ -1,8 +1,9 @@
 {
-  "author": "Adblock, Inc.",
+  "author": "Beyond",
+  "homepage_url": "https://github.com/stylist111/bloky",
   "applications": {
     "gecko": {
-      "id": "jid1-NIfFY2CA8fy1tg@jetpack",
+      "id": "bloky@stylist111.github.io",
       "strict_min_version": "128.0"
     }
   },
@@ -37,84 +38,14 @@
       "js": ["polyfill.js", "adblock-uiscripts-rightclick_hook.js"],
       "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_idle"
-    },
-    {
-      "all_frames": true,
-      "js": ["polyfill.js", "globals-front.js", "adblock-functions.js", "adblock-getadblock.js"],
-      "matches": [
-        "https://getadblock.com/*",
-        "https://*.dev.getadblock.com/*",
-        "https://*.myaccount.getadblock.com/*"
-      ],
-      "run_at": "document_start"
-    },
-    {
-      "js": ["polyfill.js", "yt-auto-allowlist.preload.js"],
-      "matches": ["*://*.youtube.com/*"],
-      "run_at": "document_start"
-    },
-    {
-      "js": ["polyfill.js", "reverse-trial.preload.js"],
-      "matches": ["https://youtube.com/*", "https://www.youtube.com/*"],
-      "run_at": "document_start"
-    },
-    {
-      "js": ["polyfill.js", "info-injector.preload.js"],
-      "matches": [
-        "https://getadblock.com/*",
-        "https://vpn.getadblock.com/*",
-        "https://*.dev.getadblock.com/*",
-        "https://*.myaccount.getadblock.com/*",
-        "https://adblockplus.org/*",
-        "https://new.adblockplus.org/*",
-        "https://welcome.adblockplus.org/*",
-        "https://accounts.adblockplus.org/*",
-        "https://*.myaccount.adblockplus.org/*"
-      ],
-      "run_at": "document_start"
-    },
-    {
-      "all_frames": true,
-      "js": ["polyfill.js", "public-api.preload.js"],
-      "matches": ["https://btloader.com/trustedIframe.html?o=*"],
-      "run_at": "document_start"
-    },
-    {
-      "js": ["polyfill.js", "conflict-detection.preload.js"],
-      "matches": ["*://*.youtube.com/*", "*://*.facebook.com/*"],
-      "run_at": "document_start"
-    },
-    {
-      "all_frames": true,
-      "js": ["polyfill.js", "cookie-banner-detection.preload.js"],
-      "matches": ["http://*/*", "https://*/*"],
-      "run_at": "document_start"
-    },
-    {
-      "js": ["polyfill.js", "close-tab.preload.js"],
-      "matches": [
-        "https://getadblock.com/*",
-        "https://*.dev.getadblock.com/*",
-        "https://*.myaccount.getadblock.com/*"
-      ],
-      "run_at": "document_idle"
     }
   ],
-  "content_security_policy": "default-src 'self'; img-src 'self' data: blob: https://cdn.adblockcdn.com; style-src 'self' 'unsafe-inline'; connect-src *; frame-src 'self' https://getadblock.com",
+  "content_security_policy": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; connect-src *; frame-src 'self'",
   "name": "__MSG_name__",
   "short_name": "__MSG_short_name__",
   "description": "__MSG_description__",
   "default_locale": "en_US",
   "devtools_page": "devtools.html",
-  "externally_connectable": {
-    "ids": [
-      "cfhdojbkjhnklbpkdaibdccddilifddb",
-      "gighmmpiobklfepjocnamgkkbiglidom",
-      "gmgoamodcdcjnbaobigkjelfplakmdhh",
-      "ndcileolkflehcjpmjnfbnaibdcgglog",
-      "oidhhegpmlfpoeialbgcdocjalghfpkp"
-    ]
-  },
   "icons": {
     "16": "icons/adblock-16.png",
     "32": "icons/adblock-32.png",

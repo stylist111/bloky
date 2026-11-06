@@ -16,7 +16,7 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global browser, License, localizePage, getStorageCookie, setStorageCookie,
+/* global browser, localizePage, getStorageCookie, setStorageCookie,
    THIRTY_MINUTES_IN_MILLISECONDS, setLangAndDirAttributes, storageSet, storageGet, ewe,
    initializeProxies, sendTypeMessage, settings:true, */
 
@@ -196,9 +196,9 @@ function loadTabPanelsHTML() {
       if (tabsLoaded >= $tabPanels.length) {
         // all tabs have been loaded and localized - call
         // any post processing handlers here.
-        shouldShowDCNewIcon();
+        // Bloky: no "new" dot on the filters item and no account login buttons.
+        void [shouldShowDCNewIcon, displayUserAccountLoginCTA];
         hideAdvancedOptionsWhenNeeded();
-        displayUserAccountLoginCTA();
       }
     });
   });
@@ -238,12 +238,7 @@ $(async () => {
   // 1. load all the tab panels templates in respective panel DIVs
   loadTabPanelsHTML();
 
-  // 2. hide the 'Premium' tab, if the Registry or Group Policy has requested it
-  // Note: this check is done here to minimize the chance of the user
-  //       seeing the Options menu change when the 'Premium' item is removed
-  if (License.shouldShowPremiumCTA() === false) {
-    $('#sidebar-tabs a[href="#mab"]').parent().hide();
-  }
+  // 2. Bloky: there is no 'Premium' tab any more.
 
   // 3. Activate tab on page load with cookie, URL hash or default tabID
   activateTabOnPageLoad();

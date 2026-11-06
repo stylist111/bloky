@@ -106,94 +106,36 @@
                 </a>
               </li>
               <div class="separator"></div>
+              <!-- Bloky: former Premium features, free for everyone -->
               <li>
-                <a href="#mab" class="tablink">
-                  <i
-                    class="material-icons md-18"
-                    role="img"
-                    aria-hidden="true"
-                    style="color: #efbf04"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      style="width: 18px; height: 18px"
-                    >
-                      <path
-                        d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </i>
-                  <span i18n="premium"></span>
+                <a href="#premium-filters" class="tablink">
+                  <i class="material-icons md-18" role="img" aria-hidden="true">block</i
+                  ><span i18n="premium_filters"></span>
                 </a>
-                <ul data-parent-tab="#mab">
-                  <li>
-                    <a href="#mab-themes" class="tablink">
-                      <i class="material-icons md-18 unlocked" role="img" aria-hidden="true"
-                        >featured_video</i
-                      >
-                      <span i18n="themes"></span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#mab-image-swap" class="tablink">
-                      <i class="material-icons md-18 unlocked" role="img" aria-hidden="true"
-                        >image</i
-                      >
-                      <span i18n="image_swap"></span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#premium-filters" class="tablink">
-                      <i class="material-icons" role="img" aria-hidden="true" id="new-pf-icon"
-                        >lens</i
-                      >
-                      <i
-                        class="material-icons md-18 unlocked"
-                        role="img"
-                        aria-hidden="true"
-                        id="pfIcon"
-                        >block</i
-                      >
-                      <span id="pf-menu-item" i18n="premium_filters"></span>
-                    </a>
-                  </li>
-                </ul>
+              </li>
+              <li>
+                <a href="#mab-themes" class="tablink">
+                  <i class="material-icons md-18" role="img" aria-hidden="true">featured_video</i
+                  ><span i18n="themes"></span>
+                </a>
+              </li>
+              <li>
+                <a href="#mab-image-swap" class="tablink">
+                  <i class="material-icons md-18" role="img" aria-hidden="true">image</i
+                  ><span i18n="image_swap"></span>
+                </a>
               </li>
             </ul>
           </nav>
         </section>
 
         <section id="sidebar-content-bottom" class="w-full px-2 min-[890px]:px-5">
-          <div id="user-account-section" class="w-full">
-            <a
-              href=""
-              target="_blank"
-              class="btn secondary mx-0 mb-5 flex gap-2 w-full"
-              id="user-account-login"
-              style="display: none"
-            >
-              <i class="material-icons md-18 text-current" role="img" aria-hidden="true">
-                account_circle
-              </i>
-              <span i18n="user_account_login" class="hidden min-[890px]:block"></span>
-            </a>
-            <a
-              href=""
-              target="_blank"
-              class="btn secondary mx-0 mb-5 flex gap-2 w-full"
-              id="user-account-manage"
-              style="display: none"
-            >
-              <i class="material-icons md-18 text-current" role="img" aria-hidden="true"
-                >account_circle</i
-              >
-              <span i18n="user_account_manage_account" class="hidden min-[890px]:block"></span>
-            </a>
-          </div>
           <div class="top-line">
-            <a href="https://getadblock.com/privacy" i18n="privacy_policy" target="_blank"></a>
+            <a
+              href="https://github.com/stylist111/bloky/blob/main/PRIVACY.md"
+              i18n="privacy_policy"
+              target="_blank"
+            ></a>
           </div>
         </section>
       </div>
@@ -201,7 +143,6 @@
 
     <div id="tab-content">
       <div id="stats-tabs" class="tab"></div>
-      <div id="mab" class="tab"></div>
       <div id="general" class="tab"></div>
       <div id="filters" class="tab"></div>
       <div id="customize" class="tab"></div>

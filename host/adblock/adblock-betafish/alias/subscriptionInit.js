@@ -28,7 +28,6 @@ import rulesIndex from "@eyeo/rules-utils/adblock/index/adblock.json";
 import { port } from "../../adblockplusui/adblockpluschrome/lib/messaging/port.js";
 import { setReadyState, ReadyState } from "../../src/testing/ready-state/background";
 import * as logger from "~/utilities/background";
-import { getFacts } from "../../src/remote-config/background";
 import { ORIGIN_ID as EXPERIMENT_FILTER_ORIGIN } from "@eyeo-fragments/filter-experiments/shared";
 
 let firstRun;
@@ -369,16 +368,7 @@ const start = async function () {
     heavyDependenciesPath: "/vendor/@eyeo/webext-ad-filtering-solution/heavy-dependencies.js",
     name: info.addonName,
     version: info.addonVersion,
-    remoteConfig: {
-      url: "https://easylist-downloads.adblockplus.org/ab-testing/experiments.json",
-      getFacts,
-      rulesIndex,
-    },
-    account: {
-      apiBaseUrl: "https://api.ua.eyeo.it/v1",
-      loginRequestPattern: "https://myaccount.getadblock.com/api/auth/ext-login*",
-      applicationId: "b793c0eaad23705f155df0a9609dc95c",
-    },
+    // Bloky: no remote config (A/B experiments, in-product messages) and no accounts.
   };
 
   let cdp = {

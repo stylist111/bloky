@@ -67,10 +67,6 @@ export default {
         src: ["src/popup/ui/bootstrap.entry.ts"],
       },
       {
-        dest: "info-injector.preload.js",
-        src: ["src/info-injector/content/index.ts"],
-      },
-      {
         dest: "adblock-push-notification-cs.js",
         src: ["src/premium-push-notification/content/push-notification-cs.ts"],
       },
@@ -78,36 +74,9 @@ export default {
         dest: "adblock-deny-push-notifications-requests.js",
         src: ["src/premium-push-notification/content/deny-notifications-requests.ts"],
       },
-      {
-        dest: "yt-auto-allowlist.preload.js",
-        package: "@eyeo-fragments/yt-wall-detection",
-        src: "/content",
-      },
-      {
-        dest: "reverse-trial.preload.js",
-        package: "@eyeo-fragments/reverse-trial",
-        src: "/content",
-      },
-      {
-        dest: "public-api.preload.js",
-        package: "@eyeo-fragments/public-api",
-        src: "/content",
-      },
-      {
-        dest: "conflict-detection.preload.js",
-        package: "@eyeo-fragments/conflict-detection",
-        src: "/content",
-      },
-      {
-        dest: "cookie-banner-detection.preload.js",
-        package: "@eyeo-fragments/cookie-banner-detection",
-        src: ["/content"],
-      },
-      {
-        dest: "close-tab.preload.js",
-        package: "@eyeo-fragments/close-tab",
-        src: ["/content"],
-      },
+      // Bloky: removed content scripts for YouTube auto-allowlisting, premium trial,
+      // Acceptable Ads partner API, partner extension detection, cookie-banner
+      // upsell timing and getadblock.com page hooks.
     ],
   },
   mapping: {
