@@ -678,6 +678,15 @@ export async function migrate() {
   }
 }
 
+function throwErrors(errors) {
+  if (errors.length === 1) {
+    throw errors[0];
+  }
+  if (errors.length > 1) {
+    throw new AggregateError(errors, errors.map(e => e.message).join("; "));
+  }
+}
+
 /**
  * @ignore
  */
@@ -703,13 +712,49 @@ export async function ensureDNRRulesetsEnabled() {
     }
 
     const disableRulesetIds = Array.from(toDisable);
-    if (enableRulesetIds.length > 0 || disableRulesetIds.length > 0) {
+    if (enableRulesetIds.length === 0 && disableRulesetIds.length === 0) {
+      return;
+    }
+
+    try {
       await updateEnabledRulesets(
         enabledItems,
         enableRulesetIds,
         disableRulesetIds
       );
+      return;
     }
+    catch (e) {
+      if (enableRulesetIds.length + disableRulesetIds.length === 1) {
+        throw e;
+      }
+    }
+
+    // Retry one ruleset at a time, so that a ruleset that doesn't fit within
+    // the browser's static rule count limit doesn't keep the others from
+    // being enabled or disabled.
+    let errors = [];
+    let retry = async(enableIds, disableIds) => {
+      try {
+        await updateEnabledRulesets(
+          await browser.declarativeNetRequest.getEnabledRulesets(),
+          enableIds,
+          disableIds
+        );
+      }
+      catch (e) {
+        errors.push(e);
+      }
+    };
+
+    if (disableRulesetIds.length > 0) {
+      await retry([], disableRulesetIds);
+    }
+    for (let rulesetId of enableRulesetIds) {
+      await retry([rulesetId], []);
+    }
+
+    throwErrors(errors);
   }
 }
 
@@ -901,12 +946,22 @@ export default {
       return;
     }
 
+    // Keep adding the remaining subscriptions if one fails, e.g. when its
+    // ruleset doesn't fit within the browser's static rule count limit.
+    let errors = [];
     await withKeepAlive(async () => {
       for (let subscription of subscriptions) {
-        await this.add(browser.declarativeNetRequest ?
-          subscription.url : subscription.mv2URL, {reason});
+        try {
+          await this.add(browser.declarativeNetRequest ?
+            subscription.url : subscription.mv2URL, {reason});
+        }
+        catch (e) {
+          errors.push(e);
+        }
       }
     });
+
+    throwErrors(errors);
   },
 
   /**

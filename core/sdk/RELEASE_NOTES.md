@@ -1,5 +1,18 @@
 # Unreleased
 
+- `addDefaults()` now keeps adding the remaining default subscriptions when
+  one of them fails, for example when its ruleset doesn't fit within the
+  browser's static rule count limit. Before, the first failure stopped the
+  rest from being added, leaving acceptable ads and anti-cv out. Once all
+  subscriptions were tried, a single failure is thrown as before, and
+  several failures are thrown together as an `AggregateError`.
+- When enabling and disabling the subscriptions' rulesets at startup fails,
+  the rulesets that are no longer needed are now disabled together and the
+  others are enabled one at a time, so that a ruleset that doesn't fit within
+  the static rule count limit no longer keeps the others from being enabled
+  or disabled. Such a failure no longer stops the rest of the startup
+  initialization either, which before ran again on every start after an
+  extension update and removed the subscriptions' filter updates each time.
 - Added the `install_type` client attribute to the CDP and telemetry pings.
 - The `ping_id_mint_count` and `events_id_mint_count` client attributes are
   now always counted and reported. Before, they depended on the

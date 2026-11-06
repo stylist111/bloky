@@ -101,6 +101,200 @@ describe("EWE.subscriptions", function() {
       await expect(subscriptions.addDefaults("en"))
         .rejects.toThrow("No allowing subscription");
     });
+
+    describe("with DNR rulesets", function() {
+      const DNR_ERROR = "Internal error";
+      const defaults =
+        [subEasylistLocal, subAcceptableAdsLocal, subAntiCVLocal];
+
+      let enabledRulesets;
+      let failingIds;
+
+      after(function() {
+        // eslint-disable-next-line no-undef
+        delete global.addonBundledSubscriptions;
+      });
+
+      beforeEach(async function() {
+        // eslint-disable-next-line no-undef
+        global.addonBundledSubscriptions =
+          defaults.map(({id, url}) => ({id, url}));
+        await mockAndImport(["./info.js"]);
+        env.setRecommendations(defaults);
+        env.setFilterStorageSubscriptions([]);
+        env.navigator.userAgent = "Mozilla/5.0 Chrome/130.0";
+
+        // eslint-disable-next-line no-undef
+        let {RegularSubscription} = global.subscriptionClasses;
+        let byURL = new Map(defaults.map(({id, url}) => [
+          url,
+          Object.assign(new RegularSubscription(), {
+            url, id, downloadable: false, disabled: false, lastDownload: 1
+          })
+        ]));
+        // eslint-disable-next-line no-undef
+        global.fromURL = url => byURL.get(url);
+
+        enabledRulesets = [];
+        failingIds = [subEasylistLocal.id];
+        env.browser.runtime.manifest.declarative_net_request.rule_resources =
+          defaults.map(({id}) => ({id}));
+        Object.assign(env.browser.declarativeNetRequest, {
+          getEnabledRulesets: () => Promise.resolve([...enabledRulesets]),
+          updateEnabledRulesets({enableRulesetIds}) {
+            let failingId =
+              enableRulesetIds.find(id => failingIds.includes(id));
+            if (failingId) {
+              return Promise.reject(new Error(`${DNR_ERROR} ${failingId}`));
+            }
+            enabledRulesets.push(...enableRulesetIds);
+            return Promise.resolve();
+          }
+        });
+      });
+
+      it("adds the remaining subscriptions if one fails", async function() {
+        await expect(subscriptions.addDefaults("en"))
+          .rejects.toThrow(DNR_ERROR);
+
+        // eslint-disable-next-line no-undef
+        expect(global.filterStorageSubscriptions.map(({url}) => url))
+          .toEqual(defaults.map(({url}) => url));
+        expect(enabledRulesets).toEqual(
+          [subAcceptableAdsLocal.id, subAntiCVLocal.id]
+        );
+      });
+
+      it("throws all errors together if several fail", async function() {
+        failingIds = [subEasylistLocal.id, subAntiCVLocal.id];
+
+        let error = await subscriptions.addDefaults("en").catch(e => e);
+
+        expect(error).toBeInstanceOf(AggregateError);
+        expect(error.errors.map(({message}) => message)).toEqual([
+          expect.stringContaining(`${DNR_ERROR} ${subEasylistLocal.id}`),
+          expect.stringContaining(`${DNR_ERROR} ${subAntiCVLocal.id}`)
+        ]);
+        expect(error.message).toContain(subEasylistLocal.id);
+        expect(error.message).toContain(subAntiCVLocal.id);
+        expect(enabledRulesets).toEqual([subAcceptableAdsLocal.id]);
+      });
+    });
+  });
+
+  describe("ensureDNRRulesetsEnabled()", function() {
+    const DNR_ERROR = "Internal error";
+    const FAILING_ID = "failing-ruleset";
+    const OTHER_ID = "other-ruleset";
+    const STALE_ID = "stale-ruleset";
+
+    let ensureDNRRulesetsEnabled;
+    let enabledRulesets;
+    let calls;
+    let failingIds;
+
+    beforeEach(async function() {
+      ({ensureDNRRulesetsEnabled} = await mock("subscriptions.js"));
+      env.navigator.userAgent = "Mozilla/5.0 Chrome/130.0";
+
+      // eslint-disable-next-line no-undef
+      let {RegularSubscription} = global.subscriptionClasses;
+      env.setFilterStorageSubscriptions([FAILING_ID, OTHER_ID].map(id =>
+        Object.assign(new RegularSubscription(), {
+          url: `https://example.com/${id}.txt`, id, disabled: false
+        })
+      ));
+
+      enabledRulesets = [STALE_ID];
+      calls = [];
+      failingIds = [FAILING_ID];
+      env.browser.runtime.manifest.declarative_net_request.rule_resources =
+        [FAILING_ID, OTHER_ID, STALE_ID].map(id => ({id}));
+      Object.assign(env.browser.declarativeNetRequest, {
+        getEnabledRulesets: () => Promise.resolve([...enabledRulesets]),
+        updateEnabledRulesets({enableRulesetIds, disableRulesetIds}) {
+          calls.push({enableRulesetIds, disableRulesetIds});
+          if (enableRulesetIds.some(id => failingIds.includes(id))) {
+            return Promise.reject(new Error(DNR_ERROR));
+          }
+          enabledRulesets = enabledRulesets
+            .filter(id => !disableRulesetIds.includes(id))
+            .concat(enableRulesetIds);
+          return Promise.resolve();
+        }
+      });
+    });
+
+    it("changes the other rulesets if one of them fails", async function() {
+      await expect(ensureDNRRulesetsEnabled()).rejects.toThrow(DNR_ERROR);
+
+      expect(enabledRulesets).toEqual([OTHER_ID]);
+      expect(calls).toEqual([
+        {enableRulesetIds: [FAILING_ID, OTHER_ID],
+         disableRulesetIds: [STALE_ID]},
+        {enableRulesetIds: [], disableRulesetIds: [STALE_ID]},
+        {enableRulesetIds: [FAILING_ID], disableRulesetIds: []},
+        {enableRulesetIds: [OTHER_ID], disableRulesetIds: []}
+      ]);
+    });
+
+    it("throws all errors together if several rulesets fail", async function() {
+      failingIds = [FAILING_ID, OTHER_ID];
+
+      let error = await ensureDNRRulesetsEnabled().catch(e => e);
+
+      expect(error).toBeInstanceOf(AggregateError);
+      expect(error.errors).toHaveLength(2);
+      expect(enabledRulesets).toEqual([]);
+    });
+
+    it("doesn't throw if the rulesets can be changed one at a time", async function() {
+      // A combined change can exceed the limit while each one fits.
+      let updateEnabledRulesets =
+        env.browser.declarativeNetRequest.updateEnabledRulesets;
+      env.browser.declarativeNetRequest.updateEnabledRulesets = options => {
+        if (calls.length == 0) {
+          calls.push(options);
+          return Promise.reject(new Error(DNR_ERROR));
+        }
+        return updateEnabledRulesets(options);
+      };
+      failingIds = [];
+
+      await ensureDNRRulesetsEnabled();
+
+      expect(enabledRulesets).toEqual([FAILING_ID, OTHER_ID]);
+      expect(calls).toHaveLength(4);
+    });
+
+    it("doesn't retry if a single ruleset fails", async function() {
+      enabledRulesets = [];
+      env.setFilterStorageSubscriptions(
+        // eslint-disable-next-line no-undef
+        global.filterStorageSubscriptions.filter(({id}) => id == FAILING_ID)
+      );
+
+      await expect(ensureDNRRulesetsEnabled()).rejects.toThrow(DNR_ERROR);
+
+      expect(calls).toEqual([
+        {enableRulesetIds: [FAILING_ID], disableRulesetIds: []}
+      ]);
+    });
+
+    it("changes all rulesets in a single call if it succeeds", async function() {
+      enabledRulesets = [];
+      env.setFilterStorageSubscriptions(
+        // eslint-disable-next-line no-undef
+        global.filterStorageSubscriptions.filter(({id}) => id == OTHER_ID)
+      );
+
+      await ensureDNRRulesetsEnabled();
+
+      expect(enabledRulesets).toEqual([OTHER_ID]);
+      expect(calls).toEqual([
+        {enableRulesetIds: [OTHER_ID], disableRulesetIds: []}
+      ]);
+    });
   });
 
   describe("ledger when enabling or disabling DNR rulesets", function() {

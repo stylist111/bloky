@@ -490,7 +490,7 @@ async function checkAndMigrateSubscriptions() {
  * @param {boolean} skipWipeOutDiffs Skip wiping diff updates data
  */
 export async function checkAndInitSubscriptions(skipWipeOutDiffs) {
-  // Loading the subcriptions filter text wipes out diff updates,
+  // Loading the subscriptions filter text wipes out diff updates,
   // so we do it in case of web extension update only.
   let skipInit = await browser.storage.local.get(
     [SKIP_INIT_RULESETS_STORAGE_KEY]
@@ -516,11 +516,25 @@ export async function checkAndInitSubscriptions(skipWipeOutDiffs) {
   }
 
   await recoverMigrationErrorSubscriptions();
-  await ensureDNRRulesetsEnabled();
+
+  // A ruleset that doesn't fit within the static rule count limit fails
+  // here on every start, so finish the initialization before reporting it.
+  // Otherwise the initialization above would run again on every start.
+  let ensureRulesetsError = null;
+  try {
+    await ensureDNRRulesetsEnabled();
+  }
+  catch (e) {
+    ensureRulesetsError = e;
+  }
 
   await subscriptions.default.sync();
 
   await browser.storage.local.set(
     {[SKIP_INIT_RULESETS_STORAGE_KEY]: true}
   );
+
+  if (ensureRulesetsError) {
+    throw ensureRulesetsError;
+  }
 }
