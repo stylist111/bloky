@@ -18,6 +18,7 @@
 import browser from "./browser.js";
 import {PersistentState} from "./persistence.js";
 import {parseFilterList} from "#adblockpluscore/lib/filters/lists.js";
+import {recommendations} from "#adblockpluscore/lib/recommendations.js";
 import {readFileContent} from "./io.js";
 import {addonBundledSubscriptionsPath} from "./info.js";
 
@@ -36,6 +37,28 @@ function getRuleset(rulesetId) {
 
 export function rulesetExistsInManifest(rulesetId) {
   return !!getRuleset(rulesetId);
+}
+
+function ruleCountForRuleset(rulesetId) {
+  for (let recommendation of recommendations()) {
+    if (recommendation.id === rulesetId) {
+      return recommendation.ruleCount;
+    }
+  }
+  return 0;
+}
+
+/**
+ * Sums the static rule counts of the given rulesets, as declared in the
+ * bundled subscriptions.
+ *
+ * @param {string[]} rulesetIds
+ * @returns {number}
+ */
+export function sumRuleCounts(rulesetIds) {
+  return rulesetIds
+    .map(id => ruleCountForRuleset(id))
+    .reduce((a, b) => a + b, 0);
 }
 
 export async function subscriptionFileExists(subscription, path) {

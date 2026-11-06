@@ -1101,6 +1101,22 @@ describe("CDP", function() {
           {key: "client_id_rotation_frequency", value: "300"}
         ])
       );
+
+      const ruleCapacityAttributes = payload.client_attributes.filter(
+        ({key}) => key == "available_static_rule_count" ||
+                   key == "enabled_static_rule_count"
+      );
+      if (isMV3()) {
+        expect(ruleCapacityAttributes).toEqual([
+          {key: "available_static_rule_count",
+           value: expect.stringMatching(/^(0|[1-9]0*)$/)},
+          {key: "enabled_static_rule_count",
+           value: expect.stringMatching(/^(0|[1-9]0*)$/)}
+        ]);
+      }
+      else {
+        expect(ruleCapacityAttributes).toEqual([]);
+      }
     });
 
     describe("ping_id_mint_count", function() {

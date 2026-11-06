@@ -15,6 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "../browser.js";
 import {truncateTimestampToDayStart} from "#adblockpluscore/lib/time.js";
 import {sha256Prefix} from "../../all/hashing.js";
 import {getAllFacts} from "../remote-config/storage.js";
@@ -23,6 +24,7 @@ import {TRACKED_URLS, toTrackedFilterListUrl}
 import sentry from "../sentry.js";
 import {STATES, getEntries as getLedgerEntries}
   from "../subscription-ledger.js";
+import {sumRuleCounts} from "../subscriptions-utils.js";
 
 /**
  * Rounds a value to a single significant figure.
@@ -97,6 +99,34 @@ async function buildFilterListsLedger() {
 }
 
 /**
+ * Reads the static rule capacity from the browser: how many static rules
+ * the extension can still enable, and how many rules the rulesets the
+ * browser reports as enabled contain.
+ *
+ * @returns {Promise<{available: number, enabled: number}|undefined>}
+ *   undefined on Manifest V2, or if the browser couldn't be queried or
+ *   didn't report a number.
+ */
+async function getStaticRuleCapacity() {
+  if (!browser.declarativeNetRequest) {
+    return;
+  }
+  try {
+    const [available, enabledRulesetIds] = await Promise.all([
+      browser.declarativeNetRequest.getAvailableStaticRuleCount(),
+      browser.declarativeNetRequest.getEnabledRulesets()
+    ]);
+    if (typeof available != "number") {
+      return;
+    }
+    return {available, enabled: sumRuleCounts(enabledRulesetIds)};
+  }
+  catch (e) {
+    sentry.reportError(e);
+  }
+}
+
+/**
  * Builds the client_attributes array for ping payloads.
  * @returns {Promise<Array>}
  * @ignore
@@ -137,6 +167,17 @@ export async function buildClientAttributes() {
     clientAttributes.push({
       key: "static_rule_count",
       value: String(roundSig1(facts.staticRuleCount)),
+    });
+  }
+  const staticRuleCapacity = await getStaticRuleCapacity();
+  if (staticRuleCapacity) {
+    clientAttributes.push({
+      key: "available_static_rule_count",
+      value: String(roundSig1(staticRuleCapacity.available)),
+    });
+    clientAttributes.push({
+      key: "enabled_static_rule_count",
+      value: String(roundSig1(staticRuleCapacity.enabled)),
     });
   }
 

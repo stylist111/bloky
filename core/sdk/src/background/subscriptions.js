@@ -18,7 +18,8 @@
 import browser from "./browser.js";
 
 import {validate as validateSubscriptions} from "./subscriptions-validator.js";
-import {rulesetExistsInManifest, getFilterText} from "./subscriptions-utils.js";
+import {rulesetExistsInManifest, getFilterText, sumRuleCounts}
+  from "./subscriptions-utils.js";
 import {Subscription, CountableSubscription, RegularSubscription,
         FullUpdatableSubscription, SpecialSubscription,
         DiffUpdatableSubscription}
@@ -236,21 +237,6 @@ function shouldAddDefaultSubscriptions() {
   }
 
   return true;
-}
-
-function ruleCountForRuleset(rulesetId) {
-  for (let recommendation of recommendations()) {
-    if (recommendation.id === rulesetId) {
-      return recommendation.ruleCount;
-    }
-  }
-  return 0;
-}
-
-function sumRuleCounts(rulesetIds) {
-  return rulesetIds
-    .map(id => ruleCountForRuleset(id))
-    .reduce((a, b) => a + b, 0);
 }
 
 async function updateEnabledRulesets(currentEnabledRulesetIdsBefore,

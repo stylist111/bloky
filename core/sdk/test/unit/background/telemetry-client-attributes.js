@@ -190,6 +190,7 @@ describe("Client attributes", function() {
 
   it("leaves out the ledger if it can't be read", async function() {
     global.__facts = {filterLists: ["abc"]};
+    delete env.browser.declarativeNetRequest;
     env.browser.storage.local.get = async() => {
       throw new Error("Storage error");
     };
@@ -206,5 +207,63 @@ describe("Client attributes", function() {
 
     const values = await getFilterListsLedger();
     expect(values).toEqual([...values].sort());
+  });
+
+  describe("static rule capacity", function() {
+    const CAPACITY_KEYS = [
+      "available_static_rule_count",
+      "enabled_static_rule_count"
+    ];
+
+    async function getCapacityAttributes() {
+      const attributes = await clientAttributes.buildClientAttributes();
+      return attributes.filter(a => CAPACITY_KEYS.includes(a.key));
+    }
+
+    beforeEach(function() {
+      global.__facts = {filterLists: ["abc"]};
+      env.setRecommendations([
+        {id: "easylist", ruleCount: 46116},
+        {id: "exceptionrules", ruleCount: 8209},
+        {id: "easyprivacy", ruleCount: 53663}
+      ]);
+      env.browser.declarativeNetRequest.getAvailableStaticRuleCount =
+        async() => 7531;
+      env.browser.declarativeNetRequest.getEnabledRulesets =
+        async() => ["easylist", "exceptionrules"];
+    });
+
+    it("reports the available and enabled static rule counts with low precision", async function() {
+      expect(await getCapacityAttributes()).toEqual([
+        {key: "available_static_rule_count", value: "8000"},
+        {key: "enabled_static_rule_count", value: "50000"}
+      ]);
+    });
+
+    it("leaves out the static rule counts on Manifest V2", async function() {
+      delete env.browser.declarativeNetRequest;
+
+      expect(await getCapacityAttributes()).toEqual([]);
+    });
+
+    it("leaves out the static rule counts if the browser doesn't report a number", async function() {
+      env.browser.declarativeNetRequest.getAvailableStaticRuleCount =
+        async() => null;
+
+      expect(await getCapacityAttributes()).toEqual([]);
+    });
+
+    it("leaves out the static rule counts if the browser can't be queried", async function() {
+      env.browser.declarativeNetRequest.getAvailableStaticRuleCount =
+        async() => {
+          throw new Error("DNR error");
+        };
+
+      const attributes = await clientAttributes.buildClientAttributes();
+      expect(attributes.filter(a => CAPACITY_KEYS.includes(a.key))).toEqual([]);
+      expect(attributes).toEqual(
+        expect.arrayContaining([{key: "filter_lists", values: ["abc"]}])
+      );
+    });
   });
 });

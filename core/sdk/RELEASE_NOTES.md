@@ -1,5 +1,11 @@
 # Unreleased
 
+- Added the `available_static_rule_count` and `enabled_static_rule_count`
+  client attributes to the CDP and telemetry pings on Manifest V3. They report
+  how many static rules the browser still lets the extension enable, and how
+  many rules the rulesets the browser reports as enabled contain. Unlike
+  `static_rule_count`, which is computed from the extension's own subscription
+  state, the latter reflects what the browser actually has enabled.
 - `addDefaults()` now keeps adding the remaining default subscriptions when
   one of them fails, for example when its ruleset doesn't fit within the
   browser's static rule count limit. Before, the first failure stopped the
