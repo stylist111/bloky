@@ -1,7 +1,8 @@
 # Публикация в магазине Chrome
 
-Картинки для страницы магазина собираются скриптом `tools/bloky/art/make_store.py` в `_build/store/`
-(из скриншотов, которые делает `tools/bloky/dev/check.mjs`).
+Картинки для страницы магазина: `tools/bloky/art/promo.html` (макет в стиле Grabber), отрисовка —
+`node tools/bloky/art/render-promo.mjs <chrome.exe> .` → `_build/store/`
+Снимки окна в `tools/bloky/art/promo/` — настоящие, из `tools/bloky/dev/check.mjs`.
 
 ## Один раз: аккаунт разработчика
 

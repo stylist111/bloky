@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bloky — promo</title>
+    <!--
+  Bloky promo images in the same style as the Grabber banner.
+  Open with ?kind=banner | shot1 | shot2 | shot3 | shot4 | promo | marquee
+  Rendered by render-promo.mjs. Screenshots in promo/ are real (tools/bloky/dev/check.mjs).
+-->
+    <style>
+      @font-face {
+        font-family: "Inter";
+        font-weight: 400;
+        src: url("fonts/Inter-Regular.woff") format("woff");
+      }
+      @font-face {
+        font-family: "Inter";
+        font-weight: 500;
+        src: url("fonts/Inter-Medium.woff") format("woff");
+      }
+      @font-face {
+        font-family: "Inter";
+        font-weight: 600;
+        src: url("fonts/Inter-SemiBold.woff") format("woff");
+      }
+      @font-face {
+        font-family: "Inter";
+        font-weight: 700;
+        src: url("fonts/Inter-Bold.woff") format("woff");
+      }
+      :root {
+        --text: #0f1726;
+        --text-2: #4c5767;
+        --text-3: #667085;
+        --bg: #eef3ff;
+        --glass-border: rgba(255, 255, 255, 0.85);
+        --accent: #2b66f6;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      .wrap {
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+        font:
+          400 16px/24px Inter,
+          system-ui,
+          sans-serif;
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+        background: radial-gradient(
+            45% 55% at 0% 0%,
+            #8db8ff 0%,
+            rgba(141, 184, 255, 0) 100%
+          ),
+          radial-gradient(
+            40% 50% at 100% 10%,
+            #b3ceff 0%,
+            rgba(179, 206, 255, 0) 100%
+          ),
+          radial-gradient(
+            55% 60% at 90% 100%,
+            #94bcff 0%,
+            rgba(148, 188, 255, 0) 100%
+          ),
+          radial-gradient(
+            40% 50% at 10% 100%,
+            #cfe0ff 0%,
+            rgba(207, 224, 255, 0) 100%
+          ),
+          var(--bg);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+      .brand img {
+        width: 112px;
+        height: 112px;
+        filter: drop-shadow(0 14px 24px rgba(30, 60, 140, 0.22));
+      }
+      .brand h1 {
+        margin: 0;
+        font-size: 76px;
+        line-height: 80px;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+      }
+      .brand small {
+        display: block;
+        font-size: 20px;
+        line-height: 24px;
+        font-weight: 500;
+        color: var(--text-3);
+        letter-spacing: 0;
+        margin-top: 4px;
+      }
+      .tagline {
+        margin: 30px 0 0;
+        font-size: 28px;
+        line-height: 38px;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        max-width: 620px;
+      }
+      .sub {
+        margin: 12px 0 0;
+        font-size: 19px;
+        line-height: 28px;
+        color: var(--text-2);
+        max-width: 600px;
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 28px;
+      }
+      .tag {
+        padding: 7px 14px;
+        border-radius: 99px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid var(--glass-border);
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text-2);
+      }
+      .tag.accent {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      .card {
+        border-radius: 18px;
+        overflow: hidden;
+        background: #f4f4f4;
+        box-shadow:
+          0 30px 70px rgba(30, 60, 140, 0.3),
+          0 0 0 1px rgba(15, 23, 38, 0.06);
+      }
+      .card img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      /* 1280×640: README header and GitHub social preview */
+      .banner {
+        width: 1280px;
+        height: 640px;
+        display: grid;
+        grid-template-columns: 1fr 368px;
+        align-items: center;
+        gap: 40px;
+        padding: 0 96px 0 88px;
+      }
+      .banner .card {
+        width: 368px;
+        justify-self: end;
+      }
+
+      /* 1280×800: store screenshot with the popup */
+      .shot1 {
+        width: 1280px;
+        height: 800px;
+        display: grid;
+        grid-template-columns: 1fr 448px;
+        align-items: center;
+        gap: 48px;
+        padding: 0 104px 0 96px;
+      }
+      .shot1 .card {
+        width: 448px;
+        justify-self: end;
+        border-radius: 22px;
+      }
+      .shot1 .tagline {
+        font-size: 34px;
+        line-height: 44px;
+        max-width: 560px;
+      }
+      .shot1 .sub {
+        font-size: 21px;
+        line-height: 31px;
+        max-width: 540px;
+      }
+      .shot1 .tag {
+        font-size: 17px;
+        padding: 8px 16px;
+      }
+
+      /* 1280×800: store screenshot with an options page */
+      .page {
+        width: 1280px;
+        height: 800px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 52px;
+      }
+      .page h2 {
+        margin: 0;
+        font-size: 42px;
+        line-height: 50px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        text-align: center;
+      }
+      .page .sub {
+        margin-top: 12px;
+        text-align: center;
+        max-width: 900px;
+        font-size: 21px;
+      }
+      .page .card {
+        width: 900px;
+        margin-top: 40px;
+        border-radius: 16px;
+      }
+
+      /* 440×280: small promo tile */
+      .promo {
+        width: 440px;
+        height: 280px;
+        padding: 0 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .promo .brand {
+        gap: 16px;
+      }
+      .promo .brand img {
+        width: 84px;
+        height: 84px;
+      }
+      .promo .brand h1 {
+        font-size: 50px;
+        line-height: 52px;
+      }
+      .promo .brand small {
+        font-size: 15px;
+        line-height: 18px;
+        margin-top: 2px;
+      }
+      .promo .tagline {
+        margin-top: 20px;
+        font-size: 21px;
+        line-height: 28px;
+        max-width: 380px;
+      }
+      .promo .tags {
+        margin-top: 16px;
+        gap: 8px;
+      }
+      .promo .tag {
+        font-size: 13px;
+        padding: 5px 11px;
+      }
+
+      /* 1400×560: big promo banner */
+      .marquee {
+        width: 1400px;
+        height: 560px;
+        display: grid;
+        grid-template-columns: 1fr 330px;
+        align-items: center;
+        gap: 40px;
+        padding: 0 120px 0 110px;
+      }
+      .marquee .card {
+        width: 330px;
+        justify-self: end;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      const kind = new URLSearchParams(location.search).get("kind") || "banner";
+      const brand = `<div class="brand"><img src="promo/icon.png" alt=""><h1>Bloky<small>by beyond</small></h1></div>`;
+      const tags = (list) =>
+        `<div class="tags">${list.map(([t, a]) => `<span class="tag${a ? " accent" : ""}">${t}</span>`).join("")}</div>`;
+      const popup = `<div class="card"><img src="promo/popup.png" alt=""></div>`;
+      const T = {
+        tagline:
+          "Блокировщик рекламы для Chrome. Всё бесплатно — без подписок и слежки.",
+        sub: "Тот же AdBlock, только все платные функции открыты, а реклама подписки убрана.",
+        tags: [
+          ["Бесплатно", true],
+          ["Окна про cookie"],
+          ["Отвлекающее"],
+          ["Не собирает данные"],
+        ],
+      };
+      const pages = {
+        shot2: [
+          "Всё, что было платным, — бесплатно",
+          "Скрытие отвлекающего и окон про cookie включается одной галочкой",
+          "options-premium-filters",
+        ],
+        shot3: [
+          "Темы оформления",
+          "Восемь тем для окна и настроек — тоже бесплатно",
+          "options-mab-themes",
+        ],
+        shot4: [
+          "Без «ненавязчивой рекламы»",
+          "Она выключена сразу. Bloky не собирает данные и не показывает свою рекламу",
+          "options-general",
+        ],
+      };
+      let html;
+      if (kind === "banner" || kind === "marquee") {
+        html = `<div class="wrap ${kind}"><div>${brand}<p class="tagline">${T.tagline}</p><p class="sub">${T.sub}</p>${tags(T.tags)}</div>${popup}</div>`;
+      } else if (kind === "shot1") {
+        html = `<div class="wrap shot1"><div>${brand}<p class="tagline">Реклама исчезает, а платить за это не нужно</p>
+    <p class="sub">Bloky скрывает рекламу, трекеры, окна про cookie и всё, что мешает читать.</p>
+    ${tags([["Бесплатно", true], ["Без подписок"], ["Не собирает данные"]])}</div>${popup}</div>`;
+      } else if (pages[kind]) {
+        const [h, s, img] = pages[kind];
+        html = `<div class="wrap page"><h2>${h}</h2><p class="sub">${s}</p><div class="card"><img src="promo/${img}.png" alt=""></div></div>`;
+      } else if (kind === "promo") {
+        html = `<div class="wrap promo">${brand}<p class="tagline">Блокировщик рекламы без подписок и слежки</p>${tags([["Бесплатно", true], ["Всё открыто"]])}</div>`;
+      }
+      document.getElementById("root").innerHTML = html;
+    </script>
+  </body>
+</html>

@@ -1,8 +1,8 @@
-<p align="center"><img src="docs/img/bloky-256.png" width="128" alt="Bloky"></p>
+<p align="center"><img src="docs/img/banner.png" alt="Bloky — блокировщик рекламы для Chrome, всё бесплатно" width="100%"></p>
 
-<h1 align="center">Bloky</h1>
+# Bloky
 
-<p align="center">Блокировщик рекламы для Chrome. Бесплатно, без подписок и без слежки.</p>
+Блокировщик рекламы для Chrome. Бесплатно, без подписок и без слежки.
 
 ## ✨ Особенности
 
