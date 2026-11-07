@@ -1,0 +1,5 @@
+# Filter list releases bundled into published Bloky versions.
+# The mirror keeps serving updates for each of them, so older installs stay fresh.
+# When @eyeo/filterlists is updated, add the previous release hash here.
+# (the release hash is in the "! DiffUrl:" header of any bundled list)
+6295f37fdaa9d0b3dfa932cf79830e0a2cf80591  # Bloky 1.0.0

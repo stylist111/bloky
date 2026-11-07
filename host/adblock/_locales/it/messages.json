@@ -17,7 +17,7 @@
   },
   "name": {
     "description": "Extension name to be shown for release / published builds.  The extension name 'AdBlock' should NOT be translated, but the text after the dash should be translated",
-    "message": "Bloky - blocca gli annunci durante la navigazione"
+    "message": "Bloky - blocca la pubblicità"
   },
   "description_edge": {
     "message": "Bloky. L'ad-blocker numero 1, con oltre 200 milioni di download. Blocca la pubblicità in tutto il web.",

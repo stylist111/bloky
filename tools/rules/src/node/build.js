@@ -22,6 +22,9 @@ import * as fsh from "./fs-helper.js";
 import { execNpm, importJson } from "./utils.js";
 import { getRecommendations } from "../all/index.js";
 
+const BLOKY_DIFF_BASE =
+  process.env.BLOKY_DIFF_BASE || "https://stylist111.github.io/bloky/v3/diff/";
+
 async function buildExtensionRules(hostname) {
   await fsh.clean(hostname);
 
@@ -52,9 +55,23 @@ async function buildExtensionRules(hostname) {
   const distRulesAbp = await fsh.getDistPath(hostname, fsh.rulesAbp);
   await Promise.all(
     subscriptions.map(async (subscription) => {
-      await fs.copyFile(
-        path.join(dataRulesAbp, subscription.id),
-        path.join(distRulesAbp, subscription.id),
+      const from = path.join(dataRulesAbp, subscription.id);
+      const to = path.join(distRulesAbp, subscription.id);
+      if (hostname !== "adblock") {
+        await fs.copyFile(from, to);
+        return;
+      }
+      // Bloky: filter list updates (diffs) come from Bloky's own mirror on
+      // GitHub Pages instead of eyeo's server, which is blocked in some
+      // countries. See tools/bloky/mirror-filters.mjs.
+      const text = await fs.readFile(from, "utf8");
+      await fs.writeFile(
+        to,
+        text.replace(
+          /^(! DiffUrl: )https:\/\/easylist-downloads\.adblockplus\.org\/v3\/diff\//m,
+          `$1${BLOKY_DIFF_BASE}`,
+        ),
+        "utf8",
       );
     }),
   );

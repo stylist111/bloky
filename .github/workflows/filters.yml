@@ -1,0 +1,47 @@
+# Bloky filter updates: every few hours, mirror the filter-list diffs that Bloky
+# downloads and publish them on GitHub Pages (https://stylist111.github.io/bloky/).
+name: Filter updates
+
+on:
+  schedule:
+    - cron: "17 */4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: filters
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Get the filter lists package Bloky is built with
+        run: |
+          version=$(node -p "require('./tools/rules/package.json').dependencies['@eyeo/filterlists']")
+          mkdir -p /tmp/fl && cd /tmp/fl
+          npm pack "@eyeo/filterlists@${version}" --silent
+          tar -xzf eyeo-filterlists-*.tgz
+
+      - name: Mirror filter updates
+        run: node tools/bloky/mirror-filters.mjs /tmp/fl/package/filterlists site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -3505,5 +3505,89 @@
   },
   "data_collection_opt_out": {
     "message": "Bloky не собирает никаких данных."
+  },
+  "bundledlabel": {
+    "message": "Встроен."
+  },
+  "subscribedlabel": {
+    "message": "Подключён."
+  },
+  "ab_filters_subscription_diff_too_old": {
+    "message": "Не удалось применить обновление списка: версия расширения слишком старая. Обновите Bloky."
+  },
+  "ab_filters_subscription_dnr_error": {
+    "message": "Не удалось применить обновление списка из-за ошибки в правилах. Обновите Bloky."
+  },
+  "filtereasylist_plus_global": {
+    "message": "Global + EasyList"
+  },
+  "filtereasylist_plus_hungarian": {
+    "message": "Венгерский + EasyList"
+  },
+  "onpage_options_menu_title": {
+    "message": "Меню Bloky: другие действия"
+  },
+  "onpage_options_cookie_confirm_page_title": {
+    "message": "Меню Bloky: скрытие окон про cookie"
+  },
+  "onpage_options_distractions_confirm_page_title": {
+    "message": "Меню Bloky: скрытие отвлекающего"
+  },
+  "cookie_confirm_text": {
+    "message": "Включая эту функцию, вы соглашаетесь, что Bloky будет скрывать запросы согласия на отслеживание. Сторонние трекеры мы блокируем и так, а трекеры самого сайта — нет: они нужны для его работы."
+  },
+  "confirm_cookie_enable": {
+    "message": "Включить скрытие окон про cookie"
+  },
+  "confirm_distractions_enable": {
+    "message": "Включить скрытие отвлекающего"
+  },
+  "onpage_options_confirm_undo_title": {
+    "message": "Меню Bloky: вернуть скрытое"
+  },
+  "more_options_hover": {
+    "message": "Ещё"
+  },
+  "more_options_title": {
+    "message": "Другие действия"
+  },
+  "confirm_undo_last_block_site": {
+    "message": "Вернуть скрытые мной элементы"
+  },
+  "block_ads": {
+    "message": "Блокировать рекламу"
+  },
+  "skip_walls": {
+    "message": "Скрывать окна про cookie"
+  },
+  "block_distractions": {
+    "message": "Скрывать отвлекающее"
+  },
+  "enable": {
+    "message": "Включить"
+  },
+  "enable_distraction_control": {
+    "message": "Скрытие отвлекающего сейчас выключено. Давайте включим его — возможно, это решит проблему."
+  },
+  "block_common_distractions_popup_text": {
+    "message": "Скрывать отвлекающее, например видео с автозапуском"
+  },
+  "filter_invalid_css": {
+    "message": "Неверный CSS-селектор"
+  },
+  "too_many_filters": {
+    "message": "Достигнуто максимальное число фильтров. Удалите другие фильтры этого типа, чтобы добавить новые."
+  },
+  "back_flow_general": {
+    "message": "Вернуться на шаг назад."
+  },
+  "cookie_consent_cutter_popup_text": {
+    "message": "Скрывать большинство окон про cookie на популярных сайтах"
+  },
+  "hide_most_cookie_no_period": {
+    "message": "Скрывать большинство окон про cookie на популярных сайтах"
+  },
+  "no_thanks_label": {
+    "message": "Отменить и вернуться"
   }
 }
