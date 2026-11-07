@@ -328,6 +328,25 @@
         html = `<div class="wrap promo">${brand}<p class="tagline">Блокировщик рекламы без подписок и слежки</p>${tags([["Бесплатно", true], ["Всё открыто"]])}</div>`;
       }
       document.getElementById("root").innerHTML = html;
+
+      // Big letters have a wider built-in left margin than small ones, so "by beyond"
+      // looked shifted left of "Bloky". Measure where the ink of the first letter
+      // actually starts in both lines and shift the small line to match.
+      const inkStart = (text, el) => {
+        const cs = getComputedStyle(el);
+        const ctx = document.createElement("canvas").getContext("2d");
+        ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+        return -ctx.measureText(text[0]).actualBoundingBoxLeft;
+      };
+      document.fonts.ready.then(() => {
+        document.querySelectorAll(".brand h1").forEach((h1) => {
+          const small = h1.querySelector("small");
+          const shift =
+            inkStart(h1.firstChild.textContent, h1) -
+            inkStart(small.textContent, small);
+          small.style.paddingLeft = `${Math.max(0, shift).toFixed(2)}px`;
+        });
+      });
     </script>
   </body>
 </html>
