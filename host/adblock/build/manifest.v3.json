@@ -23,7 +23,6 @@
     "contextMenus",
     "declarativeNetRequestWithHostAccess",
     "idle",
-    "notifications",
     "scripting",
     "storage",
     "tabs",
