@@ -102,7 +102,7 @@ Bloky сделан на основе открытого кода AdBlock (лиц
 ## После публикации
 
 1. Скопируйте ссылку на страницу Bloky в магазине.
-2. Замените в `README.md` строку «Из магазина Chrome — ссылка появится здесь после публикации» на ссылку.
+2. Ссылка уже в `README.md`: https://chromewebstore.google.com/detail/dkigkhgefgnkcdgdaahfljjmfgagalmi
 
 ## Новая версия
 
