@@ -26,6 +26,8 @@ Global Styles
 */
 
 :root {
+  /* Bloky: used by Tailwind classes (font-sans); it was never defined, so they fell back to a serif font */
+  --extension-font-family: "Inter", "Segoe UI", Arial, sans-serif;
   --dark-gray1: #4c4c4c; /* remove */
   --gray1: #333333;
   --gray2: #666666;
@@ -246,7 +248,7 @@ body {
   margin: 0;
   font-size: 16px;
   font-style: normal;
-  font-family: "Lato", Arial, sans-serif;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
 }
 
 a {
@@ -473,4 +475,12 @@ Icons global styling (needs to @import 'fonts/font-face.css')
     -webkit-transform: rotate(-359deg);
     transform: rotate(-359deg);
   }
+}
+
+/* Bloky: buttons and inputs do not inherit the page font by default */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }

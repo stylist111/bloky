@@ -2757,14 +2757,6 @@
     "message": "Chcete vidět vaše statistiky o AdBlocku? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Přihlaste se ke sběru místních dat a uvidíte vaše statistiky o používání AdBlocku, jako jsou stránky, na kterých blokujete většinu reklam a sledovačů, celkový počet blokací a počet nahrazených obrázků (pro Prémiové uživatele).",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Přihlaste se ke sběru místních dat, abyste mohli vidět vaše statistiky o používání AdBlocku, jako jsou stránky, na kterých blokujete většinu reklam a sledovačů, celkový počet blokací a počet nahrazených obrázků (pro Prémiové uživatele).",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Již jste se rozhodli pro sdílení anonymních dat o používání s námi.",
     "description": "On page text of the statistics page of the Options page"

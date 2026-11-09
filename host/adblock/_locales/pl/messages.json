@@ -2884,14 +2884,6 @@
     "message": "Chcesz zobaczyć swoje statystyki AdBlocka? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Zezwól na lokalną kolekcję statystyk, aby zobaczyć statystyki AdBlocka, takie jak: na których stronach blokujesz najwięcej reklam i trackerów, wszystkie bloki po czasie oraz zamienione obrazy dla użytkowników Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Zezwól również na lokalne zbieranie danych statystycznych, aby uzyskać dostęp do wszystkich statystyk AdBlocka, takich jak: na których stronach blokujesz największą liczbę reklam i trackerów, wszystkie bloki po czasie oraz zamienione obrazy dla użytkowników Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Już zezwoliłeś na udostępnianie nam anonimowych danych o użytkowaniu.",
     "description": "On page text of the statistics page of the Options page"

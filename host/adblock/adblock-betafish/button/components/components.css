@@ -300,3 +300,16 @@ toggle-button .slider.round {
 toggle-button .slider.round::before {
   border-radius: 50%;
 }
+
+/* Bloky: all items in "More options" look the same — left-aligned, same font and size */
+menu-link-button > button,
+menu-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.4;
+  padding-left: 0;
+  padding-right: 0;
+}

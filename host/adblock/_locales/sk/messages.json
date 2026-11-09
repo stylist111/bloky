@@ -2731,10 +2731,6 @@
     "message": "Chceš vidieť svoje Bloky štatistiky?",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Prihláste sa k zberu miestných dát a uvidíte vaše štatistiky o používaní Bloky, ako sú stránky, na ktorých blokujete väčšinu reklám a sledovačov, celkový počet blokovaní a počet nahradených obrázkov (pre Prémiových užívateľov).",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_ads_blocked": {
     "message": "Blokovane reklamy",
     "description": "Text on the statistics page of the Options page within the ads blocked panel"

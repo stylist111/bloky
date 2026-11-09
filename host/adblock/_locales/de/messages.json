@@ -2974,14 +2974,6 @@
     "message": "Möchten Sie sich Ihre Bloky-Statistik ansehen? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Melden Sie sich zur lokalen Statistikerfassung an, um Ihre Bloky-Statistik zu sehen, zum Beispiel, auf welchen Websites Sie die meisten Werbungen und Tracker blockieren, Blockierungen insgesamt im Zeitverlauf und Ersatz durch Bilder für Premium-Nutzer.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Melden Sie sich auch zur lokalen Statistikerfassung an, um Zugriff auf alle Ihre Bloky-Statistiken zu haben, zum Beispiel, auf welchen Websites Sie die meisten Werbungen und Tracker blockieren, Blockierungen insgesamt im Zeitverlauf und Ersatz durch Bilder für Premium-Nutzer.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Sie haben bereits zugestimmt, anonyme Nutzungsdaten mit uns zu teilen.",
     "description": "On page text of the statistics page of the Options page"

@@ -2959,14 +2959,6 @@
     "message": "Vill du se din Bloky-statistik? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Delta i lokal statistikinsamling för att se din Bloky-statistik, så som vilka webbplatser du blockerar flest annonser och spårare på, totalt antal blockeringar över tid och hur många bilder som har bytts ut för Premiumanvändare.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Delta också i lokal statistikinsamling för att se all din Bloky-statistik, så som vilka webbplatser du blockerar flest annonser och spårare på, totalt antal blockeringar över tid och hur många bilder som har bytts ut för Premiumanvändare.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Du har redan valt att delta i att dela anonym användningsdata med oss.",
     "description": "On page text of the statistics page of the Options page"

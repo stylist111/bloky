@@ -2925,14 +2925,6 @@
     "message": "Haluatko nähdä Bloky tilastosi?",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Salli paikallisten tilastojen keräys nähdäksesi tilastoja AdBlockin toiminnasta, kuten millä sivustoilla on estetty eniten mainoksia ja seurantoja, estojen kokonaismäärän sekä Premium-käyttäjien Kuvavaihdon korvaamien kuvien määrän.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Salli myös paikallisten tilastojen keräys nähdäksesi tilastoja AdBlockin toiminnasta, kuten millä sivustoilla on estetty eniten mainoksia ja seurantoja, estojen kokonaismäärän sekä Premium-käyttäjien Kuvavaihdon korvaamien kuvien määrän.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Olet jo sallinyt nimettömien käyttötietojen jaon kanssamme.",
     "description": "On page text of the statistics page of the Options page"

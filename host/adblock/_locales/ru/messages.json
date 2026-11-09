@@ -1234,7 +1234,7 @@
     "description": "Menu entry to open the allowlist wizard"
   },
   "open_allowlist_wizard": {
-    "message": "Дополнительные возможности блокировки",
+    "message": "Другие варианты паузы",
     "description": "Menu entry to open the allowlist wizard"
   },
   "disabled_site_title": {
@@ -2975,15 +2975,15 @@
     "description": "On page title of the statistics page of the Options page"
   },
   "stats_opt_in_header": {
-    "message": "Хотите просматривать статистику Bloky?",
+    "message": "Хотите видеть статистику Bloky?",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_opt_in_msg": {
-    "message": "Разрешите сбор локальных данных, чтобы просматривать статистику Bloky, например список сайтов, на которых блокируется больше всего рекламы и трекеров, общее число блокировок и информацию о замене изображений для пользователей Premium.",
+    "message": "Включите статистику, чтобы видеть, на каких сайтах Bloky блокирует больше всего рекламы и трекеров и сколько всего заблокировано. Всё хранится только в вашем браузере и никуда не отправляется.",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_opt_in_local_msg": {
-    "message": "Разрешите сбор локальных данных, чтобы получить доступ к статистике Bloky, например к списку сайтов, на которых блокируется больше всего рекламы и трекеров, общему число блокировок и информации о замене изображений для пользователей Premium.",
+    "message": "Включите статистику, чтобы видеть, на каких сайтах Bloky блокирует больше всего рекламы и трекеров и сколько всего заблокировано. Всё хранится только в вашем браузере и никуда не отправляется.",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_already_opted": {
@@ -2991,11 +2991,11 @@
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_opt_in_text_button": {
-    "message": "Разрешить",
+    "message": "Включить статистику",
     "description": "Text in the Opt In button on the statistics page of the Options page"
   },
   "stats_opt_in_local_text_button": {
-    "message": "Разрешить сбор локальных данных",
+    "message": "Включить статистику",
     "description": "Text in the Opt In button on the statistics page of the Options page"
   },
   "stats_opt_in_data_collect": {

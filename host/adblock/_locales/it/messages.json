@@ -2974,14 +2974,6 @@
     "message": "Vuoi vedere le statistiche di Bloky? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Partecipa alla raccolta di statistiche locali per vedere le tue statistiche di Bloky, ad esempio i siti su cui blocchi più annunci e tracker, il numero totale di blocchi nel tempo e le immagini sostituite per gli utenti Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Partecipa anche alla raccolta di statistiche locali per accedere a tutte le tue statistiche di Bloky, ad esempio i siti su cui blocchi più annunci e tracker, il numero totale di blocchi nel tempo e le immagini sostituite per gli utenti Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Partecipi già alla condivisione dei dati anonimi di utilizzo con noi.",
     "description": "On page text of the statistics page of the Options page"

@@ -2974,14 +2974,6 @@
     "message": "Gostaria de ver suas estatísticas do Bloky? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Permita a coleta de estatísticas locais para ver suas estatísticas do Bloky, tal como em quais sites você mais bloqueia anúncios e rastreadores, o tempo total de bloqueio e a quantidade de imagens substituídas para os usuários Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Permita a coleta de estatísticas locais também para ter acesso a todas as suas estatísticas do Bloky, tal como em quais sites você mais bloqueia anúncios e rastreadores, o tempo total de bloqueio e a quantidade de imagens substituídas para os usuários Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Você já optou por compartilhar seus dados anônimos de uso conosco.",
     "description": "On page text of the statistics page of the Options page"

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
-/* global browser, sessionStorageSet,  ewe, translate */
+/* global browser, sessionStorageSet */
 
 /* eslint-disable import/extensions */
 import MenuLink from "./components/MenuLink.js";
@@ -33,26 +33,11 @@ const initializeAndAddElements = () => {
   });
 };
 
-const updateAccountButton = async () => {
-  const btn = document.getElementById("popup-account-button");
-  const user = await ewe.account.getProfile();
-  btn.href = await browser.runtime.sendMessage({
-    type: "app.get",
-    what: "ctalink",
-    link: "premium-manage",
-    queryParams: {
-      source: "popup",
-    },
-  });
-  btn.textContent =
-    user && user.email ? translate("user_account_manage_account") : translate("user_account_login");
-};
-
+// Bloky: no "Log in" / account button — there are no accounts.
 const start = () => {
   setupBehaviorListeners();
   initializeAndAddElements();
   translatePageTitle();
-  updateAccountButton();
 };
 
 start();

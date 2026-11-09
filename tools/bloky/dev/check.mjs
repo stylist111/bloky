@@ -423,6 +423,18 @@ if (siteTab) {
   );
   await sleep(1000);
   await shot(pop2, "popup-site");
+  const more = await openPage(
+    `${base}adblock-button-filtering-options.html?tabId=${siteTab}`,
+    "popup",
+    3000,
+  );
+  await call(
+    "Emulation.setDeviceMetricsOverride",
+    { width: 380, height: 420, deviceScaleFactor: 2, mobile: false },
+    more,
+  );
+  await sleep(1500);
+  await shot(more, "popup-more");
 }
 
 // ---- свой фильтр: скрыть элемент на example.com ----

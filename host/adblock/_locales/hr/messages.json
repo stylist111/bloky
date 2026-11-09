@@ -2945,14 +2945,6 @@
     "message": "Want to see your Bloky stats? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Opt in to local stats collection to see your Bloky statistics, such as which sites you block the most ads and trackers on, total blocks over time, and images swapped for Premium users.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Opt in to local stats collection as well in order to access all of your Bloky stats, such as which sites you block the most ads and trackers on, total blocks over time, and images swapped for Premium users.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "You've already opted in to sharing anonymous usage data with us.",
     "description": "On page text of the statistics page of the Options page"

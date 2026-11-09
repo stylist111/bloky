@@ -2974,14 +2974,6 @@
     "message": "想查看您的 Bloky 统计信息吗？ ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "请选择加入本地统计收集以查看您的 Bloky 统计信息，例如您在哪些网站上拦截了最多的广告和跟踪代码，一段时间内的拦截总数，Premium 用户还可查看交换的图像。",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "请也选择加入本地统计收集以查看您全部的 Bloky 统计信息，例如您在哪些网站上拦截了最多的广告和跟踪代码，一段时间内的拦截总数，Premium 用户还可查看交换的图像。",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "您已选择与我们共享匿名使用情况数据。",
     "description": "On page text of the statistics page of the Options page"

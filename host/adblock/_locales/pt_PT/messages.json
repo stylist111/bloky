@@ -2928,14 +2928,6 @@
     "message": "Quer ver as suas estatísticas do Bloky?",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Opte pela coleção de estatísticas locais para ver as suas estatísticas do Bloky tais como as de que sites bloqueia a maioria dos anúncios e rastreadores ligados, blocos totais ao longo do tempo e imagens trocadas por utilizadores Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Opte pela coleção de estatísticas locais para aceder também a todas as suas estatísticas do Bloky, tais como as de que sites bloqueia a maioria dos anúncios e rastreadores ligados, blocos totais ao longo do tempo e imagens trocadas por utilizadores Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Já optou por partilhar os dados de utilização anónimos connosco.",
     "description": "On page text of the statistics page of the Options page"

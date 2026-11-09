@@ -49,6 +49,10 @@
         "fonts/lato-ext-bold.woff",
         "fonts/lato-bold.woff",
         "fonts/font-face.css",
+        "fonts/Inter-Regular.woff",
+        "fonts/Inter-Medium.woff",
+        "fonts/Inter-SemiBold.woff",
+        "fonts/Inter-Bold.woff",
         "icons/MaterialIcons-Regular.woff2",
         "icons/adblock-icons.woff2",
         "adblock-deny-push-notifications-requests.js"

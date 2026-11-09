@@ -2936,14 +2936,6 @@
     "message": "Bloky 통계를 보고 싶으신가요? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "장치 내에 저장된 통계 수집에 참가함으로써 어떠한 사이트에서 가장 많은 광고나 추적을 차단했는지, 전체 차단 횟수, 또는 Premium 사용자 한정 이미지 바뀜 횟수와 같은 Bloky 통계를 볼 수 있어요.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "장치 내에 저장된 통계 수집과 어떠한 사이트에서 가장 많은 광고나 추적을 차단했는지, 전체 차단 통계 또는 Premium 사용자 한정 이미지 바뀜 횟수 등의 모든 Bloky 통계 공유에 참가하기",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "이미 저희와 익명화된 사용 데이터를 공유하는데 참가하고 있습니다.",
     "description": "On page text of the statistics page of the Options page"

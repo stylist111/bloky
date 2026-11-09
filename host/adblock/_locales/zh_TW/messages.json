@@ -2966,14 +2966,6 @@
     "message": "想查看您的 Bloky 統計嗎？",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "選擇加入本機統計資料收集以查看您的 Bloky 統計資訊，例如您在哪些網站上阻擋了最多的廣告與追蹤代碼、一段時間內的總阻擋數，Premium 使用者還可查看交換的圖片。",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "也選擇加入本機統計資料收集以存取您的 Bloky 統計資訊，例如您在哪些網站上阻擋了最多的廣告與追蹤代碼、一段時間內的總阻擋數，Premium 使用者還可查看交換的圖片。",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "您已選擇將匿名使用狀況資料分享給我們。",
     "description": "On page text of the statistics page of the Options page"

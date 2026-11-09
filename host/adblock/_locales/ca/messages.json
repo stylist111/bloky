@@ -2897,14 +2897,6 @@
     "message": "Voleu veure les vostres estadístiques de l'Bloky? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Trieu la recopilació d'estadístiques locals per veure les vostres estadístiques de l'Bloky, com ara en quins llocs bloquegeu la major quantitat d'anuncis i rastrejadors, bloquejos totals al llarg del temps i imatges canviades per a usuaris Prèmium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Trieu també la recopilació d'estadístiques locals per accedir a totes les vostres estadístiques de l'Bloky, com en quins llocs bloquegeu la major quantitat d'anuncis i rastrejadors, bloquejos totals al llarg de el temps i imatges canviades per a usuaris Prèmium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Ja heu triat compartir dades d'ús anònims amb nosaltres.",
     "description": "On page text of the statistics page of the Options page"

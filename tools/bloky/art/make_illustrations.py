@@ -2,8 +2,8 @@
 
 python make_illustrations.py <art_dir> <repo_root>
 
-- disable_site.svg (popup on pages where blocking is impossible): the Bloky icon
-  resting on a soft shadow.
+- disable_site.svg (popup on pages where blocking is impossible): a glass browser window
+  like in the logo, with a green check badge instead of the barrier.
 - cookie_consent_cutter.svg (Extra filters page): a cookie with the same round
   "prohibited" sign as the Bloky icon.
 """
@@ -24,14 +24,33 @@ def b64(im):
     return base64.b64encode(b.getvalue()).decode()
 
 
-icon = Image.open(os.path.join(ART, 'bloky-master.png')).convert('RGBA').resize((300, 300), Image.LANCZOS)
-data = b64(icon)
-
+# "Nothing to block here": the glass browser window from the logo, but with a green
+# check badge instead of the barrier — "this page is clean".
 with open(os.path.join(ICONS, 'disable_site.svg'), 'w', encoding='utf-8') as f:
-    f.write(f'''<svg width="258" height="183" viewBox="0 0 258 183" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<defs><radialGradient id="sh" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#1E3A8A" stop-opacity="0.28"/><stop offset="1" stop-color="#1E3A8A" stop-opacity="0"/></radialGradient></defs>
-<ellipse cx="129" cy="166" rx="86" ry="13" fill="url(#sh)"/>
-<image x="54" y="6" width="150" height="150" href="data:image/png;base64,{data}" xlink:href="data:image/png;base64,{data}"/>
+    f.write('''<svg width="258" height="183" viewBox="0 0 258 183" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="win" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F4F8FF"/><stop offset="1" stop-color="#C9DCFF"/></linearGradient>
+  <linearGradient id="pane" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"/><stop offset="1" stop-color="#DCE8FF" stop-opacity="0.9"/></linearGradient>
+  <linearGradient id="pic" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9CC0FF"/><stop offset="1" stop-color="#6E9CF5"/></linearGradient>
+  <radialGradient id="ok" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#6EE7A0"/><stop offset="1" stop-color="#16A34A"/></radialGradient>
+  <radialGradient id="sh" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#1E3A8A" stop-opacity="0.25"/><stop offset="1" stop-color="#1E3A8A" stop-opacity="0"/></radialGradient>
+  <filter id="soft" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#2B4FA8" flood-opacity="0.22"/></filter>
+</defs>
+<ellipse cx="129" cy="168" rx="92" ry="10" fill="url(#sh)"/>
+<g filter="url(#soft)">
+  <rect x="40" y="18" width="178" height="132" rx="22" fill="url(#win)" stroke="#FFFFFF" stroke-width="2"/>
+  <circle cx="62" cy="38" r="6" fill="#F05A50"/><circle cx="80" cy="38" r="6" fill="#F6C343"/><circle cx="98" cy="38" r="6" fill="#3DB862"/>
+  <rect x="52" y="52" width="154" height="86" rx="14" fill="url(#pane)"/>
+  <rect x="62" y="62" width="70" height="56" rx="9" fill="url(#pic)"/>
+  <path d="M66 114l20-24 13 14 8-8 21 18z" fill="#DCE8FF" opacity="0.9"/>
+  <circle cx="117" cy="77" r="7" fill="#DCE8FF"/>
+  <rect x="142" y="66" width="54" height="9" rx="4.5" fill="#8DB2F5"/>
+  <rect x="142" y="84" width="42" height="9" rx="4.5" fill="#8DB2F5"/>
+</g>
+<g filter="url(#soft)">
+  <circle cx="196" cy="128" r="31" fill="url(#ok)" stroke="#FFFFFF" stroke-width="4"/>
+  <path d="M182 128l10 10 19-20" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
 </svg>
 ''')
 

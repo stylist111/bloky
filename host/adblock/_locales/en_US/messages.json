@@ -3075,15 +3075,15 @@
     "description": "On page title of the statistics page of the Options page"
   },
   "stats_opt_in_header": {
-    "message": "Want to see your Bloky stats? ",
+    "message": "Want to see your Bloky stats?",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_opt_in_msg": {
-    "message": "Opt in to local stats collection to see your Bloky statistics, such as which sites you block the most ads and trackers on, total blocks over time, and images swapped for Premium users.",
+    "message": "Turn on stats to see which sites Bloky blocks the most ads and trackers on and how many it has blocked over time. Everything stays in your browser — nothing is sent anywhere.",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_opt_in_local_msg": {
-    "message": "Opt in to local stats collection as well in order to access all of your Bloky stats, such as which sites you block the most ads and trackers on, total blocks over time, and images swapped for Premium users.",
+    "message": "Turn on stats to see which sites Bloky blocks the most ads and trackers on and how many it has blocked over time. Everything stays in your browser — nothing is sent anywhere.",
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_already_opted": {
@@ -3091,11 +3091,11 @@
     "description": "On page text of the statistics page of the Options page"
   },
   "stats_opt_in_text_button": {
-    "message": "Opt In",
+    "message": "Turn on stats",
     "description": "Text in the Opt In button on the statistics page of the Options page"
   },
   "stats_opt_in_local_text_button": {
-    "message": "Opt in to local stats collection",
+    "message": "Turn on stats",
     "description": "Text in the Opt In button on the statistics page of the Options page"
   },
   "stats_opt_in_data_collect": {

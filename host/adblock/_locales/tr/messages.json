@@ -2940,14 +2940,6 @@
     "message": "Bloky istatistiklerinizi görmek ister misiniz?",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "En çok reklamı ve izleyiciyi engellediğiniz siteler, zaman içindeki toplam bloklar ve Premium kullanıcılar için değiştirilen resimler gibi Bloky istatistiklerinizi görmek için yerel istatistik koleksiyonunu seçin.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "En çok reklamı ve izleyiciyi engellediğiniz siteler, zaman içindeki toplam bloklar ve Premium kullanıcılar için değiştirilen resimler gibi tüm Bloky istatistiklerinize erişmek için yerel istatistik koleksiyonuna da kaydolun.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Anonim kullanım verilerini bizimle paylaşmayı zaten seçtiniz.",
     "description": "On page text of the statistics page of the Options page"

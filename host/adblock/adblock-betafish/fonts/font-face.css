@@ -90,3 +90,30 @@ Fonts
   font-style: normal;
   src: url("/icons/adblock-icons.woff2") format("woff2");
 }
+
+/* Bloky: Inter (SIL Open Font License, see OFL-Inter.txt) — covers Cyrillic, unlike the
+   bundled Lato subset, so Russian text no longer falls back to a different font. */
+@font-face {
+  font-family: "Inter";
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/Inter-Regular.woff") format("woff");
+}
+@font-face {
+  font-family: "Inter";
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/Inter-Medium.woff") format("woff");
+}
+@font-face {
+  font-family: "Inter";
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/Inter-SemiBold.woff") format("woff");
+}
+@font-face {
+  font-family: "Inter";
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/Inter-Bold.woff") format("woff");
+}

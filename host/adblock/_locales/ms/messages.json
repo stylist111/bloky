@@ -2715,14 +2715,6 @@
     "message": "Ingin melihat statistik Bloky anda?",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Masuk ke koleksi statistik setempat untuk melihat statistik Bloky anda, seperti halaman mana yang menyekat iklan dan penjejak paling banyak, jumlah sekatan sepanjang masa dan imej yang ditukar untuk pengguna Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Masuk ke koleksi statistik setempat untuk mengakses kesemua statisttik Bloky anda, seperti halaman mana yang menyekat iklan dan penjejak paling banyak, jumlah sekatan sepanjang masa dan imej yang ditukar untuk pengguna Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Anda sudah memilih untuk berkongsi data penggunaan tanpa nama dengan kami.",
     "description": "On page text of the statistics page of the Options page"

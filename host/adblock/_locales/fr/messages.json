@@ -2974,14 +2974,6 @@
     "message": "Vous voulez voir vos statistiques Bloky ? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Autorisez le recueil de stats locales pour afficher vos statistiques Bloky, comme les sites où vous bloquez le plus de publicités et de mouchards, le nombre total de blocages, et les images changées pour les utilisateurs Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Autorisez également le recueil de stats locales pour accéder à vos statistiques Bloky, comme les sites où vous bloquez le plus de publicités et de mouchards, le nombre total de blocages, et les images changées pour les utilisateurs Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Vous avez déjà donné votre accord pour partager avec nous des données d'utilisation anonymes.",
     "description": "On page text of the statistics page of the Options page"

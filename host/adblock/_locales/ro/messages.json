@@ -2921,14 +2921,6 @@
     "message": "Vreți să vedeți statisticile dvs. Bloky?",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Înscrieți-vă la colectarea de statistici locale pentru a vedea statisticile dvs. Bloky, cum ar fi site-urile pe care blocați cele mai multe reclame și trackere, totalul de blocări de-a lungul timpului și imaginile schimbate pentru utilizatorii Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Înscrieți-vă și pentru colectarea de statistici locale pentru a accesa toate statisticile dvs. Bloky, cum ar fi site-urile pe care blocați cele mai multe reclame și trackere, totalul de blocări de-a lungul timpului și imaginile schimbate pentru utilizatorii Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Ați optat deja pentru partajarea datelor anonime de utilizare cu noi.",
     "description": "On page text of the statistics page of the Options page"

@@ -2529,14 +2529,6 @@
     "message": "Хочете побачити свою статистику в Bloky? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Перейдіть на локальний збір даних, щоб переглянути статистику Bloky, наприклад, на яких сайтах ви блокуєте найбільше оголошень і трекерів, загальна кількість блоків за весь час і обмін зображеннями для преміум-користувачів.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Крім того, ви можете скористатися локальним збором даних, щоб отримати доступ до всієї статистики Bloky, наприклад до тих сайтів, на яких ви блокуєте найбільше оголошень і трекерів, загальних блоків за весь час і зображень, замінених для преміум-користувачів.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Ви вже вирішили поділитися з нами анонімними даними про використання.",
     "description": "On page text of the statistics page of the Options page"

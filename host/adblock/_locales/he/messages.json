@@ -2829,14 +2829,6 @@
     "message": "רוצה לראות את סטטיסטיקת Bloky שלך? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "השתתף באיסוף סטטיסטיקה מקומית כדי לראות את סטטיסטיקת Bloky שלך, כגון באילו אתרים אתה חוסם הכי הרבה פרסומות ועוקבנים, סה״כ חסימות לאורך הזמן, ותמונות מוחלפות עבור משתמשי Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "השתתף גם באיסוף סטטיסטיקה מקומית על מנת להשיג גישה אל כל סטטיסטיקת Bloky שלך, כגון באילו אתרים אתה חוסם הכי הרבה פרסומות ועוקבנים, סה״כ חסימות לאורך הזמן, ותמונות מוחלפות עבור משתמשי Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "אתה משתתף כבר בשיתוף נתוני שימוש אלמוניים איתנו.",
     "description": "On page text of the statistics page of the Options page"

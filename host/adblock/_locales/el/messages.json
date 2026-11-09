@@ -2908,14 +2908,6 @@
     "message": "Θέλετε να δείτε τα στατιστικά του Bloky;",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Εγγραφείτε στη συλλογή στατιστικών για να δείτε τα στατιστικά σας, όπως σε ποιες ιστοσελίδες αποκλείετε τις περισσότερες διαφημίσεις και ιχνηλάτες, τους συνολικούς αποκλεισμούς με την πάροδο του χρόνου και εικόνες που ανταλλάσσονται (Premium).",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Εγγραφείτε στη συλλογή στατιστικών για να δείτε τα στατιστικά σας, όπως σε ποιες ιστοσελίδες αποκλείετε τις περισσότερες διαφημίσεις και ιχνηλάτες, τους συνολικούς αποκλεισμούς με την πάροδο του χρόνου και εικόνες που ανταλλάσσονται (Premium).",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Έχετε ήδη επιλέξει να μοιραστείτε ανώνυμα δεδομένα χρήσης μαζί μας.",
     "description": "On page text of the statistics page of the Options page"

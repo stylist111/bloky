@@ -155,7 +155,7 @@
 }
 
 .statsBtn {
-  font-family: Lato;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
   font-size: 16px;
 }
 .primaryButton {
@@ -958,4 +958,10 @@ label[i18n="delete_all_stats_data"] {
   #chartDiv {
     height: 29vh;
   }
+}
+
+/* Bloky: room around the longer button label */
+#btnStatsOptIn {
+  padding: 8px 18px;
+  white-space: nowrap;
 }

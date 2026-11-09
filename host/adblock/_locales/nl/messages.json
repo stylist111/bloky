@@ -2974,14 +2974,6 @@
     "message": "Wil je jouw Bloky-statistieken bekijken? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Meld je aan voor lokale statistiekenverzameling om je Bloky-statistieken te bekijken. Denk dan aan de sites waarop je de meeste advertenties en trackers blokkeert, totale blokkeringen in de loop der tijd en afbeeldingen die je hebt vervangen (Premium-gebruikers).",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Meld je aan voor lokale statistiekenverzameling voor toegang tot al je Bloky-statistieken. Denk dan aan de sites waarop je de meeste advertenties en trackers blokkeert, totale blokkeringen in de loop der tijd en afbeeldingen die je hebt vervangen (Premium-gebruikers).",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Je hebt je al aangemeld voor het delen van anonieme gebruiksgegevens met ons.",
     "description": "On page text of the statistics page of the Options page"

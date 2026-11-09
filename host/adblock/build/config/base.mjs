@@ -17,7 +17,7 @@
 
 export default {
   basename: "bloky",
-  version: "1.0.0",
+  version: "1.0.1",
   webpack: {
     bundles: [
       {
@@ -135,7 +135,11 @@ export default {
       },
       {
         dest: "fonts/",
-        src: "adblock-betafish/fonts/font-face.css",
+        src: [
+          "adblock-betafish/fonts/font-face.css",
+          "adblock-betafish/fonts/*.woff",
+          "adblock-betafish/fonts/OFL-Inter.txt",
+        ],
       },
       {
         dest: "ext/",

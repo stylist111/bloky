@@ -2740,14 +2740,6 @@
     "message": "أتود أن ترى إحصائيات Bloky الخاصة بك؟ ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "اختر جمع البيانات المحلية لمشاهدة إحصائيات Bloky الخاصة بك. مثل المواقع التي قمت بمنع معظم الإعلانات فيها والمتعقبين، كذلك مجموع مرات منع الإعلانات، و الصور التي تم تبادلها للمستخدمي Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "اختر جمع البيانات المحلية أيضا، من أجل الوصول إلى جميع إحصائيات Bloky الخاصة بك، مثل المواقع التي تقوم بمنع معظم الإعلانات فيها والمتعقبين، كذلك مجموع مرات منع الإعلانات، والصور التي تم تبادلها للمستخدمي Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "لقد اخترت بالفعل مشاركة بيانات الاستخدام المجهولة معنا.",
     "description": "On page text of the statistics page of the Options page"

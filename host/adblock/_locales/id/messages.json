@@ -2707,14 +2707,6 @@
     "message": "Ingin melihat statistik Bloky anda? ",
     "description": "On page text of the statistics page of the Options page"
   },
-  "stats_opt_in_msg": {
-    "message": "Ikut serta ke pengumpulan statistik lokal untuk melihat statistik Bloky Anda, seperti situs mana yang paling banyak anda blokir iklan dan pelacaknya, jumlah blokir dari waktu ke waktu, dan gambar bertukar untuk pengguna Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
-  "stats_opt_in_local_msg": {
-    "message": "Ikut serta ke pengumpulan statistik lokal untuk mengakses semua statistik Bloky anda, seperti situs mana yang paling banyak anda blokir dan pelacaknya, jumlah blokir dari waktu ke waktu, dan gambar bertukar untuk pengguna Premium.",
-    "description": "On page text of the statistics page of the Options page"
-  },
   "stats_already_opted": {
     "message": "Anda telah memilih untuk membagikan penggunaan data anonim dengan kami.",
     "description": "On page text of the statistics page of the Options page"

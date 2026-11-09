@@ -1221,13 +1221,9 @@ $(async () => {
 // button click handlers
 
 $("#btnStatsOptIn").on("click", async () => {
+  // Bloky: statistics are collected only locally, in the browser. The option to also
+  // send "anonymous usage data" to AdBlock's server is removed.
   await LocalDataCollection.start();
-  // this check is nested in a callback to prevent data loss when
-  // the set setting function is called quickly in succession
-  if ($("#stats_enable_data_collection").is(":checked")) {
-    // eslint-disable-next-line camelcase
-    settings.data_collection_v2 = true;
-  }
   window.location.reload();
 });
 

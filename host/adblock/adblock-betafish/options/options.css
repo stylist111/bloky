@@ -263,7 +263,7 @@ a .link-text-color:hover {
 /* BUTTONS */
 
 button {
-  font-family: "Lato", Arial, sans-serif;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
 }
 
 .btn {
@@ -1008,7 +1008,7 @@ select {
   display: inline-block;
   color: #000000;
   font-style: normal;
-  font-family: "Lato", Arial, sans-serif;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
   text-decoration: none;
   text-align: center;
   border-radius: 2px;
@@ -1855,7 +1855,7 @@ section#rate-us-cta > section#rate-us-tooltip:hover {
   color: var(--email-error-message-color);
   white-space: pre;
   font-style: normal;
-  font-family: "Lato", Arial, sans-serif;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
 }
 
 #mail-dialog-join-btn {
