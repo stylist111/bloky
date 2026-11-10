@@ -16,7 +16,7 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global selected, browser, initializeProxies, send */
+/* global browser, initializeProxies, send */
 
 $(async () => {
   await initializeProxies();
@@ -41,7 +41,7 @@ $(async () => {
       .split(".")[0]
       .slice(0, -2)
       .replace(/[-T:]/g, "");
-    a.setAttribute("download", `adblock-data-${currentLocalTimeNoSpecialChars}.json`);
+    a.setAttribute("download", `bloky-data-${currentLocalTimeNoSpecialChars}.json`);
     a.style.display = "none";
     document.body.appendChild(a);
     a.click();
@@ -222,27 +222,6 @@ $(async () => {
     }
   });
 
-  selected("#whatsnew_link", () => {
-    fetch(browser.runtime.getURL("RELEASE_NOTES.md"))
-      .then((response) => response.text())
-      .then((text) => {
-        const unreleasedSection = "# Unreleased";
-        let cleanedText = text;
-
-        if (text.startsWith(unreleasedSection)) {
-          const firstReleaseIndex = text.indexOf("#", unreleasedSection.length);
-          if (firstReleaseIndex !== -1) {
-            cleanedText = text.slice(firstReleaseIndex);
-          }
-        }
-
-        $("#changes").text(cleanedText).fadeIn();
-        $("body, html").animate(
-          {
-            scrollTop: $("#changes").offset().top,
-          },
-          1000,
-        );
-      });
-  });
+  // Bloky: "What's new" opens the GitHub releases page (RELEASE_NOTES.md is AdBlock's).
+  $("#bloky-version").text(browser.runtime.getManifest().version);
 });

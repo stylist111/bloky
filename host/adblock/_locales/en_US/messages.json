@@ -446,7 +446,7 @@
     "description": "Confirmation message shown to user if they try to unsubscribe from all filter lists. The user will have two options: OK and Cancel."
   },
   "filterstabtitle": {
-    "message": "Subscribe to filter lists",
+    "message": "Filter lists",
     "description": "Title of the Filter lists tab of the Options page"
   },
   "filterlistlink": {
@@ -590,7 +590,7 @@
     "description": "'Hide a section of a webpage' part on the Customize tab of the Options page."
   },
   "tabcustomizetitle": {
-    "message": "Customize Bloky",
+    "message": "Customize",
     "description": "Title of the Customize tab of the Options page"
   },
   "filterlistsrock": {
@@ -1314,7 +1314,7 @@
     "description": "Title for on-page options page"
   },
   "disabled_site_title": {
-    "message": "Nothing to block here!",
+    "message": "Nothing to block here",
     "description": "header title on the menu when a user is on tab that extensions are disabled on (Chrome settings, etc)"
   },
   "disabled": {
@@ -1322,7 +1322,7 @@
     "description": "Title shown in menu when AdBlock is paused on all sites"
   },
   "disabled_on_all_sites": {
-    "message": "You’ve configured Bloky to remain paused on all sites.",
+    "message": "Ads aren't blocked on any site.",
     "description": "Message shown in menu when AdBlock is paused on all sites"
   },
   "disabled_on_this_page": {
@@ -1346,11 +1346,11 @@
     "description": "Message shown in toolbar button when AdBlock is not running on all domains"
   },
   "status_domain_paused": {
-    "message": "Bloky is paused for this visit. You may need to refresh the page to see your changes.",
+    "message": "Until you leave this site. Reload the page if the ads haven't come back.",
     "description": "Message shown in toolbar button when AdBlock is not running on a specific domain"
   },
   "status_allowlisted": {
-    "message": "You’ve configured Bloky to remain paused on this site for every visit.",
+    "message": "Bloky won't block ads here until you turn it back on.",
     "description": "Message shown in toolbar button when AdBlock is not running on a page or website"
   },
   "resume_blocking_ads": {
@@ -1372,7 +1372,7 @@
     "description": "Message shown on the premium tab of the option page when user is a licensed premium user"
   },
   "unpause_adblock": {
-    "message": "Resume Ad Blocking",
+    "message": "Resume blocking",
     "description": "Link text to start blocking ads again, displayed immediately after 'AdBlock is paused'"
   },
   "domain_unpause_adblock": {
@@ -1492,7 +1492,7 @@
     "description": "Checkbox on the 'General' tab of the Options page to enable the Acceptable Ads filter list"
   },
   "advanced_options2": {
-    "message": "I'm an advanced user, show me advanced options",
+    "message": "Show advanced options",
     "description": "Checkbox on the 'General' tab of the Options page"
   },
   "onpage_messages": {
@@ -1668,7 +1668,7 @@
     }
   },
   "adblocksupport": {
-    "message": "Bloky Support",
+    "message": "Support",
     "description": "Title of the Support tab of the Options page"
   },
   "whatsnew": {
@@ -1708,7 +1708,7 @@
     "description": "Users can click this link to provide debug information to AdBlock staff"
   },
   "bugreport": {
-    "message": "[[Send us a support request]] (or email: help@getadblock.com)",
+    "message": "[[Write to us on GitHub]]",
     "description": "Link to AdBlock's help site."
   },
   "supportsite": {
@@ -1716,7 +1716,7 @@
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "Have questions? [[Check out our Help Center]] (English only)",
+    "message": "Have questions? [[Ask on GitHub]]",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
   },
   "resourceblocktitle": {
@@ -2060,31 +2060,31 @@
     "description": "The label text for the switch on the MyAdBlock Options page"
   },
   "error_msg_header": {
-    "message": "Oops!",
+    "message": "Something went wrong",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
   "error_msg_partI": {
-    "message": "We're sorry, the Bloky menu had trouble loading.",
+    "message": "The Bloky window didn't load.",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
   "error_msg_reload_partI": {
-    "message": "Next, try reloading the extension by ",
+    "message": "Try ",
     "description": "DO NOT TRANSLATE"
   },
   "error_msg_reload_partII": {
-    "message": "clicking here.",
+    "message": "restarting the extension.",
     "description": "DO NOT TRANSLATE"
   },
   "error_msg_help_partI": {
-    "message": "If that doesn't work, ",
+    "message": "Still broken? ",
     "description": "DO NOT TRANSLATE"
   },
   "error_msg_help_partII": {
-    "message": "check here for more help.",
+    "message": "Tell us on GitHub.",
     "description": "DO NOT TRANSLATE"
   },
   "generaloptions2": {
-    "message": "General Options",
+    "message": "General",
     "description": "Title of one of the Options page tabs"
   },
   "debuginlogoption2": {
@@ -2184,7 +2184,7 @@
     "description": "First option in the language dropdown menu on the Filter lists tab."
   },
   "themes": {
-    "message": "Themes",
+    "message": "Appearance",
     "description": "Title of the Themes tab of the Options page"
   },
   "popup_menu_theme": {
@@ -3071,7 +3071,7 @@
     "description": "Title of the statistics (metrics) tab of the Options page"
   },
   "statstitle": {
-    "message": "Statistics Dashboard",
+    "message": "Statistics",
     "description": "On page title of the statistics page of the Options page"
   },
   "stats_opt_in_header": {
@@ -3581,5 +3581,157 @@
   "confirm_ai_summaries_enable": {
     "message": "Confirm Hide AI search summaries enablement",
     "description": "Aria label of the button confirming to turn on the Hide AI search summaries filter list."
+  },
+  "bloky_disabled_site_text": {
+    "description": "Bloky",
+    "message": "Bloky works on regular websites. Browser pages and the extension store have nothing to block."
+  },
+  "bloky_state_paused_visit": {
+    "description": "Bloky",
+    "message": "Paused on this site"
+  },
+  "bloky_state_paused_all": {
+    "description": "Bloky",
+    "message": "Paused on all sites"
+  },
+  "bloky_state_allowlisted": {
+    "description": "Bloky",
+    "message": "This site is always allowed"
+  },
+  "bloky_translators": {
+    "description": "Bloky",
+    "message": "Translators"
+  },
+  "bloky_translators_text": {
+    "description": "Bloky",
+    "message": "Thanks to everyone who translated Bloky (and AdBlock, which it is based on) into your language:"
+  },
+  "bloky_general_lead": {
+    "description": "Bloky",
+    "message": "How Bloky behaves in your browser."
+  },
+  "bloky_group_ads": {
+    "description": "Bloky",
+    "message": "Ads"
+  },
+  "bloky_group_button": {
+    "description": "Bloky",
+    "message": "Button and menu"
+  },
+  "bloky_group_advanced": {
+    "description": "Bloky",
+    "message": "For advanced users"
+  },
+  "bloky_desc_acceptable_ads": {
+    "description": "Bloky",
+    "message": "Small ads that don't get in the way. Off by default."
+  },
+  "bloky_desc_context_menu": {
+    "description": "Bloky",
+    "message": "Bloky items in the right-click menu."
+  },
+  "bloky_desc_count_button": {
+    "description": "Bloky",
+    "message": "The number on the Bloky icon next to the address bar."
+  },
+  "bloky_desc_count_menu": {
+    "description": "Bloky",
+    "message": "The counter in the Bloky window."
+  },
+  "bloky_desc_devtools": {
+    "description": "Bloky",
+    "message": "A Bloky tab in the developer tools (F12)."
+  },
+  "bloky_desc_advanced": {
+    "description": "Bloky",
+    "message": "More options for filter lists and troubleshooting."
+  },
+  "bloky_filters_lead": {
+    "description": "Bloky",
+    "message": "Rule lists Bloky uses to find ads. They update on their own."
+  },
+  "bloky_update_now": {
+    "description": "Bloky",
+    "message": "Update now"
+  },
+  "bloky_theme_lead": {
+    "description": "Bloky",
+    "message": "How the Bloky window and this page look."
+  },
+  "bloky_theme_system": {
+    "description": "Bloky",
+    "message": "System"
+  },
+  "bloky_theme_system_text": {
+    "description": "Bloky",
+    "message": "Light or dark, like your computer."
+  },
+  "bloky_theme_light": {
+    "description": "Bloky",
+    "message": "Light"
+  },
+  "bloky_theme_light_text": {
+    "description": "Bloky",
+    "message": "Always light."
+  },
+  "bloky_theme_dark_text": {
+    "description": "Bloky",
+    "message": "Always dark."
+  },
+  "bloky_support_lead": {
+    "description": "Bloky",
+    "message": "Questions, problems and ideas go to GitHub."
+  },
+  "bloky_support_issue_title": {
+    "description": "Bloky",
+    "message": "Report a problem"
+  },
+  "bloky_support_issue_text": {
+    "description": "Bloky",
+    "message": "An ad slipped through, a site broke, or you have an idea? Write to us on GitHub."
+  },
+  "bloky_support_issue_button": {
+    "description": "Bloky",
+    "message": "Write on GitHub"
+  },
+  "bloky_version": {
+    "description": "Bloky",
+    "message": "Version"
+  },
+  "bloky_whats_new": {
+    "description": "Bloky",
+    "message": "What's new"
+  },
+  "bloky_whats_new_text": {
+    "description": "Bloky",
+    "message": "Changes in every release."
+  },
+  "bloky_open": {
+    "description": "Bloky",
+    "message": "Open"
+  },
+  "bloky_source_code": {
+    "description": "Bloky",
+    "message": "Source code"
+  },
+  "bloky_source_code_text": {
+    "description": "Bloky",
+    "message": "Bloky is open source (GPL-3.0) and based on AdBlock."
+  },
+  "bloky_debug_title": {
+    "description": "Bloky",
+    "message": "Debug data"
+  },
+  "bloky_debug_text": {
+    "description": "Bloky",
+    "message": "If we ask for it, download the file and attach it to your message."
+  },
+  "bloky_download": {
+    "description": "Bloky",
+    "message": "Download"
+  },
+  "bloky_tech_info": {
+    "description": "Bloky",
+    "message": "Technical details"
   }
 }

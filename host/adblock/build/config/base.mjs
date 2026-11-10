@@ -17,7 +17,7 @@
 
 export default {
   basename: "bloky",
-  version: "1.0.1",
+  version: "1.1.0",
   webpack: {
     bundles: [
       {
@@ -137,9 +137,14 @@ export default {
         dest: "fonts/",
         src: [
           "adblock-betafish/fonts/font-face.css",
-          "adblock-betafish/fonts/*.woff",
-          "adblock-betafish/fonts/OFL-Inter.txt",
+          "adblock-betafish/fonts/*.woff2",
+          "adblock-betafish/fonts/OFL-*.txt",
         ],
+      },
+      {
+        // Bloky: design system layer (brand kit tokens + popup and settings styles)
+        dest: "bloky/",
+        src: ["adblock-betafish/bloky/*.css"],
       },
       {
         dest: "ext/",

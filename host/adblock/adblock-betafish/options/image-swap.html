@@ -201,14 +201,14 @@
         </div>
       </div>
     </div>
-    <div class="align-items-center">
-      <i id="photo-icon" class="material-icons md-24" role="img" aria-hidden="true">photo</i>
+    <!-- Bloky: page header in the brand style -->
+    <header class="b-page-head">
       <h1 i18n="image_swap" class="page-title"></h1>
-    </div>
-
-    <h3 class="paragraph-title" i18n="myadblock_pic_replacemenet_description"></h3>
-
-    <p class="section-title" i18n="myadblock_picreplacement_exlained"></p>
+      <p class="b-lead">
+        <span i18n="myadblock_pic_replacemenet_description"></span>.
+        <span i18n="myadblock_picreplacement_exlained"></span>
+      </p>
+    </header>
 
     <ul id="channel-options">
       <li class="channel-box custom-channel-disable">
@@ -467,7 +467,7 @@
     </ul>
 
     <div id="custom-image-upload-section" class="inactive">
-      <h3 class="paragraph-title" i18n="custom_images"></h3>
+      <h2 class="b-group-title" i18n="custom_images"></h2>
 
       <p class="section-title" i18n="custom_image_description"></p>
 
@@ -487,7 +487,6 @@
       </ul>
     </div>
 
-    <div class="translation_credits italic do-not-display"></div>
     <canvas id="thumbnail-image-swap-canvas" />
     <img id="thumbnail-image-swap-image" />
     <canvas id="temp-croppie-image-swap-canvas" />

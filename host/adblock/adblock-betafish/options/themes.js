@@ -16,190 +16,48 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global  translate, License, MABPayment, settingsNotifier, settings,
-   isValidTheme, initializeProxies, send
- */
+/* global settingsNotifier, settings, initializeProxies */
 
+// Bloky: the stock page had 8 popup themes and 4 settings-page themes. Bloky has one
+// "Appearance" choice for both: follow the system (default_theme), light or dark.
 (function onThemesLoaded() {
-  const updateThemeSettings = ($newTheme) => {
-    const key = $newTheme.data("key");
-    const newTheme = $newTheme.data("theme");
-    // get local copy of the Color Themes object
-    const colorThemes = JSON.parse(JSON.stringify(settings.color_themes));
+  const choices = ["default_theme", "light_theme", "dark_theme"];
 
-    colorThemes[key] = newTheme;
-    settings.color_themes = colorThemes;
-    window.location.reload();
+  const currentChoice = (colorThemes) => {
+    const theme = colorThemes && colorThemes.options_page;
+    return choices.includes(theme) ? theme : "default_theme";
   };
 
-  const updateSelection = (changeEvent) => {
-    if (!changeEvent || $.isEmptyObject(changeEvent)) {
-      return;
-    }
-    const $selectedTheme = $(changeEvent.target).closest(".theme-box");
-    if ($selectedTheme.closest(".theme-wrapper").hasClass("locked")) {
-      send("openTab", { urlToOpen: License.MAB_CONFIG.payURL });
-      return;
-    }
-    const $otherThemes = $selectedTheme.closest("section").find(".theme-box").not($selectedTheme);
-
-    $otherThemes.removeClass("selected");
-    $selectedTheme.addClass("selected");
-
-    updateThemeSettings($selectedTheme);
-  };
-
-  const selectCurrentThemes = async (currentThemes) => {
-    const popupMenuTheme = (await isValidTheme(currentThemes.popup_menu))
-      ? currentThemes.popup_menu
-      : "default_theme";
-    const optionsPageTheme = (await isValidTheme(currentThemes.options_page))
-      ? currentThemes.options_page
-      : "default_theme";
-
-    // reset selected theme
-    $(".popup-menu-themes .selected").removeClass("selected");
-    $(".options-page-themes .selected").removeClass("selected");
-
-    // Get theme nodes to select
-    const $popupTheme = $(`.popup-menu-themes [data-theme=${popupMenuTheme}]`);
-    const $optionsTheme = $(`.options-page-themes [data-theme=${optionsPageTheme}]`);
-    const $popupInput = $popupTheme.find("input[name=popup-menu-theme]");
-    const $optionsInput = $optionsTheme.find("input[name=options-page-theme]");
-
-    // Select theme nodes
-    $popupTheme.addClass("selected");
-    $optionsTheme.addClass("selected");
-    $popupInput.prop("checked", true);
-    $optionsInput.prop("checked", true);
-
-    $(".options-page-theme-preview").attr("src", `icons/${optionsPageTheme}/optionscard.svg`);
-    $(".options-page-theme-preview").attr(
-      "alt",
-      translate("a_theme_preview", translate(`${optionsPageTheme}`), translate("options_page")),
-    );
-  };
-
-  const showHoveredPopupThemePreview = ($themeBox) => {
-    const hoveredTheme = $themeBox.data("theme");
-
-    $(".popup-menu-theme-title").text(translate(`${hoveredTheme}`));
-    $(".popup-menu-theme-preview").attr("src", `icons/${hoveredTheme}/previewcard.svg`);
-    $(".popup-menu-theme-preview").attr(
-      "alt",
-      translate("a_theme_preview", translate(`${hoveredTheme}`), translate("popup_menu")),
-    );
-  };
-
-  const showSelectedPopupThemePreview = () => {
-    const popupMenuTheme = $(".popup-menu-themes .selected").data("theme");
-
-    $(".popup-menu-theme-title").text(translate(`${popupMenuTheme}`));
-    $(".popup-menu-theme-preview").attr("src", `icons/${popupMenuTheme}/previewcard.svg`);
-    $(".popup-menu-theme-preview").attr(
-      "alt",
-      translate("a_theme_preview", translate(`${popupMenuTheme}`), translate("popup_menu")),
-    );
-  };
-
-  const showHoveredOptionsThemePreview = ($themeBox) => {
-    const hoveredTheme = $themeBox.data("theme");
-
-    $(".options-page-theme-title").text(translate(`${hoveredTheme}`));
-    $(".options-page-theme-preview").attr("src", `icons/${hoveredTheme}/optionscard.svg`);
-    $(".options-page-theme-preview").attr(
-      "alt",
-      translate("a_theme_preview", translate(`${hoveredTheme}`), translate("options_page")),
-    );
-  };
-
-  const showSelectedOptionsThemePreview = () => {
-    const optionsPageTheme = $(".options-page-themes .selected").data("theme");
-
-    $(".options-page-theme-title").text(translate(`${optionsPageTheme}`));
-    $(".options-page-theme-preview").attr("src", `icons/${optionsPageTheme}/optionscard.svg`);
-    $(".options-page-theme-preview").attr(
-      "alt",
-      translate("a_theme_preview", translate(`${optionsPageTheme}`), translate("options_page")),
-    );
-  };
-
-  const showShadowOnLockedHover = ($themeBox) => {
-    if ($themeBox.parent().hasClass("locked")) {
-      $("#get-it-now-themes").addClass("shadow");
-    }
-  };
-
-  const hideShadowNoHover = () => {
-    $("#get-it-now-themes").removeClass("shadow");
-  };
-
-  const documentEventsHandling = () => {
-    // Hover events
-    $(".popup-menu-themes .theme-box:not(.selected)")
-      .on("mouseenter", function handleIn() {
-        showHoveredPopupThemePreview($(this));
-        showShadowOnLockedHover($(this));
-      })
-      // eslint-disable-next-line prefer-arrow-callback
-      .on("mouseleave", function handleOut() {
-        showSelectedPopupThemePreview();
-        hideShadowNoHover();
-      });
-
-    $(".options-page-themes .theme-box:not(.selected)")
-      .on("mouseenter", function handleIn() {
-        showHoveredOptionsThemePreview($(this));
-        showShadowOnLockedHover($(this));
-      })
-      // eslint-disable-next-line prefer-arrow-callback
-      .on("mouseleave", function handleOut() {
-        showSelectedOptionsThemePreview();
-        hideShadowNoHover();
-      });
-
-    // Change events
-    $("input.invisible-radio-button").on("change", (event) => updateSelection(event));
+  const showChoice = (theme) => {
+    document.querySelectorAll(".b-theme-input").forEach((input) => {
+      // eslint-disable-next-line no-param-reassign
+      input.checked = input.value === theme;
+      input.closest(".b-theme").classList.toggle("selected", input.checked);
+    });
   };
 
   $(async () => {
     await initializeProxies();
-    let colorThemes = {};
-    if (settings) {
-      colorThemes = settings.color_themes;
-    }
-    $(".theme-wrapper:not(.locked) .overlay-icon").each(function i18nSupport() {
-      const $preview = $(this);
-      const theme = $preview.closest(".theme-box").data("theme");
-      const component = $preview.closest(".theme-box").data("key");
-      $preview.attr(
-        "aria-label",
-        translate("preview_a_theme", [translate(`${theme}`), translate(`${component}`)]),
-      );
+    showChoice(currentChoice(settings && settings.color_themes));
+
+    document.querySelectorAll(".b-theme-input").forEach((input) => {
+      input.addEventListener("change", () => {
+        if (!input.checked) {
+          return;
+        }
+        // The settings proxy saves the whole object, so assign a fresh copy
+        settings.color_themes = { popup_menu: input.value, options_page: input.value };
+        showChoice(input.value);
+        // apply right away, without reloading the page
+        document.body.id = input.value;
+        document.body.dataset.theme = input.value.replace("_theme", "");
+      });
     });
-    await selectCurrentThemes(colorThemes);
-    showSelectedOptionsThemePreview();
-    showSelectedPopupThemePreview();
-    if (!License || $.isEmptyObject(License) || !MABPayment) {
-      return;
-    }
-
-    const payInfo = MABPayment.initialize("themes");
-    if (await License.shouldShowMyAdBlockEnrollment()) {
-      MABPayment.freeUserLogic(payInfo);
-      $("#get-it-now-themes").on("click", MABPayment.userClickedPremiumCTA);
-    } else if (await License.isActiveLicense()) {
-      MABPayment.paidUserLogic(payInfo);
-    }
-
-    documentEventsHandling();
   });
 
-  const onSettingsChanged = function (name, currentValue) {
+  settingsNotifier.on("settings.changed", (name, currentValue) => {
     if (name === "color_themes") {
-      selectCurrentThemes(currentValue);
+      showChoice(currentChoice(currentValue));
     }
-  };
-
-  settingsNotifier.on("settings.changed", onSettingsChanged);
+  });
 })();

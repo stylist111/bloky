@@ -272,7 +272,7 @@ describe("stats badge / allowlisting", () => {
     await tick();
 
     expect(mockSetBadge).toHaveBeenLastCalledWith(tabId, {
-      color: "#646464",
+      color: "#0B1020",
       number: 1,
     });
   });
@@ -317,7 +317,7 @@ describe("stats badge / allowlisting", () => {
     await sweepBadges();
 
     expect(mockSetBadge).toHaveBeenCalledWith(tabId, {
-      color: "#646464",
+      color: "#0B1020",
       number: 1,
     });
   });
@@ -427,7 +427,7 @@ describe("stats badge / allowlisting", () => {
     await tick();
 
     expect(mockSetBadge).toHaveBeenLastCalledWith(tabId, {
-      color: "#646464",
+      color: "#0B1020",
       number: 1,
     });
   });
@@ -465,7 +465,7 @@ describe("stats badge / allowlisting", () => {
     await sweepBadges();
 
     expect(mockSetBadge).toHaveBeenCalledWith(tabId, {
-      color: "#646464",
+      color: "#0B1020",
       number: 1,
     });
   });
@@ -562,7 +562,7 @@ describe("stats badge / allowlisting", () => {
       await sweepBadges();
 
       expect(mockSetBadge).toHaveBeenCalledWith(tabId, {
-        color: "#646464",
+        color: "#0B1020",
         number: 600,
       });
     } finally {
@@ -614,7 +614,7 @@ describe("stats badge / allowlisting", () => {
     await sweepBadges();
 
     expect(mockSetBadge).toHaveBeenCalledWith(tabId, {
-      color: "#646464",
+      color: "#0B1020",
       number: 2,
     });
   });
@@ -653,7 +653,7 @@ describe("stats badge / allowlisting", () => {
       await sweepBadges();
 
       expect(mockSetBadge).toHaveBeenCalledWith(tabId, {
-        color: "#646464",
+        color: "#0B1020",
         number: 2,
       });
     } finally {
@@ -682,7 +682,7 @@ describe("stats badge / allowlisting", () => {
       await sweepBadges();
 
       expect(mockSetBadge).toHaveBeenCalledWith(tabId, {
-        color: "#646464",
+        color: "#0B1020",
         number: 1,
       });
     } finally {

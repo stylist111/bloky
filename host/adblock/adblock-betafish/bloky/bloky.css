@@ -1,0 +1,599 @@
+/*
+ * Bloky design system — shared layer for the popup and the settings page.
+ * Colours, type and spacing come from the brand kit (tools/bloky/brand/tokens/tokens.css).
+ * This file is loaded after the stock AdBlock styles and maps them onto the kit.
+ *
+ * Themes: <body data-theme="…"> is set from the "Appearance" setting.
+ *   default → follows the system (light or dark), light → always light, dark → always dark.
+ *   The old colour themes (watermelon, ocean…) behave like "default".
+ */
+
+:root {
+  --blue-50: #eef2ff;
+  --blue-100: #dce4ff;
+  --blue-200: #b9c9ff;
+  --blue-300: #8da6ff;
+  --blue-400: #5c7fff;
+  --blue-500: #2b59ff;
+  --blue-600: #1f45e0;
+  --blue-700: #1a37b3;
+  --ink-0: #ffffff;
+  --ink-50: #f4f5f8;
+  --ink-100: #edeff3;
+  --ink-200: #dde1e8;
+  --ink-300: #c4cad4;
+  --ink-400: #8a94a6;
+  --ink-500: #6b7385;
+  --ink-600: #4a5263;
+  --ink-700: #2a3247;
+  --ink-750: #1c2336;
+  --ink-800: #141a2b;
+  --ink-900: #0b1020;
+  --green-500: #12a150;
+  --green-50: #e7f7ee;
+  --green-700: #0e7a3d;
+  --amber-500: #f5a524;
+  --amber-50: #fff4e0;
+  --amber-700: #9a5b00;
+  --red-500: #d93036;
+  --red-50: #fdecec;
+  --red-700: #b4232a;
+
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --type-display: 700 32px/40px var(--font-sans);
+  --type-stat: 700 40px/44px var(--font-sans);
+  --type-title: 600 20px/28px var(--font-sans);
+  --type-heading: 600 16px/24px var(--font-sans);
+  --type-body: 400 14px/20px var(--font-sans);
+  --type-label: 500 14px/20px var(--font-sans);
+  --type-small: 400 13px/18px var(--font-sans);
+  --type-caption: 500 12px/16px var(--font-sans);
+  --type-overline: 600 11px/16px var(--font-sans);
+  --type-mono: 500 13px/18px var(--font-mono);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+
+  --control-h: 40px;
+  --control-h-sm: 32px;
+  --switch-w: 40px;
+  --switch-h: 24px;
+  --switch-knob: 18px;
+
+  --shadow-overlay: 0 8px 24px rgba(11, 16, 32, 0.12);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ---------- Light (default) ---------- */
+body {
+  --bg-app: var(--ink-50);
+  --bg-surface: var(--ink-0);
+  --bg-subtle: var(--ink-100);
+  --border: var(--ink-200);
+  --border-strong: var(--ink-300);
+  --text-primary: var(--ink-900);
+  --text-secondary: var(--ink-600);
+  --text-tertiary: var(--ink-500);
+  --text-on-accent: #ffffff;
+  --accent: var(--blue-500);
+  --accent-hover: var(--blue-600);
+  --accent-subtle: var(--blue-50);
+  --accent-text: var(--blue-600);
+  --focus-ring: var(--blue-500);
+  --state-paused: var(--ink-400);
+  --state-unavailable: var(--ink-300);
+  --success-fill: var(--green-500);
+  --success-bg: var(--green-50);
+  --success-text: var(--green-700);
+  --warning-fill: var(--amber-500);
+  --warning-bg: var(--amber-50);
+  --warning-text: var(--amber-700);
+  --danger-fill: var(--red-500);
+  --danger-bg: var(--red-50);
+  --danger-text: var(--red-700);
+  --info-bg: var(--blue-50);
+  --info-text: var(--blue-600);
+  --scrim: rgba(11, 16, 32, 0.4);
+  --focus-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--focus-ring);
+  color-scheme: light;
+}
+
+/* ---------- Dark ---------- */
+body[data-theme="dark"] {
+  --bg-app: var(--ink-900);
+  --bg-surface: var(--ink-800);
+  --bg-subtle: var(--ink-750);
+  --border: var(--ink-700);
+  --border-strong: #3a4359;
+  --text-primary: #f2f4f8;
+  --text-secondary: #b7becb;
+  --text-tertiary: var(--ink-400);
+  --accent-hover: var(--blue-400);
+  --accent-subtle: #1a2550;
+  --accent-text: var(--blue-300);
+  --state-paused: var(--ink-500);
+  --state-unavailable: var(--ink-600);
+  --success-bg: rgba(18, 161, 80, 0.16);
+  --success-text: #4ade80;
+  --warning-bg: rgba(245, 165, 36, 0.16);
+  --warning-text: #fbbf24;
+  --danger-bg: rgba(217, 48, 54, 0.16);
+  --danger-text: #f87171;
+  --info-bg: #1a2550;
+  --info-text: var(--blue-300);
+  --scrim: rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) {
+    --bg-app: var(--ink-900);
+    --bg-surface: var(--ink-800);
+    --bg-subtle: var(--ink-750);
+    --border: var(--ink-700);
+    --border-strong: #3a4359;
+    --text-primary: #f2f4f8;
+    --text-secondary: #b7becb;
+    --text-tertiary: var(--ink-400);
+    --accent-hover: var(--blue-400);
+    --accent-subtle: #1a2550;
+    --accent-text: var(--blue-300);
+    --state-paused: var(--ink-500);
+    --state-unavailable: var(--ink-600);
+    --success-bg: rgba(18, 161, 80, 0.16);
+    --success-text: #4ade80;
+    --warning-bg: rgba(245, 165, 36, 0.16);
+    --warning-text: #fbbf24;
+    --danger-bg: rgba(217, 48, 54, 0.16);
+    --danger-text: #f87171;
+    --info-bg: #1a2550;
+    --info-text: var(--blue-300);
+    --scrim: rgba(0, 0, 0, 0.6);
+    color-scheme: dark;
+  }
+}
+
+/* ---------- Stock AdBlock variables → kit tokens ----------
+   The stock themes set these on body#<theme>_theme, so the selector needs an id to win. */
+body:is(
+    #default_theme,
+    #light_theme,
+    #dark_theme,
+    #solarized_theme,
+    #solarized_light_theme,
+    #rebecca_purple_theme,
+    #ocean_theme,
+    #sunshine_theme,
+    #watermelon_theme
+  ) {
+  --extension-font-family: var(--font-sans);
+
+  /* popup */
+  --popup-main-text-color: var(--text-primary);
+  --popup-secondary-text-color: var(--text-secondary);
+  --popup-accent-color: var(--text-secondary);
+  --popup-accent-hovered-color: var(--text-primary);
+  --popup-separator-color: var(--border);
+  --popup-background-color: var(--bg-app);
+  --popup-card-background-color: var(--bg-surface);
+  --popup-block-ads-bg-color: var(--bg-surface);
+  --popup-url-text-color: var(--text-primary);
+  --popup-link-text: var(--accent-text);
+  --popup-link-text-decoration: none;
+  --popup-help-button-bg-color: var(--accent);
+  --popup-button-text: var(--text-primary);
+  --popup-button-secondary-text: var(--text-primary);
+  --popup-button-background-color: var(--bg-subtle);
+  --popup-button-outline-color: var(--border-strong);
+  --popup-button-reenable-bg-color: var(--accent);
+  --popup-button-reenable-text-color: var(--text-on-accent);
+  --popup-button-reenable-hovered-bg-color: var(--accent-hover);
+  --popup-button-reenable-hovered-text-color: var(--text-on-accent);
+  --popup-button-disabled-text: var(--text-tertiary);
+  --block-count-color: var(--text-primary);
+  --toggle-foreground: #ffffff;
+  --toggle-inactive-bg: var(--border-strong);
+  --toggle-active-bg: var(--accent);
+
+  /* settings page */
+  --main-text-color: var(--text-primary);
+  --text-color: var(--text-primary);
+  --small-text-color: var(--text-secondary);
+  --background-color: var(--bg-surface);
+  --options-bg-color: var(--bg-app);
+  --primary-panel-bg-color: var(--bg-surface);
+  --section-background-color: var(--bg-surface);
+  --sidebar-bg-color: var(--bg-surface);
+  --sidebar-link-hovered-color: var(--text-primary);
+  --active-tab-color: var(--accent-text);
+  --link-color: var(--accent-text);
+  --link-hovered-color: var(--accent-hover);
+  --checkbox-bg-color: var(--accent);
+  --not-selected-checkbox-bg-color: var(--border-strong);
+  --bottom-line-color: var(--border);
+  --break-line-color: var(--border);
+  --help-icon-color: var(--text-tertiary);
+  --help-icon-color-hovered: var(--text-primary);
+  --help-icon-color-hover: var(--text-primary);
+  --icon-color: var(--text-secondary);
+  --icon-color-hover: var(--text-primary);
+  --icon-border-color: var(--border);
+  --stats-border-color: var(--border);
+  --stats-main-text-color: var(--text-primary);
+  --stats-menu-text-color: var(--text-secondary);
+  --stats-overlay-text-color: var(--text-primary);
+  --ads-blocked-color: var(--accent);
+  --trackers-blocked-color: var(--text-primary);
+  --ads-replaced-color: var(--state-paused);
+  --button-background: var(--accent);
+  --button-background-hover: var(--accent-hover);
+  --button-color: var(--text-on-accent);
+  --button-cancel-background: var(--bg-subtle);
+  --button-cancel-background-hover: var(--border);
+  --options-button-bg: var(--accent);
+  --options-button-bg-hover: var(--accent-hover);
+  --options-button-text: var(--text-on-accent);
+  --options-button-complete-bg: var(--success-fill);
+  --primary-button-bg-color: var(--accent);
+  --primary-button-text-color: var(--text-on-accent);
+  --primary-cta-bg-color: var(--accent);
+  --input-text-field-border-color: var(--border-strong);
+  --edit-field-background-color: var(--bg-surface);
+  --edit-field-background-color-hover: var(--bg-subtle);
+  --edit-field-color-hover: var(--text-primary);
+  --edit-span-background-color-hover: var(--bg-subtle);
+  --speech-bubble-border-color: var(--border);
+  --standout-text-color: var(--warning-text);
+  --warning-color: var(--danger-text);
+  --customize-dropdown-menu-icon-color: var(--text-secondary);
+  --image-background-color: var(--bg-subtle);
+  --hiding-wizard-background-color: var(--bg-surface);
+  --overlay-bg-color: var(--scrim);
+  --border-radius: var(--radius-md);
+}
+
+/* ---------- Base ---------- */
+body {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background-color: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-sans);
+}
+
+a,
+.link-text-color {
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+a:hover,
+.link-text-color:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+
+::selection {
+  background: var(--blue-200);
+  color: var(--ink-900);
+}
+
+/* ---------- Buttons ---------- */
+.b-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: var(--control-h);
+  padding: 0 var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font: var(--type-label);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.b-btn:hover {
+  text-decoration: none;
+}
+
+.b-btn.primary {
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+
+.b-btn.primary:hover {
+  background: var(--accent-hover);
+  color: var(--text-on-accent);
+}
+
+.b-btn.secondary {
+  background: var(--bg-surface);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.b-btn.secondary:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.b-btn.ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.b-btn.ghost:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.b-btn.small {
+  height: var(--control-h-sm);
+  padding: 0 var(--space-3);
+  font: var(--type-caption);
+  font-size: 13px;
+}
+
+.b-btn.wide {
+  width: 100%;
+}
+
+.b-btn .material-icons {
+  font-size: 18px;
+  color: inherit;
+}
+
+.b-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Switch (one look for every on/off control) ----------
+   Works for: <label class="switch"><input><span class="slider"></span>…</label> (stock),
+   <span class="checkbox md-stack"><input><i…></i></span> (stock "round check"),
+   <toggle-button><label><input><span class="slider"></span></label></toggle-button> (popup). */
+.checkbox.md-stack {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: var(--switch-w);
+  height: var(--switch-h);
+  margin: 0;
+  vertical-align: middle;
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+  transition: background-color var(--duration-base) var(--ease-out);
+}
+
+.checkbox.md-stack > i {
+  display: none !important;
+}
+
+.checkbox.md-stack::after {
+  content: "";
+  position: absolute;
+  top: calc((var(--switch-h) - var(--switch-knob)) / 2);
+  left: calc((var(--switch-h) - var(--switch-knob)) / 2);
+  width: var(--switch-knob);
+  height: var(--switch-knob);
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(11, 16, 32, 0.2);
+  transition: transform var(--duration-base) var(--ease-out);
+  pointer-events: none;
+}
+
+.checkbox.md-stack:has(input:checked) {
+  background: var(--accent);
+}
+
+.checkbox.md-stack:has(input:checked)::after {
+  transform: translateX(calc(var(--switch-w) - var(--switch-h)));
+}
+
+.checkbox.md-stack:has(input:disabled) {
+  opacity: 0.5;
+}
+
+.checkbox.md-stack:has(input:focus-visible) {
+  box-shadow: var(--focus-shadow);
+}
+
+.checkbox.md-stack > input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+label.switch .slider,
+toggle-button .slider {
+  width: var(--switch-w) !important;
+  height: var(--switch-h) !important;
+  border-radius: var(--radius-full) !important;
+  background: var(--border-strong) !important;
+  transition: background-color var(--duration-base) var(--ease-out) !important;
+}
+
+label.switch .slider::before,
+toggle-button .slider::before {
+  width: var(--switch-knob) !important;
+  height: var(--switch-knob) !important;
+  left: calc((var(--switch-h) - var(--switch-knob)) / 2) !important;
+  top: calc((var(--switch-h) - var(--switch-knob)) / 2) !important;
+  bottom: auto !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(11, 16, 32, 0.2);
+  transition: transform var(--duration-base) var(--ease-out) !important;
+}
+
+label.switch input:checked + .slider,
+toggle-button input:checked + .slider,
+toggle-button input:checked ~ .slider {
+  background: var(--accent) !important;
+}
+
+label.switch input:checked + .slider::before,
+toggle-button input:checked + .slider::before,
+toggle-button input:checked ~ .slider::before {
+  transform: translateX(calc(var(--switch-w) - var(--switch-h))) !important;
+}
+
+/* ---------- Form fields ---------- */
+input[type="text"],
+input[type="url"],
+input[type="search"],
+input[type="email"],
+select,
+textarea {
+  box-sizing: border-box;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font: var(--type-body);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+input[type="text"],
+input[type="url"],
+input[type="search"],
+input[type="email"],
+select {
+  min-height: var(--control-h);
+  padding: 0 var(--space-3);
+}
+
+textarea {
+  padding: var(--space-3);
+  font: var(--type-mono);
+}
+
+input[type="text"]:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--text-tertiary);
+}
+
+input[type="text"]:focus,
+input[type="url"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* ---------- Dialog (translators, confirmations) ---------- */
+dialog.b-dialog {
+  width: min(440px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-overlay);
+}
+
+dialog.b-dialog::backdrop {
+  background: var(--scrim);
+}
+
+.b-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6) var(--space-3);
+}
+
+.b-dialog-head h2 {
+  margin: 0;
+  font: var(--type-title);
+  letter-spacing: -0.01em;
+}
+
+.b-dialog-body {
+  padding: 0 var(--space-6) var(--space-6);
+  font: var(--type-body);
+  color: var(--text-secondary);
+}
+
+.b-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.b-icon-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.b-icon-btn .material-icons {
+  font-size: 20px;
+  color: inherit;
+}
+
+/* ---------- Scrollbars ---------- */
+* {
+  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-width: thin;
+}

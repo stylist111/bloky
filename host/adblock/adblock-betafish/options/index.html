@@ -24,6 +24,9 @@
     <link rel="stylesheet" href="adblock-options-mab.css" />
     <link rel="stylesheet" href="adblock-options-stats-tabs.css" />
     <link rel="stylesheet" href="croppie.css" />
+    <!-- Bloky: brand styles, loaded last -->
+    <link rel="stylesheet" href="bloky/bloky.css" />
+    <link rel="stylesheet" href="bloky/options.css" />
     <script src="polyfill.js"></script>
     <script defer src="options.js"></script>
     <script defer src="jquery-3.5.1.min.js"></script>
@@ -55,19 +58,14 @@
       <div id="sidebar-content">
         <section id="sidebar-content-top">
           <div id="sidebar-logo-wrapper">
+            <!-- Bloky: flat logo + name as text, so it follows the light/dark theme -->
             <a id="adblock-logo-link" href="https://github.com/stylist111/bloky" target="_blank">
-              <img
-                id="sidebar-adblock-logo"
-                i18n-alt="adblock_home"
-                src="icons/default_theme/logo.svg"
-                dir="ltr"
-              />
               <img
                 id="sidebar-adblock-logo-narrow"
                 i18n-alt="adblock_home"
-                src="icons/adblock-38.png"
-                dir="ltr"
+                src="icons/bloky-icon.svg"
               />
+              <span class="b-wordmark" dir="ltr">Bloky</span>
             </a>
             <small id="extension_version_number"></small>
           </div>
@@ -75,47 +73,39 @@
           <nav id="sidebar-tabs">
             <ul>
               <li>
-                <a href="#stats-tabs" class="tablink">
-                  <i class="material-icons md-18" role="img" aria-hidden="true">timeline</i
-                  >&#32;&#32;<span i18n="stats"></span>
-                </a>
-              </li>
-              <li>
                 <a href="#general" class="tablink">
-                  <i class="material-icons md-18" role="img" aria-hidden="true">settings</i
-                  >&#32;&#32;<span i18n="tabgeneral"></span>
+                  <i class="material-icons md-18" role="img" aria-hidden="true">tune</i
+                  ><span i18n="tabgeneral"></span>
                 </a>
               </li>
               <li>
                 <a href="#filters" class="tablink">
-                  <i class="material-icons md-18" role="img" aria-hidden="true"
-                    >format_list_bulleted</i
-                  >&#32;&#32;<span i18n="tabfilterlists"></span>
+                  <i class="material-icons md-18" role="img" aria-hidden="true">filter_list</i
+                  ><span i18n="tabfilterlists"></span>
                 </a>
               </li>
-              <li>
-                <a href="#customize" class="tablink">
-                  <i class="material-icons md-18" role="img" aria-hidden="true">create</i
-                  ><span i18n="tabcustomize"></span>
-                </a>
-              </li>
-              <li>
-                <a href="#support" class="tablink">
-                  <i class="material-icons md-18" role="img" aria-hidden="true">chat</i
-                  ><span i18n="tabsupport"></span>
-                </a>
-              </li>
-              <div class="separator"></div>
               <!-- Bloky: former Premium features, free for everyone -->
               <li>
                 <a href="#premium-filters" class="tablink">
-                  <i class="material-icons md-18" role="img" aria-hidden="true">block</i
+                  <i class="material-icons md-18" role="img" aria-hidden="true">visibility_off</i
                   ><span i18n="premium_filters"></span>
                 </a>
               </li>
               <li>
+                <a href="#customize" class="tablink">
+                  <i class="material-icons md-18" role="img" aria-hidden="true">edit</i
+                  ><span i18n="tabcustomize"></span>
+                </a>
+              </li>
+              <li>
+                <a href="#stats-tabs" class="tablink">
+                  <i class="material-icons md-18" role="img" aria-hidden="true">timeline</i
+                  ><span i18n="stats"></span>
+                </a>
+              </li>
+              <li class="b-nav-gap">
                 <a href="#mab-themes" class="tablink">
-                  <i class="material-icons md-18" role="img" aria-hidden="true">featured_video</i
+                  <i class="material-icons md-18" role="img" aria-hidden="true">brightness_6</i
                   ><span i18n="themes"></span>
                 </a>
               </li>
@@ -125,21 +115,45 @@
                   ><span i18n="image_swap"></span>
                 </a>
               </li>
+              <li class="b-nav-gap">
+                <a href="#support" class="tablink">
+                  <i class="material-icons md-18" role="img" aria-hidden="true">help_outline</i
+                  ><span i18n="tabsupport"></span>
+                </a>
+              </li>
             </ul>
           </nav>
         </section>
 
-        <section id="sidebar-content-bottom" class="w-full px-2 min-[890px]:px-5">
-          <div class="top-line">
-            <a
-              href="https://github.com/stylist111/bloky/blob/main/PRIVACY.md"
-              i18n="privacy_policy"
-              target="_blank"
-            ></a>
-          </div>
+        <section id="sidebar-content-bottom">
+          <!-- Bloky: translators are credited once, in a small window (filled by index.js) -->
+          <button type="button" id="translators-button" class="b-side-link" hidden>
+            <i class="material-icons" aria-hidden="true">translate</i
+            ><span i18n="bloky_translators"></span>
+          </button>
+          <a
+            class="b-side-link"
+            href="https://github.com/stylist111/bloky/blob/main/PRIVACY.md"
+            target="_blank"
+            ><i class="material-icons" aria-hidden="true">lock_outline</i
+            ><span i18n="privacy_policy"></span
+          ></a>
         </section>
       </div>
     </div>
+
+    <dialog id="translators-dialog" class="b-dialog">
+      <div class="b-dialog-head">
+        <h2 i18n="bloky_translators"></h2>
+        <button type="button" class="b-icon-btn" id="translators-close" i18n-aria-label="close">
+          <i class="material-icons" aria-hidden="true">close</i>
+        </button>
+      </div>
+      <div class="b-dialog-body">
+        <p i18n="bloky_translators_text"></p>
+        <ul id="translators-list"></ul>
+      </div>
+    </dialog>
 
     <div id="tab-content">
       <div id="stats-tabs" class="tab"></div>

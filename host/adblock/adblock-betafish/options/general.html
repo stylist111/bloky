@@ -15,231 +15,200 @@
   - You should have received a copy of the GNU General Public License
   - along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
   -->
-<!-- Start: Premium Upsell CTA -->
-<section
-  class="upsell-cta bottom-line flex items-center justify-between gap-5 py-2 px-6 mx-auto max-w-[984px] mb-10"
-  style="display: none"
->
-  <div id="locked-user-pay-section-general" class="get-premium-cta">
-    <img alt="AdBlock VPN" src="icons/adblock-vpn.svg" class="h-6" />
-    <p i18n="premium_upsell_text"></p>
-  </div>
-  <div class="flex items-center gap-10">
-    <div class="flex items-stretch gap-2 max-[890px]:flex-col min-[890px]:justify-stretch">
-      <a
-        href=""
-        target="_blank"
-        class="btn secondary flex gap-2 min-w-40 user-account-login-cta"
-        style="display: none"
-      >
-        <i class="material-icons md-18 text-current" role="img" aria-hidden="true">
-          account_circle
-        </i>
-        <span i18n="user_account_login"></span>
-      </a>
-      <a
-        id="get-it-now-general"
-        i18n="get_it_now"
-        class="btn yellow long"
-        target="_blank"
-        href="https://getadblock.com/premium/enrollment/"
-      ></a>
-    </div>
-  </div>
-</section>
-<!-- End: Premium Upsell CTA -->
+<!-- Bloky: settings grouped into cards, every switch on the right with a short explanation -->
 <div id="jq-options" class="option-page-box">
   <div class="option-page-content">
-    <h1 i18n="generaloptions2" class="page-title"></h1>
+    <header class="b-page-head">
+      <h1 i18n="generaloptions2" class="page-title"></h1>
+      <p class="b-lead" i18n="bloky_general_lead"></p>
+    </header>
 
-    <div id="acceptable_ads_info">
+    <div id="acceptable_ads_info" class="b-note">
       <span i18n="acceptableadsdisable_done"></span>
-      <br />
       <span i18n="acceptableadsdisable_how_to_reenable"></span>
     </div>
-    <ul id="general-option-list">
-      <li class="checkbox-indentation">
-        <div class="add-space-between section-padding bottom-line">
-          <div>
-            <span class="checkbox md-stack -mt-1.5">
-              <input
-                type="checkbox"
-                class="feature"
-                id="acceptable_ads"
-                aria-labelledby="acceptable_ads_label"
-              />
-              <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
-              <i
-                class="checked material-icons circle-icon-bg-24 checkbox-icon"
-                role="img"
-                aria-hidden="true"
-                >check_circle</i
-              >
-            </span>
-            <label id="acceptable_ads_label" i18n="acceptableadsoption"></label>
-          </div>
-          <a
-            class="help-link-icon"
-            href="https://github.com/stylist111/bloky/issues"
-            target="_blank"
-          >
-            <i class="material-icons md-18" role="img" i18n-aria-label="learn_more_without_period"
-              >live_help</i
-            >
-          </a>
-        </div>
-        <div class="toggle-indentation add-space-between section-padding">
-          <label class="switch" for="acceptable_ads_privacy">
-            <input type="checkbox" class="feature" id="acceptable_ads_privacy" />
-            <span class="slider round"></span>
-            <span i18n="acceptable_ads_privacy"></span>
-          </label>
-          <a
-            class="help-link-icon"
-            href="https://github.com/stylist111/bloky/issues"
-            target="_blank"
-          >
-            <i class="material-icons md-18" role="img" i18n-aria-label="learn_more_without_period"
-              >live_help</i
-            >
-          </a>
-        </div>
-        <div class="toggle-indentation" id="aa-privacy-helper">
-          <span class="toggle-padding" i18n="enable_do_not_track_advice"></span>&nbsp;
-          <a
-            class="link-text-color"
-            href="https://github.com/stylist111/bloky/issues"
-            target="_blank"
-            ><span i18n="learn_more"></span
-          ></a>
-        </div>
-      </li>
 
-      <li class="section-padding checkbox-indentation">
-        <span class="checkbox md-stack -mt-1.5">
+    <h2 class="b-group-title" i18n="bloky_group_ads"></h2>
+    <ul id="general-option-list" class="b-card b-rows">
+      <li class="b-row">
+        <label class="b-row-text" for="acceptable_ads" id="acceptable_ads_label">
+          <span class="b-row-title" i18n="acceptableadsoption"></span>
+          <span class="b-row-desc" i18n="bloky_desc_acceptable_ads"></span>
+        </label>
+        <span class="checkbox md-stack">
+          <input
+            type="checkbox"
+            class="feature"
+            id="acceptable_ads"
+            aria-labelledby="acceptable_ads_label"
+          />
+        </span>
+      </li>
+      <li class="b-row b-row-sub">
+        <label class="b-row-text" for="acceptable_ads_privacy" id="acceptable_ads_privacy_label">
+          <span class="b-row-title" i18n="acceptable_ads_privacy"></span>
+          <span class="b-row-desc" id="aa-privacy-helper" i18n="enable_do_not_track_advice"></span>
+        </label>
+        <span class="checkbox md-stack">
+          <input
+            type="checkbox"
+            class="feature"
+            id="acceptable_ads_privacy"
+            aria-labelledby="acceptable_ads_privacy_label"
+          />
+        </span>
+      </li>
+    </ul>
+
+    <h2 class="b-group-title" i18n="bloky_group_button"></h2>
+    <ul class="b-card b-rows">
+      <li class="b-row">
+        <label
+          class="b-row-text"
+          for="prefs__shouldShowBlockElementMenu"
+          id="prefs__shouldShowBlockElementMenu_label"
+        >
+          <span class="b-row-title" i18n="showcontextmenus2"></span>
+          <span class="b-row-desc" i18n="bloky_desc_context_menu"></span>
+        </label>
+        <span class="checkbox md-stack">
           <input
             type="checkbox"
             class="feature"
             id="prefs__shouldShowBlockElementMenu"
             aria-labelledby="prefs__shouldShowBlockElementMenu_label"
           />
-          <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
-          <i
-            class="checked material-icons circle-icon-bg-24 checkbox-icon"
-            role="img"
-            aria-hidden="true"
-            >check_circle</i
-          >
         </span>
-        <label id="prefs__shouldShowBlockElementMenu_label" i18n="showcontextmenus2"></label>
       </li>
-
-      <li class="section-padding checkbox-indentation">
-        <span class="checkbox md-stack -mt-1.5">
+      <li class="b-row">
+        <label class="b-row-text" for="prefs__show_statsinicon" id="prefs__show_statsinicon_label">
+          <span class="b-row-title" i18n="show_on_adblock_button"></span>
+          <span class="b-row-desc" i18n="bloky_desc_count_button"></span>
+        </label>
+        <span class="checkbox md-stack">
           <input
             type="checkbox"
             class="feature"
             id="prefs__show_statsinicon"
             aria-labelledby="prefs__show_statsinicon_label"
           />
-          <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
-          <i
-            class="checked material-icons circle-icon-bg-24 checkbox-icon"
-            role="img"
-            aria-hidden="true"
-            >check_circle</i
-          >
         </span>
-        <label id="prefs__show_statsinicon_label" i18n="show_on_adblock_button"></label>
       </li>
-
-      <li class="section-padding checkbox-indentation">
-        <span class="checkbox md-stack -mt-1.5">
+      <li class="b-row">
+        <label
+          class="b-row-text"
+          for="enable_display_menu_stats"
+          id="enable_display_menu_stats_label"
+        >
+          <span class="b-row-title" i18n="show_on_adblock_menu"></span>
+          <span class="b-row-desc" i18n="bloky_desc_count_menu"></span>
+        </label>
+        <span class="checkbox md-stack">
           <input
             type="checkbox"
             class="feature"
             id="enable_display_menu_stats"
             aria-labelledby="enable_display_menu_stats_label"
           />
-          <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
-          <i
-            class="checked material-icons circle-icon-bg-24 checkbox-icon"
-            role="img"
-            aria-hidden="true"
-            >check_circle</i
-          >
         </span>
-        <label id="enable_display_menu_stats_label" i18n="show_on_adblock_menu"></label>
       </li>
+    </ul>
 
-      <li class="section-padding checkbox-indentation">
-        <span class="checkbox md-stack -mt-1.5">
+    <h2 class="b-group-title" i18n="bloky_group_advanced"></h2>
+    <ul class="b-card b-rows">
+      <li class="b-row">
+        <label
+          class="b-row-text"
+          for="prefs__show_devtools_panel"
+          id="prefs__show_devtools_panel_label"
+        >
+          <span class="b-row-title" i18n="show_devtools_panel"></span>
+          <span class="b-row-desc" i18n="bloky_desc_devtools"></span>
+        </label>
+        <span class="checkbox md-stack">
           <input
             type="checkbox"
             class="feature"
             id="prefs__show_devtools_panel"
             aria-labelledby="prefs__show_devtools_panel_label"
           />
-          <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
-          <i
-            class="checked material-icons circle-icon-bg-24 checkbox-icon"
-            role="img"
-            aria-hidden="true"
-            >check_circle</i
-          >
         </span>
-        <label id="prefs__show_devtools_panel_label" i18n="show_devtools_panel"></label>
       </li>
-
-      <li id="main_opt_out" class="section-padding checkbox-indentation bloky-hidden">
-        <span class="checkbox md-stack -mt-1.5">
+      <li class="b-row">
+        <label
+          class="b-row-text"
+          for="enable_show_advanced_options"
+          id="enable_show_advanced_options_label"
+        >
+          <span class="b-row-title" i18n="advanced_options2"></span>
+          <span class="b-row-desc" i18n="bloky_desc_advanced"></span>
+        </label>
+        <span class="checkbox md-stack">
+          <input
+            type="checkbox"
+            class="feature"
+            id="enable_show_advanced_options"
+            aria-labelledby="enable_show_advanced_options_label"
+          />
+        </span>
+      </li>
+      <li class="b-row advanced forDebug">
+        <label class="b-row-text" for="enable_debug_logging" id="enable_debug_logging_label">
+          <span class="b-row-title" i18n="debuginlogoption2"></span>
+          <span class="b-row-desc" i18n="slows_down_extension"></span>
+        </label>
+        <span class="checkbox md-stack">
+          <input
+            type="checkbox"
+            class="feature"
+            id="enable_debug_logging"
+            aria-labelledby="enable_debug_logging_label"
+          />
+        </span>
+      </li>
+      <li id="main_opt_out" class="b-row bloky-hidden">
+        <label
+          class="b-row-text"
+          for="prefs__data_collection_opt_out"
+          id="prefs__data_collection_opt_out_label"
+        >
+          <span class="b-row-title" i18n="data_collection_opt_out"></span>
+        </label>
+        <span class="checkbox md-stack">
           <input
             type="checkbox"
             class="feature"
             id="prefs__data_collection_opt_out"
             aria-labelledby="prefs__data_collection_opt_out_label"
           />
-          <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
-          <i
-            class="checked material-icons circle-icon-bg-24 checkbox-icon"
-            role="img"
-            aria-hidden="true"
-            >check_circle</i
-          >
         </span>
-        <label id="prefs__data_collection_opt_out_label" i18n="data_collection_opt_out"></label>
       </li>
-
-      <li
-        class="add-space-between checkbox-indentation section-padding data-collection-option-container bloky-hidden"
-      >
-        <div>
-          <span class="checkbox md-stack -mt-1.5">
-            <input
-              type="checkbox"
-              class="feature"
-              id="enable_data_collection_v2"
-              aria-labelledby="enable_data_collection_v2_label"
-            />
-            <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
-            <i
-              class="checked material-icons circle-icon-bg-24 checkbox-icon"
-              role="img"
-              aria-hidden="true"
-              >check_circle</i
-            >
-          </span>
-          <label id="enable_data_collection_v2_label" i18n="datacollectionoption"></label>
-        </div>
-        <a class="help-link-icon" href="https://github.com/stylist111/bloky/issues" target="_blank">
-          <i class="material-icons md-18" role="img" i18n-aria-label="learn_more_without_period"
-            >live_help</i
-          >
-        </a>
+      <li class="b-row data-collection-option-container bloky-hidden">
+        <label
+          class="b-row-text"
+          for="enable_data_collection_v2"
+          id="enable_data_collection_v2_label"
+        >
+          <span class="b-row-title" i18n="datacollectionoption"></span>
+        </label>
+        <span class="checkbox md-stack">
+          <input
+            type="checkbox"
+            class="feature"
+            id="enable_data_collection_v2"
+            aria-labelledby="enable_data_collection_v2_label"
+          />
+        </span>
       </li>
-
-      <li class="section-padding checkbox-indentation bloky-hidden">
-        <span class="checkbox md-stack -mt-1.5">
+      <li class="b-row bloky-hidden">
+        <label
+          class="b-row-text"
+          for="prefs__marketing_opt_out"
+          id="prefs__marketing_opt_out_label"
+        >
+          <span class="b-row-title" i18n="marketing_opt_out"></span>
+        </label>
+        <span class="checkbox md-stack">
           <input
             type="checkbox"
             class="feature"
@@ -247,60 +216,8 @@
             aria-labelledby="prefs__marketing_opt_out_label"
             data-pref-transform="invert"
           />
-          <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
-          <i
-            class="checked material-icons circle-icon-bg-24 checkbox-icon"
-            role="img"
-            aria-hidden="true"
-            >check_circle</i
-          >
         </span>
-        <label id="prefs__marketing_opt_out_label" i18n="marketing_opt_out"></label>
-      </li>
-
-      <li class="section-padding checkbox-indentation">
-        <span class="checkbox md-stack -mt-1.5">
-          <input
-            type="checkbox"
-            class="feature"
-            id="enable_show_advanced_options"
-            aria-labelledby="enable_show_advanced_options_label"
-          />
-          <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
-          <i
-            class="checked material-icons circle-icon-bg-24 checkbox-icon"
-            role="img"
-            aria-hidden="true"
-            >check_circle</i
-          >
-        </span>
-        <label id="enable_show_advanced_options_label" i18n="advanced_options2"></label>
-      </li>
-
-      <li class="section-padding advanced light-grey-text">
-        <div class="checkbox-indentation forDebug">
-          <span class="checkbox md-stack -mt-1.5">
-            <input
-              type="checkbox"
-              class="feature"
-              id="enable_debug_logging"
-              aria-labelledby="enable_debug_logging_label"
-            />
-            <i class="unchecked material-icons" role="img" aria-hidden="true">lens</i>
-            <i
-              class="checked material-icons circle-icon-bg-24 checkbox-icon"
-              role="img"
-              aria-hidden="true"
-              >check_circle</i
-            >
-          </span>
-          <label id="enable_debug_logging_label" i18n="debuginlogoption2"></label>
-        </div>
-        <div class="extra-info">
-          <div i18n="slows_down_extension" class="italic"></div>
-        </div>
       </li>
     </ul>
-    <div class="translation_credits italic do-not-display"></div>
   </div>
 </div>

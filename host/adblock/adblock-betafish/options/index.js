@@ -139,22 +139,30 @@ function displayTranslationCredit() {
       }
     }
 
-    const $translatorsCreditBubble = $(".translation_credits");
-    if (translators.length > 0) {
-      const $translatorCreditDiv = $("<div></div>");
-      const $translatorNamesDiv = $("<div></div>");
-
-      $translatorCreditDiv.addClass("speech-bubble-content").text(translate("translator_credit2"));
-      $translatorNamesDiv.addClass("speech-bubble-content").text(translators.toString());
-      $translatorsCreditBubble
-        .empty()
-        .addClass("speech-bubble")
-        .removeClass("do-not-display")
-        .append($translatorCreditDiv)
-        .append($translatorNamesDiv);
-    } else {
-      $translatorsCreditBubble.addClass("do-not-display").empty();
+    // Bloky: the credits live in one small window (sidebar → "Translators"),
+    // not in a bubble at the bottom of every tab.
+    const list = document.getElementById("translators-list");
+    const button = document.getElementById("translators-button");
+    const dialog = document.getElementById("translators-dialog");
+    if (!list || !button || !dialog || translators.length === 0) {
+      return;
     }
+    list.replaceChildren(
+      ...translators.map((name) => {
+        const item = document.createElement("li");
+        item.textContent = name.trim();
+        return item;
+      }),
+    );
+    button.hidden = false;
+    button.addEventListener("click", () => dialog.showModal());
+    document.getElementById("translators-close").addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => {
+      // a click on the dimmed backdrop closes the window
+      if (event.target === dialog) {
+        dialog.close();
+      }
+    });
   });
 }
 
@@ -209,8 +217,6 @@ function setSelectedThemeColor() {
     body.id = optionsTheme;
     body.dataset.theme = optionsTheme.replace("_theme", "");
   }
-
-  $("#sidebar-adblock-logo").attr("src", `icons/${optionsTheme}/logo.svg`);
 }
 
 // Update Acceptable Ads UI in the General tab. To be called
@@ -311,7 +317,6 @@ $(async () => {
       const body = document.querySelector("body");
       body.id = optionsTheme;
       body.dataset.theme = optionsTheme.replace("_theme", "");
-      $("#sidebar-adblock-logo").attr("src", `icons/${currentValue.options_page}/logo.svg`);
     }
   };
 

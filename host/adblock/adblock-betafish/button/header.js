@@ -84,9 +84,8 @@ const addLogoAndTheme = (info, $template) => {
     body.dataset.theme = popupMenuTheme.replace("_theme", "");
   }
 
-  const $logo = $template.find(".header-logo");
-  $logo.attr("src", `icons/${popupMenuTheme}/logo.svg`);
-  $logo.attr("alt", translate("adblock_logo"));
+  // Bloky: one flat logo for every theme (see header.html)
+  $template.find(".header-logo").attr("alt", translate("adblock_logo"));
 };
 
 const checkAnddisableOnPageOptions = (info, $template) => {

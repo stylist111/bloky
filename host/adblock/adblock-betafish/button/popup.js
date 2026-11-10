@@ -38,24 +38,31 @@ const processError = function (err, stack, message) {
   // the translation messages are hard code in the JS to avoid any dependency
   // on Chrome extension APIs during error handling
   const translateErrorMsg = function (key) {
+    // Bloky: plain-language texts, English and Russian
     const text = {
       error_msg_header: {
-        en: "Oops!",
+        en: "Something went wrong",
+        ru: "Что-то пошло не так",
       },
       error_msg_partI: {
-        en: "We're sorry, the Bloky menu had trouble loading.",
+        en: "The Bloky window didn't load.",
+        ru: "Окно Bloky не загрузилось.",
       },
       error_msg_reload_partI: {
-        en: "Next, try reloading the extension by ",
+        en: "Try ",
+        ru: "Попробуйте ",
       },
       error_msg_reload_partII: {
-        en: "clicking here.",
+        en: "restarting the extension.",
+        ru: "перезапустить расширение.",
       },
       error_msg_help_partI: {
-        en: "If that doesn’t work, ",
+        en: "Still broken? ",
+        ru: "Не помогло? ",
       },
       error_msg_help_partII: {
-        en: "check here for more help.",
+        en: "Tell us on GitHub.",
+        ru: "Напишите нам на GitHub.",
       },
     };
     const locale = navigator.language.substring(0, 2);

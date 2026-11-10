@@ -97,23 +97,31 @@ Fonts
   font-family: "Inter";
   font-weight: 400;
   font-display: swap;
-  src: url("/fonts/Inter-Regular.woff") format("woff");
+  src: url("/fonts/Inter-Regular.woff2") format("woff2");
 }
 @font-face {
   font-family: "Inter";
   font-weight: 500;
   font-display: swap;
-  src: url("/fonts/Inter-Medium.woff") format("woff");
+  src: url("/fonts/Inter-Medium.woff2") format("woff2");
 }
 @font-face {
   font-family: "Inter";
   font-weight: 600;
   font-display: swap;
-  src: url("/fonts/Inter-SemiBold.woff") format("woff");
+  src: url("/fonts/Inter-SemiBold.woff2") format("woff2");
 }
 @font-face {
   font-family: "Inter";
   font-weight: 700;
   font-display: swap;
-  src: url("/fonts/Inter-Bold.woff") format("woff");
+  src: url("/fonts/Inter-Bold.woff2") format("woff2");
+}
+/* Bloky: JetBrains Mono (SIL Open Font License, see OFL-JetBrainsMono.txt) — filter rules and
+   technical values in the settings. */
+@font-face {
+  font-family: "JetBrains Mono";
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/JetBrainsMono-Medium.woff2") format("woff2");
 }

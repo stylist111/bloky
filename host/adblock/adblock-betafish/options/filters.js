@@ -19,14 +19,13 @@
 /* global activateTab, connectUIPort, delayedSubscriptionSelection,
    getStorageCookie, initializeProxies,
    isPremiumFilterListURL, License,
-   MABPayment, premiumFiltersCtaKey, selected, send,
-   setStorageCookie, settings, startSubscriptionSelection, storageGet,
-   storageSet, SubscriptionAdapter, SubscriptionsProxy,
+   MABPayment, selected, send,
+   setStorageCookie, settings, startSubscriptionSelection,
+   SubscriptionAdapter, SubscriptionsProxy,
    THIRTY_MINUTES_IN_MILLISECONDS,
    translate, updateAcceptableAdsUI, updateSocialIconsVisibility
    */
 
-const filtersAdblockUiServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_ui");
 const filtersExtensionsUIServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger(
   "extensions_ui",
 );
@@ -1198,20 +1197,6 @@ async function onFilterChangeHandler(action, items) {
   }
 }
 
-async function initPremiumFiltersCTA() {
-  const userClosedpremiumFiltersCTA = storageGet(premiumFiltersCtaKey);
-  if (!userClosedpremiumFiltersCTA) {
-    $("#premium-filter-list-cta").fadeIn(1000);
-    $("#btnPremiumFilterLearnMore").on("click", () => {
-      filtersAdblockUiServerLogger.behavior("premium_filter_list_cta", { action: "clicked" });
-      storageSet(premiumFiltersCtaKey, true);
-      $("#premium-filter-list-cta").fadeOut(1000);
-      activateTab("#mab");
-    });
-    filtersAdblockUiServerLogger.behavior("premium_filter_list_cta", { action: "seen" });
-  }
-}
-
 $(async () => {
   // Retrieves list of filter lists from the background.
   const [subs, experimentFlags] = await Promise.all([
@@ -1313,5 +1298,5 @@ $(async () => {
   $("a.link-to-tab").on("click", (event) => {
     activateTab($(event.target).attr("href"));
   });
-  initPremiumFiltersCTA();
+  // Bloky: no "Premium filters" teaser — those lists are free and have their own tab.
 });

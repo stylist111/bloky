@@ -30,12 +30,13 @@
         src: url("fonts/Inter-Bold.woff") format("woff");
       }
       :root {
-        --text: #0f1726;
-        --text-2: #4c5767;
-        --text-3: #667085;
-        --bg: #eef3ff;
+        /* brand kit: tools/bloky/brand/tokens */
+        --text: #0b1020;
+        --text-2: #4a5263;
+        --text-3: #6b7385;
+        --bg: #eef2ff;
         --glass-border: rgba(255, 255, 255, 0.85);
-        --accent: #2b66f6;
+        --accent: #2b59ff;
       }
       html,
       body {
@@ -53,23 +54,23 @@
         -webkit-font-smoothing: antialiased;
         background: radial-gradient(
             45% 55% at 0% 0%,
-            #8db8ff 0%,
-            rgba(141, 184, 255, 0) 100%
+            #b9c9ff 0%,
+            rgba(185, 201, 255, 0) 100%
           ),
           radial-gradient(
             40% 50% at 100% 10%,
-            #b3ceff 0%,
-            rgba(179, 206, 255, 0) 100%
+            #dce4ff 0%,
+            rgba(220, 228, 255, 0) 100%
           ),
           radial-gradient(
             55% 60% at 90% 100%,
-            #94bcff 0%,
-            rgba(148, 188, 255, 0) 100%
+            #b9c9ff 0%,
+            rgba(185, 201, 255, 0) 100%
           ),
           radial-gradient(
             40% 50% at 10% 100%,
-            #cfe0ff 0%,
-            rgba(207, 224, 255, 0) 100%
+            #dce4ff 0%,
+            rgba(220, 228, 255, 0) 100%
           ),
           var(--bg);
       }
@@ -81,7 +82,6 @@
       .brand img {
         width: 112px;
         height: 112px;
-        filter: drop-shadow(0 14px 24px rgba(30, 60, 140, 0.22));
       }
       .brand h1 {
         margin: 0;
@@ -137,10 +137,10 @@
       .card {
         border-radius: 18px;
         overflow: hidden;
-        background: #f4f4f4;
+        background: #f4f5f8;
         box-shadow:
-          0 30px 70px rgba(30, 60, 140, 0.3),
-          0 0 0 1px rgba(15, 23, 38, 0.06);
+          0 24px 60px rgba(11, 16, 32, 0.16),
+          0 0 0 1px #dde1e8;
       }
       .card img {
         display: block;
@@ -282,7 +282,7 @@
     <div id="root"></div>
     <script>
       const kind = new URLSearchParams(location.search).get("kind") || "banner";
-      const brand = `<div class="brand"><img src="promo/icon.png" alt=""><h1>Bloky<small>by beyond</small></h1></div>`;
+      const brand = `<div class="brand"><img src="../../../host/adblock/icons/bloky-icon.svg" alt=""><h1>Bloky<small>by beyond</small></h1></div>`;
       const tags = (list) =>
         `<div class="tags">${list.map(([t, a]) => `<span class="tag${a ? " accent" : ""}">${t}</span>`).join("")}</div>`;
       const popup = `<div class="card"><img src="promo/popup.png" alt=""></div>`;
@@ -304,8 +304,8 @@
           "options-premium-filters",
         ],
         shot3: [
-          "Темы оформления",
-          "Восемь тем для окна и настроек — тоже бесплатно",
+          "Светлая и тёмная тема",
+          "Как в системе, всегда светлая или всегда тёмная — для окна и настроек",
           "options-mab-themes",
         ],
         shot4: [

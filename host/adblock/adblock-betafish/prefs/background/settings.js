@@ -38,6 +38,8 @@ const abpPrefPropertyNames = [
 ];
 const validThemes = [
   "default_theme",
+  // Bloky: "Appearance" is system (default_theme), light or dark
+  "light_theme",
   "dark_theme",
   "watermelon_theme",
   "solarized_theme",

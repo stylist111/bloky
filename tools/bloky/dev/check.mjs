@@ -355,6 +355,19 @@ async function openPage(url, label, wait = 4000) {
     { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false },
     s,
   );
+  // screenshots in the light system theme (BLOKY_SCHEME=dark for the dark one)
+  await call(
+    "Emulation.setEmulatedMedia",
+    {
+      features: [
+        {
+          name: "prefers-color-scheme",
+          value: process.env.BLOKY_SCHEME || "light",
+        },
+      ],
+    },
+    s,
+  );
   await call("Page.navigate", { url }, s);
   await sleep(wait);
   return s;
@@ -373,7 +386,7 @@ const base = `chrome-extension://${extId}/`;
 const pop = await openPage(`${base}adblock-button-popup.html`, "popup");
 await call(
   "Emulation.setDeviceMetricsOverride",
-  { width: 380, height: 620, deviceScaleFactor: 2, mobile: false },
+  { width: 360, height: 620, deviceScaleFactor: 2, mobile: false },
   pop,
 );
 await sleep(800);
@@ -401,6 +414,39 @@ for (const tab of [
   await shot(opt, `options-${tab}`);
 }
 
+// окошко «Переводчики» (есть только у переведённых языков)
+const tr = await call(
+  "Runtime.evaluate",
+  {
+    expression: `(() => { const b = document.getElementById('translators-button'); if (!b || b.hidden) return 'hidden'; b.click(); return 'open'; })()`,
+    returnByValue: true,
+  },
+  opt,
+);
+if (tr.result?.result?.value === "open") {
+  await sleep(500);
+  await shot(opt, "options-translators");
+  await call(
+    "Runtime.evaluate",
+    { expression: `document.getElementById('translators-dialog').close()` },
+    opt,
+  );
+}
+
+// окно с ошибкой (popup.js показывает его для ?tabId=error)
+const popErr = await openPage(
+  `${base}adblock-button-popup.html?tabId=error`,
+  "popup",
+  2000,
+);
+await call(
+  "Emulation.setDeviceMetricsOverride",
+  { width: 360, height: 420, deviceScaleFactor: 2, mobile: false },
+  popErr,
+);
+await sleep(800);
+await shot(popErr, "popup-error");
+
 await openPage(site, "site", 12000);
 await sleep(3000); // ловим поздние запросы фоновой части
 const blockedOnSite = blocked.length;
@@ -418,7 +464,7 @@ if (siteTab) {
   );
   await call(
     "Emulation.setDeviceMetricsOverride",
-    { width: 380, height: 620, deviceScaleFactor: 2, mobile: false },
+    { width: 360, height: 620, deviceScaleFactor: 2, mobile: false },
     pop2,
   );
   await sleep(1000);
@@ -430,7 +476,7 @@ if (siteTab) {
   );
   await call(
     "Emulation.setDeviceMetricsOverride",
-    { width: 380, height: 420, deviceScaleFactor: 2, mobile: false },
+    { width: 360, height: 420, deviceScaleFactor: 2, mobile: false },
     more,
   );
   await sleep(1500);
@@ -463,6 +509,25 @@ check(
   blocked.length === 0,
   `${blocked.length} blocked while allowlisted`,
 );
+{
+  const tab = await bg(
+    `return (await chrome.tabs.query({})).filter(t => /gazeta\\.ru/.test(t.url)).pop()?.id`,
+  );
+  if (tab) {
+    const popAllow = await openPage(
+      `${base}adblock-button-popup.html?tabId=${tab}`,
+      "popup",
+      2500,
+    );
+    await call(
+      "Emulation.setDeviceMetricsOverride",
+      { width: 360, height: 520, deviceScaleFactor: 2, mobile: false },
+      popAllow,
+    );
+    await sleep(800);
+    await shot(popAllow, "popup-allowlisted");
+  }
+}
 await bg(`await ewe.filters.remove(['@@||gazeta.ru^$document']); return true`);
 
 // ---- пауза везде (как кнопка «Приостановить» в окне) ----
@@ -511,7 +576,7 @@ await call(
 await sleep(1500);
 const picked = await ev(
   ctl,
-  `const i = [...document.querySelectorAll('input.invisible-radio-button')].find(x => { const b = x.closest('.theme-box'); return b && b.dataset.theme === 'dark_theme' && /popup/.test(b.dataset.key || ''); }); if (!i) return 'no input'; i.click(); return 'clicked'`,
+  `const i = document.querySelector('input[name="bloky-theme"][value="dark_theme"]'); if (!i) return 'no input'; i.click(); return 'clicked'`,
 );
 await sleep(1500);
 const pop3 = await openPage(
@@ -521,7 +586,7 @@ const pop3 = await openPage(
 );
 await call(
   "Emulation.setDeviceMetricsOverride",
-  { width: 380, height: 620, deviceScaleFactor: 2, mobile: false },
+  { width: 360, height: 620, deviceScaleFactor: 2, mobile: false },
   pop3,
 );
 await sleep(800);
@@ -533,6 +598,8 @@ check(
   `${picked.result?.result?.value}, popup body id = ${themeId}`,
 );
 await shot(pop3, "popup-dark");
+// страница настроек в тёмной теме
+await shot(ctl, "options-dark");
 
 console.log("\n== checks:");
 for (const r of results) {

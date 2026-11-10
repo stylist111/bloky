@@ -15,63 +15,83 @@
   - You should have received a copy of the GNU General Public License
   - along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
   -->
+<!-- Bloky: support goes to GitHub Issues; about, version and technical details in cards -->
 <div class="option-page-box">
   <div class="option-page-content">
-    <h1 i18n="adblocksupport" class="page-title"></h1>
-    <h2 i18n="needhelp" class="paragraph-title bottom-line"></h2>
-    <div class="section-padding support-text">
-      <div i18n="helpcenter" i18n_replacement_el="helpcenter_link">
+    <header class="b-page-head">
+      <h1 i18n="adblocksupport" class="page-title"></h1>
+      <p class="b-lead" i18n="bloky_support_lead"></p>
+    </header>
+
+    <section class="b-card b-support-hero">
+      <span class="b-hero-icon material-icons" aria-hidden="true">forum</span>
+      <div class="b-row-text">
+        <h2 class="b-card-title" i18n="bloky_support_issue_title"></h2>
+        <p class="b-row-desc" i18n="bloky_support_issue_text"></p>
+      </div>
+      <a
+        id="bugreport"
+        class="b-btn primary"
+        href="https://github.com/stylist111/bloky/issues/new"
+        target="_blank"
+        rel="noopener noreferrer"
+        i18n="bloky_support_issue_button"
+      ></a>
+    </section>
+
+    <h2 class="b-group-title" i18n="aboutadblock"></h2>
+    <ul class="b-card b-rows">
+      <li class="b-row">
+        <span class="b-row-text"><span class="b-row-title" i18n="bloky_version"></span></span>
+        <span class="b-row-value" id="bloky-version"></span>
+      </li>
+      <li class="b-row">
+        <span class="b-row-text">
+          <span class="b-row-title" i18n="bloky_whats_new"></span>
+          <span class="b-row-desc" i18n="bloky_whats_new_text"></span>
+        </span>
         <a
-          id="helpcenter_link"
-          class="link-text-color"
-          href="https://github.com/stylist111/bloky/issues"
+          id="whatsnew_github"
+          class="b-btn secondary small"
+          href="https://github.com/stylist111/bloky/releases"
           target="_blank"
           rel="noopener noreferrer"
+          i18n="bloky_open"
         ></a>
-      </div>
-    </div>
-    <div class="section-padding support-text">
-      <div i18n="bugreport" i18n_replacement_el="bugreport">
-        <a
-          id="bugreport"
-          class="link-text-color"
-          href="https://github.com/stylist111/bloky/issues"
-          target="_blank"
-          rel="noopener noreferrer"
-        ></a>
-      </div>
-    </div>
-    <div class="section-padding support-text">
-      <div i18n="debuginfo" i18n_replacement_el="debuginfo_link">
-        <a id="debuginfo_link" class="link-text-color" href="#"></a>
-      </div>
-    </div>
-    <h2 i18n="aboutadblock" class="paragraph-title bottom-line"></h2>
-    <div class="section-padding support-text">
-      <div i18n="sourcecode" i18n_replacement_el="sourcecode">
+      </li>
+      <li class="b-row">
+        <span class="b-row-text">
+          <span class="b-row-title" i18n="bloky_source_code"></span>
+          <span class="b-row-desc" i18n="bloky_source_code_text"></span>
+        </span>
         <a
           id="sourcecode"
-          class="link-text-color"
-          href="https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/tree/main/host/adblock"
+          class="b-btn secondary small"
+          href="https://github.com/stylist111/bloky"
           target="_blank"
           rel="noopener noreferrer"
-        ></a>
-      </div>
-    </div>
-    <div class="section-padding support-text">
-      <div i18n="whatsnew" i18n_replacement_el="whatsnew_link">
-        <a id="whatsnew_link" class="link-text-color" href="#"></a>
-      </div>
-    </div>
-    <textarea id="changes" class="widest" style="display: none"></textarea>
+          >GitHub</a
+        >
+      </li>
+      <li class="b-row">
+        <span class="b-row-text">
+          <span class="b-row-title" i18n="bloky_debug_title"></span>
+          <span class="b-row-desc" i18n="bloky_debug_text"></span>
+        </span>
+        <button
+          id="debuginfo_link"
+          type="button"
+          class="b-btn secondary small"
+          i18n="bloky_download"
+        ></button>
+      </li>
+    </ul>
 
-    <div class="translation_credits italic do-not-display"></div>
-
-    <div class="extension-state-section">
-      <h2 class="paragraph-title bottom-line">Extension State</h2>
+    <details class="b-card extension-state-section">
+      <summary i18n="bloky_tech_info"></summary>
       <div id="extension-state" class="extension-state-debug">
         <p>Loading...</p>
       </div>
-    </div>
+    </details>
   </div>
 </div>

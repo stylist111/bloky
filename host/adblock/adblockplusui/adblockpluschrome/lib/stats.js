@@ -28,7 +28,8 @@ import { Prefs } from "./prefs.js";
 import { allowlistingState, getAllowlistedState } from "./allowlisting.js";
 import * as scheduledEventEmitter from "../../src/core/scheduled-event-emitter/background/scheduled-event-emitter.ts"; // eslint-disable-next-line max-len
 
-const badgeColor = "#646464";
+// Bloky: badge colour from the brand kit (Ink)
+const badgeColor = "#0B1020";
 const badgeRefreshRate = 4;
 const badgeUpdateTopic = "stats.badgeUpdate";
 
