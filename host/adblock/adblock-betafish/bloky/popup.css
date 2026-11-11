@@ -506,6 +506,11 @@ subsection-navigation > span {
   background: var(--border);
 }
 
+/* the help card has no inner padding: the line stays inside it */
+#help_container #separator_help {
+  margin: 0;
+}
+
 .menu-list {
   padding: var(--space-1) 0 0;
 }
@@ -577,7 +582,8 @@ inline-link-button > button {
 #help_overlay {
   width: auto;
   height: auto;
-  min-height: 360px;
+  min-height: 0;
+  overflow: hidden;
   margin: var(--space-4);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -613,7 +619,13 @@ inline-link-button > button {
 
 #help_content {
   height: auto;
-  padding-top: var(--space-2);
+  padding-top: 0;
+}
+
+/* the line under the title already separates the first item */
+#help_content .segue-container:first-child,
+#help_content > :first-child .segue-container:first-child {
+  border-top: 0;
 }
 
 .help-content.section-container,

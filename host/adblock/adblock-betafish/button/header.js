@@ -71,20 +71,10 @@ const loadTemplate = function () {
     });
 };
 
+// Bloky: one light look; a theme saved by an older version is ignored
+// (body#default_theme comes from the HTML).
 const addLogoAndTheme = (info, $template) => {
-  let popupMenuTheme = "default_theme";
-  if (info.settings && info.settings.color_themes && info.settings.color_themes.popup_menu) {
-    popupMenuTheme = info.settings.color_themes.popup_menu;
-  }
-
-  // default_theme applied in html and does not need to be set
-  if (popupMenuTheme !== "default_theme") {
-    const body = document.querySelector("body");
-    body.id = popupMenuTheme;
-    body.dataset.theme = popupMenuTheme.replace("_theme", "");
-  }
-
-  // Bloky: one flat logo for every theme (see header.html)
+  // Bloky: one flat logo (see header.html)
   $template.find(".header-logo").attr("alt", translate("adblock_logo"));
 };
 

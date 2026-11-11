@@ -19,7 +19,7 @@
 /* global browser, translate, FilterListUtil, activateTab,
    CustomFilterListUploadUtil, localizePage, storageSet, debounced, determineUserLanguage,
    setLangAndDirAttributes, License, ewe, licenseNotifier, initializeProxies,
-   settingsNotifier, initializeSettings, initializeLicense,
+   initializeSettings, initializeLicense,
    initializeChannels, settings, initializePrefs, SubscriptionAdapter,
    initializeLocalDataCollection, initializePremiumPort,
    initializeSubscriptionsProxy, initializeFiltersProxy,
@@ -205,18 +205,10 @@ function startSubscriptionSelection(title, url) {
   }
 }
 
+// Bloky: one light look; a theme saved by an older version is ignored
+// (body#default_theme comes from the HTML).
 function setSelectedThemeColor() {
-  let optionsTheme = "default_theme";
-  if (settings && settings.color_themes && settings.color_themes.options_page) {
-    optionsTheme = settings.color_themes.options_page;
-  }
-
-  // default_theme applied in html and does not need to be set
-  if (optionsTheme !== "default_theme") {
-    const body = document.querySelector("body");
-    body.id = optionsTheme;
-    body.dataset.theme = optionsTheme.replace("_theme", "");
-  }
+  // nothing to apply
 }
 
 // Update Acceptable Ads UI in the General tab. To be called
@@ -311,16 +303,7 @@ $(async () => {
 
   storageSet(License.pageReloadedOnSettingChangeKey, false);
 
-  const onSettingsChanged = function (name, currentValue) {
-    if (name === "color_themes") {
-      const optionsTheme = currentValue.options_page;
-      const body = document.querySelector("body");
-      body.id = optionsTheme;
-      body.dataset.theme = optionsTheme.replace("_theme", "");
-    }
-  };
-
-  settingsNotifier.on("settings.changed", onSettingsChanged);
+  // Bloky: no theme to follow (one light look)
   licenseNotifier.on("license.updated", () => {
     displayUserAccount();
   });

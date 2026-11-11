@@ -397,7 +397,6 @@ for (const tab of [
   "general",
   "filters",
   "premium-filters",
-  "mab-themes",
   "mab-image-swap",
   "customize",
   "support",
@@ -565,41 +564,49 @@ check(
   `${blocked.length} blocked after resume`,
 );
 
-// ---- тема окна: выбрать «тёмную» в настройках ----
-await call(
-  "Runtime.evaluate",
-  {
-    expression: `document.querySelector('.tablink[href="#mab-themes"]').click()`,
-  },
+// ---- всегда светлое оформление: даже с тёмной темой Windows и тёмной темой,
+// сохранённой старой версией ----
+const savedDark = await ev(
   ctl,
+  `settings.color_themes = { popup_menu: 'dark_theme', options_page: 'dark_theme' }; return 'saved'`,
 );
 await sleep(1500);
-const picked = await ev(
-  ctl,
-  `const i = document.querySelector('input[name="bloky-theme"][value="dark_theme"]'); if (!i) return 'no input'; i.click(); return 'clicked'`,
-);
-await sleep(1500);
-const pop3 = await openPage(
-  `${base}adblock-button-popup.html${siteTab ? `?tabId=${siteTab}` : ""}`,
-  "popup",
-  3000,
-);
-await call(
-  "Emulation.setDeviceMetricsOverride",
-  { width: 360, height: 620, deviceScaleFactor: 2, mobile: false },
-  pop3,
-);
-await sleep(800);
-const themeId = (await ev(pop3, `return document.body.id`)).result?.result
-  ?.value;
+const looks = [];
+for (const [page, name] of [
+  [
+    `adblock-button-popup.html${siteTab ? `?tabId=${siteTab}` : ""}`,
+    "popup-dark-system",
+  ],
+  ["options.html#general", "options-dark-system"],
+]) {
+  const p = await openPage(`${base}${page}`, "popup", 1000);
+  await call(
+    "Emulation.setEmulatedMedia",
+    { features: [{ name: "prefers-color-scheme", value: "dark" }] },
+    p,
+  );
+  if (name.startsWith("popup")) {
+    await call(
+      "Emulation.setDeviceMetricsOverride",
+      { width: 360, height: 620, deviceScaleFactor: 2, mobile: false },
+      p,
+    );
+  }
+  await sleep(3500);
+  looks.push(
+    (await ev(p, `return getComputedStyle(document.body).backgroundColor`))
+      .result?.result?.value,
+  );
+  await shot(p, name);
+}
 check(
-  "popup theme can be changed",
-  themeId === "dark_theme",
-  `${picked.result?.result?.value}, popup body id = ${themeId}`,
+  "always light (dark Windows theme + old saved dark theme)",
+  looks.length === 2 &&
+    looks.every((c) =>
+      /^rgb\((2[0-9]{2}), (2[0-9]{2}), (2[0-9]{2})\)$/.test(c),
+    ),
+  `${savedDark.result?.result?.value}; popup ${looks[0]}, options ${looks[1]}`,
 );
-await shot(pop3, "popup-dark");
-// страница настроек в тёмной теме
-await shot(ctl, "options-dark");
 
 console.log("\n== checks:");
 for (const r of results) {

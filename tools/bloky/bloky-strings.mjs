@@ -42,6 +42,26 @@ const texts = {
     "Реклама не блокируется ни на одном сайте.",
   ],
   unpause_adblock: ["Resume blocking", "Снова блокировать"],
+  // asked when more than 6 filter lists are on
+  you_know_thats_a_bad_idea_right: [
+    "Every extra list slows the browser a little, and too many can break sites. Turn it on anyway?",
+    "Каждый лишний список немного замедляет браузер, а слишком много списков могут ломать сайты. Всё равно включить?",
+  ],
+  // status of a filter list whose updates do not fit into Chrome's rule limit
+  ab_filters_subscription_lastDownload_diffTooManyFilters: [
+    "Works, but its latest updates don't fit into the browser's limit.",
+    "Работает, но свежие обновления не помещаются в лимит браузера.",
+  ],
+  // confirmation windows in the popup
+  cookie_consent_cutter_title: ["Cookie pop-ups", "Окна про cookie"],
+  distraction_control_new: [
+    "Hiding distractions is still being improved, so some may slip through.",
+    "Скрытие отвлекающего ещё дорабатывается, поэтому что-то может проскочить.",
+  ],
+  your_participation: [
+    "If a site breaks, tell us on GitHub.",
+    "Если какой-то сайт сломается, напишите нам на GitHub.",
+  ],
   error_msg_header: ["Something went wrong", "Что-то пошло не так"],
   error_msg_partI: [
     "The Bloky window didn't load.",

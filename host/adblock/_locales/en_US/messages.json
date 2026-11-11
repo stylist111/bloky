@@ -414,7 +414,7 @@
     "description": "Filter lists tab of the Options page: Generic filter list diff update error message."
   },
   "ab_filters_subscription_lastDownload_diffTooManyFilters": {
-    "message": "Filter list update could not be applied due to browser limitations. Updating to a newer extension version may fix this problem.",
+    "message": "Works, but its latest updates don't fit into the browser's limit.",
     "description": "Filter lists tab of the Options page: Filter list diff update too large."
   },
   "ab_filters_subscription_diff_too_old": {
@@ -438,7 +438,7 @@
     "description": "Label to remove a custom filter list"
   },
   "you_know_thats_a_bad_idea_right": {
-    "message": "The more filter lists you use, the slower Bloky runs. Using too many lists can even crash your browser on some websites. Press OK to subscribe to this list anyway.",
+    "message": "Every extra list slows the browser a little, and too many can break sites. Turn it on anyway?",
     "description": "Confirmation message shown to user if they try to subscribe to too many lists. The user will have two options: OK and Cancel."
   },
   "unsubscribe_from_all_confirmation": {
@@ -3387,7 +3387,7 @@
     "description": "Description of the Premium filter lists"
   },
   "cookie_consent_cutter_title": {
-    "message": "Cookie Consent Cutter",
+    "message": "Cookie pop-ups",
     "description": "Description of the Premium filter lists"
   },
   "cookie_consent_cutter_description": {
@@ -3411,11 +3411,11 @@
     "description": "Description of the distraction control option"
   },
   "distraction_control_new": {
-    "message": "Distraction Control is a new feature and is still being refined. ",
+    "message": "Hiding distractions is still being improved, so some may slip through.",
     "description": "Description of the distraction control option"
   },
   "your_participation": {
-    "message": "Your participation and feedback will help us continue to improve its reach and functionality. ",
+    "message": "If a site breaks, tell us on GitHub.",
     "description": "Description of the distraction control option"
   },
   "dc_more_information": {

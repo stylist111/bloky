@@ -3,9 +3,8 @@
  * Colours, type and spacing come from the brand kit (tools/bloky/brand/tokens/tokens.css).
  * This file is loaded after the stock AdBlock styles and maps them onto the kit.
  *
- * Themes: <body data-theme="…"> is set from the "Appearance" setting.
- *   default → follows the system (light or dark), light → always light, dark → always dark.
- *   The old colour themes (watermelon, ocean…) behave like "default".
+ * One light look everywhere: no dark theme and no theme choice. Themes saved by older
+ * versions (dark, watermelon, ocean…) still put an id on <body>; they all get these colours.
  */
 
 :root {
@@ -82,7 +81,7 @@
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* ---------- Light (default) ---------- */
+/* ---------- Colours (light only) ---------- */
 body {
   --bg-app: var(--ink-50);
   --bg-surface: var(--ink-0);
@@ -114,61 +113,6 @@ body {
   --scrim: rgba(11, 16, 32, 0.4);
   --focus-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--focus-ring);
   color-scheme: light;
-}
-
-/* ---------- Dark ---------- */
-body[data-theme="dark"] {
-  --bg-app: var(--ink-900);
-  --bg-surface: var(--ink-800);
-  --bg-subtle: var(--ink-750);
-  --border: var(--ink-700);
-  --border-strong: #3a4359;
-  --text-primary: #f2f4f8;
-  --text-secondary: #b7becb;
-  --text-tertiary: var(--ink-400);
-  --accent-hover: var(--blue-400);
-  --accent-subtle: #1a2550;
-  --accent-text: var(--blue-300);
-  --state-paused: var(--ink-500);
-  --state-unavailable: var(--ink-600);
-  --success-bg: rgba(18, 161, 80, 0.16);
-  --success-text: #4ade80;
-  --warning-bg: rgba(245, 165, 36, 0.16);
-  --warning-text: #fbbf24;
-  --danger-bg: rgba(217, 48, 54, 0.16);
-  --danger-text: #f87171;
-  --info-bg: #1a2550;
-  --info-text: var(--blue-300);
-  --scrim: rgba(0, 0, 0, 0.6);
-  color-scheme: dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  body:not([data-theme="light"]) {
-    --bg-app: var(--ink-900);
-    --bg-surface: var(--ink-800);
-    --bg-subtle: var(--ink-750);
-    --border: var(--ink-700);
-    --border-strong: #3a4359;
-    --text-primary: #f2f4f8;
-    --text-secondary: #b7becb;
-    --text-tertiary: var(--ink-400);
-    --accent-hover: var(--blue-400);
-    --accent-subtle: #1a2550;
-    --accent-text: var(--blue-300);
-    --state-paused: var(--ink-500);
-    --state-unavailable: var(--ink-600);
-    --success-bg: rgba(18, 161, 80, 0.16);
-    --success-text: #4ade80;
-    --warning-bg: rgba(245, 165, 36, 0.16);
-    --warning-text: #fbbf24;
-    --danger-bg: rgba(217, 48, 54, 0.16);
-    --danger-text: #f87171;
-    --info-bg: #1a2550;
-    --info-text: var(--blue-300);
-    --scrim: rgba(0, 0, 0, 0.6);
-    color-scheme: dark;
-  }
 }
 
 /* ---------- Stock AdBlock variables → kit tokens ----------

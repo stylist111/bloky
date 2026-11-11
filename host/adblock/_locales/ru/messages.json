@@ -394,7 +394,7 @@
     "description": "Filter lists tab of the Options page: Generic filter list diff update error message."
   },
   "ab_filters_subscription_lastDownload_diffTooManyFilters": {
-    "message": "Обновление списка фильтров не удалось применить из-за ограничений браузера. Обновление до более новой версии расширения может решить эту проблему.",
+    "message": "Работает, но свежие обновления не помещаются в лимит браузера.",
     "description": "Filter lists tab of the Options page: Filter list diff update too large."
   },
   "ab_filters_subscription_lastDownload_invalidData": {
@@ -418,7 +418,7 @@
     "description": "Label to remove a custom filter list"
   },
   "you_know_thats_a_bad_idea_right": {
-    "message": "Чем больше фильтров вы используете, тем медленнее работает Bloky. Использование слишком большого количества фильтров может привести к некорректному завершению работы браузера на некоторых страницах. Нажмите ОК, чтобы использовать этот список.",
+    "message": "Каждый лишний список немного замедляет браузер, а слишком много списков могут ломать сайты. Всё равно включить?",
     "description": "Confirmation message shown to user if they try to subscribe to too many lists. The user will have two options: OK and Cancel."
   },
   "unsubscribe_from_all_confirmation": {
@@ -3311,7 +3311,7 @@
     "description": "Description of the Premium filter lists"
   },
   "cookie_consent_cutter_title": {
-    "message": "Устранение согласий на использование файлов сookie",
+    "message": "Окна про cookie",
     "description": "Description of the Premium filter lists"
   },
   "cookie_consent_cutter_description": {
@@ -3339,11 +3339,11 @@
     "description": "Description of the distraction control option"
   },
   "distraction_control_new": {
-    "message": "Управление отвлекающими элементами — новая функция, находящаяся в доработке.",
+    "message": "Скрытие отвлекающего ещё дорабатывается, поэтому что-то может проскочить.",
     "description": "Description of the distraction control option"
   },
   "your_participation": {
-    "message": "Ваше использование этой функции и обратная связь помогут нам улучшить её доступность и имеющиеся возможности. ",
+    "message": "Если какой-то сайт сломается, напишите нам на GitHub.",
     "description": "Description of the distraction control option"
   },
   "dc_more_information": {

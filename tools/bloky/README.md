@@ -12,5 +12,7 @@
   `promo.html` + `render-promo.mjs` — README banner, GitHub social preview and store images.
 - `dev/` — local build in Docker on Windows (`build.ps1`, output in `_build/`) and an
   automated check in a real Chrome (`check.mjs`: loads the build, checks blocking,
-  filter updates, Premium unlock, pause, allowlisting, appearance; saves screenshots of
-  every screen, light by default, `BLOKY_SCHEME=dark` for the dark ones).
+  filter updates, Premium unlock, pause, allowlisting, one light look even with a dark system
+  theme; saves screenshots of every screen) and `scenarios.mjs` (update from the previous
+  release with saved settings, real clicks on every button of the settings and the popup,
+  narrow window).
